@@ -25,7 +25,7 @@ namespace Oshima.FunGame.OshimaServers
         public static GameModuleLoader? GameModuleLoader { get; set; } = null;
         public static List<User> ConnectedUsers { get; } = [];
 
-        public override Dictionary<string, object> GamingMessageHandler(string username, GamingType type, Dictionary<string, object> data)
+        public override async Task<Dictionary<string, object>> GamingMessageHandler(string username, GamingType type, Dictionary<string, object> data)
         {
             Dictionary<string, object> result = [];
 
@@ -84,6 +84,11 @@ namespace Oshima.FunGame.OshimaServers
 
             return result;
         }
+
+        protected Room Room = General.HallInstance;
+        protected List<User> Users = [];
+        protected IServerModel? RoomMaster;
+        protected Dictionary<string, IServerModel> All = [];
 
         public override bool StartServer(string GameModule, Room Room, List<User> Users, IServerModel RoomMasterServerModel, Dictionary<string, IServerModel> ServerModels, params object[] Args)
         {
@@ -486,7 +491,7 @@ namespace Oshima.FunGame.OshimaServers
                 }
 
                 // 结束
-                SendAll(SocketMessageType.EndGame, Room, Users);
+                await Send(All.Values, SocketMessageType.EndGame, Room, Users);
                 foreach (IServerModel model in All.Values)
                 {
                     model.NowGamingServer = null;
@@ -520,7 +525,7 @@ namespace Oshima.FunGame.OshimaServers
             data.Clear();
             data.Add("msg", str);
             data.Add("showmessage", showmessage);
-            SendAllGamingMessage(GamingType.UpdateInfo, data);
+            SendGamingMessage(All.Values, GamingType.UpdateInfo, data);
         }
 
         public override void AfterLoad(params object[] args)
@@ -539,55 +544,6 @@ namespace Oshima.FunGame.OshimaServers
                 {
                     CharacterStatistics[character] = StatsConfig.Get<CharacterStatistics>(character.ToStringWithOutUser()) ?? CharacterStatistics[character];
                 }
-            }
-        }
-
-        protected Room Room = General.HallInstance;
-        protected List<User> Users = [];
-        protected IServerModel? RoomMaster;
-        protected Dictionary<string, IServerModel> All = [];
-
-        protected void SendAllGamingMessage(GamingType type, Dictionary<string, object> data)
-        {
-            // 循环服务线程，向所有玩家发送局内消息
-            foreach (IServerModel s in All.Values)
-            {
-                if (s != null && s.Socket != null)
-                {
-                    s.Send(s.Socket, SocketMessageType.Gaming, type, data);
-                }
-            }
-        }
-
-        protected void SendGamingMessage(string username, GamingType type, Dictionary<string, object> data)
-        {
-            // 向指定玩家发送局内消息
-            IServerModel s = All[username];
-            if (s != null && s.Socket != null)
-            {
-                s.Send(s.Socket, SocketMessageType.Gaming, type, data);
-            }
-        }
-
-        protected void SendAll(SocketMessageType type, params object[] args)
-        {
-            // 循环服务线程，向所有玩家发送消息
-            foreach (IServerModel s in All.Values)
-            {
-                if (s != null && s.Socket != null)
-                {
-                    s.Send(s.Socket, type, args);
-                }
-            }
-        }
-
-        protected void Send(string username, SocketMessageType type, params object[] args)
-        {
-            // 向指定玩家发送消息
-            IServerModel s = All[username];
-            if (s != null && s.Socket != null)
-            {
-                s.Send(s.Socket, type, args);
             }
         }
     }

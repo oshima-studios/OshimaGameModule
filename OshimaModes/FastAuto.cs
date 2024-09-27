@@ -19,6 +19,7 @@ namespace Oshima.FunGame.OshimaModes
         public override GameModuleDepend GameModuleDepend => OshimaGameModuleConstant.GameModuleDepend;
         public override RoomType RoomType => RoomType.FastAuto;
         public override bool HideMain => false;
+        public override int MaxUsers => 12;
 
         public override void StartGame(Gaming instance, params object[] args)
         {

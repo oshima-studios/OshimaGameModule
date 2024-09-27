@@ -9,6 +9,7 @@
     <BaseOutputPath>..\bin\</BaseOutputPath>
     <RootNamespace>Oshima.FunGame.$(MSBuildProjectName.Replace(" ", "_"))</RootNamespace>
     <Authors>Oshima Studios</Authors>
+    <UseWPF>True</UseWPF>
   </PropertyGroup>
 
   <ItemGroup>
@@ -19,6 +20,9 @@
   <ItemGroup>
     <Reference Include="FunGame.Core">
       <HintPath>..\..\FunGame.Core\bin\Debug\net8.0\FunGame.Core.dll</HintPath>
+    </Reference>
+    <Reference Include="FunGame.Desktop">
+      <HintPath>..\..\FunGame.Desktop\bin\Debug\net8.0-windows\FunGame.Desktop.dll</HintPath>
     </Reference>
   </ItemGroup>
 
