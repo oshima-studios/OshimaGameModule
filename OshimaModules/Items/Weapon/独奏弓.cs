@@ -1,10 +1,10 @@
 ﻿using Milimoe.FunGame.Core.Entity;
 using Milimoe.FunGame.Core.Library.Constant;
-using Oshima.FunGame.OshimaModules.Effects;
+using Oshima.FunGame.OshimaModules.ItemEffects;
 
 namespace Oshima.FunGame.OshimaModules.Items
 {
-    [Obsolete]
+    [Obsolete("测试物品请勿使用")]
     public class 独奏弓 : Item
     {
         public override long Id => 11999;

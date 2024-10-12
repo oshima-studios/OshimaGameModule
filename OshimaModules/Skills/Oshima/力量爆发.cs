@@ -23,12 +23,13 @@ namespace Oshima.FunGame.OshimaModules.Skills
     {
         public override long Id => Skill.Id;
         public override string Name => "力量爆发";
-        public override string Description => $"获得 150% 力量 [ {攻击力加成} ] 的攻击力加成，持续 {Duration} 时间。";
+        public override string Description => $"获得 150% 力量 [ {攻击力加成} ] 的攻击力加成，但每次攻击都会损失 9% 当前生命值 [ {当前生命值} ]，持续 {Duration} 时间。";
         public override bool TargetSelf => true;
         public override bool Durative => true;
         public override double Duration => 10 + 1 * (Level - 1);
 
         private double 攻击力加成 => Calculation.Round2Digits(Skill.Character?.STR * 1.5 ?? 0);
+        private double 当前生命值 => Calculation.Round2Digits(Skill.Character?.HP * 0.09 ?? 0);
         private double 实际攻击力加成 = 0;
 
         public override void OnEffectGained(Character character)
@@ -42,6 +43,16 @@ namespace Oshima.FunGame.OshimaModules.Skills
         {
             // 恢复到原始攻击力
             character.ExATK2 -= 实际攻击力加成;
+        }
+
+        public override void AfterDamageCalculation(Character character, Character enemy, double damage, bool isNormalAttack, bool isMagicDamage, MagicType magicType, DamageResult damageResult)
+        {
+            if (character == Skill.Character && isNormalAttack)
+            {
+                double 生命值减少 = 当前生命值;
+                character.HP -= 生命值减少;
+                WriteLine($"[ {character} ] 由于自身力量过于强大而被反噬，损失了 [ {生命值减少} ] 点生命值！");
+            }
         }
 
         public override void OnSkillCasted(Character caster, List<Character> enemys, List<Character> teammates, Dictionary<string, object> others)

@@ -2,7 +2,7 @@
 using Milimoe.FunGame.Core.Entity;
 using Milimoe.FunGame.Core.Library.Constant;
 
-namespace Oshima.FunGame.OshimaModules.Effects
+namespace Oshima.FunGame.OshimaModules.ItemEffects
 {
     public class 技能硬直时间减少 : Effect
     {

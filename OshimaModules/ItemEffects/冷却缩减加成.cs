@@ -1,7 +1,7 @@
 ﻿using Milimoe.FunGame.Core.Entity;
 using Milimoe.FunGame.Core.Library.Constant;
 
-namespace Oshima.FunGame.OshimaModules.Effects
+namespace Oshima.FunGame.OshimaModules.ItemEffects
 {
     public class 冷却缩减加成 : Effect
     {
