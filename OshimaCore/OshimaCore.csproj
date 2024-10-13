@@ -1,0 +1,33 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<TargetFramework>net8.0</TargetFramework>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<Nullable>enable</Nullable>
+		<RootNamespace>Oshima.Core</RootNamespace>
+		<AssemblyName>OshimaCore</AssemblyName>
+		<BaseOutputPath>..\bin\</BaseOutputPath>
+	</PropertyGroup>
+
+	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+		<NoWarn>1701;1702;IDE0130;CA1822;IDE1006</NoWarn>
+	</PropertyGroup>
+
+	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+		<NoWarn>1701;1702;IDE0130;CA1822;IDE1006</NoWarn>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<FrameworkReference Include="Microsoft.AspNetCore.App" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<ProjectReference Include="..\OshimaModules\OshimaModules.csproj" />
+	</ItemGroup>
+	<ItemGroup>
+		<Reference Include="FunGame.Core">
+			<HintPath>..\..\FunGame.Core\bin\Debug\net8.0\FunGame.Core.dll</HintPath>
+		</Reference>
+	</ItemGroup>
+
+</Project>

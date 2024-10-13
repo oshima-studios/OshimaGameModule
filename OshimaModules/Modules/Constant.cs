@@ -5,6 +5,7 @@ namespace Oshima.FunGame.OshimaModules
     public class OshimaGameModuleConstant
     {
         public const string General = "oshima-studios";
+        public const string WebAPI = "oshima.fungame.webapi";
         public const string FastAuto = "oshima.fungame.fastauto";
         public const string Character = "oshima.fungame.characters";
         public const string Skill = "oshima.fungame.skills";
