@@ -3,6 +3,8 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Milimoe.FunGame.Core.Api.Utility;
 using Milimoe.FunGame.Core.Entity;
+using Oshima.Core.Configs;
+using Oshima.Core.Models;
 using Oshima.Core.Utils;
 
 namespace Oshima.Core.Controllers
@@ -73,6 +75,12 @@ namespace Oshima.Core.Controllers
         public string PostName([FromBody] string name)
         {
             return NetworkUtility.JsonSerialize($"Your Name received successfully: {name}.");
+        }
+
+        [HttpPost("bind")]
+        public string Post([FromBody] BindQQ b)
+        {
+            return NetworkUtility.JsonSerialize("∞Û∂® ß∞‹£¨«Î…‘∫Û‘Ÿ ‘°£");
         }
     }
 }

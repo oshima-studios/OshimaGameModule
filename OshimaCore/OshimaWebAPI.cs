@@ -1,5 +1,4 @@
 ﻿using Milimoe.FunGame.Core.Library.Common.Addon;
-using Milimoe.FunGame.Core.Library.Exception;
 using Oshima.Core.Configs;
 using Oshima.Core.Utils;
 using Oshima.FunGame.OshimaModules;
@@ -22,7 +21,7 @@ namespace Oshima.Core.WebAPI
             if (input.Length >= 4 && input[..4].Equals(".osm", StringComparison.CurrentCultureIgnoreCase))
             {
                 //MasterCommand.Execute(read, GeneralSettings.Master, false, GeneralSettings.Master, false);
-                WriteLine("试图使用 .osm 指令：" + input);
+                Controller.WriteLine("试图使用 .osm 指令：" + input);
             }
         }
 
@@ -59,8 +58,9 @@ namespace Oshima.Core.WebAPI
                             // 清空运势
                             Daily.ClearDaily();
                             Console.ForegroundColor = ConsoleColor.Magenta;
-                            Console.WriteLine("已重置所有人的今日运势。");
+                            Console.WriteLine("\r已重置所有人的今日运势。");
                             Console.ForegroundColor = ConsoleColor.Gray;
+                            Console.Write("\r> ");
                         }
                         if (now.Hour == 0 && now.Minute == 1)
                         {
@@ -71,31 +71,12 @@ namespace Oshima.Core.WebAPI
                     catch (Exception e)
                     {
                         Console.ForegroundColor = ConsoleColor.Red;
-                        Console.WriteLine(e);
+                        Console.WriteLine("\r" + e);
                         Console.ForegroundColor = ConsoleColor.Gray;
+                        Console.Write("\r> ");
                     }
                 }
             });
-
         }
-
-        protected override bool BeforeLoad(params object[] objs)
-        {
-            if (objs.Length > 0 && objs[0] is Dictionary<string, object> delegates)
-            {
-                if (delegates.TryGetValue("WriteLine", out object? value) && value is Action<string> a)
-                {
-                    WriteLine = a;
-                }
-                if (delegates.TryGetValue("Error", out value) && value is Action<Exception> e)
-                {
-                    Error = e;
-                }
-            }
-            return true;
-        }
-
-        public Action<string> WriteLine { get; set; } = new Action<string>(Console.WriteLine);
-        public Action<Exception> Error { get; set; } = new Action<Exception>(e => Console.WriteLine(e.GetErrorInfo()));
     }
 }

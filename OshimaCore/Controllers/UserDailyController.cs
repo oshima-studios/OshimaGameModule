@@ -13,19 +13,19 @@ namespace Oshima.Core.Controllers
     {
         private readonly ILogger<UserDailyController> _logger = logger;
 
-        [HttpGet("{user_id}", Name = "GetUserDaily")]
+        [HttpPost("get/{user_id}", Name = "GetUserDaily")]
         public UserDaily Get(long user_id)
         {
             return UserDailyUtil.GetUserDaily(user_id);
         }
 
-        [HttpGet("v/{user_id}", Name = "ViewUserDaily")]
+        [HttpGet("view/{user_id}", Name = "ViewUserDaily")]
         public UserDaily View(long user_id)
         {
             return UserDailyUtil.ViewUserDaily(user_id);
         }
         
-        [HttpGet("open/{open_id}", Name = "GetOpenUserDaily")]
+        [HttpPost("open/{open_id}", Name = "GetOpenUserDaily")]
         public UserDaily Open(string open_id)
         {
             if (QQOpenID.QQAndOpenID.TryGetValue(open_id, out long qq) && qq != 0)
@@ -35,7 +35,7 @@ namespace Oshima.Core.Controllers
             return new(0, 0, "你似乎没有绑定QQ呢，请先发送【绑定+QQ号】（如：绑定123456789）再使用哦！");
         }
 
-        [HttpGet("r/{user_id}", Name = "RemoveUserDaily")]
+        [HttpPost("remove/{user_id}", Name = "RemoveUserDaily")]
         public string Remove(long user_id)
         {
             return UserDailyUtil.RemoveDaily(user_id);
