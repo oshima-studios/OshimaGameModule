@@ -1,5 +1,6 @@
 ﻿using Milimoe.FunGame.Core.Library.Common.Addon;
 using Oshima.Core.Configs;
+using Oshima.Core.Constant;
 using Oshima.Core.Utils;
 using Oshima.FunGame.OshimaModules;
 
@@ -27,6 +28,7 @@ namespace Oshima.Core.WebAPI
 
         public override void AfterLoad(params object[] objs)
         {
+            Statics.RunningPlugin = this;
             GeneralSettings.LoadSetting();
             GeneralSettings.SaveConfig();
             QQOpenID.LoadConfig();

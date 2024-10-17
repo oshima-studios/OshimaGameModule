@@ -5,6 +5,7 @@ using Milimoe.FunGame.Core.Entity;
 using Milimoe.FunGame.Core.Interface.Base;
 using Milimoe.FunGame.Core.Library.Common.Addon;
 using Milimoe.FunGame.Core.Library.Constant;
+using Milimoe.FunGame.Core.Model;
 using Oshima.FunGame.OshimaModules;
 using Oshima.FunGame.OshimaModules.Items;
 using Oshima.FunGame.OshimaModules.Skills;
