@@ -320,7 +320,7 @@ namespace Oshima.Core.Utils
                             Dictionary<Character, double> 他们的血量百分比 = [];
                             foreach (Character c in characters)
                             {
-                                他们的血量百分比.TryAdd(c, Calculation.Round4Digits(c.HP / c.MaxHP));
+                                他们的血量百分比.TryAdd(c, c.HP / c.MaxHP);
                             }
                             double max = 他们的血量百分比.Values.Max();
                             Character winner = 他们的血量百分比.Keys.Where(c => 他们的血量百分比[c] == max).First();
@@ -378,7 +378,7 @@ namespace Oshima.Core.Utils
                     if (PrintOut)
                     {
                         Console.WriteLine("--- End ---");
-                        Console.WriteLine("总游戏时长：" + Calculation.Round2Digits(totalTime));
+                        Console.WriteLine($"总游戏时长：{totalTime:0.##}");
                         Console.WriteLine("");
                     }
 

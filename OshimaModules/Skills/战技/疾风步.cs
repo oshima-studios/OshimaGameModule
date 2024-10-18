@@ -1,5 +1,4 @@
-﻿using Milimoe.FunGame.Core.Api.Utility;
-using Milimoe.FunGame.Core.Entity;
+﻿using Milimoe.FunGame.Core.Entity;
 using Milimoe.FunGame.Core.Library.Constant;
 
 namespace Oshima.FunGame.OshimaModules.Skills
@@ -23,13 +22,13 @@ namespace Oshima.FunGame.OshimaModules.Skills
     {
         public override long Id => Skill.Id;
         public override string Name => Skill.Name;
-        public override string Description => $"进入不可选中状态，获得 100 行动速度，提高 8% 暴击率，持续 {Duration} 时间。破隐一击：在持续时间内，首次造成伤害会附加 {系数 * 100:0.##}% 敏捷 [ {伤害加成} ] 的强化伤害，并解除不可选中状态。";
+        public override string Description => $"进入不可选中状态，获得 100 行动速度，提高 8% 暴击率，持续 {Duration:0.##} 时间。破隐一击：在持续时间内，首次造成伤害会附加 {系数 * 100:0.##}% 敏捷 [ {伤害加成:0.##} ] 的强化伤害，并解除不可选中状态。";
         public override bool TargetSelf => true;
         public override bool Durative => true;
         public override double Duration => 12 + (1 * (Level - 1));
 
-        private double 系数 => Calculation.Round4Digits(0.5 + 0.5 * (Skill.Level - 1));
-        private double 伤害加成 => Calculation.Round2Digits(系数 * Skill.Character?.AGI ?? 0);
+        private double 系数 => 0.5 + 0.5 * (Skill.Level - 1);
+        private double 伤害加成 => 系数 * Skill.Character?.AGI ?? 0;
         private bool 首次伤害 { get; set; } = true;
         private bool 破隐一击 { get; set; } = false;
 
@@ -64,8 +63,8 @@ namespace Oshima.FunGame.OshimaModules.Skills
                 character.CharacterEffectTypes.Remove(this);
                 character.UpdateCharacterState();
                 double d = 伤害加成;
-                damage = Calculation.Round2Digits(damage + d);
-                WriteLine($"[ {character} ] 触发了疾风步破隐一击，获得了 [ {d} ] 点伤害加成！");
+                damage += d;
+                WriteLine($"[ {character} ] 触发了疾风步破隐一击，获得了 [ {d:0.##} ] 点伤害加成！");
             }
             return false;
         }

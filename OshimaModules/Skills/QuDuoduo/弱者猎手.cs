@@ -1,5 +1,4 @@
-﻿using Milimoe.FunGame.Core.Api.Utility;
-using Milimoe.FunGame.Core.Entity;
+﻿using Milimoe.FunGame.Core.Entity;
 using Milimoe.FunGame.Core.Library.Constant;
 
 namespace Oshima.FunGame.OshimaModules.Skills
@@ -32,14 +31,14 @@ namespace Oshima.FunGame.OshimaModules.Skills
         {
             if (character == Skill.Character && (enemy.HP / enemy.MaxHP) <= (character.HP / character.MaxHP))
             {
-                double 额外伤害 = Calculation.Round2Digits(damage * 0.5);
-                damage = Calculation.Round2Digits(damage + 额外伤害);
+                double 额外伤害 = damage * 0.5;
+                damage += 额外伤害;
             }
         }
 
         public override bool AlterEnemyListBeforeAction(Character character, List<Character> enemys, List<Character> teammates, List<Skill> skills, Dictionary<Character, int> continuousKilling, Dictionary<Character, int> earnedMoney)
         {
-            IEnumerable<Character> list = [.. enemys.OrderBy(e => Calculation.Round4Digits(e.HP / e.MaxHP))];
+            IEnumerable<Character> list = [.. enemys.OrderBy(e => e.HP / e.MaxHP)];
             if (list.Any())
             {
                 enemys.Clear();

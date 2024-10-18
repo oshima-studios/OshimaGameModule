@@ -1,5 +1,4 @@
-﻿using Milimoe.FunGame.Core.Api.Utility;
-using Milimoe.FunGame.Core.Entity;
+﻿using Milimoe.FunGame.Core.Entity;
 using Milimoe.FunGame.Core.Library.Constant;
 
 namespace Oshima.FunGame.OshimaModules.Skills
@@ -23,12 +22,12 @@ namespace Oshima.FunGame.OshimaModules.Skills
     {
         public override long Id => Skill.Id;
         public override string Name => "魔法涌流";
-        public override string Description => $"{Duration} 时间内，增加所有伤害的 {减伤比例 * 100:0.##}% 伤害减免，并将普通攻击转为魔法伤害，可叠加魔法震荡的效果。";
+        public override string Description => $"{Duration:0.##} 时间内，增加所有伤害的 {减伤比例 * 100:0.##}% 伤害减免，并将普通攻击转为魔法伤害，可叠加魔法震荡的效果。";
         public override bool TargetSelf => true;
         public override bool Durative => true;
         public override double Duration => 25;
 
-        private double 减伤比例 => Calculation.Round2Digits(0.1 + 0.02 * (Level - 1));
+        private double 减伤比例 => 0.1 + 0.02 * (Level - 1);
         private double 实际比例 = 0;
 
         public override void OnEffectGained(Character character)
@@ -46,7 +45,7 @@ namespace Oshima.FunGame.OshimaModules.Skills
         {
             if (enemy == Skill.Character)
             {
-                damage = Calculation.Round2Digits(damage * (1 - 实际比例));
+                damage *= 1 - 实际比例;
             }
             return false;
         }

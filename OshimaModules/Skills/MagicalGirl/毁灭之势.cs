@@ -1,5 +1,4 @@
-﻿using Milimoe.FunGame.Core.Api.Utility;
-using Milimoe.FunGame.Core.Entity;
+﻿using Milimoe.FunGame.Core.Entity;
 using Milimoe.FunGame.Core.Library.Constant;
 
 namespace Oshima.FunGame.OshimaModules.Skills
@@ -42,9 +41,9 @@ namespace Oshima.FunGame.OshimaModules.Skills
 
                 if (character == Skill.Character)
                 {
-                    double 实际伤害提升 = Calculation.Round2Digits(damage * 累计伤害);
-                    damage = Calculation.Round2Digits(damage + 实际伤害提升);
-                    if (实际伤害提升 > 0) WriteLine($"[ {character} ] 的伤害提升了 {实际伤害提升} 点！");
+                    double 实际伤害提升 = damage * 累计伤害;
+                    damage += 实际伤害提升;
+                    if (实际伤害提升 > 0) WriteLine($"[ {character} ] 的伤害提升了 {实际伤害提升:0.##} 点！");
                 }
             }
             return false;
@@ -52,7 +51,7 @@ namespace Oshima.FunGame.OshimaModules.Skills
 
         public override void OnTimeElapsed(Character character, double eapsed)
         {
-            累计伤害 = Calculation.Round4Digits(累计伤害 + 伤害提升 * eapsed);
+            累计伤害 += 伤害提升 * eapsed;
             WriteLine($"[ {character} ] 的 [ {Name} ] 效果增加了，当前总提升：{累计伤害 * 100:0.##}%。");
         }
     }

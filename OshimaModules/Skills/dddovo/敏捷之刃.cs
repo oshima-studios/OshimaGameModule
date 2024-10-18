@@ -1,5 +1,4 @@
-﻿using Milimoe.FunGame.Core.Api.Utility;
-using Milimoe.FunGame.Core.Entity;
+﻿using Milimoe.FunGame.Core.Entity;
 using Milimoe.FunGame.Core.Library.Constant;
 
 namespace Oshima.FunGame.OshimaModules.Skills
@@ -28,7 +27,7 @@ namespace Oshima.FunGame.OshimaModules.Skills
         public override string Description => $"每次普通攻击都将附带基于 {敏捷系数 * 100:0.##}% 敏捷 [ {敏捷伤害} ] 的魔法伤害。";
         public override bool TargetSelf => true;
 
-        private double 敏捷伤害 => Calculation.Round2Digits(敏捷系数 * Skill.Character?.AGI ?? 0);
+        private double 敏捷伤害 => 敏捷系数 * Skill.Character?.AGI ?? 0;
         private readonly double 敏捷系数 = 2.5;
         private bool 是否是嵌套伤害 = false;
 

@@ -1,5 +1,4 @@
-﻿using Milimoe.FunGame.Core.Api.Utility;
-using Milimoe.FunGame.Core.Entity;
+﻿using Milimoe.FunGame.Core.Entity;
 using Milimoe.FunGame.Core.Library.Constant;
 
 namespace Oshima.FunGame.OshimaModules.Skills
@@ -23,15 +22,15 @@ namespace Oshima.FunGame.OshimaModules.Skills
     {
         public override long Id => Skill.Id;
         public override string Name => Skill.Name;
-        public override string Description => $"{Duration} 时间内，增加 40% 攻击力 [ {攻击力提升} ]、30% 物理穿透和 25% 闪避率（不可叠加），普通攻击硬直时间额外减少 20%，基于 {系数 * 100:0.##}% 敏捷 [ {伤害加成} ] 强化普通攻击的伤害。在持续时间内，【心灵之火】的冷却时间降低至 3 时间。";
+        public override string Description => $"{Duration:0.##} 时间内，增加 40% 攻击力 [ {攻击力提升:0.##} ]、30% 物理穿透和 25% 闪避率（不可叠加），普通攻击硬直时间额外减少 20%，基于 {系数 * 100:0.##}% 敏捷 [ {伤害加成:0.##} ] 强化普通攻击的伤害。在持续时间内，【心灵之火】的冷却时间降低至 3 时间。";
         public override bool TargetSelf => false;
         public override int TargetCount => 1;
         public override bool Durative => true;
         public override double Duration => 40;
 
-        private double 系数 => Calculation.Round4Digits(1.2 * (1 + 0.6 * (Skill.Level - 1)));
-        private double 伤害加成 => Calculation.Round2Digits(系数 * Skill.Character?.AGI ?? 0);
-        private double 攻击力提升 => Calculation.Round2Digits(0.4 * Skill.Character?.BaseATK ?? 0);
+        private double 系数 => 1.2 * (1 + 0.6 * (Skill.Level - 1));
+        private double 伤害加成 => 系数 * Skill.Character?.AGI ?? 0;
+        private double 攻击力提升 => 0.4 * Skill.Character?.BaseATK ?? 0;
         private double 实际的攻击力提升 = 0;
 
         public override void OnEffectGained(Character character)
@@ -68,13 +67,13 @@ namespace Oshima.FunGame.OshimaModules.Skills
         {
             if (character == Skill.Character && isNormalAttack)
             {
-                damage = Calculation.Round2Digits(damage + 伤害加成);
+                damage += 伤害加成;
             }
         }
 
         public override void AlterHardnessTimeAfterNormalAttack(Character character, ref double baseHardnessTime, ref bool isCheckProtected)
         {
-            baseHardnessTime = Calculation.Round2Digits(baseHardnessTime * 0.8);
+            baseHardnessTime *= 0.8;
         }
 
         public override void OnSkillCasted(Character caster, List<Character> enemys, List<Character> teammates, Dictionary<string, object> others)

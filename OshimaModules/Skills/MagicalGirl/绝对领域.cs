@@ -1,5 +1,4 @@
-﻿using Milimoe.FunGame.Core.Api.Utility;
-using Milimoe.FunGame.Core.Entity;
+﻿using Milimoe.FunGame.Core.Entity;
 using Milimoe.FunGame.Core.Library.Constant;
 
 namespace Oshima.FunGame.OshimaModules.Skills
@@ -23,13 +22,13 @@ namespace Oshima.FunGame.OshimaModules.Skills
     {
         public override long Id => Skill.Id;
         public override string Name => Skill.Name;
-        public override string Description => $"{Duration} 时间内无法受到任何伤害，且敏捷提升 {系数 * 100:0.##}% [ {敏捷提升} ]。此技能会消耗至少 100 点能量。";
+        public override string Description => $"{Duration:0.##} 时间内无法受到任何伤害，且敏捷提升 {系数 * 100:0.##}% [ {敏捷提升:0.##} ]。此技能会消耗至少 100 点能量。";
         public override bool TargetSelf => true;
         public override bool Durative => true;
-        public override double Duration => Calculation.Round2Digits(16 + 释放时的能量值 * 0.03);
+        public override double Duration => 16 + 释放时的能量值 * 0.03;
 
-        private double 系数 => Calculation.Round4Digits(0.3 + 0.03 * (Level - 1));
-        private double 敏捷提升 => Calculation.Round2Digits(系数 * Skill.Character?.BaseAGI ?? 0);
+        private double 系数 => 0.3 + 0.03 * (Level - 1);
+        private double 敏捷提升 => 系数 * Skill.Character?.BaseAGI ?? 0;
         private double 实际敏捷提升 = 0;
         private double 释放时的能量值 = 0;
 
@@ -37,7 +36,7 @@ namespace Oshima.FunGame.OshimaModules.Skills
         {
             实际敏捷提升 = 敏捷提升;
             character.ExAGI += 实际敏捷提升;
-            WriteLine($"[ {character} ] 的敏捷提升了 {系数 * 100:0.##}% [ {实际敏捷提升} ] ！");
+            WriteLine($"[ {character} ] 的敏捷提升了 {系数 * 100:0.##}% [ {实际敏捷提升:0.##} ] ！");
         }
 
         public override void OnEffectLost(Character character)

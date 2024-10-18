@@ -1,5 +1,4 @@
-﻿using Milimoe.FunGame.Core.Api.Utility;
-using Milimoe.FunGame.Core.Entity;
+﻿using Milimoe.FunGame.Core.Entity;
 using Milimoe.FunGame.Core.Library.Constant;
 
 namespace Oshima.FunGame.OshimaModules.Skills
@@ -23,20 +22,20 @@ namespace Oshima.FunGame.OshimaModules.Skills
     {
         public override long Id => Skill.Id;
         public override string Name => "力量爆发";
-        public override string Description => $"获得 150% 力量 [ {攻击力加成} ] 的攻击力加成，但每次攻击都会损失 9% 当前生命值 [ {当前生命值} ]，持续 {Duration} 时间。";
+        public override string Description => $"获得 150% 力量 [ {攻击力加成:0.##} ] 的攻击力加成，但每次攻击都会损失 9% 当前生命值 [ {当前生命值:0.##} ]，持续 {Duration:0.##} 时间。";
         public override bool TargetSelf => true;
         public override bool Durative => true;
         public override double Duration => 10 + 1 * (Level - 1);
 
-        private double 攻击力加成 => Calculation.Round2Digits(Skill.Character?.STR * 1.5 ?? 0);
-        private double 当前生命值 => Calculation.Round2Digits(Skill.Character?.HP * 0.09 ?? 0);
+        private double 攻击力加成 => Skill.Character?.STR * 1.5 ?? 0;
+        private double 当前生命值 => Skill.Character?.HP * 0.09 ?? 0;
         private double 实际攻击力加成 = 0;
 
         public override void OnEffectGained(Character character)
         {
             实际攻击力加成 = 攻击力加成;
             character.ExATK2 += 实际攻击力加成;
-            WriteLine($"[ {character} ] 的攻击力增加了 [ {实际攻击力加成} ] ！");
+            WriteLine($"[ {character} ] 的攻击力增加了 [ {实际攻击力加成:0.##} ] ！");
         }
 
         public override void OnEffectLost(Character character)
@@ -51,7 +50,7 @@ namespace Oshima.FunGame.OshimaModules.Skills
             {
                 double 生命值减少 = 当前生命值;
                 character.HP -= 生命值减少;
-                WriteLine($"[ {character} ] 由于自身力量过于强大而被反噬，损失了 [ {生命值减少} ] 点生命值！");
+                WriteLine($"[ {character} ] 由于自身力量过于强大而被反噬，损失了 [ {生命值减少:0.##} ] 点生命值！");
             }
         }
 

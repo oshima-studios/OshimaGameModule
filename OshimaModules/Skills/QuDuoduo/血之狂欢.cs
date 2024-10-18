@@ -1,5 +1,4 @@
-﻿using Milimoe.FunGame.Core.Api.Utility;
-using Milimoe.FunGame.Core.Entity;
+﻿using Milimoe.FunGame.Core.Entity;
 using Milimoe.FunGame.Core.Library.Constant;
 
 namespace Oshima.FunGame.OshimaModules.Skills
@@ -23,7 +22,7 @@ namespace Oshima.FunGame.OshimaModules.Skills
     {
         public override long Id => Skill.Id;
         public override string Name => Skill.Name;
-        public override string Description => $"获得 40% 吸血，持续 {Duration} 时间。";
+        public override string Description => $"获得 40% 吸血，持续 {Duration:0.##} 时间。";
         public override bool TargetSelf => true;
         public override bool Durative => true;
         public override double Duration => 30;
@@ -32,9 +31,9 @@ namespace Oshima.FunGame.OshimaModules.Skills
         {
             if (character == Skill.Character && damageResult != DamageResult.Evaded && character.HP < character.MaxHP)
             {
-                double 实际吸血 = Calculation.Round2Digits(0.4 * damage);
+                double 实际吸血 = 0.4 * damage;
                 character.HP += 实际吸血;
-                WriteLine($"[ {character} ] 回复了 {实际吸血} 点生命值！");
+                WriteLine($"[ {character} ] 回复了 {实际吸血:0.##} 点生命值！");
             }
         }
 

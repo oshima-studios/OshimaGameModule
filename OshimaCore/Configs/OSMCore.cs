@@ -6,7 +6,7 @@ namespace Oshima.Core.Configs
     public class OSMCore
     {
         public const string version = "v1.0";
-        public const string version2 = "Beta4";
+        public const string version2 = "Beta5";
 
         public static string Info => $"OSM Core {version} {version2}\r\nAuthor: Milimoe\r\nBuilt on {GetBuiltTime(Assembly.GetExecutingAssembly().Location)}\r\nSee: https://github.com/milimoe";
 

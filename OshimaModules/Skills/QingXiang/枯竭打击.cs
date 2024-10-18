@@ -1,5 +1,4 @@
-﻿using Milimoe.FunGame.Core.Api.Utility;
-using Milimoe.FunGame.Core.Entity;
+﻿using Milimoe.FunGame.Core.Entity;
 using Milimoe.FunGame.Core.Library.Constant;
 
 namespace Oshima.FunGame.OshimaModules.Skills
@@ -35,13 +34,13 @@ namespace Oshima.FunGame.OshimaModules.Skills
             if (character == Skill.Character && damageResult != DamageResult.Evaded && !是否是嵌套伤害)
             {
                 // 减少能量
-                double EP = new Random().Next(10, 25);
+                double EP = Random.Shared.Next(10, 25);
                 enemy.EP -= EP;
-                WriteLine($"[ {character} ] 发动了枯竭打击！[ {enemy} ] 的能量值被减少了 {EP} 点！现有能量：{enemy.EP}。");
+                WriteLine($"[ {character} ] 发动了枯竭打击！[ {enemy} ] 的能量值被减少了 {EP:0.##} 点！现有能量：{enemy.EP:0.##}。");
                 // 额外伤害
                 if (enemy.EP >= 0 && enemy.EP < 50 || enemy.EP >= 100 && enemy.EP < 150)
                 {
-                    double 额外伤害 = Calculation.Round2Digits(damage * 0.3);
+                    double 额外伤害 = damage * 0.3;
                     WriteLine($"[ {character} ] 发动了枯竭打击！将造成额外伤害！");
                     是否是嵌套伤害 = true;
                     DamageToEnemy(character, enemy, isMagicDamage, magicType, 额外伤害);

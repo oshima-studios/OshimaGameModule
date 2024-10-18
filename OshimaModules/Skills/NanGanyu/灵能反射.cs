@@ -1,5 +1,4 @@
-﻿using Milimoe.FunGame.Core.Api.Utility;
-using Milimoe.FunGame.Core.Entity;
+﻿using Milimoe.FunGame.Core.Entity;
 using Milimoe.FunGame.Core.Library.Constant;
 
 namespace Oshima.FunGame.OshimaModules.Skills
@@ -25,19 +24,13 @@ namespace Oshima.FunGame.OshimaModules.Skills
     {
         public override long Id => Skill.Id;
         public override string Name => Skill.Name;
-        public override string Description => $"每释放 {触发硬直次数} 次魔法才会触发硬直时间，且魔法命中时基于 25% 智力 [ {获得额外能量值} ] 获得额外能量值。";
+        public override string Description => $"每释放 {触发硬直次数:0.##} 次魔法才会触发硬直时间，且魔法命中时基于 25% 智力 [ {获得额外能量值:0.##} ] 获得额外能量值。";
         public override bool TargetSelf => true;
 
         public bool 是否支持普攻 { get; set; } = false;
         public int 触发硬直次数 { get; set; } = 2;
         public int 释放次数 { get; set; } = 0;
-        public double 获得额外能量值
-        {
-            get
-            {
-                return Calculation.Round2Digits(0.25 * Skill.Character?.INT ?? 0);
-            }
-        }
+        public double 获得额外能量值 => 0.25 * Skill.Character?.INT ?? 0;
 
         public override void AfterDamageCalculation(Character character, Character enemy, double damage, bool isNormalAttack, bool isMagicDamage, MagicType magicType, DamageResult damageResult)
         {
@@ -45,13 +38,13 @@ namespace Oshima.FunGame.OshimaModules.Skills
             {
                 double 实际获得能量值 = 获得额外能量值;
                 character.EP += 实际获得能量值;
-                WriteLine("[ " + character + " ] 发动了灵能反射！额外获得了 " + 实际获得能量值 + " 能量！");
+                WriteLine($"[ {character} ] 发动了灵能反射！额外获得了 {实际获得能量值:0.##} 能量！");
                 IEnumerable<Effect> effects = character.Effects.Where(e => e is 三重叠加特效);
                 if (effects.Any() && effects.First() is 三重叠加特效 e)
                 {
-                    double 获得的魔法值 = Calculation.Round2Digits(实际获得能量值 * 10);
+                    double 获得的魔法值 = 实际获得能量值 * 10;
                     character.MP += 获得的魔法值;
-                    WriteLine("[ " + character + " ] 发动了三重叠加！回复了 " + 获得的魔法值 + " 魔法值！");
+                    WriteLine($"[ {character} ] 发动了三重叠加！回复了 {获得的魔法值:0.##} 魔法值！");
                 }
             }
         }

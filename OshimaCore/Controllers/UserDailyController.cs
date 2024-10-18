@@ -24,7 +24,7 @@ namespace Oshima.Core.Controllers
         {
             return UserDailyUtil.ViewUserDaily(user_id);
         }
-        
+
         [HttpPost("open/{open_id}", Name = "GetOpenUserDaily")]
         public UserDaily Open(string open_id)
         {

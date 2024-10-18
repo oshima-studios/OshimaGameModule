@@ -1,5 +1,4 @@
-﻿using Milimoe.FunGame.Core.Api.Utility;
-using Milimoe.FunGame.Core.Entity;
+﻿using Milimoe.FunGame.Core.Entity;
 using Milimoe.FunGame.Core.Library.Constant;
 
 namespace Oshima.FunGame.OshimaModules.Skills
@@ -28,8 +27,8 @@ namespace Oshima.FunGame.OshimaModules.Skills
         public override bool Durative => true;
         public override double Duration => 30;
 
-        private double 暴击率提升 => Calculation.Round4Digits(0.2 + 0.03 * (Level - 1));
-        private double 暴击伤害提升 => Calculation.Round4Digits(0.8 + 0.04 * (Level - 1));
+        private double 暴击率提升 => 0.2 + 0.03 * (Level - 1);
+        private double 暴击伤害提升 => 0.8 + 0.04 * (Level - 1);
         private double 实际暴击率提升 = 0;
         private double 实际暴击伤害提升 = 0;
 

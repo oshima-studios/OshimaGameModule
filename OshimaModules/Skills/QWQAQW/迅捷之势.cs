@@ -1,5 +1,4 @@
-﻿using Milimoe.FunGame.Core.Api.Utility;
-using Milimoe.FunGame.Core.Entity;
+﻿using Milimoe.FunGame.Core.Entity;
 using Milimoe.FunGame.Core.Library.Constant;
 
 namespace Oshima.FunGame.OshimaModules.Skills
@@ -23,13 +22,13 @@ namespace Oshima.FunGame.OshimaModules.Skills
     {
         public override long Id => Skill.Id;
         public override string Name => Skill.Name;
-        public override string Description => $"{Duration} 时间内，普通攻击转为魔法伤害，且硬直时间减少50%，并基于 {智力系数 * 100:0.##}% 智力 [{智力加成}] 强化普通攻击伤害。";
+        public override string Description => $"{Duration:0.##} 时间内，普通攻击转为魔法伤害，且硬直时间减少50%，并基于 {智力系数 * 100:0.##}% 智力 [ {智力加成:0.##} ] 强化普通攻击伤害。";
         public override bool TargetSelf => true;
         public override bool Durative => true;
         public override double Duration => 40;
 
-        private double 智力系数 => Calculation.Round4Digits(1.4 + 0.4 * (Level - 1));
-        private double 智力加成 => Calculation.Round2Digits(智力系数 * Skill.Character?.INT ?? 0);
+        private double 智力系数 => 1.4 + 0.4 * (Level - 1);
+        private double 智力加成 => 智力系数 * Skill.Character?.INT ?? 0;
 
         public override void OnEffectGained(Character character)
         {
@@ -45,13 +44,13 @@ namespace Oshima.FunGame.OshimaModules.Skills
         {
             if (character == Skill.Character && isNormalAttack)
             {
-                damage = Calculation.Round2Digits(damage + 智力加成);
+                damage += 智力加成;
             }
         }
 
         public override void AlterHardnessTimeAfterNormalAttack(Character character, ref double baseHardnessTime, ref bool isCheckProtected)
         {
-            baseHardnessTime = Calculation.Round2Digits(baseHardnessTime * 0.5);
+            baseHardnessTime *= 0.5;
         }
 
         public override void OnSkillCasted(Character caster, List<Character> enemys, List<Character> teammates, Dictionary<string, object> others)

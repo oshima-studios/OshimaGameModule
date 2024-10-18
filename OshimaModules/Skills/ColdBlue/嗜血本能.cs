@@ -1,5 +1,4 @@
-﻿using Milimoe.FunGame.Core.Api.Utility;
-using Milimoe.FunGame.Core.Entity;
+﻿using Milimoe.FunGame.Core.Entity;
 using Milimoe.FunGame.Core.Library.Constant;
 using Oshima.FunGame.OshimaModules.Effects;
 
@@ -30,7 +29,7 @@ namespace Oshima.FunGame.OshimaModules.Skills
         public override double Duration => 30;
 
         public HashSet<Character> 角色有第四层 { get; } = [];
-        private double 吸血 => Calculation.Round4Digits(0.03 * Level);
+        private double 吸血 => 0.03 * Level;
 
         public override void AfterDamageCalculation(Character character, Character enemy, double damage, bool isNormalAttack, bool isMagicDamage, MagicType magicType, DamageResult damageResult)
         {
@@ -45,9 +44,9 @@ namespace Oshima.FunGame.OshimaModules.Skills
                 {
                     层数 = 4;
                 }
-                double 实际吸血 = Calculation.Round2Digits(吸血 * 层数 * damage);
+                double 实际吸血 = 吸血 * 层数 * damage;
                 character.HP += 实际吸血;
-                WriteLine($"[ {character} ] 回复了 {实际吸血} 点生命值！");
+                WriteLine($"[ {character} ] 回复了 {实际吸血:0.##} 点生命值！");
             }
         }
 

@@ -1,5 +1,4 @@
-﻿using Milimoe.FunGame.Core.Api.Utility;
-using Milimoe.FunGame.Core.Entity;
+﻿using Milimoe.FunGame.Core.Entity;
 using Milimoe.FunGame.Core.Library.Constant;
 
 namespace Oshima.FunGame.OshimaModules.Skills
@@ -24,13 +23,13 @@ namespace Oshima.FunGame.OshimaModules.Skills
         public override long Id => Skill.Id;
         public override string Name => Skill.Name;
         public override string Description => $"对所有角色造成 " +
-            $"{能量系数 * 100:0.##}% 其现有能量值 + {智力系数 * 100:0.##}% 智力 [ {智力伤害} ] 的魔法伤害。";
+            $"{能量系数 * 100:0.##}% 其现有能量值 + {智力系数 * 100:0.##}% 智力 [ {智力伤害:0.##} ] 的魔法伤害。";
         public override bool TargetSelf => false;
         public override double TargetRange => 999;
 
-        private double 智力系数 => Calculation.Round4Digits(0.55 * Level);
-        private double 智力伤害 => Calculation.Round2Digits(智力系数 * Skill.Character?.INT ?? 0);
-        private double 能量系数 => Calculation.Round4Digits(0.75 * Level);
+        private double 智力系数 => 0.55 * Level;
+        private double 智力伤害 => 智力系数 * Skill.Character?.INT ?? 0;
+        private double 能量系数 => 0.75 * Level;
 
         public override void OnSkillCasted(Character caster, List<Character> enemys, List<Character> teammates, Dictionary<string, object> others)
         {
@@ -38,7 +37,7 @@ namespace Oshima.FunGame.OshimaModules.Skills
             {
                 WriteLine($"[ {caster} ] 正在毁灭 [ {c} ] 的能量！！");
                 double ep = c.EP;
-                DamageToEnemy(caster, c, true, MagicType, Calculation.Round2Digits(ep * 能量系数 + 智力伤害));
+                DamageToEnemy(caster, c, true, MagicType, ep * 能量系数 + 智力伤害);
             }
         }
     }

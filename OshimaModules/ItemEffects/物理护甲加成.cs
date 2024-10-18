@@ -7,7 +7,7 @@ namespace Oshima.FunGame.OshimaModules.ItemEffects
     {
         public override long Id => Skill.Id;
         public override string Name => Skill.Name;
-        public override string Description => $"增加角色 {实际物理护甲加成} 点物理护甲。" + (!TargetSelf ? $"来自：[ {Source} ]" + (Item != null ? $" 的 [ {Item.Name} ]" : "") : "");
+        public override string Description => $"增加角色 {实际物理护甲加成:0.##} 点物理护甲。" + (!TargetSelf ? $"来自：[ {Source} ]" + (Item != null ? $" 的 [ {Item.Name} ]" : "") : "");
         public override EffectType EffectType => EffectType.Item;
         public override bool TargetSelf => true;
 

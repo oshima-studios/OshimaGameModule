@@ -1,5 +1,4 @@
-﻿using Milimoe.FunGame.Core.Api.Utility;
-using Milimoe.FunGame.Core.Entity;
+﻿using Milimoe.FunGame.Core.Entity;
 using Milimoe.FunGame.Core.Library.Constant;
 using Oshima.FunGame.OshimaModules.Effects;
 
@@ -57,7 +56,7 @@ namespace Oshima.FunGame.OshimaModules.Skills
                     {
                         // 移除标记
                         enemy.Effects.Remove(e);
-                        double 额外伤害 = Calculation.Round2Digits(enemy.MaxHP * 系数);
+                        double 额外伤害 = enemy.MaxHP * 系数;
                         WriteLine($"[ {character} ] 发动了累积之压！将对 [ {enemy} ] 造成眩晕和额外伤害！");
                         // 眩晕
                         IEnumerable<Effect> effects3 = enemy.Effects.Where(e => e is 眩晕 && e.Skill == Skill);

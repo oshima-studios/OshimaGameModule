@@ -1,5 +1,4 @@
-﻿using Milimoe.FunGame.Core.Api.Utility;
-using Milimoe.FunGame.Core.Entity;
+﻿using Milimoe.FunGame.Core.Entity;
 using Milimoe.FunGame.Core.Library.Constant;
 
 namespace Oshima.FunGame.OshimaModules.ItemEffects
@@ -8,7 +7,7 @@ namespace Oshima.FunGame.OshimaModules.ItemEffects
     {
         public override long Id => Skill.Id;
         public override string Name => Skill.Name;
-        public override string Description => $"减少角色的所有主动技能 {实际硬直时间减少} 硬直时间。" + (!TargetSelf ? $"来自：[ {Source} ]" + (Item != null ? $" 的 [ {Item.Name} ]" : "") : "");
+        public override string Description => $"减少角色的所有主动技能 {实际硬直时间减少:0.##} 硬直时间。" + (!TargetSelf ? $"来自：[ {Source} ]" + (Item != null ? $" 的 [ {Item.Name} ]" : "") : "");
         public override EffectType EffectType => EffectType.Item;
         public override bool TargetSelf => true;
 
@@ -19,12 +18,12 @@ namespace Oshima.FunGame.OshimaModules.ItemEffects
         {
             foreach (Skill s in character.Skills)
             {
-                s.HardnessTime = Calculation.Round2Digits(s.HardnessTime - 实际硬直时间减少);
+                s.HardnessTime -= 实际硬直时间减少;
             }
             foreach (Skill? s in character.Items.Select(i => i.Skills.Active))
             {
                 if (s != null)
-                    s.HardnessTime = Calculation.Round2Digits(s.HardnessTime - 实际硬直时间减少);
+                    s.HardnessTime -= 实际硬直时间减少;
             }
         }
 
@@ -32,12 +31,12 @@ namespace Oshima.FunGame.OshimaModules.ItemEffects
         {
             foreach (Skill s in character.Skills)
             {
-                s.HardnessTime = Calculation.Round2Digits(s.HardnessTime + 实际硬直时间减少);
+                s.HardnessTime += 实际硬直时间减少;
             }
             foreach (Skill? s in character.Items.Select(i => i.Skills.Active))
             {
                 if (s != null)
-                    s.HardnessTime = Calculation.Round2Digits(s.HardnessTime + 实际硬直时间减少);
+                    s.HardnessTime += 实际硬直时间减少;
             }
         }
 

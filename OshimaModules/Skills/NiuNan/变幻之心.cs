@@ -1,5 +1,4 @@
-﻿using Milimoe.FunGame.Core.Api.Utility;
-using Milimoe.FunGame.Core.Entity;
+﻿using Milimoe.FunGame.Core.Entity;
 using Milimoe.FunGame.Core.Library.Constant;
 
 namespace Oshima.FunGame.OshimaModules.Skills
@@ -26,8 +25,8 @@ namespace Oshima.FunGame.OshimaModules.Skills
         public override string Description => $"检查 [ 智慧与力量 ] 的模式。在力量模式下，立即回复 {生命值回复 * 100:0.##}% 生命值；智力模式下，下一次魔法伤害提升 {伤害提升 * 100:0.##}%。";
         public override bool TargetSelf => true;
 
-        private double 生命值回复 => Calculation.Round4Digits(0.25 + 0.03 * (Level - 1));
-        private double 伤害提升 => Calculation.Round4Digits(0.55 + 0.25 * (Level - 1));
+        private double 生命值回复 => 0.25 + 0.03 * (Level - 1);
+        private double 伤害提升 => 0.55 + 0.25 * (Level - 1);
 
         public override void OnEffectGained(Character character)
         {
@@ -44,9 +43,9 @@ namespace Oshima.FunGame.OshimaModules.Skills
             if (character == Skill.Character && isMagicDamage)
             {
                 double 实际伤害提升百分比 = 伤害提升;
-                double 实际伤害提升 = Calculation.Round2Digits(damage * 实际伤害提升百分比);
-                damage = Calculation.Round2Digits(damage + 实际伤害提升);
-                WriteLine("[ " + character + " ] 发动了变幻之心！伤害提升了 " + 实际伤害提升 + " 点！");
+                double 实际伤害提升 = damage * 实际伤害提升百分比;
+                damage += 实际伤害提升;
+                WriteLine($"[ {character} ] 发动了变幻之心！伤害提升了 {实际伤害提升:0.##} 点！");
                 character.Effects.Remove(this);
                 OnEffectLost(character);
             }
@@ -59,9 +58,9 @@ namespace Oshima.FunGame.OshimaModules.Skills
             {
                 if (caster.PrimaryAttribute == PrimaryAttribute.STR)
                 {
-                    double 回复的生命 = Calculation.Round2Digits(生命值回复 * caster.MaxHP);
+                    double 回复的生命 = 生命值回复 * caster.MaxHP;
                     caster.HP += 回复的生命;
-                    WriteLine("[ " + caster + " ] 回复了 " + 回复的生命 + " 点生命值！");
+                    WriteLine($"[ {caster} ] 回复了 {回复的生命:0.##} 点生命值！");
                 }
                 else if (caster.PrimaryAttribute == PrimaryAttribute.INT)
                 {
