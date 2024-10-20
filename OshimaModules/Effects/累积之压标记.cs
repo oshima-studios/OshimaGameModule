@@ -17,7 +17,7 @@ namespace Oshima.FunGame.OshimaModules.Effects
 
         public 累积之压标记(Skill skill, Character sourceCharacter) : base(skill)
         {
-            ActionQueue = skill.ActionQueue;
+            GamingQueue = skill.GamingQueue;
             _sourceCharacter = sourceCharacter;
         }
     }

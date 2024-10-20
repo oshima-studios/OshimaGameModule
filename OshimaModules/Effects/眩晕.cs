@@ -22,7 +22,7 @@ namespace Oshima.FunGame.OshimaModules.Effects
 
         public 眩晕(Skill skill, Character sourceCharacter, bool durative = false, double duration = 0, int durationTurn = 1) : base(skill)
         {
-            ActionQueue = skill.ActionQueue;
+            GamingQueue = skill.GamingQueue;
             _sourceCharacter = sourceCharacter;
             _durative = durative;
             _duration = duration;

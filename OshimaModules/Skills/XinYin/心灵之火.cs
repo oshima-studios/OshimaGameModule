@@ -34,12 +34,12 @@ namespace Oshima.FunGame.OshimaModules.Skills
 
         public override void AfterDamageCalculation(Character character, Character enemy, double damage, bool isNormalAttack, bool isMagicDamage, MagicType magicType, DamageResult damageResult)
         {
-            if (character == Skill.Character && isNormalAttack && 冷却时间 == 0 && !是否是嵌套普通攻击 && ActionQueue != null)
+            if (character == Skill.Character && isNormalAttack && 冷却时间 == 0 && !是否是嵌套普通攻击 && GamingQueue != null)
             {
                 WriteLine($"[ {character} ] 发动了心灵之火！额外进行一次普通攻击！");
                 冷却时间 = 基础冷却时间;
                 是否是嵌套普通攻击 = true;
-                character.NormalAttack.Attack(ActionQueue, character, enemy);
+                character.NormalAttack.Attack(GamingQueue, character, enemy);
             }
 
             if (character == Skill.Character && 是否是嵌套普通攻击)

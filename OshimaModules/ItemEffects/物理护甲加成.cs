@@ -26,7 +26,7 @@ namespace Oshima.FunGame.OshimaModules.ItemEffects
 
         public 物理护甲加成(Skill skill, Character? source, Item? item, double exDef) : base(skill)
         {
-            ActionQueue = skill.ActionQueue;
+            GamingQueue = skill.GamingQueue;
             Source = source;
             Item = item;
             实际物理护甲加成 = exDef;

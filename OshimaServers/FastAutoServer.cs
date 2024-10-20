@@ -80,6 +80,7 @@ namespace Oshima.FunGame.OshimaServers
                     break;
                 case GamingType.None:
                 default:
+                    await Task.Delay(1);
                     break;
             }
 

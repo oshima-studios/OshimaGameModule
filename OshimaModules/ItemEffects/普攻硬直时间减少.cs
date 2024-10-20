@@ -26,7 +26,7 @@ namespace Oshima.FunGame.OshimaModules.ItemEffects
 
         public 普攻硬直时间减少(Skill skill, Character? source, Item? item, double reduce) : base(skill)
         {
-            ActionQueue = skill.ActionQueue;
+            GamingQueue = skill.GamingQueue;
             Source = source;
             Item = item;
             实际硬直时间减少 = reduce;
