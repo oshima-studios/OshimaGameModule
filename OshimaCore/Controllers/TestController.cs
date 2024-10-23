@@ -4,6 +4,7 @@ using Microsoft.Extensions.Logging;
 using Milimoe.FunGame.Core.Api.Transmittal;
 using Milimoe.FunGame.Core.Api.Utility;
 using Milimoe.FunGame.Core.Library.Exception;
+using Milimoe.FunGame.Core.Library.SQLScript.Common;
 using Oshima.Core.Constant;
 
 namespace Oshima.Core.Controllers
@@ -30,7 +31,7 @@ namespace Oshima.Core.Controllers
                     SQLHelper? sql = Statics.RunningPlugin.SQLHelper;
                     if (sql != null)
                     {
-                        sql.ExecuteDataSet("Select Max(LoginTime) LastTime From ServerLoginLogs");
+                        sql.ExecuteDataSet(ServerLoginLogs.Select_GetLastLoginTime());
                         if (sql.Success && DateTime.TryParse(sql.DataSet.Tables[0].Rows[0]["LastTime"].ToString(), out DateTime date))
                         {
                             string month = date.ToString("MMM", CultureInfo.InvariantCulture);

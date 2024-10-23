@@ -1,7 +1,6 @@
 ﻿using Milimoe.FunGame.Core.Api.Utility;
 using Milimoe.FunGame.Core.Entity;
 using Milimoe.FunGame.Core.Library.Constant;
-using Oshima.FunGame.OshimaModules.Items;
 
 namespace Oshima.FunGame.OshimaModules
 {
@@ -27,32 +26,88 @@ namespace Oshima.FunGame.OshimaModules
                         prev.SetPropertyToItemModuleNew(next);
                         config[key] = next;
                     }
+                    Item item = config[key];
+                    HashSet<Skill> skills = item.Skills.Passives;
+                    if (item.Skills.Active != null) skills.Add(item.Skills.Active);
+                    List<Skill> skilllist = [.. skills];
+                    foreach (Skill skill in skilllist)
+                    {
+                        Skill? newSkill = EntityFactory.GetSkill(skill.Id, skill.SkillType);
+                        if (newSkill != null)
+                        {
+                            if (newSkill.IsActive)
+                            {
+                                item.Skills.Active = newSkill;
+                            }
+                            else
+                            {
+                                item.Skills.Passives.Remove(skill);
+                                item.Skills.Passives.Add(newSkill);
+                            }
+                        }
+                        Skill s = newSkill ?? skill;
+                        List<Effect> effects = [.. s.Effects];
+                        foreach (Effect effect in effects)
+                        {
+                            skill.Effects.Remove(effect);
+                            Effect? newEffect = EntityFactory.GetEffect(effect.Id, skill);
+                            if (newEffect != null)
+                            {
+                                skill.Effects.Add(newEffect);
+                            }
+                        }
+                    }
                 }
                 return [.. config.Values];
             }
         }
 
-        public override Item? GetItem(long id, string name, ItemType type)
+        protected override void AfterLoad()
         {
-            if (type == ItemType.MagicCardPack)
+            Factory.OpenFactory.RegisterFactory(args =>
             {
-
-            }
-
-            if (type == ItemType.Accessory)
-            {
-                switch ((AccessoryID)id)
+                if (args.TryGetValue("id", out object? value) && value is long id && args.TryGetValue("itemtype", out value) && value is int type)
                 {
-                    case AccessoryID.攻击之爪10:
-                        return new 攻击之爪10();
-                    case AccessoryID.攻击之爪30:
-                        return new 攻击之爪30();
-                    case AccessoryID.攻击之爪50:
-                        return new 攻击之爪50();
+                    Item? item = EntityFactory.GetItem(id, (ItemType)type);
+                    if (item != null)
+                    {
+                        HashSet<Skill> skills = item.Skills.Passives;
+                        if (item.Skills.Active != null) skills.Add(item.Skills.Active);
+                        List<Skill> skilllist = [.. skills];
+                        foreach (Skill skill in skilllist)
+                        {
+                            item.Skills.Passives.Remove(skill);
+                            Skill newSkill = EntityFactory.GetSkill(skill.Id, skill.SkillType) ?? new OpenSkill(skill.Id, skill.Name);
+                            if (newSkill != null)
+                            {
+                                if (newSkill.IsActive)
+                                {
+                                    item.Skills.Active = newSkill;
+                                }
+                                else
+                                {
+                                    item.Skills.Passives.Add(newSkill);
+                                }
+                            }
+                            Skill s = newSkill ?? skill;
+                            List<Effect> effects = [.. s.Effects];
+                            foreach (Effect effect in effects)
+                            {
+                                skill.Effects.Remove(effect);
+                                Effect? newEffect = EntityFactory.GetEffect(effect.Id, skill);
+                                if (newEffect != null)
+                                {
+                                    skill.Effects.Add(newEffect);
+                                }
+                            }
+                        }
+                        return item;
+                    }
                 }
-            }
-
-            return null;
+                return null;
+            });
         }
+
+        public override Item? GetItem(long id, string name, ItemType type) => EntityFactory.GetItem(id, type);
     }
 }
