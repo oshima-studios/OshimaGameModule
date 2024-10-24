@@ -32,7 +32,7 @@ namespace Oshima.Core.Controllers
                     if (sql != null)
                     {
                         sql.ExecuteDataSet(ServerLoginLogs.Select_GetLastLoginTime());
-                        if (sql.Success && DateTime.TryParse(sql.DataSet.Tables[0].Rows[0]["LastTime"].ToString(), out DateTime date))
+                        if (sql.Success && DateTime.TryParse(sql.DataSet.Tables[0].Rows[0][ServerLoginLogs.Column_LastTime].ToString(), out DateTime date))
                         {
                             string month = date.ToString("MMM", CultureInfo.InvariantCulture);
                             int day = date.Day;
