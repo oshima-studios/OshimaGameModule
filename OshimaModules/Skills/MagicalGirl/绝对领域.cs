@@ -27,7 +27,7 @@ namespace Oshima.FunGame.OshimaModules.Skills
         public override bool Durative => true;
         public override double Duration => 16 + 释放时的能量值 * 0.03;
 
-        private double 系数 => 0.3 + 0.03 * (Level - 1);
+        private double 系数 => 0.2 + 0.015 * (Level - 1);
         private double 敏捷提升 => 系数 * Skill.Character?.BaseAGI ?? 0;
         private double 实际敏捷提升 = 0;
         private double 释放时的能量值 = 0;

@@ -1,8 +1,8 @@
 ﻿using System.Text;
 using Milimoe.FunGame.Core.Api.Utility;
 using Milimoe.FunGame.Core.Entity;
-using Milimoe.FunGame.Core.Library.Constant;
 using Milimoe.FunGame.Core.Model;
+using Oshima.FunGame.OshimaModules;
 using Oshima.FunGame.OshimaModules.Characters;
 using Oshima.FunGame.OshimaModules.Items;
 using Oshima.FunGame.OshimaModules.Skills;
@@ -29,6 +29,7 @@ namespace Oshima.Core.Utils
         }
 
         public static List<Character> Characters { get; } = [];
+        public static List<Item> Items { get; } = [];
         public static Dictionary<Character, CharacterStatistics> CharacterStatistics { get; } = [];
         public static PluginConfig StatsConfig { get; } = new(nameof(FunGameSimulation), nameof(CharacterStatistics));
         public static bool IsRuning { get; set; } = false;
@@ -306,8 +307,9 @@ namespace Oshima.Core.Utils
 
                     // 开始空投
                     Msg = "";
-                    空投(actionQueue, totalTime);
+                    空投(actionQueue);
                     if (isWeb) result.Add("=== 空投 ===\r\n" + Msg);
+                    double 下一次空投 = 80;
 
                     // 总回合数
                     int i = 1;
@@ -356,7 +358,18 @@ namespace Oshima.Core.Utils
                         }
 
                         // 模拟时间流逝
-                        totalTime += actionQueue.TimeLapse();
+                        double timeLapse = actionQueue.TimeLapse();
+                        totalTime += timeLapse;
+                        下一次空投 -= timeLapse;
+
+                        if (下一次空投 <= 0)
+                        {
+                            // 空投
+                            Msg = "";
+                            空投(actionQueue);
+                            if (isWeb) result.Add("=== 空投 ===\r\n" + Msg);
+                            下一次空投 = 100;
+                        }
 
                         if (actionQueue.Eliminated.Count > deaths)
                         {
@@ -493,21 +506,20 @@ namespace Oshima.Core.Utils
             if (PrintOut) Console.WriteLine(str);
         }
 
-        public static void 空投(ActionQueue queue, double totalTime)
+        public static void 空投(ActionQueue queue)
         {
-            Item[] 这次发放的空投;
-            if (totalTime == 0)
+            Item a = Items[Random.Shared.Next(Items.Count)];
+            a.SetGamingQueue(queue);
+            Item[] 这次发放的空投 = [a];
+            WriteLine($"社区送温暖了，现在向所有人发放 [ {a.Name} ]！！");
+            foreach (Character character in queue.Queue)
             {
-                WriteLine("社区送温暖了，现在向所有人发放 [ 攻击之爪 +50 ]！！");
-                foreach (Character character in queue.Queue)
+                foreach (Item item in 这次发放的空投)
                 {
-                    这次发放的空投 = [new 攻击之爪50()];
-                    foreach (Item item in 这次发放的空投)
-                    {
-                        queue.Equip(character, EquipItemToSlot.Accessory1, item);
-                    }
+                    queue.Equip(character, item.Copy(1));
                 }
             }
+            WriteLine("");
         }
 
         public static void InitCharacter()
@@ -538,6 +550,10 @@ namespace Oshima.Core.Utils
                     CharacterStatistics[character] = StatsConfig.Get<CharacterStatistics>(character.ToStringWithOutUser()) ?? CharacterStatistics[character];
                 }
             }
+
+            Dictionary<string, Item> exItems = Factory.GetGameModuleInstances<Item>(OshimaGameModuleConstant.General, OshimaGameModuleConstant.Item);
+            Items.AddRange(exItems.Values);
+            Items.AddRange([new 攻击之爪10(), new 攻击之爪30(), new 攻击之爪50()]);
         }
     }
 }
