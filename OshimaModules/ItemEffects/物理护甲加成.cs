@@ -24,12 +24,12 @@ namespace Oshima.FunGame.OshimaModules.ItemEffects
             character.ExDEF2 -= 实际物理护甲加成;
         }
 
-        public 物理护甲加成(Skill skill, Character? source, Item? item, double exDef) : base(skill)
+        public 物理护甲加成(Skill skill, double exDef, Character? source = null, Item? item = null) : base(skill)
         {
             GamingQueue = skill.GamingQueue;
+            实际物理护甲加成 = exDef;
             Source = source;
             Item = item;
-            实际物理护甲加成 = exDef;
         }
     }
 }

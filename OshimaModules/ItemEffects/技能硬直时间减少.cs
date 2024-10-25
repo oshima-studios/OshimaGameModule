@@ -40,12 +40,12 @@ namespace Oshima.FunGame.OshimaModules.ItemEffects
             }
         }
 
-        public 技能硬直时间减少(Skill skill, Character? source, Item? item, double reduce) : base(skill)
+        public 技能硬直时间减少(Skill skill, double reduce, Character? source = null, Item? item = null) : base(skill)
         {
             GamingQueue = skill.GamingQueue;
+            实际硬直时间减少 = reduce;
             Source = source;
             Item = item;
-            实际硬直时间减少 = reduce;
         }
     }
 }

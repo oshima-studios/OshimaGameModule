@@ -1,6 +1,6 @@
 ﻿using Milimoe.FunGame.Core.Api.Utility;
 using Milimoe.FunGame.Core.Entity;
-using Milimoe.FunGame.Core.Library.Constant;
+using Oshima.FunGame.OshimaModules.Items;
 
 namespace Oshima.FunGame.OshimaModules
 {
@@ -11,103 +11,26 @@ namespace Oshima.FunGame.OshimaModules
         public override string Version => OshimaGameModuleConstant.Version;
         public override string Author => OshimaGameModuleConstant.Author;
 
-        public override List<Item> Items
+        public override Dictionary<string, Item> Items
         {
             get
             {
-                EntityModuleConfig<Item> config = new(OshimaGameModuleConstant.General, OshimaGameModuleConstant.Item);
-                config.LoadConfig();
-                foreach (string key in config.Keys)
-                {
-                    Item prev = config[key];
-                    Item? next = GetItem(prev.Id, prev.Name, prev.ItemType);
-                    if (next != null)
-                    {
-                        prev.SetPropertyToItemModuleNew(next);
-                        config[key] = next;
-                    }
-                    Item item = config[key];
-                    HashSet<Skill> skills = item.Skills.Passives;
-                    if (item.Skills.Active != null) skills.Add(item.Skills.Active);
-                    List<Skill> skilllist = [.. skills];
-                    foreach (Skill skill in skilllist)
-                    {
-                        Skill? newSkill = EntityFactory.GetSkill(skill.Id, skill.SkillType);
-                        if (newSkill != null)
-                        {
-                            if (newSkill.IsActive)
-                            {
-                                item.Skills.Active = newSkill;
-                            }
-                            else
-                            {
-                                item.Skills.Passives.Remove(skill);
-                                item.Skills.Passives.Add(newSkill);
-                            }
-                        }
-                        Skill s = newSkill ?? skill;
-                        List<Effect> effects = [.. s.Effects];
-                        foreach (Effect effect in effects)
-                        {
-                            skill.Effects.Remove(effect);
-                            Effect? newEffect = EntityFactory.GetEffect(effect.Id, skill);
-                            if (newEffect != null)
-                            {
-                                skill.Effects.Add(newEffect);
-                            }
-                        }
-                    }
-                }
-                return [.. config.Values];
+                return Factory.GetGameModuleInstances<Item>(OshimaGameModuleConstant.General, OshimaGameModuleConstant.Item);
             }
         }
 
-        protected override void AfterLoad()
+        protected override Factory.EntityFactoryDelegate<Item> ItemFactory()
         {
-            Factory.OpenFactory.RegisterFactory(args =>
+            return (id, name, args) =>
             {
-                if (args.TryGetValue("id", out object? value) && value is long id && args.TryGetValue("itemtype", out value) && value is int type)
+                return id switch
                 {
-                    Item? item = EntityFactory.GetItem(id, (ItemType)type);
-                    if (item != null)
-                    {
-                        HashSet<Skill> skills = item.Skills.Passives;
-                        if (item.Skills.Active != null) skills.Add(item.Skills.Active);
-                        List<Skill> skilllist = [.. skills];
-                        foreach (Skill skill in skilllist)
-                        {
-                            item.Skills.Passives.Remove(skill);
-                            Skill newSkill = EntityFactory.GetSkill(skill.Id, skill.SkillType) ?? new OpenSkill(skill.Id, skill.Name);
-                            if (newSkill != null)
-                            {
-                                if (newSkill.IsActive)
-                                {
-                                    item.Skills.Active = newSkill;
-                                }
-                                else
-                                {
-                                    item.Skills.Passives.Add(newSkill);
-                                }
-                            }
-                            Skill s = newSkill ?? skill;
-                            List<Effect> effects = [.. s.Effects];
-                            foreach (Effect effect in effects)
-                            {
-                                skill.Effects.Remove(effect);
-                                Effect? newEffect = EntityFactory.GetEffect(effect.Id, skill);
-                                if (newEffect != null)
-                                {
-                                    skill.Effects.Add(newEffect);
-                                }
-                            }
-                        }
-                        return item;
-                    }
-                }
-                return null;
-            });
+                    (long)AccessoryID.攻击之爪10 => new 攻击之爪10(),
+                    (long)AccessoryID.攻击之爪30 => new 攻击之爪30(),
+                    (long)AccessoryID.攻击之爪50 => new 攻击之爪50(),
+                    _ => null,
+                };
+            };
         }
-
-        public override Item? GetItem(long id, string name, ItemType type) => EntityFactory.GetItem(id, type);
     }
 }

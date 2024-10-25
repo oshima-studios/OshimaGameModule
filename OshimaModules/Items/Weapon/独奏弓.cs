@@ -31,8 +31,8 @@ namespace Oshima.FunGame.OshimaModules.Items
         {
             Level = 1;
             Item = item;
-            Effects.Add(new 攻击力加成(this, character, item, 攻击力加成));
-            Effects.Add(new 普攻硬直时间减少(this, character, item, 硬直时间减少));
+            Effects.Add(new 攻击力加成(this, 攻击力加成, character, item));
+            Effects.Add(new 普攻硬直时间减少(this, 硬直时间减少, character, item));
         }
 
         public override IEnumerable<Effect> AddInactiveEffectToCharacter()

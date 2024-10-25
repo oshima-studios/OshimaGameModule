@@ -24,7 +24,7 @@ namespace Oshima.FunGame.OshimaModules.OpenEffects
             character.ExAGI -= 实际加成;
         }
 
-        public ExAGI(Skill skill, Character? source, Item? item) : base(skill)
+        public ExAGI(Skill skill, Character? source = null, Item? item = null) : base(skill)
         {
             GamingQueue = skill.GamingQueue;
             Source = source;

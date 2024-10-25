@@ -24,7 +24,7 @@ namespace Oshima.FunGame.OshimaModules.OpenEffects
             character.NormalAttack.HardnessTime += 实际硬直时间减少;
         }
 
-        public NormalAttackHardTimeReduce(Skill skill, Character? source, Item? item) : base(skill)
+        public NormalAttackHardTimeReduce(Skill skill, Character? source = null, Item? item = null) : base(skill)
         {
             GamingQueue = skill.GamingQueue;
             Source = source;

@@ -24,7 +24,7 @@ namespace Oshima.FunGame.OshimaModules.OpenEffects
             character.ExCritRate -= 实际加成;
         }
 
-        public ExCritRate(Skill skill, Character? source, Item? item) : base(skill)
+        public ExCritRate(Skill skill, Character? source = null, Item? item = null) : base(skill)
         {
             GamingQueue = skill.GamingQueue;
             Source = source;

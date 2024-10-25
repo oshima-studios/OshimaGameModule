@@ -51,7 +51,7 @@ namespace Oshima.FunGame.OshimaModules.Items
         {
             Level = 1;
             Item = item;
-            Effects.Add(new 攻击力加成(this, character, item, exATK));
+            Effects.Add(new 攻击力加成(this, exATK, character, item));
         }
 
         public override IEnumerable<Effect> AddInactiveEffectToCharacter()

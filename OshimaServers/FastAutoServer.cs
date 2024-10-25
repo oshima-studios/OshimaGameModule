@@ -532,7 +532,7 @@ namespace Oshima.FunGame.OshimaServers
 
         public override void AfterLoad(params object[] args)
         {
-            foreach (Character c in GameModuleDepend.Characters)
+            foreach (Character c in GameModuleDepend.Characters.Values)
             {
                 Character character = c.Copy();
                 Characters.Add(character);

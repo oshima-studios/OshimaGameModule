@@ -24,7 +24,7 @@ namespace Oshima.FunGame.OshimaModules.OpenEffects
             character.ExATK2 -= 实际加成;
         }
 
-        public ExATK(Skill skill, Character? source, Item? item) : base(skill)
+        public ExATK(Skill skill, Character? source = null, Item? item = null) : base(skill)
         {
             GamingQueue = skill.GamingQueue;
             Source = source;

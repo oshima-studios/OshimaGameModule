@@ -24,12 +24,12 @@ namespace Oshima.FunGame.OshimaModules.ItemEffects
             character.ExCDR -= 实际冷却缩减加成;
         }
 
-        public 冷却缩减加成(Skill skill, Character? source, Item? item, double exCdr) : base(skill)
+        public 冷却缩减加成(Skill skill, double exCdr, Character? source = null, Item? item = null) : base(skill)
         {
             GamingQueue = skill.GamingQueue;
+            实际冷却缩减加成 = exCdr;
             Source = source;
             Item = item;
-            实际冷却缩减加成 = exCdr;
         }
     }
 }

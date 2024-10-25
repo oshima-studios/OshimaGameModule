@@ -40,7 +40,7 @@ namespace Oshima.FunGame.OshimaModules.OpenEffects
             }
         }
 
-        public SkillHardTimeReduce(Skill skill, Character? source, Item? item) : base(skill)
+        public SkillHardTimeReduce(Skill skill, Character? source = null, Item? item = null) : base(skill)
         {
             GamingQueue = skill.GamingQueue;
             Source = source;

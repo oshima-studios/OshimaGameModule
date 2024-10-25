@@ -85,7 +85,7 @@ namespace Oshima.FunGame.OshimaModules.OpenEffects
             }
         }
 
-        public ExMDF(Skill skill, Character? source, Item? item) : base(skill)
+        public ExMDF(Skill skill, Character? source = null, Item? item = null) : base(skill)
         {
             GamingQueue = skill.GamingQueue;
             Source = source;

@@ -24,12 +24,12 @@ namespace Oshima.FunGame.OshimaModules.ItemEffects
             character.ExATK2 -= 实际攻击力加成;
         }
 
-        public 攻击力加成(Skill skill, Character? source, Item? item, double exATK) : base(skill)
+        public 攻击力加成(Skill skill, double exATK, Character? source = null, Item? item = null) : base(skill)
         {
             GamingQueue = skill.GamingQueue;
+            实际攻击力加成 = exATK;
             Source = source;
             Item = item;
-            实际攻击力加成 = exATK;
         }
     }
 }

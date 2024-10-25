@@ -10,13 +10,13 @@ namespace Oshima.FunGame.OshimaModules
         public override string Version => OshimaGameModuleConstant.Version;
         public override string Author => OshimaGameModuleConstant.Author;
 
-        public override List<Character> Characters
+        public override Dictionary<string, Character> Characters
         {
             get
             {
                 EntityModuleConfig<Character> config = new(OshimaGameModuleConstant.General, OshimaGameModuleConstant.Character);
                 config.LoadConfig();
-                return [.. config.Values];
+                return config;
             }
         }
     }

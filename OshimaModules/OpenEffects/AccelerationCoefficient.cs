@@ -24,7 +24,7 @@ namespace Oshima.FunGame.OshimaModules.OpenEffects
             character.AccelerationCoefficient -= 实际加成;
         }
 
-        public AccelerationCoefficient(Skill skill, Character? source, Item? item) : base(skill)
+        public AccelerationCoefficient(Skill skill, Character? source = null, Item? item = null) : base(skill)
         {
             GamingQueue = skill.GamingQueue;
             Source = source;

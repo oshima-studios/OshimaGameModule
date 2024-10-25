@@ -24,7 +24,7 @@ namespace Oshima.FunGame.OshimaModules.OpenEffects
             character.ExDEF2 -= 实际加成;
         }
 
-        public ExDEF(Skill skill, Character? source, Item? item) : base(skill)
+        public ExDEF(Skill skill, Character? source = null, Item? item = null) : base(skill)
         {
             GamingQueue = skill.GamingQueue;
             Source = source;
