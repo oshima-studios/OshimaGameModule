@@ -83,12 +83,12 @@
         ExEvadeRate = 8016,
 
         /// <summary>
-        /// expp
+        /// exppt
         /// </summary>
         PhysicalPenetration = 8017,
 
         /// <summary>
-        /// exmp
+        /// exmpt
         /// </summary>
         MagicalPenetration = 8018,
 
