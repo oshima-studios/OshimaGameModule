@@ -18,6 +18,10 @@ namespace Oshima.Core.WebAPI
 
         public override void ProcessInput(string input)
         {
+            if (input.StartsWith("fungametest"))
+            {
+                FunGameSimulation.StartGame(true, true);
+            }
             // OSM指令
             if (input.Length >= 4 && input[..4].Equals(".osm", StringComparison.CurrentCultureIgnoreCase))
             {

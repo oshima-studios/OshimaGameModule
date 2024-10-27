@@ -11,6 +11,7 @@ namespace Oshima.FunGame.OshimaModules.Skills
         public override double EPCost => 100;
         public override double CD => 55 - 3 * (Level - 1);
         public override double HardnessTime { get; set; } = 25;
+        public override string Slogan => "灭！！！！";
 
         public 能量毁灭(Character? character = null) : base(SkillType.SuperSkill, character)
         {
@@ -27,9 +28,9 @@ namespace Oshima.FunGame.OshimaModules.Skills
         public override bool TargetSelf => false;
         public override double TargetRange => 999;
 
-        private double 智力系数 => 0.55 * Level;
+        private double 智力系数 => 0.25 * Level;
         private double 智力伤害 => 智力系数 * Skill.Character?.INT ?? 0;
-        private double 能量系数 => 0.75 * Level;
+        private double 能量系数 => 1.05 * Level;
 
         public override void OnSkillCasted(Character caster, List<Character> enemys, List<Character> teammates, Dictionary<string, object> others)
         {

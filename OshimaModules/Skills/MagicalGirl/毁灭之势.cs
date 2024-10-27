@@ -24,10 +24,10 @@ namespace Oshima.FunGame.OshimaModules.Skills
     {
         public override long Id => Skill.Id;
         public override string Name => Skill.Name;
-        public override string Description => $"每时间提升 5.5% 所有伤害，无上限，但受到伤害时效果清零。" + (累计伤害 > 0 ? $"（当前总提升：{累计伤害 * 100:0.##}%）" : "");
+        public override string Description => $"每时间提升 {伤害提升 * 100:0.##}% 所有伤害，无上限，但受到伤害时效果清零。" + (累计伤害 > 0 ? $"（当前总提升：{累计伤害 * 100:0.##}%）" : "");
         public override bool TargetSelf => true;
 
-        private readonly double 伤害提升 = 0.055;
+        private readonly double 伤害提升 = 0.04;
         private double 累计伤害 = 0;
 
         public override bool AlterActualDamageAfterCalculation(Character character, Character enemy, ref double damage, bool isNormalAttack, bool isMagicDamage, MagicType magicType, DamageResult damageResult)

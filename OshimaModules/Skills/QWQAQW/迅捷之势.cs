@@ -22,22 +22,35 @@ namespace Oshima.FunGame.OshimaModules.Skills
     {
         public override long Id => Skill.Id;
         public override string Name => Skill.Name;
-        public override string Description => $"{Duration:0.##} 时间内，普通攻击转为魔法伤害，且硬直时间减少50%，并基于 {智力系数 * 100:0.##}% 智力 [ {智力加成:0.##} ] 强化普通攻击伤害。";
+        public override string Description => $"{Duration:0.##} 时间内，提升自身 35% 物理伤害减免和魔法抗性，普通攻击转为魔法伤害，且硬直时间减少 30%，并基于 {智力系数 * 100:0.##}% 智力 [ {智力加成:0.##} ] 强化普通攻击伤害。";
         public override bool TargetSelf => true;
         public override bool Durative => true;
         public override double Duration => 40;
 
         private double 智力系数 => 1.4 + 0.4 * (Level - 1);
         private double 智力加成 => 智力系数 * Skill.Character?.INT ?? 0;
+        private double 物理伤害减免 => 0.35;
+        private double 魔法抗性 => 0.35;
+        private double 实际物理伤害减免 = 0;
+        private double 实际魔法抗性 = 0;
 
         public override void OnEffectGained(Character character)
         {
             character.NormalAttack.SetMagicType(true, character.MagicType);
+            实际物理伤害减免 = 物理伤害减免;
+            实际魔法抗性 = 魔法抗性;
+            character.PhysicalPenetration += 实际物理伤害减免;
+            character.MagicalPenetration += 实际魔法抗性;
+            WriteLine($"[ {character} ] 提升了 {实际物理伤害减免 * 100:0.##}% 物理伤害减免，{实际魔法抗性 * 100:0.##}% 魔法抗性！！");
         }
 
         public override void OnEffectLost(Character character)
         {
             character.NormalAttack.SetMagicType(false, character.MagicType);
+            实际物理伤害减免 = 0;
+            实际魔法抗性 = 0;
+            character.PhysicalPenetration -= 实际物理伤害减免;
+            character.MagicalPenetration -= 实际魔法抗性;
         }
 
         public override void AlterExpectedDamageBeforeCalculation(Character character, Character enemy, ref double damage, bool isNormalAttack, bool isMagicDamage, MagicType magicType)
@@ -50,7 +63,7 @@ namespace Oshima.FunGame.OshimaModules.Skills
 
         public override void AlterHardnessTimeAfterNormalAttack(Character character, ref double baseHardnessTime, ref bool isCheckProtected)
         {
-            baseHardnessTime *= 0.5;
+            baseHardnessTime *= 0.3;
         }
 
         public override void OnSkillCasted(Character caster, List<Character> enemys, List<Character> teammates, Dictionary<string, object> others)

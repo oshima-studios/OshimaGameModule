@@ -1,6 +1,6 @@
 ﻿using Milimoe.FunGame.Core.Entity;
 using Milimoe.FunGame.Core.Library.Constant;
-using Oshima.FunGame.OshimaModules.ItemEffects;
+using Oshima.FunGame.OshimaModules.Effects.ItemEffects;
 
 namespace Oshima.FunGame.OshimaModules.Items
 {

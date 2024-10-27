@@ -1,4 +1,5 @@
 ﻿using Milimoe.FunGame.Core.Entity;
+using Milimoe.FunGame.Core.Interface.Entity;
 using Milimoe.FunGame.Core.Library.Constant;
 
 namespace Oshima.FunGame.OshimaModules.Skills
@@ -24,12 +25,57 @@ namespace Oshima.FunGame.OshimaModules.Skills
     {
         public override long Id => Skill.Id;
         public override string Name => Skill.Name;
-        public override string Description => $"当生命值低于 30% 时，智力转化为力量；当生命值高于或等于 30% 时，力量转化为智力。" +
+        public override string Description => $"当生命值低于 30% 时，智力转化为力量；当生命值高于或等于 30% 时，力量转化为智力。力量模式下，造成伤害必定暴击；智力模式下，获得 30% 闪避率和 25% 魔法抗性。" +
             (Skill.Character != null ? "（当前模式：" + CharacterSet.GetPrimaryAttributeName(Skill.Character.PrimaryAttribute) + "）" : "");
         public override bool TargetSelf => true;
 
         private double 交换前的额外智力 = 0;
         private double 交换前的额外力量 = 0;
+        private double 实际增加闪避率 = 0.3;
+        private double 实际增加魔法抗性 = 0.25;
+        private bool 增加过了 = false;
+
+        public override void OnEffectGained(Character character)
+        {
+            增加过了 = true;
+            ResetEffect(character, true);
+        }
+
+        public override void OnEffectLost(Character character)
+        {
+            增加过了 = false;
+            ResetEffect(character, false);
+        }
+
+        private void ResetEffect(Character character, bool isAdd)
+        {
+            if (isAdd)
+            {
+                character.ExEvadeRate += 实际增加闪避率;
+                character.MDF.None += 实际增加魔法抗性;
+                character.MDF.Particle += 实际增加魔法抗性;
+                character.MDF.Fleabane += 实际增加魔法抗性;
+                character.MDF.Element += 实际增加魔法抗性;
+                character.MDF.Shadow += 实际增加魔法抗性;
+                character.MDF.Bright += 实际增加魔法抗性;
+                character.MDF.PurityContemporary += 实际增加魔法抗性;
+                character.MDF.PurityNatural += 实际增加魔法抗性;
+                character.MDF.Starmark += 实际增加魔法抗性;
+            }
+            else
+            {
+                character.ExEvadeRate -= 实际增加闪避率;
+                character.MDF.None -= 实际增加魔法抗性;
+                character.MDF.Particle -= 实际增加魔法抗性;
+                character.MDF.Fleabane -= 实际增加魔法抗性;
+                character.MDF.Element -= 实际增加魔法抗性;
+                character.MDF.Shadow -= 实际增加魔法抗性;
+                character.MDF.Bright -= 实际增加魔法抗性;
+                character.MDF.PurityContemporary -= 实际增加魔法抗性;
+                character.MDF.PurityNatural -= 实际增加魔法抗性;
+                character.MDF.Starmark -= 实际增加魔法抗性;
+            }
+        }
 
         public override void OnAttributeChanged(Character character)
         {
@@ -46,6 +92,12 @@ namespace Oshima.FunGame.OshimaModules.Skills
                     character.ExSTR = 交换前的额外智力 + character.BaseINT + diff;
                 }
             }
+        }
+
+        public override bool BeforeCriticalCheck(Character character, ref double throwingBonus)
+        {
+            throwingBonus += 100;
+            return false;
         }
 
         public override void OnTimeElapsed(Character character, double elapsed)
@@ -67,6 +119,10 @@ namespace Oshima.FunGame.OshimaModules.Skills
                         c.ExINT = -c.BaseINT;
                         c.ExSTR = 交换前的额外智力 + c.BaseINT + 交换前的额外力量;
                         c.Recovery(pastHP, pastMP, pastMaxHP, pastMaxMP);
+                        if (!增加过了)
+                        {
+                            ResetEffect(character, true);
+                        }
                     }
                 }
                 else
@@ -83,6 +139,10 @@ namespace Oshima.FunGame.OshimaModules.Skills
                         c.ExINT = 交换前的额外力量 + c.BaseSTR + 交换前的额外智力;
                         c.ExSTR = -c.BaseSTR;
                         c.Recovery(pastHP, pastMP, pastMaxHP, pastMaxMP);
+                        if (增加过了)
+                        {
+                            ResetEffect(character, false);
+                        }
                     }
                 }
             }
