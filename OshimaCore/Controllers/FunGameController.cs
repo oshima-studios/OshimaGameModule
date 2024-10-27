@@ -3,8 +3,10 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Milimoe.FunGame.Core.Api.Utility;
 using Milimoe.FunGame.Core.Entity;
+using Milimoe.FunGame.Core.Library.Constant;
 using Oshima.Core.Models;
 using Oshima.Core.Utils;
+using Oshima.FunGame.OshimaModules.Skills;
 
 namespace Oshima.Core.Controllers
 {
@@ -66,6 +68,212 @@ namespace Oshima.Core.Controllers
 
                     return NetworkUtility.JsonSerialize(builder.ToString());
                 }
+            }
+            return NetworkUtility.JsonSerialize("");
+        }
+
+        [HttpGet("cjs")]
+        public string GetCharacterIntroduce([FromQuery] int? id = null)
+        {
+            if (id != null && id > 0 && id <= FunGameSimulation.Characters.Count)
+            {
+                Character c = FunGameSimulation.Characters[Convert.ToInt32(id) - 1];
+                c.Level = General.GameplayEquilibriumConstant.MaxLevel;
+                c.NormalAttack.Level = General.GameplayEquilibriumConstant.MaxNormalAttackLevel;
+
+                Skill 冰霜攻击 = new 冰霜攻击(c)
+                {
+                    Level = General.GameplayEquilibriumConstant.MaxMagicLevel
+                };
+                c.Skills.Add(冰霜攻击);
+
+                Skill 疾风步 = new 疾风步(c)
+                {
+                    Level = General.GameplayEquilibriumConstant.MaxSkillLevel
+                };
+                c.Skills.Add(疾风步);
+
+                if (id == 1)
+                {
+                    Skill META马 = new META马(c)
+                    {
+                        Level = 1
+                    };
+                    c.Skills.Add(META马);
+
+                    Skill 力量爆发 = new 力量爆发(c)
+                    {
+                        Level = General.GameplayEquilibriumConstant.MaxMagicLevel
+                    };
+                    c.Skills.Add(力量爆发);
+                }
+
+                if (id == 2)
+                {
+                    Skill 心灵之火 = new 心灵之火(c)
+                    {
+                        Level = 1
+                    };
+                    c.Skills.Add(心灵之火);
+
+                    Skill 天赐之力 = new 天赐之力(c)
+                    {
+                        Level = General.GameplayEquilibriumConstant.MaxSkillLevel
+                    };
+                    c.Skills.Add(天赐之力);
+                }
+
+                if (id == 3)
+                {
+                    Skill 魔法震荡 = new 魔法震荡(c)
+                    {
+                        Level = 1
+                    };
+                    c.Skills.Add(魔法震荡);
+
+                    Skill 魔法涌流 = new 魔法涌流(c)
+                    {
+                        Level = General.GameplayEquilibriumConstant.MaxSkillLevel
+                    };
+                    c.Skills.Add(魔法涌流);
+                }
+
+                if (id == 4)
+                {
+                    Skill 灵能反射 = new 灵能反射(c)
+                    {
+                        Level = 1
+                    };
+                    c.Skills.Add(灵能反射);
+
+                    Skill 三重叠加 = new 三重叠加(c)
+                    {
+                        Level = General.GameplayEquilibriumConstant.MaxSkillLevel
+                    };
+                    c.Skills.Add(三重叠加);
+                }
+
+                if (id == 5)
+                {
+                    Skill 智慧与力量 = new 智慧与力量(c)
+                    {
+                        Level = 1
+                    };
+                    c.Skills.Add(智慧与力量);
+
+                    Skill 变幻之心 = new 变幻之心(c)
+                    {
+                        Level = General.GameplayEquilibriumConstant.MaxSkillLevel
+                    };
+                    c.Skills.Add(变幻之心);
+                }
+
+                if (id == 6)
+                {
+                    Skill 致命打击 = new 致命打击(c)
+                    {
+                        Level = 1
+                    };
+                    c.Skills.Add(致命打击);
+
+                    Skill 精准打击 = new 精准打击(c)
+                    {
+                        Level = General.GameplayEquilibriumConstant.MaxSkillLevel
+                    };
+                    c.Skills.Add(精准打击);
+                }
+
+                if (id == 7)
+                {
+                    Skill 毁灭之势 = new 毁灭之势(c)
+                    {
+                        Level = 1
+                    };
+                    c.Skills.Add(毁灭之势);
+
+                    Skill 绝对领域 = new 绝对领域(c)
+                    {
+                        Level = General.GameplayEquilibriumConstant.MaxSkillLevel
+                    };
+                    c.Skills.Add(绝对领域);
+                }
+
+                if (id == 8)
+                {
+                    Skill 枯竭打击 = new 枯竭打击(c)
+                    {
+                        Level = 1
+                    };
+                    c.Skills.Add(枯竭打击);
+
+                    Skill 能量毁灭 = new 能量毁灭(c)
+                    {
+                        Level = General.GameplayEquilibriumConstant.MaxSkillLevel
+                    };
+                    c.Skills.Add(能量毁灭);
+                }
+
+                if (id == 9)
+                {
+                    Skill 玻璃大炮 = new 玻璃大炮(c)
+                    {
+                        Level = 1
+                    };
+                    c.Skills.Add(玻璃大炮);
+
+                    Skill 迅捷之势 = new 迅捷之势(c)
+                    {
+                        Level = General.GameplayEquilibriumConstant.MaxSkillLevel
+                    };
+                    c.Skills.Add(迅捷之势);
+                }
+
+                if (id == 10)
+                {
+                    Skill 累积之压 = new 累积之压(c)
+                    {
+                        Level = 1
+                    };
+                    c.Skills.Add(累积之压);
+
+                    Skill 嗜血本能 = new 嗜血本能(c)
+                    {
+                        Level = General.GameplayEquilibriumConstant.MaxSkillLevel
+                    };
+                    c.Skills.Add(嗜血本能);
+                }
+
+                if (id == 11)
+                {
+                    Skill 敏捷之刃 = new 敏捷之刃(c)
+                    {
+                        Level = 1
+                    };
+                    c.Skills.Add(敏捷之刃);
+
+                    Skill 平衡强化 = new 平衡强化(c)
+                    {
+                        Level = General.GameplayEquilibriumConstant.MaxSkillLevel
+                    };
+                    c.Skills.Add(平衡强化);
+                }
+
+                if (id == 12)
+                {
+                    Skill 弱者猎手 = new 弱者猎手(c)
+                    {
+                        Level = 1
+                    };
+                    c.Skills.Add(弱者猎手);
+
+                    Skill 血之狂欢 = new 血之狂欢(c)
+                    {
+                        Level = General.GameplayEquilibriumConstant.MaxSkillLevel
+                    };
+                    c.Skills.Add(血之狂欢);
+                }
+
+                return NetworkUtility.JsonSerialize(c.GetInfo().Trim());
             }
             return NetworkUtility.JsonSerialize("");
         }
