@@ -77,7 +77,7 @@ namespace Oshima.Core.Controllers
         {
             if (id != null && id > 0 && id <= FunGameSimulation.Characters.Count)
             {
-                Character c = FunGameSimulation.Characters[Convert.ToInt32(id) - 1];
+                Character c = FunGameSimulation.Characters[Convert.ToInt32(id) - 1].Copy();
                 c.Level = General.GameplayEquilibriumConstant.MaxLevel;
                 c.NormalAttack.Level = General.GameplayEquilibriumConstant.MaxNormalAttackLevel;
 
