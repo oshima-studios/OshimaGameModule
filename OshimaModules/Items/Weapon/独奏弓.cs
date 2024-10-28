@@ -11,7 +11,7 @@ namespace Oshima.FunGame.OshimaModules.Items
         public override string Name => "独奏弓";
         public override string Description => Skills.Passives.Count > 0 ? Skills.Passives.First().Description : "";
 
-        public 独奏弓(Character? character = null) : base(ItemType.Weapon, slot: EquipSlotType.Weapon)
+        public 独奏弓(Character? character = null) : base(ItemType.Weapon)
         {
             WeaponType = WeaponType.Bow;
             Skills.Passives.Add(new 独奏弓技能(character, this));

@@ -39,8 +39,8 @@ namespace Oshima.FunGame.OshimaModules.Skills
             character.NormalAttack.SetMagicType(true, character.MagicType);
             实际物理伤害减免 = 物理伤害减免;
             实际魔法抗性 = 魔法抗性;
-            character.PhysicalPenetration += 实际物理伤害减免;
-            character.MagicalPenetration += 实际魔法抗性;
+            character.ExPDR += 实际物理伤害减免;
+            character.MDF.SetAllValue(实际魔法抗性, false);
             WriteLine($"[ {character} ] 提升了 {实际物理伤害减免 * 100:0.##}% 物理伤害减免，{实际魔法抗性 * 100:0.##}% 魔法抗性！！");
         }
 
@@ -49,8 +49,8 @@ namespace Oshima.FunGame.OshimaModules.Skills
             character.NormalAttack.SetMagicType(false, character.MagicType);
             实际物理伤害减免 = 0;
             实际魔法抗性 = 0;
-            character.PhysicalPenetration -= 实际物理伤害减免;
-            character.MagicalPenetration -= 实际魔法抗性;
+            character.ExPDR -= 实际物理伤害减免;
+            character.MDF.SetAllValue(-实际魔法抗性, false);
         }
 
         public override void AlterExpectedDamageBeforeCalculation(Character character, Character enemy, ref double damage, bool isNormalAttack, bool isMagicDamage, MagicType magicType)

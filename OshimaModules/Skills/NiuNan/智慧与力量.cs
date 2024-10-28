@@ -33,24 +33,26 @@ namespace Oshima.FunGame.OshimaModules.Skills
         private double 交换前的额外力量 = 0;
         private double 实际增加闪避率 = 0.3;
         private double 实际增加魔法抗性 = 0.25;
-        private bool 增加过了 = false;
+        private bool 已经加过 = false;
 
         public override void OnEffectGained(Character character)
         {
-            增加过了 = true;
             ResetEffect(character, true);
         }
 
         public override void OnEffectLost(Character character)
         {
-            增加过了 = false;
-            ResetEffect(character, false);
+            if (character.PrimaryAttribute == PrimaryAttribute.INT)
+            {
+                ResetEffect(character, false);
+            }
         }
 
         private void ResetEffect(Character character, bool isAdd)
         {
             if (isAdd)
             {
+                已经加过 = true;
                 character.ExEvadeRate += 实际增加闪避率;
                 character.MDF.None += 实际增加魔法抗性;
                 character.MDF.Particle += 实际增加魔法抗性;
@@ -64,6 +66,7 @@ namespace Oshima.FunGame.OshimaModules.Skills
             }
             else
             {
+                已经加过 = false;
                 character.ExEvadeRate -= 实际增加闪避率;
                 character.MDF.None -= 实际增加魔法抗性;
                 character.MDF.Particle -= 实际增加魔法抗性;
@@ -119,9 +122,9 @@ namespace Oshima.FunGame.OshimaModules.Skills
                         c.ExINT = -c.BaseINT;
                         c.ExSTR = 交换前的额外智力 + c.BaseINT + 交换前的额外力量;
                         c.Recovery(pastHP, pastMP, pastMaxHP, pastMaxMP);
-                        if (!增加过了)
+                        if (已经加过)
                         {
-                            ResetEffect(character, true);
+                            ResetEffect(character, false);
                         }
                     }
                 }
@@ -139,9 +142,9 @@ namespace Oshima.FunGame.OshimaModules.Skills
                         c.ExINT = 交换前的额外力量 + c.BaseSTR + 交换前的额外智力;
                         c.ExSTR = -c.BaseSTR;
                         c.Recovery(pastHP, pastMP, pastMaxHP, pastMaxMP);
-                        if (增加过了)
+                        if (!已经加过)
                         {
-                            ResetEffect(character, false);
+                            ResetEffect(character, true);
                         }
                     }
                 }

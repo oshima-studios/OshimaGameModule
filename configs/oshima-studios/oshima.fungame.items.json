@@ -1,0 +1,665 @@
+﻿{
+  "黑暗之刃": {
+    "Id": 11543,
+    "Name": "黑暗之刃",
+    "Description": "增加 20 点攻击力。",
+    "BackgroundStory": "传说中的黑暗之刃，蕴含邪恶力量。",
+    "ItemType": 1,
+    "WeaponType": 1,
+    "Price": 0,
+    "Skills": {
+      "Active": null,
+      "Passives": [
+        {
+          "Id": 7001,
+          "Name": "黑暗之刃",
+          "SkillType": 3,
+          "Effects": [
+            {
+              "Id": 8001,
+              "exatk": 20
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "烈焰长剑": {
+    "Id": 11544,
+    "Name": "烈焰长剑",
+    "Description": "增加 20 点攻击力。",
+    "BackgroundStory": "火焰中锻造的长剑，散发着炙热气息。",
+    "ItemType": 1,
+    "WeaponType": 2,
+    "Price": 0,
+    "Skills": {
+      "Active": null,
+      "Passives": [
+        {
+          "Id": 7002,
+          "Name": "烈焰长剑",
+          "SkillType": 3,
+          "Effects": [
+            {
+              "Id": 8001,
+              "exatk": 20
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "银月弓": {
+    "Id": 11545,
+    "Name": "银月弓",
+    "Description": "增加 20 点攻击力。",
+    "BackgroundStory": "由稀有银月材料制成，精准无比。",
+    "ItemType": 1,
+    "WeaponType": 3,
+    "Price": 0,
+    "Skills": {
+      "Active": null,
+      "Passives": [
+        {
+          "Id": 7003,
+          "Name": "银月弓",
+          "SkillType": 3,
+          "Effects": [
+            {
+              "Id": 8001,
+              "exatk": 20
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "风暴步枪": {
+    "Id": 11546,
+    "Name": "风暴步枪",
+    "Description": "增加 20 点攻击力。",
+    "BackgroundStory": "捕捉风暴之力的武器，射速惊人。",
+    "ItemType": 1,
+    "WeaponType": 5,
+    "Price": 0,
+    "Skills": {
+      "Active": null,
+      "Passives": [
+        {
+          "Id": 7004,
+          "Name": "风暴步枪",
+          "SkillType": 3,
+          "Effects": [
+            {
+              "Id": 8001,
+              "exatk": 20
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "幽灵拳套": {
+    "Id": 11547,
+    "Name": "幽灵拳套",
+    "Description": "增加 20 点攻击力。",
+    "BackgroundStory": "无形的力量增强拳套，适合迅捷攻击。",
+    "ItemType": 1,
+    "WeaponType": 11,
+    "Price": 0,
+    "Skills": {
+      "Active": null,
+      "Passives": [
+        {
+          "Id": 7005,
+          "Name": "幽灵拳套",
+          "SkillType": 3,
+          "Effects": [
+            {
+              "Id": 8001,
+              "exatk": 20
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "雷霆之刃": {
+    "Id": 11548,
+    "Name": "雷霆之刃",
+    "Description": "增加 40 点攻击力。",
+    "BackgroundStory": "蕴含雷霆之力的神秘之剑，斩击时带有雷电。",
+    "ItemType": 1,
+    "WeaponType": 1,
+    "Price": 0,
+    "Skills": {
+      "Active": null,
+      "Passives": [
+        {
+          "Id": 7006,
+          "Name": "雷霆之刃",
+          "SkillType": 3,
+          "Effects": [
+            {
+              "Id": 8001,
+              "exatk": 40
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "龙骨重剑": {
+    "Id": 11549,
+    "Name": "龙骨重剑",
+    "Description": "增加 40 点攻击力。",
+    "BackgroundStory": "由远古龙骨锻造而成的巨剑，威力无比。",
+    "ItemType": 1,
+    "WeaponType": 2,
+    "Price": 0,
+    "Skills": {
+      "Active": null,
+      "Passives": [
+        {
+          "Id": 7007,
+          "Name": "龙骨重剑",
+          "SkillType": 3,
+          "Effects": [
+            {
+              "Id": 8001,
+              "exatk": 40
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "暗影弓": {
+    "Id": 11550,
+    "Name": "暗影弓",
+    "Description": "增加 40 点攻击力。",
+    "BackgroundStory": "能够穿透黑暗的弓，适合隐匿射击。",
+    "ItemType": 1,
+    "WeaponType": 3,
+    "Price": 0,
+    "Skills": {
+      "Active": null,
+      "Passives": [
+        {
+          "Id": 7008,
+          "Name": "暗影弓",
+          "SkillType": 3,
+          "Effects": [
+            {
+              "Id": 8001,
+              "exatk": 40
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "赤焰手枪": {
+    "Id": 11551,
+    "Name": "赤焰手枪",
+    "Description": "增加 40 点攻击力。",
+    "BackgroundStory": "能够发射赤焰的手枪，近距离威力极大。",
+    "ItemType": 1,
+    "WeaponType": 4,
+    "Price": 0,
+    "Skills": {
+      "Active": null,
+      "Passives": [
+        {
+          "Id": 7009,
+          "Name": "赤焰手枪",
+          "SkillType": 3,
+          "Effects": [
+            {
+              "Id": 8001,
+              "exatk": 40
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "苍穹法杖": {
+    "Id": 11552,
+    "Name": "苍穹法杖",
+    "Description": "增加 40 点攻击力。",
+    "BackgroundStory": "据说能够召唤天空之力的法杖，拥有强大魔力。",
+    "ItemType": 1,
+    "WeaponType": 8,
+    "Price": 0,
+    "Skills": {
+      "Active": null,
+      "Passives": [
+        {
+          "Id": 7010,
+          "Name": "苍穹法杖",
+          "SkillType": 3,
+          "Effects": [
+            {
+              "Id": 8001,
+              "exatk": 40
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "炽炎剑": {
+    "Id": 11553,
+    "Name": "炽炎剑",
+    "Description": "增加 60 点攻击力。",
+    "BackgroundStory": "这把剑燃烧着永恒的火焰，传说可以焚尽一切。",
+    "ItemType": 1,
+    "WeaponType": 1,
+    "Skills": {
+      "Active": null,
+      "Passives": [
+        {
+          "Id": 7011,
+          "Name": "炽炎剑",
+          "SkillType": 3,
+          "Effects": [
+            {
+              "Id": 8001,
+              "exatk": 60
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "狂风弓": {
+    "Id": 11554,
+    "Name": "狂风弓",
+    "Description": "增加 60 点攻击力。",
+    "BackgroundStory": "每次射击都能引发狂风，传说它由风神亲手打造。",
+    "ItemType": 1,
+    "WeaponType": 3,
+    "Skills": {
+      "Active": null,
+      "Passives": [
+        {
+          "Id": 7012,
+          "Name": "狂风弓",
+          "SkillType": 3,
+          "Effects": [
+            {
+              "Id": 8001,
+              "exatk": 60
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "破晓枪": {
+    "Id": 11555,
+    "Name": "破晓枪",
+    "Description": "增加 60 点攻击力。",
+    "BackgroundStory": "在破晓时分，这把长枪能够穿透任何黑暗。",
+    "ItemType": 1,
+    "WeaponType": 9,
+    "Skills": {
+      "Active": null,
+      "Passives": [
+        {
+          "Id": 7013,
+          "Name": "破晓枪",
+          "SkillType": 3,
+          "Effects": [
+            {
+              "Id": 8001,
+              "exatk": 60
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "幽冥匕首": {
+    "Id": 11556,
+    "Name": "幽冥匕首",
+    "Description": "增加 60 点攻击力。",
+    "BackgroundStory": "这对匕首闪烁着死亡的光芒，专为刺客所用。",
+    "ItemType": 1,
+    "WeaponType": 6,
+    "Skills": {
+      "Active": null,
+      "Passives": [
+        {
+          "Id": 7014,
+          "Name": "幽冥匕首",
+          "SkillType": 3,
+          "Effects": [
+            {
+              "Id": 8001,
+              "exatk": 60
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "天雷杖": {
+    "Id": 11557,
+    "Name": "天雷杖",
+    "Description": "增加 60 点攻击力。",
+    "BackgroundStory": "召唤天雷的法杖，拥有毁天灭地的力量。",
+    "ItemType": 1,
+    "WeaponType": 8,
+    "Skills": {
+      "Active": null,
+      "Passives": [
+        {
+          "Id": 7015,
+          "Name": "天雷杖",
+          "SkillType": 3,
+          "Effects": [
+            {
+              "Id": 8001,
+              "exatk": 60
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "飞雷剑": {
+    "Id": 11558,
+    "Name": "飞雷剑",
+    "Description": "增加 80 点攻击力。",
+    "BackgroundStory": "此剑驾驭飞雷之力，能引发猛烈的雷击。",
+    "ItemType": 1,
+    "WeaponType": 1,
+    "Skills": {
+      "Active": null,
+      "Passives": [
+        {
+          "Id": 7016,
+          "Name": "雷霆之刃",
+          "SkillType": 3,
+          "Effects": [
+            {
+              "Id": 8001,
+              "exatk": 80
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "烈焰法杖": {
+    "Id": 11559,
+    "Name": "烈焰法杖",
+    "Description": "增加 80 点攻击力。",
+    "BackgroundStory": "法杖中燃烧着不灭的火焰，象征着无尽的力量。",
+    "ItemType": 1,
+    "WeaponType": 8,
+    "Skills": {
+      "Active": null,
+      "Passives": [
+        {
+          "Id": 7017,
+          "Name": "烈焰法杖",
+          "SkillType": 3,
+          "Effects": [
+            {
+              "Id": 8001,
+              "exatk": 80
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "龙骨枪": {
+    "Id": 11560,
+    "Name": "龙骨枪",
+    "Description": "增加 80 点攻击力。",
+    "BackgroundStory": "由远古龙骨制成的长柄武器，坚不可摧。",
+    "ItemType": 1,
+    "WeaponType": 9,
+    "Skills": {
+      "Active": null,
+      "Passives": [
+        {
+          "Id": 7018,
+          "Name": "龙骨枪",
+          "SkillType": 3,
+          "Effects": [
+            {
+              "Id": 8001,
+              "exatk": 80
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "疾风双刀": {
+    "Id": 11561,
+    "Name": "疾风双刀",
+    "Description": "增加 80 点攻击力。",
+    "BackgroundStory": "双持短刀，速度如疾风般迅捷。",
+    "ItemType": 1,
+    "WeaponType": 6,
+    "Skills": {
+      "Active": null,
+      "Passives": [
+        {
+          "Id": 7019,
+          "Name": "疾风双刀",
+          "SkillType": 3,
+          "Effects": [
+            {
+              "Id": 8001,
+              "exatk": 80
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "冰晶手枪": {
+    "Id": 11562,
+    "Name": "冰晶手枪",
+    "Description": "增加 80 点攻击力。",
+    "BackgroundStory": "由冰晶打造的手枪，子弹带有极寒之力。",
+    "ItemType": 1,
+    "WeaponType": 4,
+    "Skills": {
+      "Active": null,
+      "Passives": [
+        {
+          "Id": 7020,
+          "Name": "冰晶手枪",
+          "SkillType": 3,
+          "Effects": [
+            {
+              "Id": 8001,
+              "exatk": 80
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "影刃": {
+    "Id": 11563,
+    "Description": "增加 105 点攻击力。",
+    "Name": "影刃",
+    "BackgroundStory": "藏于黑暗中的锋利刀刃，只在敌人未察觉时现身。",
+    "ItemType": 1,
+    "WeaponType": 11,
+    "Skills": {
+      "Active": null,
+      "Passives": [
+        {
+          "Id": 7021,
+          "Name": "影刃",
+          "SkillType": 3,
+          "Effects": [
+            {
+              "Id": 8001,
+              "exatk": 105
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "寒霜之弓": {
+    "Id": 11564,
+    "Name": "寒霜之弓",
+    "Description": "增加 105 点攻击力。",
+    "BackgroundStory": "弓弦上凝聚寒霜，箭矢能冻结一切。",
+    "ItemType": 1,
+    "WeaponType": 3,
+    "Skills": {
+      "Active": null,
+      "Passives": [
+        {
+          "Id": 7022,
+          "Name": "寒霜之弓",
+          "SkillType": 3,
+          "Effects": [
+            {
+              "Id": 8001,
+              "exatk": 105
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "雷鸣战斧": {
+    "Id": 11565,
+    "Name": "雷鸣战斧",
+    "Description": "增加 105 点攻击力。",
+    "BackgroundStory": "携带雷电之力的巨斧，一击之下，雷声轰鸣。",
+    "ItemType": 1,
+    "WeaponType": 2,
+    "Skills": {
+      "Active": null,
+      "Passives": [
+        {
+          "Id": 7023,
+          "Name": "雷鸣战斧",
+          "SkillType": 3,
+          "Effects": [
+            {
+              "Id": 8001,
+              "exatk": 105
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "狂怒拳套": {
+    "Id": 11566,
+    "Name": "狂怒拳套",
+    "Description": "增加 105 点攻击力。",
+    "BackgroundStory": "拳套内的力量能激发佩戴者的狂怒，造成大量伤害。",
+    "ItemType": 1,
+    "WeaponType": 10,
+    "Skills": {
+      "Active": null,
+      "Passives": [
+        {
+          "Id": 7024,
+          "Name": "狂怒拳套",
+          "SkillType": 3,
+          "Effects": [
+            {
+              "Id": 8001,
+              "exatk": 105
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "星辰法器": {
+    "Id": 11567,
+    "Name": "星辰法器",
+    "Description": "增加 105 点攻击力。",
+    "BackgroundStory": "法器中蕴含着星辰之力，每一次攻击都如天外陨石降临。",
+    "ItemType": 1,
+    "WeaponType": 7,
+    "Skills": {
+      "Active": null,
+      "Passives": [
+        {
+          "Id": 7025,
+          "Name": "星辰法器",
+          "SkillType": 3,
+          "Effects": [
+            {
+              "Id": 8001,
+              "exatk": 105
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "圣洁之盾": {
+    "Id": 20001,
+    "Name": "圣洁之盾",
+    "Description": "受到的物理伤害减少 25%。",
+    "BackgroundStory": "传说中由圣光祝福的盾牌，能够抵挡邪恶的力量。",
+    "ItemType": 2,
+    "WeaponType": 0,
+    "Skills": {
+      "Active": null,
+      "Passives": [
+        {
+          "Id": 7100,
+          "Name": "圣光护佑",
+          "SkillType": 3,
+          "Effects": [
+            {
+              "Id": 8019,
+              "expdr": 0.25
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "魔能法袍": {
+    "Id": 20005,
+    "Name": "魔能法袍",
+    "Description": "提高 20% 魔抗，增加 15 点智力。",
+    "BackgroundStory": "法袍蕴含着神秘的魔力，穿戴者能增强魔法威力。",
+    "ItemType": 2,
+    "WeaponType": 0,
+    "Skills": {
+      "Active": null,
+      "Passives": [
+        {
+          "Id": 7104,
+          "Name": "魔力增幅",
+          "SkillType": 3,
+          "Effects": [
+            {
+              "Id": 8005,
+              "exint": 15
+            },
+            {
+              "Id": 8020,
+              "mdftype": 0,
+              "mdfvalue": 0.2
+            }
+          ]
+        }
+      ]
+    }
+  }
+}

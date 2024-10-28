@@ -45,15 +45,7 @@ namespace Oshima.FunGame.OshimaModules.Effects.OpenEffects
                     break;
                 case MagicType.None:
                 default:
-                    character.MDF.None += 实际加成;
-                    character.MDF.Particle += 实际加成;
-                    character.MDF.Fleabane += 实际加成;
-                    character.MDF.Element += 实际加成;
-                    character.MDF.Shadow += 实际加成;
-                    character.MDF.Bright += 实际加成;
-                    character.MDF.PurityContemporary += 实际加成;
-                    character.MDF.PurityNatural += 实际加成;
-                    character.MDF.Starmark += 实际加成;
+                    character.MDF.SetAllValue(实际加成, false);
                     break;
             }
         }
@@ -88,15 +80,7 @@ namespace Oshima.FunGame.OshimaModules.Effects.OpenEffects
                     break;
                 case MagicType.None:
                 default:
-                    character.MDF.None -= 实际加成;
-                    character.MDF.Particle -= 实际加成;
-                    character.MDF.Fleabane -= 实际加成;
-                    character.MDF.Element -= 实际加成;
-                    character.MDF.Shadow -= 实际加成;
-                    character.MDF.Bright -= 实际加成;
-                    character.MDF.PurityContemporary -= 实际加成;
-                    character.MDF.PurityNatural -= 实际加成;
-                    character.MDF.Starmark -= 实际加成;
+                    character.MDF.SetAllValue(-实际加成, false);
                     break;
             }
         }

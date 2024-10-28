@@ -11,7 +11,7 @@ namespace Oshima.FunGame.OshimaModules.Items
         public override string Name => "攻击之爪 +10";
         public override string Description => Skills.Passives.Count > 0 ? Skills.Passives.First().Description : "";
 
-        public 攻击之爪10(Character? character = null) : base(ItemType.Accessory, slot: EquipSlotType.Accessory)
+        public 攻击之爪10(Character? character = null) : base(ItemType.Accessory)
         {
             Skills.Passives.Add(new 攻击之爪技能(character, this, 10));
         }
@@ -23,7 +23,7 @@ namespace Oshima.FunGame.OshimaModules.Items
         public override string Name => "攻击之爪 +30";
         public override string Description => Skills.Passives.Count > 0 ? Skills.Passives.First().Description : "";
 
-        public 攻击之爪30(Character? character = null) : base(ItemType.Accessory, slot: EquipSlotType.Accessory)
+        public 攻击之爪30(Character? character = null) : base(ItemType.Accessory)
         {
             Skills.Passives.Add(new 攻击之爪技能(character, this, 30));
         }
@@ -35,7 +35,7 @@ namespace Oshima.FunGame.OshimaModules.Items
         public override string Name => "攻击之爪 +50";
         public override string Description => Skills.Passives.Count > 0 ? Skills.Passives.First().Description : "";
 
-        public 攻击之爪50(Character? character = null) : base(ItemType.Accessory, slot: EquipSlotType.Accessory)
+        public 攻击之爪50(Character? character = null) : base(ItemType.Accessory)
         {
             Skills.Passives.Add(new 攻击之爪技能(character, this, 50));
         }
