@@ -307,7 +307,7 @@ namespace Oshima.Core.Utils
 
                     // 开始空投
                     Msg = "";
-                    空投(actionQueue, true);
+                    空投(actionQueue);
                     if (isWeb) result.Add("=== 空投 ===\r\n" + Msg);
                     double 下一次空投 = 80;
 
@@ -506,13 +506,9 @@ namespace Oshima.Core.Utils
             if (PrintOut) Console.WriteLine(str);
         }
 
-        public static void 空投(ActionQueue queue, bool first = false)
+        public static void 空投(ActionQueue queue)
         {
             Item a = Items[Random.Shared.Next(Items.Count)];
-            if (first)
-            {
-                a = Items.Where(row => row.Name == "魔能法袍").FirstOrDefault() ?? a;
-            }
             Item[] 这次发放的空投 = [a];
             WriteLine($"社区送温暖了，现在向所有人发放 [ {a.Name} ]！！");
             foreach (Character character in queue.Queue)
