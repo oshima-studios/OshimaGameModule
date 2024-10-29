@@ -10,6 +10,7 @@ namespace Oshima.FunGame.OshimaModules.Items
         public override long Id => (long)AccessoryID.攻击之爪10;
         public override string Name => "攻击之爪 +10";
         public override string Description => Skills.Passives.Count > 0 ? Skills.Passives.First().Description : "";
+        public override QualityType QualityType => QualityType.White;
 
         public 攻击之爪10(Character? character = null) : base(ItemType.Accessory)
         {
@@ -22,6 +23,7 @@ namespace Oshima.FunGame.OshimaModules.Items
         public override long Id => (long)AccessoryID.攻击之爪30;
         public override string Name => "攻击之爪 +30";
         public override string Description => Skills.Passives.Count > 0 ? Skills.Passives.First().Description : "";
+        public override QualityType QualityType => QualityType.Green;
 
         public 攻击之爪30(Character? character = null) : base(ItemType.Accessory)
         {
@@ -34,6 +36,7 @@ namespace Oshima.FunGame.OshimaModules.Items
         public override long Id => (long)AccessoryID.攻击之爪50;
         public override string Name => "攻击之爪 +50";
         public override string Description => Skills.Passives.Count > 0 ? Skills.Passives.First().Description : "";
+        public override QualityType QualityType => QualityType.Blue;
 
         public 攻击之爪50(Character? character = null) : base(ItemType.Accessory)
         {

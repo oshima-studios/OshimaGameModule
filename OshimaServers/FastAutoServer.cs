@@ -339,7 +339,7 @@ namespace Oshima.FunGame.OshimaServers
                     SendAllGamingMessage(data, c.GetInfo());
                 }
 
-                ActionQueue actionQueue = new(inGameCharacters, (str) =>
+                ActionQueue actionQueue = new(inGameCharacters, false, (str) =>
                 {
                     SendAllGamingMessage(data, str);
                 });

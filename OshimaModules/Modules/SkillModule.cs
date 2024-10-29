@@ -100,6 +100,15 @@ namespace Oshima.FunGame.OshimaModules
                         EffectID.ExMDF => new ExMDF(skill, dict),
                         EffectID.ExHR => new ExHR(skill, dict),
                         EffectID.ExMR => new ExMR(skill, dict),
+                        EffectID.ExATK2 => new ExATK2(skill, dict),
+                        EffectID.ExDEF2 => new ExDEF2(skill, dict),
+                        EffectID.ExSTR2 => new ExSTR2(skill, dict),
+                        EffectID.ExAGI2 => new ExAGI2(skill, dict),
+                        EffectID.ExINT2 => new ExINT2(skill, dict),
+                        EffectID.SkillHardTimeReduce2 => new SkillHardTimeReduce2(skill, dict),
+                        EffectID.NormalAttackHardTimeReduce2 => new NormalAttackHardTimeReduce2(skill, dict),
+                        EffectID.ExMaxHP2 => new ExMaxHP2(skill, dict),
+                        EffectID.ExMaxMP2 => new ExMaxMP2(skill, dict),
                         _ => null
                     };
                 }

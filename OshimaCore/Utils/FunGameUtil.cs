@@ -1,6 +1,7 @@
 ﻿using System.Text;
 using Milimoe.FunGame.Core.Api.Utility;
 using Milimoe.FunGame.Core.Entity;
+using Milimoe.FunGame.Core.Library.Constant;
 using Milimoe.FunGame.Core.Model;
 using Oshima.FunGame.OshimaModules;
 using Oshima.FunGame.OshimaModules.Characters;
@@ -31,13 +32,15 @@ namespace Oshima.Core.Utils
         public static List<Character> Characters { get; } = [];
         public static List<Item> Items { get; } = [];
         public static Dictionary<Character, CharacterStatistics> CharacterStatistics { get; } = [];
+        public static Dictionary<Character, CharacterStatistics> TeamCharacterStatistics { get; } = [];
         public static PluginConfig StatsConfig { get; } = new(nameof(FunGameSimulation), nameof(CharacterStatistics));
+        public static PluginConfig TeamStatsConfig { get; } = new(nameof(FunGameSimulation), nameof(TeamCharacterStatistics));
         public static bool IsRuning { get; set; } = false;
         public static bool IsWeb { get; set; } = false;
         public static bool PrintOut { get; set; } = false;
         public static string Msg { get; set; } = "";
 
-        public static List<string> StartGame(bool printout, bool isWeb = false)
+        public static List<string> StartGame(bool printout, bool isWeb = false, bool isTeam = false)
         {
             PrintOut = printout;
             IsWeb = isWeb;
@@ -291,15 +294,8 @@ namespace Oshima.Core.Utils
                         }
                     }
 
-                    // 显示角色信息
-                    if (PrintOut) characters.ForEach(c => Console.WriteLine(c.GetInfo()));
-
                     // 创建顺序表并排序
-                    ActionQueue actionQueue = new(characters, WriteLine);
-                    if (PrintOut) Console.WriteLine();
-
-                    // 显示初始顺序表
-                    actionQueue.DisplayQueue();
+                    ActionQueue actionQueue = new(characters, isTeam, WriteLine);
                     if (PrintOut) Console.WriteLine();
 
                     // 总游戏时长
@@ -307,9 +303,41 @@ namespace Oshima.Core.Utils
 
                     // 开始空投
                     Msg = "";
-                    空投(actionQueue);
+                    int 发放的武器品质 = 0;
+                    int 发放的防具品质 = 0;
+                    int 发放的鞋子品质 = 0;
+                    int 发放的饰品品质 = 0;
+                    空投(actionQueue, ref 发放的武器品质, ref 发放的防具品质, ref 发放的鞋子品质, ref 发放的饰品品质);
                     if (isWeb) result.Add("=== 空投 ===\r\n" + Msg);
-                    double 下一次空投 = 80;
+                    double 下一次空投 = 40;
+
+                    // 显示角色信息
+                    if (PrintOut) characters.ForEach(c => Console.WriteLine(c.GetInfo()));
+
+                    // 因赋予了装备，所以清除排序重新排
+                    actionQueue.ClearQueue();
+                    actionQueue.InitCharacterQueue(characters);
+                    if (PrintOut) Console.WriteLine();
+
+                    // 团队模式
+                    if (isTeam)
+                    {
+                        // 打乱原始数组的顺序
+                        IEnumerable<Character> shuffledCharacters = characters.OrderBy(c => Random.Shared.Next());
+
+                        // 计算分割点
+                        int splitIndex = shuffledCharacters.Count() / 2;
+
+                        // 分成两个数组
+                        List<Character> group1 = shuffledCharacters.Take(splitIndex).ToList();
+                        List<Character> group2 = shuffledCharacters.Skip(splitIndex).ToList();
+                        actionQueue.Teams.Add("队伍一", group1);
+                        actionQueue.Teams.Add("队伍二", group2);
+                    }
+
+                    // 显示初始顺序表
+                    actionQueue.DisplayQueue();
+                    if (PrintOut) Console.WriteLine();
 
                     // 总回合数
                     int i = 1;
@@ -366,9 +394,9 @@ namespace Oshima.Core.Utils
                         {
                             // 空投
                             Msg = "";
-                            空投(actionQueue);
+                            空投(actionQueue, ref 发放的武器品质, ref 发放的防具品质, ref 发放的鞋子品质, ref 发放的饰品品质);
                             if (isWeb) result.Add("=== 空投 ===\r\n" + Msg);
-                            下一次空投 = 100;
+                            下一次空投 = 40;
                         }
 
                         if (actionQueue.Eliminated.Count > deaths)
@@ -400,72 +428,150 @@ namespace Oshima.Core.Utils
                     int top = isWeb ? 12 : 6;
                     Msg = $"=== 伤害排行榜 TOP{top} ===\r\n";
                     int count = 1;
-                    foreach (Character character in actionQueue.CharacterStatistics.OrderByDescending(d => d.Value.TotalDamage).Select(d => d.Key))
-                    {
-                        StringBuilder builder = new();
-                        CharacterStatistics stats = actionQueue.CharacterStatistics[character];
-                        builder.AppendLine($"{count}. [ {character.ToStringWithLevel()} ] （{stats.Kills} / {stats.Assists}）");
-                        builder.AppendLine($"存活时长：{stats.LiveTime} / 存活回合数：{stats.LiveRound} / 行动回合数：{stats.ActionTurn}");
-                        builder.AppendLine($"总计伤害：{stats.TotalDamage} / 总计物理伤害：{stats.TotalPhysicalDamage} / 总计魔法伤害：{stats.TotalMagicDamage}");
-                        builder.AppendLine($"总承受伤害：{stats.TotalTakenDamage} / 总承受物理伤害：{stats.TotalTakenPhysicalDamage} / 总承受魔法伤害：{stats.TotalTakenMagicDamage}");
-                        builder.Append($"每秒伤害：{stats.DamagePerSecond} / 每回合伤害：{stats.DamagePerTurn}");
-                        if (count++ <= top)
-                        {
-                            WriteLine(builder.ToString());
-                        }
-                        else
-                        {
-                            if (PrintOut) Console.WriteLine(builder.ToString());
-                        }
 
-                        CharacterStatistics? totalStats = CharacterStatistics.Where(kv => kv.Key.GetName() == character.GetName()).Select(kv => kv.Value).FirstOrDefault();
-                        if (totalStats != null)
+                    if (isTeam)
+                    {
+                        foreach (Character character in actionQueue.CharacterStatistics.OrderByDescending(d => d.Value.TotalDamage).Select(d => d.Key))
                         {
-                            // 统计此角色的所有数据
-                            totalStats.TotalDamage = Calculation.Round2Digits(totalStats.TotalDamage + stats.TotalDamage);
-                            totalStats.TotalPhysicalDamage = Calculation.Round2Digits(totalStats.TotalPhysicalDamage + stats.TotalPhysicalDamage);
-                            totalStats.TotalMagicDamage = Calculation.Round2Digits(totalStats.TotalMagicDamage + stats.TotalMagicDamage);
-                            totalStats.TotalRealDamage = Calculation.Round2Digits(totalStats.TotalRealDamage + stats.TotalRealDamage);
-                            totalStats.TotalTakenDamage = Calculation.Round2Digits(totalStats.TotalTakenDamage + stats.TotalTakenDamage);
-                            totalStats.TotalTakenPhysicalDamage = Calculation.Round2Digits(totalStats.TotalTakenPhysicalDamage + stats.TotalTakenPhysicalDamage);
-                            totalStats.TotalTakenMagicDamage = Calculation.Round2Digits(totalStats.TotalTakenMagicDamage + stats.TotalTakenMagicDamage);
-                            totalStats.TotalTakenRealDamage = Calculation.Round2Digits(totalStats.TotalTakenRealDamage + stats.TotalTakenRealDamage);
-                            totalStats.LiveRound += stats.LiveRound;
-                            totalStats.ActionTurn += stats.ActionTurn;
-                            totalStats.LiveTime = Calculation.Round2Digits(totalStats.LiveTime + stats.LiveTime);
-                            totalStats.TotalEarnedMoney += stats.TotalEarnedMoney;
-                            totalStats.Kills += stats.Kills;
-                            totalStats.Deaths += stats.Deaths;
-                            totalStats.Assists += stats.Assists;
-                            totalStats.LastRank = stats.LastRank;
-                            double totalRank = totalStats.AvgRank * totalStats.Plays + totalStats.LastRank;
-                            totalStats.Plays += stats.Plays;
-                            if (totalStats.Plays != 0) totalStats.AvgRank = Calculation.Round2Digits(totalRank / totalStats.Plays);
-                            totalStats.Wins += stats.Wins;
-                            totalStats.Top3s += stats.Top3s;
-                            totalStats.Loses += stats.Loses;
-                            if (totalStats.Plays != 0)
+                            StringBuilder builder = new();
+                            CharacterStatistics stats = actionQueue.CharacterStatistics[character];
+                            builder.AppendLine($"{count}. [ {character.ToStringWithLevel()} ] （{stats.Kills} / {stats.Assists}）");
+                            builder.AppendLine($"存活时长：{stats.LiveTime} / 存活回合数：{stats.LiveRound} / 行动回合数：{stats.ActionTurn}");
+                            builder.AppendLine($"总计伤害：{stats.TotalDamage} / 总计物理伤害：{stats.TotalPhysicalDamage} / 总计魔法伤害：{stats.TotalMagicDamage}");
+                            builder.AppendLine($"总承受伤害：{stats.TotalTakenDamage} / 总承受物理伤害：{stats.TotalTakenPhysicalDamage} / 总承受魔法伤害：{stats.TotalTakenMagicDamage}");
+                            builder.Append($"每秒伤害：{stats.DamagePerSecond} / 每回合伤害：{stats.DamagePerTurn}");
+                            if (count++ <= top)
                             {
-                                totalStats.AvgDamage = Calculation.Round2Digits(totalStats.TotalDamage / totalStats.Plays);
-                                totalStats.AvgPhysicalDamage = Calculation.Round2Digits(totalStats.TotalPhysicalDamage / totalStats.Plays);
-                                totalStats.AvgMagicDamage = Calculation.Round2Digits(totalStats.TotalMagicDamage / totalStats.Plays);
-                                totalStats.AvgRealDamage = Calculation.Round2Digits(totalStats.TotalRealDamage / totalStats.Plays);
-                                totalStats.AvgTakenDamage = Calculation.Round2Digits(totalStats.TotalTakenDamage / totalStats.Plays);
-                                totalStats.AvgTakenPhysicalDamage = Calculation.Round2Digits(totalStats.TotalTakenPhysicalDamage / totalStats.Plays);
-                                totalStats.AvgTakenMagicDamage = Calculation.Round2Digits(totalStats.TotalTakenMagicDamage / totalStats.Plays);
-                                totalStats.AvgTakenRealDamage = Calculation.Round2Digits(totalStats.TotalTakenRealDamage / totalStats.Plays);
-                                totalStats.AvgLiveRound = totalStats.LiveRound / totalStats.Plays;
-                                totalStats.AvgActionTurn = totalStats.ActionTurn / totalStats.Plays;
-                                totalStats.AvgLiveTime = Calculation.Round2Digits(totalStats.LiveTime / totalStats.Plays);
-                                totalStats.AvgEarnedMoney = totalStats.TotalEarnedMoney / totalStats.Plays;
-                                totalStats.Winrates = Calculation.Round4Digits(Convert.ToDouble(totalStats.Wins) / Convert.ToDouble(totalStats.Plays));
-                                totalStats.Top3rates = Calculation.Round4Digits(Convert.ToDouble(totalStats.Top3s) / Convert.ToDouble(totalStats.Plays));
+                                WriteLine(builder.ToString());
                             }
-                            if (totalStats.LiveRound != 0) totalStats.DamagePerRound = Calculation.Round2Digits(totalStats.TotalDamage / totalStats.LiveRound);
-                            if (totalStats.ActionTurn != 0) totalStats.DamagePerTurn = Calculation.Round2Digits(totalStats.TotalDamage / totalStats.ActionTurn);
-                            if (totalStats.LiveTime != 0) totalStats.DamagePerSecond = Calculation.Round2Digits(totalStats.TotalDamage / totalStats.LiveTime);
+                            else
+                            {
+                                if (PrintOut) Console.WriteLine(builder.ToString());
+                            }
+
+                            CharacterStatistics? totalStats = TeamCharacterStatistics.Where(kv => kv.Key.GetName() == character.GetName()).Select(kv => kv.Value).FirstOrDefault();
+                            if (totalStats != null)
+                            {
+                                // 统计此角色的所有数据
+                                totalStats.TotalDamage = Calculation.Round2Digits(totalStats.TotalDamage + stats.TotalDamage);
+                                totalStats.TotalPhysicalDamage = Calculation.Round2Digits(totalStats.TotalPhysicalDamage + stats.TotalPhysicalDamage);
+                                totalStats.TotalMagicDamage = Calculation.Round2Digits(totalStats.TotalMagicDamage + stats.TotalMagicDamage);
+                                totalStats.TotalRealDamage = Calculation.Round2Digits(totalStats.TotalRealDamage + stats.TotalRealDamage);
+                                totalStats.TotalTakenDamage = Calculation.Round2Digits(totalStats.TotalTakenDamage + stats.TotalTakenDamage);
+                                totalStats.TotalTakenPhysicalDamage = Calculation.Round2Digits(totalStats.TotalTakenPhysicalDamage + stats.TotalTakenPhysicalDamage);
+                                totalStats.TotalTakenMagicDamage = Calculation.Round2Digits(totalStats.TotalTakenMagicDamage + stats.TotalTakenMagicDamage);
+                                totalStats.TotalTakenRealDamage = Calculation.Round2Digits(totalStats.TotalTakenRealDamage + stats.TotalTakenRealDamage);
+                                totalStats.LiveRound += stats.LiveRound;
+                                totalStats.ActionTurn += stats.ActionTurn;
+                                totalStats.LiveTime = Calculation.Round2Digits(totalStats.LiveTime + stats.LiveTime);
+                                totalStats.TotalEarnedMoney += stats.TotalEarnedMoney;
+                                totalStats.Kills += stats.Kills;
+                                totalStats.Deaths += stats.Deaths;
+                                totalStats.Assists += stats.Assists;
+                                totalStats.FirstKills += stats.FirstKills;
+                                totalStats.FirstDeaths += stats.FirstDeaths;
+                                totalStats.LastRank = stats.LastRank;
+                                double totalRank = totalStats.AvgRank * totalStats.Plays + totalStats.LastRank;
+                                totalStats.Plays += stats.Plays;
+                                if (totalStats.Plays != 0) totalStats.AvgRank = Calculation.Round2Digits(totalRank / totalStats.Plays);
+                                totalStats.Wins += stats.Wins;
+                                totalStats.Top3s += stats.Top3s;
+                                totalStats.Loses += stats.Loses;
+                                if (totalStats.Plays != 0)
+                                {
+                                    totalStats.AvgDamage = Calculation.Round2Digits(totalStats.TotalDamage / totalStats.Plays);
+                                    totalStats.AvgPhysicalDamage = Calculation.Round2Digits(totalStats.TotalPhysicalDamage / totalStats.Plays);
+                                    totalStats.AvgMagicDamage = Calculation.Round2Digits(totalStats.TotalMagicDamage / totalStats.Plays);
+                                    totalStats.AvgRealDamage = Calculation.Round2Digits(totalStats.TotalRealDamage / totalStats.Plays);
+                                    totalStats.AvgTakenDamage = Calculation.Round2Digits(totalStats.TotalTakenDamage / totalStats.Plays);
+                                    totalStats.AvgTakenPhysicalDamage = Calculation.Round2Digits(totalStats.TotalTakenPhysicalDamage / totalStats.Plays);
+                                    totalStats.AvgTakenMagicDamage = Calculation.Round2Digits(totalStats.TotalTakenMagicDamage / totalStats.Plays);
+                                    totalStats.AvgTakenRealDamage = Calculation.Round2Digits(totalStats.TotalTakenRealDamage / totalStats.Plays);
+                                    totalStats.AvgLiveRound = totalStats.LiveRound / totalStats.Plays;
+                                    totalStats.AvgActionTurn = totalStats.ActionTurn / totalStats.Plays;
+                                    totalStats.AvgLiveTime = Calculation.Round2Digits(totalStats.LiveTime / totalStats.Plays);
+                                    totalStats.AvgEarnedMoney = totalStats.TotalEarnedMoney / totalStats.Plays;
+                                    totalStats.Winrates = Calculation.Round4Digits(Convert.ToDouble(totalStats.Wins) / Convert.ToDouble(totalStats.Plays));
+                                    totalStats.Top3rates = Calculation.Round4Digits(Convert.ToDouble(totalStats.Top3s) / Convert.ToDouble(totalStats.Plays));
+                                }
+                                if (totalStats.LiveRound != 0) totalStats.DamagePerRound = Calculation.Round2Digits(totalStats.TotalDamage / totalStats.LiveRound);
+                                if (totalStats.ActionTurn != 0) totalStats.DamagePerTurn = Calculation.Round2Digits(totalStats.TotalDamage / totalStats.ActionTurn);
+                                if (totalStats.LiveTime != 0) totalStats.DamagePerSecond = Calculation.Round2Digits(totalStats.TotalDamage / totalStats.LiveTime);
+                            }
                         }
                     }
+                    else
+                    {
+                        foreach (Character character in actionQueue.CharacterStatistics.OrderByDescending(d => d.Value.TotalDamage).Select(d => d.Key))
+                        {
+                            StringBuilder builder = new();
+                            CharacterStatistics stats = actionQueue.CharacterStatistics[character];
+                            builder.AppendLine($"{count}. [ {character.ToStringWithLevel()} ] （{stats.Kills} / {stats.Assists}）");
+                            builder.AppendLine($"存活时长：{stats.LiveTime} / 存活回合数：{stats.LiveRound} / 行动回合数：{stats.ActionTurn}");
+                            builder.AppendLine($"总计伤害：{stats.TotalDamage} / 总计物理伤害：{stats.TotalPhysicalDamage} / 总计魔法伤害：{stats.TotalMagicDamage}");
+                            builder.AppendLine($"总承受伤害：{stats.TotalTakenDamage} / 总承受物理伤害：{stats.TotalTakenPhysicalDamage} / 总承受魔法伤害：{stats.TotalTakenMagicDamage}");
+                            builder.Append($"每秒伤害：{stats.DamagePerSecond} / 每回合伤害：{stats.DamagePerTurn}");
+                            if (count++ <= top)
+                            {
+                                WriteLine(builder.ToString());
+                            }
+                            else
+                            {
+                                if (PrintOut) Console.WriteLine(builder.ToString());
+                            }
+
+                            CharacterStatistics? totalStats = CharacterStatistics.Where(kv => kv.Key.GetName() == character.GetName()).Select(kv => kv.Value).FirstOrDefault();
+                            if (totalStats != null)
+                            {
+                                // 统计此角色的所有数据
+                                totalStats.TotalDamage = Calculation.Round2Digits(totalStats.TotalDamage + stats.TotalDamage);
+                                totalStats.TotalPhysicalDamage = Calculation.Round2Digits(totalStats.TotalPhysicalDamage + stats.TotalPhysicalDamage);
+                                totalStats.TotalMagicDamage = Calculation.Round2Digits(totalStats.TotalMagicDamage + stats.TotalMagicDamage);
+                                totalStats.TotalRealDamage = Calculation.Round2Digits(totalStats.TotalRealDamage + stats.TotalRealDamage);
+                                totalStats.TotalTakenDamage = Calculation.Round2Digits(totalStats.TotalTakenDamage + stats.TotalTakenDamage);
+                                totalStats.TotalTakenPhysicalDamage = Calculation.Round2Digits(totalStats.TotalTakenPhysicalDamage + stats.TotalTakenPhysicalDamage);
+                                totalStats.TotalTakenMagicDamage = Calculation.Round2Digits(totalStats.TotalTakenMagicDamage + stats.TotalTakenMagicDamage);
+                                totalStats.TotalTakenRealDamage = Calculation.Round2Digits(totalStats.TotalTakenRealDamage + stats.TotalTakenRealDamage);
+                                totalStats.LiveRound += stats.LiveRound;
+                                totalStats.ActionTurn += stats.ActionTurn;
+                                totalStats.LiveTime = Calculation.Round2Digits(totalStats.LiveTime + stats.LiveTime);
+                                totalStats.TotalEarnedMoney += stats.TotalEarnedMoney;
+                                totalStats.Kills += stats.Kills;
+                                totalStats.Deaths += stats.Deaths;
+                                totalStats.Assists += stats.Assists;
+                                totalStats.FirstKills += stats.FirstKills;
+                                totalStats.FirstDeaths += stats.FirstDeaths;
+                                totalStats.LastRank = stats.LastRank;
+                                double totalRank = totalStats.AvgRank * totalStats.Plays + totalStats.LastRank;
+                                totalStats.Plays += stats.Plays;
+                                if (totalStats.Plays != 0) totalStats.AvgRank = Calculation.Round2Digits(totalRank / totalStats.Plays);
+                                totalStats.Wins += stats.Wins;
+                                totalStats.Top3s += stats.Top3s;
+                                totalStats.Loses += stats.Loses;
+                                if (totalStats.Plays != 0)
+                                {
+                                    totalStats.AvgDamage = Calculation.Round2Digits(totalStats.TotalDamage / totalStats.Plays);
+                                    totalStats.AvgPhysicalDamage = Calculation.Round2Digits(totalStats.TotalPhysicalDamage / totalStats.Plays);
+                                    totalStats.AvgMagicDamage = Calculation.Round2Digits(totalStats.TotalMagicDamage / totalStats.Plays);
+                                    totalStats.AvgRealDamage = Calculation.Round2Digits(totalStats.TotalRealDamage / totalStats.Plays);
+                                    totalStats.AvgTakenDamage = Calculation.Round2Digits(totalStats.TotalTakenDamage / totalStats.Plays);
+                                    totalStats.AvgTakenPhysicalDamage = Calculation.Round2Digits(totalStats.TotalTakenPhysicalDamage / totalStats.Plays);
+                                    totalStats.AvgTakenMagicDamage = Calculation.Round2Digits(totalStats.TotalTakenMagicDamage / totalStats.Plays);
+                                    totalStats.AvgTakenRealDamage = Calculation.Round2Digits(totalStats.TotalTakenRealDamage / totalStats.Plays);
+                                    totalStats.AvgLiveRound = totalStats.LiveRound / totalStats.Plays;
+                                    totalStats.AvgActionTurn = totalStats.ActionTurn / totalStats.Plays;
+                                    totalStats.AvgLiveTime = Calculation.Round2Digits(totalStats.LiveTime / totalStats.Plays);
+                                    totalStats.AvgEarnedMoney = totalStats.TotalEarnedMoney / totalStats.Plays;
+                                    totalStats.Winrates = Calculation.Round4Digits(Convert.ToDouble(totalStats.Wins) / Convert.ToDouble(totalStats.Plays));
+                                    totalStats.Top3rates = Calculation.Round4Digits(Convert.ToDouble(totalStats.Top3s) / Convert.ToDouble(totalStats.Plays));
+                                }
+                                if (totalStats.LiveRound != 0) totalStats.DamagePerRound = Calculation.Round2Digits(totalStats.TotalDamage / totalStats.LiveRound);
+                                if (totalStats.ActionTurn != 0) totalStats.DamagePerTurn = Calculation.Round2Digits(totalStats.TotalDamage / totalStats.ActionTurn);
+                                if (totalStats.LiveTime != 0) totalStats.DamagePerSecond = Calculation.Round2Digits(totalStats.TotalDamage / totalStats.LiveTime);
+                            }
+                        }
+                    }
+
                     result.Add(Msg);
 
                     // 显示每个角色的信息
@@ -478,13 +584,27 @@ namespace Oshima.Core.Utils
                         }
                     }
 
-                    lock (StatsConfig)
+                    if (isTeam)
                     {
-                        foreach (Character c in CharacterStatistics.Keys)
+                        lock (TeamStatsConfig)
                         {
-                            StatsConfig.Add(c.ToStringWithOutUser(), CharacterStatistics[c]);
+                            foreach (Character c in TeamCharacterStatistics.Keys)
+                            {
+                                TeamStatsConfig.Add(c.ToStringWithOutUser(), TeamCharacterStatistics[c]);
+                            }
+                            TeamStatsConfig.SaveConfig();
                         }
-                        StatsConfig.SaveConfig();
+                    }
+                    else
+                    {
+                        lock (StatsConfig)
+                        {
+                            foreach (Character c in CharacterStatistics.Keys)
+                            {
+                                StatsConfig.Add(c.ToStringWithOutUser(), CharacterStatistics[c]);
+                            }
+                            StatsConfig.SaveConfig();
+                        }
                     }
 
                     IsRuning = false;
@@ -506,13 +626,57 @@ namespace Oshima.Core.Utils
             if (PrintOut) Console.WriteLine(str);
         }
 
-        public static void 空投(ActionQueue queue)
+        public static void 空投(ActionQueue queue, ref int wQuality, ref int aQuality, ref int sQuality, ref int acQuality)
         {
-            Item a = Items[Random.Shared.Next(Items.Count)];
-            Item[] 这次发放的空投 = [a];
-            WriteLine($"社区送温暖了，现在向所有人发放 [ {a.Name} ]！！");
+            WriteLine($"社区送温暖了，现在随机发放空投！！");
             foreach (Character character in queue.Queue)
             {
+                int t1 = wQuality;
+                int t2 = aQuality;
+                int t3 = sQuality;
+                int t4 = acQuality;
+                Item[] 武器 = Items.Where(i => i.Id.ToString().StartsWith("11") && (int)i.QualityType == t1).ToArray();
+                if (wQuality < 4)
+                {
+                    wQuality++;
+                }
+                Item[] 防具 = Items.Where(i => i.Id.ToString().StartsWith("12") && (int)i.QualityType == t2).ToArray();
+                if (aQuality < 1)
+                {
+                    aQuality++;
+                }
+                Item[] 鞋子 = Items.Where(i => i.Id.ToString().StartsWith("13") && (int)i.QualityType == t3).ToArray();
+                if (sQuality < 1)
+                {
+                    sQuality++;
+                }
+                Item[] 饰品 = Items.Where(i => i.Id.ToString().StartsWith("14") && (int)i.QualityType == t4).ToArray();
+                if (acQuality < 3)
+                {
+                    acQuality++;
+                }
+                Item? a = null, b = null, c = null, d = null;
+                if (武器.Length > 0)
+                {
+                    a = 武器[Random.Shared.Next(武器.Length)];
+                }
+                if (防具.Length > 0)
+                {
+                    b = 防具[Random.Shared.Next(防具.Length)];
+                }
+                if (鞋子.Length > 0)
+                {
+                    c = 鞋子[Random.Shared.Next(鞋子.Length)];
+                }
+                if (饰品.Length > 0)
+                {
+                    d = 饰品[Random.Shared.Next(饰品.Length)];
+                }
+                List<Item> 这次发放的空投 = [];
+                if (a != null) 这次发放的空投.Add(a);
+                if (b != null) 这次发放的空投.Add(b);
+                if (c != null) 这次发放的空投.Add(c);
+                if (d != null) 这次发放的空投.Add(d);
                 foreach (Item item in 这次发放的空投)
                 {
                     Item realItem = item.Copy(1);
@@ -549,6 +713,20 @@ namespace Oshima.Core.Utils
                 if (StatsConfig.ContainsKey(character.ToStringWithOutUser()))
                 {
                     CharacterStatistics[character] = StatsConfig.Get<CharacterStatistics>(character.ToStringWithOutUser()) ?? CharacterStatistics[character];
+                }
+            }
+            
+            foreach (Character c in Characters)
+            {
+                TeamCharacterStatistics.Add(c, new());
+            }
+
+            TeamStatsConfig.LoadConfig();
+            foreach (Character character in TeamCharacterStatistics.Keys)
+            {
+                if (TeamStatsConfig.ContainsKey(character.ToStringWithOutUser()))
+                {
+                    TeamCharacterStatistics[character] = TeamStatsConfig.Get<CharacterStatistics>(character.ToStringWithOutUser()) ?? TeamCharacterStatistics[character];
                 }
             }
 

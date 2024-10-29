@@ -6,6 +6,7 @@
     "BackgroundStory": "传说中的黑暗之刃，蕴含邪恶力量。",
     "ItemType": 1,
     "WeaponType": 1,
+    "QualityType": 0,
     "Price": 0,
     "Skills": {
       "Active": null,
@@ -31,6 +32,7 @@
     "BackgroundStory": "火焰中锻造的长剑，散发着炙热气息。",
     "ItemType": 1,
     "WeaponType": 2,
+    "QualityType": 0,
     "Price": 0,
     "Skills": {
       "Active": null,
@@ -56,6 +58,7 @@
     "BackgroundStory": "由稀有银月材料制成，精准无比。",
     "ItemType": 1,
     "WeaponType": 3,
+    "QualityType": 0,
     "Price": 0,
     "Skills": {
       "Active": null,
@@ -81,6 +84,7 @@
     "BackgroundStory": "捕捉风暴之力的武器，射速惊人。",
     "ItemType": 1,
     "WeaponType": 5,
+    "QualityType": 0,
     "Price": 0,
     "Skills": {
       "Active": null,
@@ -106,6 +110,7 @@
     "BackgroundStory": "无形的力量增强拳套，适合迅捷攻击。",
     "ItemType": 1,
     "WeaponType": 11,
+    "QualityType": 0,
     "Price": 0,
     "Skills": {
       "Active": null,
@@ -131,6 +136,7 @@
     "BackgroundStory": "蕴含雷霆之力的神秘之剑，斩击时带有雷电。",
     "ItemType": 1,
     "WeaponType": 1,
+    "QualityType": 1,
     "Price": 0,
     "Skills": {
       "Active": null,
@@ -156,6 +162,7 @@
     "BackgroundStory": "由远古龙骨锻造而成的巨剑，威力无比。",
     "ItemType": 1,
     "WeaponType": 2,
+    "QualityType": 1,
     "Price": 0,
     "Skills": {
       "Active": null,
@@ -181,6 +188,7 @@
     "BackgroundStory": "能够穿透黑暗的弓，适合隐匿射击。",
     "ItemType": 1,
     "WeaponType": 3,
+    "QualityType": 1,
     "Price": 0,
     "Skills": {
       "Active": null,
@@ -206,6 +214,7 @@
     "BackgroundStory": "能够发射赤焰的手枪，近距离威力极大。",
     "ItemType": 1,
     "WeaponType": 4,
+    "QualityType": 1,
     "Price": 0,
     "Skills": {
       "Active": null,
@@ -231,6 +240,7 @@
     "BackgroundStory": "据说能够召唤天空之力的法杖，拥有强大魔力。",
     "ItemType": 1,
     "WeaponType": 8,
+    "QualityType": 1,
     "Price": 0,
     "Skills": {
       "Active": null,
@@ -256,6 +266,7 @@
     "BackgroundStory": "这把剑燃烧着永恒的火焰，传说可以焚尽一切。",
     "ItemType": 1,
     "WeaponType": 1,
+    "QualityType": 2,
     "Skills": {
       "Active": null,
       "Passives": [
@@ -280,6 +291,7 @@
     "BackgroundStory": "每次射击都能引发狂风，传说它由风神亲手打造。",
     "ItemType": 1,
     "WeaponType": 3,
+    "QualityType": 2,
     "Skills": {
       "Active": null,
       "Passives": [
@@ -304,6 +316,7 @@
     "BackgroundStory": "在破晓时分，这把长枪能够穿透任何黑暗。",
     "ItemType": 1,
     "WeaponType": 9,
+    "QualityType": 2,
     "Skills": {
       "Active": null,
       "Passives": [
@@ -328,6 +341,7 @@
     "BackgroundStory": "这对匕首闪烁着死亡的光芒，专为刺客所用。",
     "ItemType": 1,
     "WeaponType": 6,
+    "QualityType": 2,
     "Skills": {
       "Active": null,
       "Passives": [
@@ -352,6 +366,7 @@
     "BackgroundStory": "召唤天雷的法杖，拥有毁天灭地的力量。",
     "ItemType": 1,
     "WeaponType": 8,
+    "QualityType": 2,
     "Skills": {
       "Active": null,
       "Passives": [
@@ -376,6 +391,7 @@
     "BackgroundStory": "此剑驾驭飞雷之力，能引发猛烈的雷击。",
     "ItemType": 1,
     "WeaponType": 1,
+    "QualityType": 3,
     "Skills": {
       "Active": null,
       "Passives": [
@@ -400,6 +416,7 @@
     "BackgroundStory": "法杖中燃烧着不灭的火焰，象征着无尽的力量。",
     "ItemType": 1,
     "WeaponType": 8,
+    "QualityType": 3,
     "Skills": {
       "Active": null,
       "Passives": [
@@ -424,6 +441,7 @@
     "BackgroundStory": "由远古龙骨制成的长柄武器，坚不可摧。",
     "ItemType": 1,
     "WeaponType": 9,
+    "QualityType": 3,
     "Skills": {
       "Active": null,
       "Passives": [
@@ -448,6 +466,7 @@
     "BackgroundStory": "双持短刀，速度如疾风般迅捷。",
     "ItemType": 1,
     "WeaponType": 6,
+    "QualityType": 3,
     "Skills": {
       "Active": null,
       "Passives": [
@@ -472,6 +491,7 @@
     "BackgroundStory": "由冰晶打造的手枪，子弹带有极寒之力。",
     "ItemType": 1,
     "WeaponType": 4,
+    "QualityType": 3,
     "Skills": {
       "Active": null,
       "Passives": [
@@ -496,6 +516,7 @@
     "BackgroundStory": "藏于黑暗中的锋利刀刃，只在敌人未察觉时现身。",
     "ItemType": 1,
     "WeaponType": 11,
+    "QualityType": 4,
     "Skills": {
       "Active": null,
       "Passives": [
@@ -520,6 +541,7 @@
     "BackgroundStory": "弓弦上凝聚寒霜，箭矢能冻结一切。",
     "ItemType": 1,
     "WeaponType": 3,
+    "QualityType": 4,
     "Skills": {
       "Active": null,
       "Passives": [
@@ -544,6 +566,7 @@
     "BackgroundStory": "携带雷电之力的巨斧，一击之下，雷声轰鸣。",
     "ItemType": 1,
     "WeaponType": 2,
+    "QualityType": 4,
     "Skills": {
       "Active": null,
       "Passives": [
@@ -568,6 +591,7 @@
     "BackgroundStory": "拳套内的力量能激发佩戴者的狂怒，造成大量伤害。",
     "ItemType": 1,
     "WeaponType": 10,
+    "QualityType": 4,
     "Skills": {
       "Active": null,
       "Passives": [
@@ -592,6 +616,7 @@
     "BackgroundStory": "法器中蕴含着星辰之力，每一次攻击都如天外陨石降临。",
     "ItemType": 1,
     "WeaponType": 7,
+    "QualityType": 4,
     "Skills": {
       "Active": null,
       "Passives": [
@@ -609,24 +634,76 @@
       ]
     }
   },
-  "圣洁之盾": {
-    "Id": 20001,
-    "Name": "圣洁之盾",
-    "Description": "受到的物理伤害减少 25%。",
-    "BackgroundStory": "传说中由圣光祝福的盾牌，能够抵挡邪恶的力量。",
+  "初级法袍": {
+    "Id": 12501,
+    "Name": "初级法袍",
+    "Description": "增加 20 点物理护甲。",
+    "BackgroundStory": "可以不穿，不能没有。",
     "ItemType": 2,
     "WeaponType": 0,
+    "QualityType": 0,
     "Skills": {
       "Active": null,
       "Passives": [
         {
-          "Id": 7100,
+          "Id": 7101,
+          "Name": "初级法袍",
+          "SkillType": 3,
+          "Effects": [
+            {
+              "Id": 8002,
+              "exdef": 20
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "高中校服": {
+    "Id": 12502,
+    "Name": "初级法袍",
+    "Description": "增加 10% 魔法抗性。",
+    "BackgroundStory": "珍藏的回忆。",
+    "ItemType": 2,
+    "WeaponType": 0,
+    "QualityType": 0,
+    "Skills": {
+      "Active": null,
+      "Passives": [
+        {
+          "Id": 7102,
+          "Name": "高中校服",
+          "SkillType": 3,
+          "Effects": [
+            {
+              "Id": 8020,
+              "mdftype": 0,
+              "mdfvalue": 0.2
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "圣洁之盾": {
+    "Id": 12503,
+    "Name": "圣洁之盾",
+    "Description": "受到的物理伤害减少 20%。",
+    "BackgroundStory": "传说中由圣光祝福的盾牌，能够抵挡邪恶的力量。",
+    "ItemType": 2,
+    "WeaponType": 0,
+    "QualityType": 1,
+    "Skills": {
+      "Active": null,
+      "Passives": [
+        {
+          "Id": 7103,
           "Name": "圣光护佑",
           "SkillType": 3,
           "Effects": [
             {
               "Id": 8019,
-              "expdr": 0.25
+              "expdr": 0.20
             }
           ]
         }
@@ -634,12 +711,13 @@
     }
   },
   "魔能法袍": {
-    "Id": 20005,
+    "Id": 12504,
     "Name": "魔能法袍",
-    "Description": "提高 20% 魔抗，增加 15 点智力。",
+    "Description": "增加 15 点智力和 20% 魔法抗性。",
     "BackgroundStory": "法袍蕴含着神秘的魔力，穿戴者能增强魔法威力。",
     "ItemType": 2,
     "WeaponType": 0,
+    "QualityType": 1,
     "Skills": {
       "Active": null,
       "Passives": [
@@ -656,6 +734,549 @@
               "Id": 8020,
               "mdftype": 0,
               "mdfvalue": 0.2
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "炼狱战铠": {
+    "Id": 12505,
+    "Name": "炼狱战铠",
+    "Description": "增加 40 点物理护甲，增加 10 点每时间生命回复。",
+    "BackgroundStory": "在无尽战火中锻造而成，具有极高的防御力。",
+    "ItemType": 2,
+    "WeaponType": 0,
+    "QualityType": 1,
+    "Skills": {
+      "Active": null,
+      "Passives": [
+        {
+          "Id": 7105,
+          "Name": "战火庇护",
+          "SkillType": 3,
+          "Effects": [
+            {
+              "Id": 8002,
+              "exdef": 40
+            },
+            {
+              "Id": 8021,
+              "exhr": 10
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "幽影斗篷": {
+    "Id": 12506,
+    "Name": "幽影斗篷",
+    "Description": "增加 30 点物理护甲和 8% 闪避率。",
+    "BackgroundStory": "黑暗中编织而成的斗篷，能让穿戴者更加敏捷。",
+    "ItemType": 2,
+    "WeaponType": 0,
+    "QualityType": 1,
+    "Skills": {
+      "Active": null,
+      "Passives": [
+        {
+          "Id": 7106,
+          "Name": "幽影闪避",
+          "SkillType": 3,
+          "Effects": [
+            {
+              "Id": 8002,
+              "exdef": 30
+            },
+            {
+              "Id": 8016,
+              "exer": 0.08
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "帆布鞋": {
+    "Id": 13501,
+    "Name": "帆布鞋",
+    "Description": "增加 30 点行动速度。",
+    "BackgroundStory": "一如年少模样。",
+    "ItemType": 3,
+    "WeaponType": 0,
+    "QualityType": 0,
+    "Skills": {
+      "Active": null,
+      "Passives": [
+        {
+          "Id": 7701,
+          "Name": "帆布鞋",
+          "SkillType": 3,
+          "Effects": [
+            {
+              "Id": 8009,
+              "exspd": 30
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "疾风靴": {
+    "Id": 13502,
+    "Name": "疾风靴",
+    "Description": "增加 65 点行动速度，使穿戴者行动更加敏捷。",
+    "BackgroundStory": "这双靴子由风元素加持，步伐轻盈如风。",
+    "ItemType": 3,
+    "WeaponType": 0,
+    "QualityType": 1,
+    "Skills": {
+      "Active": null,
+      "Passives": [
+        {
+          "Id": 7702,
+          "Name": "疾风靴",
+          "SkillType": 3,
+          "Effects": [
+            {
+              "Id": 8009,
+              "exspd": 65
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "轻灵之鞋": {
+    "Id": 13503,
+    "Name": "轻灵之鞋",
+    "Description": "增加 45 点行动速度，并提高 10% 闪避率。",
+    "BackgroundStory": "传说这双鞋能让穿戴者的步伐鬼魅般飘忽不定。",
+    "ItemType": 3,
+    "WeaponType": 0,
+    "QualityType": 1,
+    "Skills": {
+      "Active": null,
+      "Passives": [
+        {
+          "Id": 7703,
+          "Name": "轻灵之步",
+          "SkillType": 3,
+          "Effects": [
+            {
+              "Id": 8009,
+              "exspd": 45
+            },
+            {
+              "Id": 8016,
+              "exer": 0.1
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "雷电靴": {
+    "Id": 13504,
+    "Name": "雷电靴",
+    "Description": "增加 45 点行动速度，并提高 10% 冷却缩减。",
+    "BackgroundStory": "这双靴子蕴含雷电之力，使穿戴者快速出击。",
+    "ItemType": 3,
+    "WeaponType": 0,
+    "QualityType": 1,
+    "Skills": {
+      "Active": null,
+      "Passives": [
+        {
+          "Id": 7704,
+          "Name": "雷霆之速",
+          "SkillType": 3,
+          "Effects": [
+            {
+              "Id": 8009,
+              "exspd": 45
+            },
+            {
+              "Id": 8011,
+              "excdr": 0.1
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "暗影之靴": {
+    "Id": 13505,
+    "Name": "暗影之靴",
+    "Description": "增加 38 点行动速度，并提高 8% 暴击率。",
+    "BackgroundStory": "这双鞋在黑暗中隐藏，赋予穿戴者暗影的力量。",
+    "ItemType": 3,
+    "WeaponType": 0,
+    "QualityType": 1,
+    "Skills": {
+      "Active": null,
+      "Passives": [
+        {
+          "Id": 7705,
+          "Name": "暗影疾行",
+          "SkillType": 3,
+          "Effects": [
+            {
+              "Id": 8009,
+              "exspd": 38
+            },
+            {
+              "Id": 8014,
+              "excr": 0.08
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "守护吊坠": {
+    "Id": 14501,
+    "Name": "守护吊坠",
+    "Description": "增加 3 点所有力量、敏捷、智力。",
+    "BackgroundStory": "带着一丝丝念想。",
+    "ItemType": 4,
+    "WeaponType": 0,
+    "QualityType": 0,
+    "Skills": {
+      "Active": null,
+      "Passives": [
+        {
+          "Id": 7301,
+          "Name": "守护吊坠",
+          "SkillType": 3,
+          "Effects": [
+            {
+              "Id": 8003,
+              "exstr": 3
+            },
+            {
+              "Id": 8004,
+              "exagi": 3
+            },
+            {
+              "Id": 8005,
+              "exint": 3
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "富贵头冠": {
+    "Id": 14502,
+    "Name": "富贵头冠",
+    "Description": "增加 170 点最大生命值和 80 点最大魔法值。",
+    "BackgroundStory": "辉煌华贵的头冠。",
+    "ItemType": 4,
+    "WeaponType": 0,
+    "QualityType": 0,
+    "Skills": {
+      "Active": null,
+      "Passives": [
+        {
+          "Id": 7302,
+          "Name": "守护吊坠",
+          "SkillType": 3,
+          "Effects": [
+            {
+              "Id": 8012,
+              "exhp": 170
+            },
+            {
+              "Id": 8013,
+              "exmp": 80
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "黄金挂坠": {
+    "Id": 14503,
+    "Name": "黄金挂坠",
+    "Description": "增加 300 点最大生命值。",
+    "BackgroundStory": "珍贵稀有的黄金挂件，象征财富与荣耀的护身符。",
+    "ItemType": 4,
+    "WeaponType": 0,
+    "QualityType": 1,
+    "Skills": {
+      "Active": null,
+      "Passives": [
+        {
+          "Id": 7303,
+          "Name": "守护吊坠",
+          "SkillType": 3,
+          "Effects": [
+            {
+              "Id": 8012,
+              "exhp": 300
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "辉煌光环": {
+    "Id": 14504,
+    "Name": "辉煌光环",
+    "Description": "增加 170 点最大魔法值和 6 点每时间魔法回复。",
+    "BackgroundStory": "流光溢彩的光环。",
+    "ItemType": 4,
+    "WeaponType": 0,
+    "QualityType": 1,
+    "Skills": {
+      "Active": null,
+      "Passives": [
+        {
+          "Id": 7304,
+          "Name": "辉煌光环",
+          "SkillType": 3,
+          "Effects": [
+            {
+              "Id": 8013,
+              "exmp": 170
+            },
+            {
+              "Id": 8022,
+              "exmr": 6
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "银质手环": {
+    "Id": 14505,
+    "Name": "银质手环",
+    "Description": "提升 6 点所有力量、敏捷、智力。",
+    "BackgroundStory": "素雅精致的银质手环。",
+    "ItemType": 4,
+    "WeaponType": 0,
+    "QualityType": 1,
+    "Skills": {
+      "Active": null,
+      "Passives": [
+        {
+          "Id": 7305,
+          "Name": "银质手环",
+          "SkillType": 3,
+          "Effects": [
+            {
+              "Id": 8003,
+              "exstr": 6
+            },
+            {
+              "Id": 8004,
+              "exagi": 6
+            },
+            {
+              "Id": 8005,
+              "exint": 6
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "星辉护符": {
+    "Id": 14506,
+    "Name": "星辉护符",
+    "Description": "提升 15 点智力，提升暴击伤害 12%。",
+    "BackgroundStory": "护符上镶嵌着神秘的星辉宝石，传说能提升佩戴者的法术威力。",
+    "ItemType": 4,
+    "WeaponType": 0,
+    "QualityType": 2,
+    "Skills": {
+      "Active": null,
+      "Passives": [
+        {
+          "Id": 7306,
+          "Name": "星辉启示",
+          "SkillType": 3,
+          "Effects": [
+            {
+              "Id": 8005,
+              "exint": 15
+            },
+            {
+              "Id": 8015,
+              "excrd": 0.12
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "雷鸣之戒": {
+    "Id": 14507,
+    "Name": "雷鸣之戒",
+    "Description": "增加 12 点力量和 8% 暴击率。",
+    "BackgroundStory": "戒指中流淌着雷电的力量，增强佩戴者的战斗威力。",
+    "ItemType": 4,
+    "WeaponType": 0,
+    "QualityType": 2,
+    "Skills": {
+      "Active": null,
+      "Passives": [
+        {
+          "Id": 7307,
+          "Name": "雷电之力",
+          "SkillType": 3,
+          "Effects": [
+            {
+              "Id": 8003,
+              "exstr": 12
+            },
+            {
+              "Id": 8014,
+              "excr": 0.08
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "精灵之戒": {
+    "Id": 14508,
+    "Name": "精灵之戒",
+    "Description": "提升 10 每时间魔法回复，并增加 8 点智力。",
+    "BackgroundStory": "这枚戒指由精灵制成，能够帮助法师更快地恢复法力。",
+    "ItemType": 4,
+    "WeaponType": 0,
+    "QualityType": 2,
+    "Skills": {
+      "Active": null,
+      "Passives": [
+        {
+          "Id": 7308,
+          "Name": "法力复苏",
+          "SkillType": 3,
+          "Effects": [
+            {
+              "Id": 8022,
+              "exmr": 10
+            },
+            {
+              "Id": 8005,
+              "exint": 8
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "暗影项链": {
+    "Id": 14509,
+    "Name": "暗影项链",
+    "Description": "增加 20 点敏捷和 20 点行动速度。",
+    "BackgroundStory": "项链蕴含着黑暗的力量，让佩戴者更具敏捷性。",
+    "ItemType": 4,
+    "WeaponType": 0,
+    "QualityType": 2,
+    "Skills": {
+      "Active": null,
+      "Passives": [
+        {
+          "Id": 7309,
+          "Name": "黑暗敏捷",
+          "SkillType": 3,
+          "Effects": [
+            {
+              "Id": 8015,
+              "excrd": 0.15
+            },
+            {
+              "Id": 8009,
+              "exspd": 20
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "YukiのCalfSocks": {
+    "Id": 14510,
+    "Name": "YukiのCalfSocks",
+    "Description": "增加 15% 暴击率和 30% 暴击伤害。",
+    "BackgroundStory": "小雪的小腿袜，拥有神秘的力量，令人神往。",
+    "ItemType": 4,
+    "WeaponType": 0,
+    "QualityType": 3,
+    "Skills": {
+      "Active": null,
+      "Passives": [
+        {
+          "Id": 7310,
+          "Name": "YukiのCalfSocks",
+          "SkillType": 3,
+          "Effects": [
+            {
+              "Id": 8014,
+              "excr": 0.15
+            },
+            {
+              "Id": 8015,
+              "excrd": 0.3
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "诺尔希的现代汉语字典": {
+    "Id": 14511,
+    "Name": "诺尔希的现代汉语字典",
+    "Description": "增加 15% 攻击力和 8% 物理护甲。",
+    "BackgroundStory": "懂又不懂。",
+    "ItemType": 4,
+    "WeaponType": 0,
+    "QualityType": 3,
+    "Skills": {
+      "Active": null,
+      "Passives": [
+        {
+          "Id": 7311,
+          "Name": "诺尔希的现代汉语字典",
+          "SkillType": 3,
+          "Effects": [
+            {
+              "Id": 8024,
+              "exdef": 0.08
+            },
+            {
+              "Id": 8023,
+              "exatk": 0.15
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "金刚石": {
+    "Id": 14512,
+    "Name": "金刚石",
+    "Description": "增加 10% 最大生命值。",
+    "BackgroundStory": "罕见宝石，蕴含不可动摇的坚韧之力。",
+    "ItemType": 4,
+    "WeaponType": 0,
+    "QualityType": 3,
+    "Skills": {
+      "Active": null,
+      "Passives": [
+        {
+          "Id": 7312,
+          "Name": "金刚石",
+          "SkillType": 3,
+          "Effects": [
+            {
+              "Id": 8030,
+              "exhp": 0.10
             }
           ]
         }
