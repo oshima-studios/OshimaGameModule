@@ -322,15 +322,27 @@ namespace Oshima.Core.Utils
                     // 团队模式
                     if (isTeam)
                     {
-                        // 打乱原始数组的顺序
-                        IEnumerable<Character> shuffledCharacters = characters.OrderBy(c => Random.Shared.Next());
+                        // 打乱角色列表
+                        List<Character> shuffledCharacters = characters.OrderBy(c => Random.Shared.Next()).ToList();
 
-                        // 计算分割点
-                        int splitIndex = shuffledCharacters.Count() / 2;
+                        // 创建两个团队
+                        List<Character> group1 = [];
+                        List<Character> group2 = [];
 
-                        // 分成两个数组
-                        List<Character> group1 = shuffledCharacters.Take(splitIndex).ToList();
-                        List<Character> group2 = shuffledCharacters.Skip(splitIndex).ToList();
+                        // 将角色交替分配到两个团队中
+                        for (int cid = 0; cid < shuffledCharacters.Count; cid++)
+                        {
+                            if (cid % 2 == 0)
+                            {
+                                group1.Add(shuffledCharacters[cid]);
+                            }
+                            else
+                            {
+                                group2.Add(shuffledCharacters[cid]);
+                            }
+                        }
+
+                        // 添加到团队字典
                         actionQueue.Teams.Add("队伍一", group1);
                         actionQueue.Teams.Add("队伍二", group2);
                     }
@@ -346,23 +358,31 @@ namespace Oshima.Core.Utils
                         Msg = "";
                         if (i == 998)
                         {
-                            WriteLine($"=== 终局审判 ===");
-                            Dictionary<Character, double> 他们的血量百分比 = [];
-                            foreach (Character c in characters)
+                            if (isTeam)
                             {
-                                他们的血量百分比.TryAdd(c, c.HP / c.MaxHP);
+                                WriteLine("两队打到天昏地暗，流局了！！");
+                                break;
                             }
-                            double max = 他们的血量百分比.Values.Max();
-                            Character winner = 他们的血量百分比.Keys.Where(c => 他们的血量百分比[c] == max).First();
-                            WriteLine("[ " + winner + " ] 成为了天选之人！！");
-                            foreach (Character c in characters.Where(c => c != winner && c.HP > 0))
+                            else
                             {
-                                WriteLine("[ " + winner + " ] 对 [ " + c + " ] 造成了 99999999999 点真实伤害。");
-                                actionQueue.DeathCalculation(winner, c);
+                                WriteLine($"=== 终局审判 ===");
+                                Dictionary<Character, double> 他们的血量百分比 = [];
+                                foreach (Character c in characters)
+                                {
+                                    他们的血量百分比.TryAdd(c, c.HP / c.MaxHP);
+                                }
+                                double max = 他们的血量百分比.Values.Max();
+                                Character winner = 他们的血量百分比.Keys.Where(c => 他们的血量百分比[c] == max).First();
+                                WriteLine("[ " + winner + " ] 成为了天选之人！！");
+                                foreach (Character c in characters.Where(c => c != winner && c.HP > 0))
+                                {
+                                    WriteLine("[ " + winner + " ] 对 [ " + c + " ] 造成了 99999999999 点真实伤害。");
+                                    actionQueue.DeathCalculation(winner, c);
+                                }
+                                actionQueue.EndGameInfo(winner);
+                                result.Add(Msg);
+                                break;
                             }
-                            actionQueue.EndGameInfo(winner);
-                            result.Add(Msg);
-                            break;
                         }
 
                         // 检查是否有角色可以行动
