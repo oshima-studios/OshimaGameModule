@@ -637,7 +637,7 @@
   "初级法袍": {
     "Id": 12501,
     "Name": "初级法袍",
-    "Description": "增加 20 点物理护甲。",
+    "Description": "增加 10% 魔法抗性。",
     "BackgroundStory": "可以不穿，不能没有。",
     "ItemType": 2,
     "WeaponType": 0,
@@ -651,8 +651,9 @@
           "SkillType": 3,
           "Effects": [
             {
-              "Id": 8002,
-              "exdef": 20
+              "Id": 8020,
+              "mdftype": 0,
+              "mdfvalue": 0.2
             }
           ]
         }
@@ -661,8 +662,8 @@
   },
   "高中校服": {
     "Id": 12502,
-    "Name": "初级法袍",
-    "Description": "增加 10% 魔法抗性。",
+    "Name": "高中校服",
+    "Description": "增加 20 点物理护甲。",
     "BackgroundStory": "珍藏的回忆。",
     "ItemType": 2,
     "WeaponType": 0,
@@ -676,9 +677,8 @@
           "SkillType": 3,
           "Effects": [
             {
-              "Id": 8020,
-              "mdftype": 0,
-              "mdfvalue": 0.2
+              "Id": 8002,
+              "exdef": 20
             }
           ]
         }

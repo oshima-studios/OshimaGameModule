@@ -61,6 +61,7 @@ namespace Oshima.Core.Controllers
                     builder.AppendLine($"总计败场数：{stats.Loses}");
                     builder.AppendLine($"胜率：{stats.Winrates * 100:0.##}%");
                     builder.AppendLine($"前三率：{stats.Top3rates * 100:0.##}%");
+                    builder.AppendLine($"技术得分：{stats.Rating:0.##}");
                     builder.AppendLine($"上次排名：{stats.LastRank} / 场均名次：{stats.AvgRank}");
 
                     return NetworkUtility.JsonSerialize(builder.ToString());
@@ -68,7 +69,7 @@ namespace Oshima.Core.Controllers
             }
             return NetworkUtility.JsonSerialize("");
         }
-        
+
         [HttpGet("teamstats")]
         public string GetTeamStats([FromQuery] int? id = null)
         {
@@ -106,6 +107,7 @@ namespace Oshima.Core.Controllers
                     builder.AppendLine($"总计败场数：{stats.Loses}");
                     builder.AppendLine($"胜率：{stats.Winrates * 100:0.##}%");
                     builder.AppendLine($"前三率：{stats.Top3rates * 100:0.##}%");
+                    builder.AppendLine($"技术得分：{stats.Rating:0.##}");
                     builder.AppendLine($"上次排名：{stats.LastRank} / 场均名次：{stats.AvgRank}");
 
                     return NetworkUtility.JsonSerialize(builder.ToString());

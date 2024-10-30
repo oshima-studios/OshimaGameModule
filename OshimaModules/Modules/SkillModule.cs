@@ -1,6 +1,5 @@
 ﻿using Milimoe.FunGame.Core.Api.Utility;
 using Milimoe.FunGame.Core.Entity;
-using Oshima.FunGame.OshimaModules.Effects;
 using Oshima.FunGame.OshimaModules.Effects.OpenEffects;
 using Oshima.FunGame.OshimaModules.Items;
 using Oshima.FunGame.OshimaModules.Skills;
