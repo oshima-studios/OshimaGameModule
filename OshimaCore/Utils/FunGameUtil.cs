@@ -578,10 +578,43 @@ namespace Oshima.Core.Utils
                     // 显示每个角色的信息
                     if (isWeb)
                     {
-                        for (i = actionQueue.Eliminated.Count - 1; i >= 0; i--)
+                        if (isTeam)
                         {
-                            Character character = actionQueue.Eliminated[i];
-                            result.Add($"=== 角色 [ {character} ] ===\r\n{character.GetInfo()}");
+                            top = 1;
+                            for (i = actionQueue.EliminatedTeams.Count - 1; i >= 0; i--)
+                            {
+                                Team team = actionQueue.EliminatedTeams[i];
+                                string topTeam = "";
+                                if (top == 1)
+                                {
+                                    topTeam = "冠军";
+                                }
+                                if (top == 2)
+                                {
+                                    topTeam = "亚军";
+                                }
+                                if (top == 3)
+                                {
+                                    topTeam = "季军";
+                                }
+                                if (top > 3)
+                                {
+                                    topTeam = $"第 {top} 名";
+                                }
+                                foreach (Character character in team.Members)
+                                {
+                                    result.Add($"== {topTeam}团队 [ {team.Name} ] ==\r\n== 角色：[ {character} ] ==\r\n{character.GetInfo()}");
+                                }
+                                top++;
+                            }
+                        }
+                        else
+                        {
+                            for (i = actionQueue.Eliminated.Count - 1; i >= 0; i--)
+                            {
+                                Character character = actionQueue.Eliminated[i];
+                                result.Add($"=== 角色 [ {character} ] ===\r\n{character.GetInfo()}");
+                            }
                         }
                     }
 
