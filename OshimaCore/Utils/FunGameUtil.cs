@@ -482,7 +482,7 @@ namespace Oshima.Core.Utils
                     }
 
                     // 赛后统计
-                    GetCharacterRating(actionQueue.CharacterStatistics);
+                    GetCharacterRating(actionQueue.CharacterStatistics, isTeam);
                     int top = isWeb ? actionQueue.CharacterStatistics.Count : 0; // 回执多少个角色的统计信息
                     int count = 1;
                     if (isWeb)
@@ -769,16 +769,16 @@ namespace Oshima.Core.Utils
             if (totalStats.LiveTime != 0) totalStats.DamagePerSecond = Calculation.Round2Digits(totalStats.TotalDamage / totalStats.LiveTime);
         }
 
-        public static void GetCharacterRating(Dictionary<Character, CharacterStatistics> statistics)
+        public static void GetCharacterRating(Dictionary<Character, CharacterStatistics> statistics, bool isTeam)
         {
-            Dictionary<Character, double> ratings = statistics.ToDictionary(k => k.Key, v => CalculateRating(v.Value));
+            Dictionary<Character, double> ratings = statistics.ToDictionary(k => k.Key, v => CalculateRating(v.Value, isTeam));
             foreach (Character character in ratings.Keys)
             {
                 statistics[character].Rating = ratings[character];
             }
         }
 
-        public static double CalculateRating(CharacterStatistics stats)
+        public static double CalculateRating(CharacterStatistics stats, bool isTeam)
         {
             // 设定基准值
             double avgKills = 4.0;
@@ -789,6 +789,18 @@ namespace Oshima.Core.Utils
             double avgTotalTakenDamage = 5500.0;
             double avgDamagePerSecond = 80.0;
 
+            // 团队模式使用其他基准
+            if (isTeam)
+            {
+                avgKills = 2.0;
+                avgAssists = 3;
+                avgDeaths = 1.0;
+                avgLiveTime = 110.0;
+                avgTotalDamage = 6000.0;
+                avgTotalTakenDamage = 2000.0;
+                avgDamagePerSecond = 80.0;
+            }
+            
             // 归一化计算
             double normalizedKills = stats.Kills / avgKills;
             double normalizedAssists = stats.Assists / avgAssists;
@@ -801,9 +813,9 @@ namespace Oshima.Core.Utils
             // 权重设置
             double killWeight = 0.4;
             double assistWeight = 0.15;
-            double deathWeight = -0.20;
+            double deathWeight = -0.25;
             double liveTimeWeight = 0.2;
-            double totalDamageWeight = 0.3;
+            double totalDamageWeight = 0.25;
             double totalTakenDamageWeight = 0.15;
             double damagePerSecondWeight = 0.05;
 
