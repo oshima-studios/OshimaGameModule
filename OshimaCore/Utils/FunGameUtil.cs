@@ -737,7 +737,8 @@ namespace Oshima.Core.Utils
             Items.AddRange([new 攻击之爪10(), new 攻击之爪30(), new 攻击之爪50()]);
 
             Skills.AddRange([new 疾风步()]);
-            Magics.AddRange([new 冰霜攻击(), new 火之矢(), new 水之矢(), new 风之轮(), new 石之锤(), new 心灵之火(), new 次元上升(), new 暗物质()]);
+
+            Magics.AddRange([new 冰霜攻击(), new 火之矢(), new 水之矢(), new 风之轮(), new 石之锤(), new 心灵之霞(), new 次元上升(), new 暗物质()]);
         }
 
         public static void UpdateStatistics(CharacterStatistics totalStats, CharacterStatistics stats)
