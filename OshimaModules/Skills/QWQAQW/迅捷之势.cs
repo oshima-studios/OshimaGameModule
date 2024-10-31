@@ -66,7 +66,7 @@ namespace Oshima.FunGame.OshimaModules.Skills
             baseHardnessTime *= 0.3;
         }
 
-        public override void OnSkillCasted(Character caster, List<Character> enemys, List<Character> teammates, Dictionary<string, object> others)
+        public override void OnSkillCasted(Character caster, List<Character> targets, Dictionary<string, object> others)
         {
             RemainDuration = Duration;
             if (!caster.Effects.Contains(this))

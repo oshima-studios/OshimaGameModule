@@ -482,7 +482,7 @@ namespace Oshima.Core.Utils
                     }
 
                     // 赛后统计
-                    GetCharacterRating(actionQueue.CharacterStatistics, isTeam);
+                    GetCharacterRating(actionQueue.CharacterStatistics, isTeam, actionQueue.EliminatedTeams);
                     int top = isWeb ? actionQueue.CharacterStatistics.Count : 0; // 回执多少个角色的统计信息
                     int count = 1;
                     if (isWeb)
@@ -802,68 +802,59 @@ namespace Oshima.Core.Utils
             if (totalStats.LiveTime != 0) totalStats.DamagePerSecond = Calculation.Round2Digits(totalStats.TotalDamage / totalStats.LiveTime);
         }
 
-        public static void GetCharacterRating(Dictionary<Character, CharacterStatistics> statistics, bool isTeam)
+        public static void GetCharacterRating(Dictionary<Character, CharacterStatistics> statistics, bool isTeam, List<Team> teams)
         {
-            Dictionary<Character, double> ratings = statistics.ToDictionary(k => k.Key, v => CalculateRating(v.Value, isTeam));
-            foreach (Character character in ratings.Keys)
+            foreach (Character character in statistics.Keys)
             {
-                statistics[character].Rating = ratings[character];
+                Team? team = null;
+                if (isTeam)
+                {
+                    team = teams.Where(t => t.IsOnThisTeam(character)).FirstOrDefault();
+                }
+                statistics[character].Rating = CalculateRating(statistics[character], team);
             }
         }
 
-        public static double CalculateRating(CharacterStatistics stats, bool isTeam)
+        public static double CalculateRating(CharacterStatistics stats, Team? team = null)
         {
-            // 设定基准值
-            double avgKills = 4.0;
-            double avgAssists = 2.5;
-            double avgDeaths = 1.0;
-            double avgLiveTime = 90.0;
-            double avgTotalDamage = 7500.0;
-            double avgTotalTakenDamage = 5500.0;
-            double avgDamagePerSecond = 80.0;
-
-            // 团队模式使用其他基准
-            if (isTeam)
+            // 基础得分
+            double baseScore = (stats.Kills + stats.Assists) / (stats.Kills + stats.Assists + stats.Deaths + 0.01);
+            if (team is null)
             {
-                avgKills = 2.0;
-                avgAssists = 3;
-                avgDeaths = 1.0;
-                avgLiveTime = 110.0;
-                avgTotalDamage = 6000.0;
-                avgTotalTakenDamage = 2000.0;
-                avgDamagePerSecond = 80.0;
+                baseScore += stats.Kills * 0.1;
+                if (stats.Deaths == 0)
+                {
+                    baseScore += 0.5;
+                }
             }
-            
-            // 归一化计算
-            double normalizedKills = stats.Kills / avgKills;
-            double normalizedAssists = stats.Assists / avgAssists;
-            double normalizedDeaths = avgDeaths - stats.Deaths / avgDeaths;
-            double normalizedLiveTime = stats.LiveTime / avgLiveTime;
-            double normalizedTotalDamage = stats.TotalDamage / avgTotalDamage;
-            double normalizedTotalTakenDamage = stats.TotalTakenDamage / avgTotalTakenDamage;
-            double normalizedDamagePerSecond = stats.DamagePerSecond / avgDamagePerSecond;
+
+            // 伤害贡献
+            double logDamageContribution = Math.Log(1 + (stats.TotalDamage / (stats.TotalTakenDamage + 1e-6)));
+
+            // 存活时间贡献
+            double liveTimeContribution = Math.Log(1 + (stats.LiveTime / (stats.TotalTakenDamage + 0.01) * 100));
+
+            // 团队模式参团率加成
+            double teamContribution = 0;
+            if (team != null)
+            {
+                teamContribution = (stats.Kills + stats.Assists) / (team.Score + 0.01);
+                if (team.IsWinner)
+                {
+                    teamContribution += 0.2;
+                }
+            }
 
             // 权重设置
-            double killWeight = 0.4;
-            double assistWeight = 0.15;
-            double deathWeight = -0.25;
-            double liveTimeWeight = 0.2;
-            double totalDamageWeight = 0.25;
-            double totalTakenDamageWeight = 0.15;
-            double damagePerSecondWeight = 0.05;
+            double k = stats.Deaths > 0 ? 0.2 : 0.075; // 伤害贡献权重
+            double l = stats.Deaths > 0 ? 0.3 : 0.05; // 存活时间权重
+            double t = stats.Deaths > 0 ? 0.225 : 0.1; // 参团率权重
 
-            // 计算归一化后的Rating
-            double rating =
-                killWeight * normalizedKills +
-                assistWeight * normalizedAssists +
-                deathWeight * normalizedDeaths +
-                liveTimeWeight * normalizedLiveTime +
-                totalDamageWeight * normalizedTotalDamage +
-                totalTakenDamageWeight * normalizedTotalTakenDamage +
-                damagePerSecondWeight * normalizedDamagePerSecond;
+            // 计算最终评分
+            double rating = baseScore + k * logDamageContribution + l * liveTimeContribution + t * teamContribution;
 
-            // 限制Rating在 0 和 5 之间
-            return Math.Clamp(rating, 0, 5);
+            // 确保评分在合理范围内
+            return Math.Max(0.01, rating);
         }
     }
 }

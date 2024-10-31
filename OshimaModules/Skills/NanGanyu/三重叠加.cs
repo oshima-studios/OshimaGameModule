@@ -51,7 +51,7 @@ namespace Oshima.FunGame.OshimaModules.Skills
             }
         }
 
-        public override void OnSkillCasted(Character caster, List<Character> enemys, List<Character> teammates, Dictionary<string, object> others)
+        public override void OnSkillCasted(Character caster, List<Character> targets, Dictionary<string, object> others)
         {
             剩余持续次数 = 技能持续次数;
             if (!caster.Effects.Contains(this))

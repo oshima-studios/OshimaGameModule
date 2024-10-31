@@ -32,9 +32,9 @@ namespace Oshima.FunGame.OshimaModules.Skills
         private double 智力伤害 => 智力系数 * Skill.Character?.INT ?? 0;
         private double 能量系数 => 1.05 * Level;
 
-        public override void OnSkillCasted(Character caster, List<Character> enemys, List<Character> teammates, Dictionary<string, object> others)
+        public override void OnSkillCasted(Character caster, List<Character> targets, Dictionary<string, object> others)
         {
-            foreach (Character c in enemys)
+            foreach (Character c in targets)
             {
                 WriteLine($"[ {caster} ] 正在毁灭 [ {c} ] 的能量！！");
                 double ep = c.EP;

@@ -69,7 +69,7 @@ namespace Oshima.FunGame.OshimaModules.Skills
             return false;
         }
 
-        public override void OnSkillCasted(Character caster, List<Character> enemys, List<Character> teammates, Dictionary<string, object> others)
+        public override void OnSkillCasted(Character caster, List<Character> targets, Dictionary<string, object> others)
         {
             if (!caster.Effects.Contains(this))
             {

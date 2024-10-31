@@ -59,9 +59,14 @@ namespace Oshima.Core.Controllers
                     builder.AppendLine($"总计冠军数：{stats.Wins}");
                     builder.AppendLine($"总计前三数：{stats.Top3s}");
                     builder.AppendLine($"总计败场数：{stats.Loses}");
-                    builder.AppendLine($"胜率：{stats.Winrates * 100:0.##}%");
+
+                    List<string> names = [.. FunGameSimulation.TeamCharacterStatistics.OrderByDescending(kv => kv.Value.Winrates).Select(kv => kv.Key.GetName())];
+                    builder.AppendLine($"胜率：{stats.Winrates * 100:0.##}%（#{names.IndexOf(character.GetName())}）");
                     builder.AppendLine($"前三率：{stats.Top3rates * 100:0.##}%");
-                    builder.AppendLine($"技术得分：{stats.Rating:0.##}");
+
+                    names = [.. FunGameSimulation.TeamCharacterStatistics.OrderByDescending(kv => kv.Value.Rating).Select(kv => kv.Key.GetName())];
+                    builder.AppendLine($"技术得分：{stats.Rating:0.##}（#{names.IndexOf(character.GetName())}）");
+
                     builder.AppendLine($"上次排名：{stats.LastRank} / 场均名次：{stats.AvgRank}");
 
                     return NetworkUtility.JsonSerialize(builder.ToString());
@@ -105,15 +110,100 @@ namespace Oshima.Core.Controllers
                     builder.AppendLine($"总计冠军数：{stats.Wins}");
                     builder.AppendLine($"总计前三数：{stats.Top3s}");
                     builder.AppendLine($"总计败场数：{stats.Loses}");
-                    builder.AppendLine($"胜率：{stats.Winrates * 100:0.##}%");
-                    builder.AppendLine($"前三率：{stats.Top3rates * 100:0.##}%");
-                    builder.AppendLine($"技术得分：{stats.Rating:0.##}");
-                    builder.AppendLine($"上次排名：{stats.LastRank} / 场均名次：{stats.AvgRank}");
+
+                    List<string> names = [.. FunGameSimulation.TeamCharacterStatistics.OrderByDescending(kv => kv.Value.Winrates).Select(kv => kv.Key.GetName())];
+                    builder.AppendLine($"胜率：{stats.Winrates * 100:0.##}%（#{names.IndexOf(character.GetName())}）");
+                    names = [.. FunGameSimulation.TeamCharacterStatistics.OrderByDescending(kv => kv.Value.Rating).Select(kv => kv.Key.GetName())];
+                    builder.AppendLine($"技术得分：{stats.Rating:0.##}（#{names.IndexOf(character.GetName())}）");
 
                     return NetworkUtility.JsonSerialize(builder.ToString());
                 }
             }
             return NetworkUtility.JsonSerialize("");
+        }
+
+        [HttpGet("winraterank")]
+        public string GetWinrateRank([FromQuery] bool? isteam = null)
+        {
+            bool team = isteam ?? false;
+            if (team)
+            {
+                List<string> strings = [];
+                IEnumerable<Character> ratings = FunGameSimulation.TeamCharacterStatistics.OrderByDescending(kv => kv.Value.Winrates).Select(kv => kv.Key);
+                foreach (Character character in ratings)
+                {
+                    StringBuilder builder = new();
+                    CharacterStatistics stats = FunGameSimulation.TeamCharacterStatistics[character];
+                    builder.AppendLine(character.ToString());
+                    builder.AppendLine($"总计参赛数：{stats.Plays}");
+                    builder.AppendLine($"总计冠军数：{stats.Wins}");
+                    builder.AppendLine($"胜率：{stats.Winrates * 100:0.##}%");
+                    builder.AppendLine($"技术得分：{stats.Rating:0.##}");
+                    strings.Add(builder.ToString());
+                }
+                return NetworkUtility.JsonSerialize(strings);
+            }
+            else
+            {
+                List<string> strings = [];
+                IEnumerable<Character> ratings = FunGameSimulation.CharacterStatistics.OrderByDescending(kv => kv.Value.Winrates).Select(kv => kv.Key);
+                foreach (Character character in ratings)
+                {
+                    StringBuilder builder = new();
+                    CharacterStatistics stats = FunGameSimulation.CharacterStatistics[character];
+                    builder.AppendLine(character.ToString());
+                    builder.AppendLine($"总计参赛数：{stats.Plays}");
+                    builder.AppendLine($"总计冠军数：{stats.Wins}");
+                    builder.AppendLine($"胜率：{stats.Winrates * 100:0.##}%");
+                    builder.AppendLine($"前三率：{stats.Top3rates * 100:0.##}%");
+                    builder.AppendLine($"技术得分：{stats.Rating:0.##}");
+                    builder.AppendLine($"上次排名：{stats.LastRank} / 场均名次：{stats.AvgRank}");
+                    strings.Add(builder.ToString());
+                }
+                return NetworkUtility.JsonSerialize(strings);
+            }
+        }
+
+        [HttpGet("ratingrank")]
+        public string GetRatingRank([FromQuery] bool? isteam = null)
+        {
+            bool team = isteam ?? false;
+            if (team)
+            {
+                List<string> strings = [];
+                IEnumerable<Character> ratings = FunGameSimulation.TeamCharacterStatistics.OrderByDescending(kv => kv.Value.Rating).Select(kv => kv.Key);
+                foreach (Character character in ratings)
+                {
+                    StringBuilder builder = new();
+                    CharacterStatistics stats = FunGameSimulation.TeamCharacterStatistics[character];
+                    builder.AppendLine(character.ToString());
+                    builder.AppendLine($"总计参赛数：{stats.Plays}");
+                    builder.AppendLine($"总计冠军数：{stats.Wins}");
+                    builder.AppendLine($"胜率：{stats.Winrates * 100:0.##}%");
+                    builder.AppendLine($"技术得分：{stats.Rating:0.##}");
+                    strings.Add(builder.ToString());
+                }
+                return NetworkUtility.JsonSerialize(strings);
+            }
+            else
+            {
+                List<string> strings = [];
+                IEnumerable<Character> ratings = FunGameSimulation.CharacterStatistics.OrderByDescending(kv => kv.Value.Rating).Select(kv => kv.Key);
+                foreach (Character character in ratings)
+                {
+                    StringBuilder builder = new();
+                    CharacterStatistics stats = FunGameSimulation.CharacterStatistics[character];
+                    builder.AppendLine(character.ToString());
+                    builder.AppendLine($"总计参赛数：{stats.Plays}");
+                    builder.AppendLine($"总计冠军数：{stats.Wins}");
+                    builder.AppendLine($"胜率：{stats.Winrates * 100:0.##}%");
+                    builder.AppendLine($"前三率：{stats.Top3rates * 100:0.##}%");
+                    builder.AppendLine($"技术得分：{stats.Rating:0.##}");
+                    builder.AppendLine($"上次排名：{stats.LastRank} / 场均名次：{stats.AvgRank}");
+                    strings.Add(builder.ToString());
+                }
+                return NetworkUtility.JsonSerialize(strings);
+            }
         }
 
         [HttpGet("cjs")]
