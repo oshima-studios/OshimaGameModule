@@ -88,8 +88,10 @@ namespace Oshima.Core.Utils
                         IEnumerable<Skill> magics = Magics.OrderBy(x => Random.Shared.Next()).Take(3);
                         foreach (Skill magic in magics)
                         {
-                            magic.Level = mlevel;
-                            c.Skills.Add(magic);
+                            Skill m = magic.Copy();
+                            m.Character = c;
+                            m.Level = mlevel;
+                            c.Skills.Add(m);
                         }
 
                         Skill 疾风步 = new 疾风步(c)
