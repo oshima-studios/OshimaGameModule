@@ -215,18 +215,6 @@ namespace Oshima.Core.Controllers
                 c.Level = General.GameplayEquilibriumConstant.MaxLevel;
                 c.NormalAttack.Level = General.GameplayEquilibriumConstant.MaxNormalAttackLevel;
 
-                Skill ±ùËª¹¥»÷ = new ±ùËª¹¥»÷(c)
-                {
-                    Level = General.GameplayEquilibriumConstant.MaxMagicLevel
-                };
-                c.Skills.Add(±ùËª¹¥»÷);
-
-                Skill ¼²·ç²½ = new ¼²·ç²½(c)
-                {
-                    Level = General.GameplayEquilibriumConstant.MaxSkillLevel
-                };
-                c.Skills.Add(¼²·ç²½);
-
                 if (id == 1)
                 {
                     Skill METAÂí = new METAÂí(c)

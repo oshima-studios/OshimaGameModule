@@ -28,6 +28,13 @@ namespace Oshima.FunGame.OshimaModules
                 Skill skill = id switch
                 {
                     (long)MagicID.冰霜攻击 => new 冰霜攻击(),
+                    (long)MagicID.火之矢 => new 火之矢(),
+                    (long)MagicID.水之矢 => new 水之矢(),
+                    (long)MagicID.石之锤 => new 石之锤(),
+                    (long)MagicID.风之轮 => new 风之轮(),
+                    (long)MagicID.心灵之霞 => new 心灵之霞(),
+                    (long)MagicID.次元上升 => new 次元上升(),
+                    (long)MagicID.暗物质 => new 暗物质(),
                     (long)SkillID.疾风步 => new 疾风步(),
                     (long)SuperSkillID.力量爆发 => new 力量爆发(),
                     (long)SuperSkillID.天赐之力 => new 天赐之力(),

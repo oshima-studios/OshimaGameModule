@@ -11,24 +11,9 @@ namespace Oshima.Core.Utils
 {
     public class FunGameSimulation
     {
-        public FunGameSimulation()
-        {
-            InitCharacter();
-
-            bool printout = true;
-            List<string> strs = StartGame(printout);
-            if (printout == false)
-            {
-                foreach (string str in strs)
-                {
-                    Console.WriteLine(str);
-                }
-            }
-
-            Console.ReadKey();
-        }
-
         public static List<Character> Characters { get; } = [];
+        public static List<Skill> Skills { get; } = [];
+        public static List<Skill> Magics { get; } = [];
         public static List<Item> Items { get; } = [];
         public static Dictionary<Character, CharacterStatistics> CharacterStatistics { get; } = [];
         public static Dictionary<Character, CharacterStatistics> TeamCharacterStatistics { get; } = [];
@@ -100,11 +85,12 @@ namespace Oshima.Core.Utils
                         c.Level = clevel;
                         c.NormalAttack.Level = mlevel;
 
-                        Skill 冰霜攻击 = new 冰霜攻击(c)
+                        IEnumerable<Skill> magics = Magics.OrderBy(x => Random.Shared.Next()).Take(3);
+                        foreach (Skill magic in magics)
                         {
-                            Level = mlevel
-                        };
-                        c.Skills.Add(冰霜攻击);
+                            magic.Level = mlevel;
+                            c.Skills.Add(magic);
+                        }
 
                         Skill 疾风步 = new 疾风步(c)
                         {
@@ -720,7 +706,7 @@ namespace Oshima.Core.Utils
             {
                 CharacterStatistics.Add(c, new());
             }
-
+            
             StatsConfig.LoadConfig();
             foreach (Character character in CharacterStatistics.Keys)
             {
@@ -747,6 +733,9 @@ namespace Oshima.Core.Utils
             Dictionary<string, Item> exItems = Factory.GetGameModuleInstances<Item>(OshimaGameModuleConstant.General, OshimaGameModuleConstant.Item);
             Items.AddRange(exItems.Values);
             Items.AddRange([new 攻击之爪10(), new 攻击之爪30(), new 攻击之爪50()]);
+
+            Skills.AddRange([new 疾风步()]);
+            Magics.AddRange([new 冰霜攻击(), new 火之矢(), new 水之矢(), new 风之轮(), new 石之锤(), new 心灵之火(), new 次元上升(), new 暗物质()]);
         }
 
         public static void UpdateStatistics(CharacterStatistics totalStats, CharacterStatistics stats)
