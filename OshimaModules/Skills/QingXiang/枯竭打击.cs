@@ -24,7 +24,7 @@ namespace Oshima.FunGame.OshimaModules.Skills
     {
         public override long Id => Skill.Id;
         public override string Name => Skill.Name;
-        public override string Description => $"每次造成伤害都会随机减少对方 [ 10~25 ] 点能量值，对能量值低于一半的角色额外造成 30% 伤害。对于枯竭打击而言，能量值大于100且小于150时，视为低于一半。";
+        public override string Description => $"每次造成伤害都会随机减少对方 [ 7~15 ] 点能量值，对能量值低于一半的角色额外造成 30% 伤害。对于枯竭打击而言，能量值大于100且小于150时，视为低于一半。";
         public override bool TargetSelf => true;
 
         private bool 是否是嵌套伤害 = false;
@@ -34,7 +34,7 @@ namespace Oshima.FunGame.OshimaModules.Skills
             if (character == Skill.Character && damageResult != DamageResult.Evaded && !是否是嵌套伤害)
             {
                 // 减少能量
-                double EP = Random.Shared.Next(10, 25);
+                double EP = Random.Shared.Next(7, 15);
                 enemy.EP -= EP;
                 WriteLine($"[ {character} ] 发动了枯竭打击！[ {enemy} ] 的能量值被减少了 {EP:0.##} 点！现有能量：{enemy.EP:0.##}。");
                 // 额外伤害

@@ -33,7 +33,6 @@ namespace Oshima.Core.Utils
                 if (IsRuning) return ["游戏正在模拟中，请勿重复请求！"];
 
                 List<string> result = [];
-                int deaths = 0;
                 Msg = "";
 
                 IsRuning = true;
@@ -283,6 +282,11 @@ namespace Oshima.Core.Utils
 
                     // 创建顺序表并排序
                     ActionQueue actionQueue = new(characters, isTeam, WriteLine);
+                    if (isTeam)
+                    {
+                        actionQueue.MaxRespawnTimes = -1;
+                        actionQueue.MaxScoreToWin = 30;
+                    }
                     if (PrintOut) Console.WriteLine();
 
                     // 总游戏时长
@@ -296,7 +300,7 @@ namespace Oshima.Core.Utils
                     int 发放的饰品品质 = 0;
                     空投(actionQueue, 发放的武器品质, 发放的防具品质, 发放的鞋子品质, 发放的饰品品质);
                     if (isWeb) result.Add("=== 空投 ===\r\n" + Msg);
-                    double 下一次空投 = 40;
+                    double 下一次空投 = isTeam ? 80 : 40;
                     if (发放的武器品质 < 4)
                     {
                         发放的武器品质++;
@@ -362,11 +366,12 @@ namespace Oshima.Core.Utils
                     if (PrintOut) Console.WriteLine();
 
                     // 总回合数
+                    int maxRound = isTeam ? 9999 : 999;
                     int i = 1;
-                    while (i < 999)
+                    while (i < maxRound)
                     {
                         Msg = "";
-                        if (i == 998)
+                        if (i == maxRound - 1)
                         {
                             if (isTeam)
                             {
@@ -426,7 +431,7 @@ namespace Oshima.Core.Utils
                             Msg = "";
                             空投(actionQueue, 发放的武器品质, 发放的防具品质, 发放的鞋子品质, 发放的饰品品质);
                             if (isWeb) result.Add("=== 空投 ===\r\n" + Msg);
-                            下一次空投 = 40;
+                            下一次空投 = isTeam ? 100 : 40;
                             if (发放的武器品质 < 4)
                             {
                                 发放的武器品质++;
@@ -445,9 +450,8 @@ namespace Oshima.Core.Utils
                             }
                         }
 
-                        if (actionQueue.Eliminated.Count > deaths)
+                        if (actionQueue.LastRound.Targets.Any(c => c.HP <= 0))
                         {
-                            deaths = actionQueue.Eliminated.Count;
                             if (!isWeb)
                             {
                                 string roundMsg = Msg;
@@ -489,7 +493,7 @@ namespace Oshima.Core.Utils
                             CharacterStatistics stats = actionQueue.CharacterStatistics[character];
                             StringBuilder builder = new();
                             builder.AppendLine($"{(isWeb ? count + "." : (isTeam ? "[ " + actionQueue.GetTeamFromEliminated(character)?.Name + " ]" ?? "" : ""))} [ {character.ToStringWithLevel()} ]");
-                            builder.AppendLine($"技术得分：{stats.Rating:0.##} / 击杀数：{stats.Kills} / 助攻数：{stats.Assists}");
+                            builder.AppendLine($"技术得分：{stats.Rating:0.##} / 击杀数：{stats.Kills} / 助攻数：{stats.Assists}{(actionQueue.MaxRespawnTimes != 0 ? " / 死亡数：" + stats.Deaths : "")}");
                             builder.AppendLine($"存活时长：{stats.LiveTime} / 存活回合数：{stats.LiveRound} / 行动回合数：{stats.ActionTurn}");
                             builder.AppendLine($"总计伤害：{stats.TotalDamage} / 总计物理伤害：{stats.TotalPhysicalDamage} / 总计魔法伤害：{stats.TotalMagicDamage}");
                             builder.AppendLine($"总承受伤害：{stats.TotalTakenDamage} / 总承受物理伤害：{stats.TotalTakenPhysicalDamage} / 总承受魔法伤害：{stats.TotalTakenMagicDamage}");
@@ -511,7 +515,7 @@ namespace Oshima.Core.Utils
                             StringBuilder builder = new();
                             CharacterStatistics stats = actionQueue.CharacterStatistics[character];
                             builder.AppendLine($"{(isWeb ? count + "." : ("[ " + actionQueue.GetTeamFromEliminated(character)?.Name + " ]" ?? ""))} [ {character.ToStringWithLevel()} ]");
-                            builder.AppendLine($"技术得分：{stats.Rating:0.##} / 击杀数：{stats.Kills} / 助攻数：{stats.Assists}");
+                            builder.AppendLine($"技术得分：{stats.Rating:0.##} / 击杀数：{stats.Kills} / 助攻数：{stats.Assists}{(actionQueue.MaxRespawnTimes != 0 ? " / 死亡数：" + stats.Deaths : "")}");
                             builder.AppendLine($"存活时长：{stats.LiveTime} / 存活回合数：{stats.LiveRound} / 行动回合数：{stats.ActionTurn}");
                             builder.AppendLine($"总计伤害：{stats.TotalDamage} / 总计物理伤害：{stats.TotalPhysicalDamage} / 总计魔法伤害：{stats.TotalMagicDamage}");
                             builder.AppendLine($"总承受伤害：{stats.TotalTakenDamage} / 总承受物理伤害：{stats.TotalTakenPhysicalDamage} / 总承受魔法伤害：{stats.TotalTakenMagicDamage}");
@@ -539,7 +543,7 @@ namespace Oshima.Core.Utils
                             StringBuilder builder = new();
                             CharacterStatistics stats = actionQueue.CharacterStatistics[character];
                             builder.AppendLine($"{(isWeb ? count + ". " : "")}[ {character.ToStringWithLevel()} ]");
-                            builder.AppendLine($"技术得分：{stats.Rating:0.##} / 击杀数：{stats.Kills} / 助攻数：{stats.Assists}");
+                            builder.AppendLine($"技术得分：{stats.Rating:0.##} / 击杀数：{stats.Kills} / 助攻数：{stats.Assists}{(actionQueue.MaxRespawnTimes != 0 ? " / 死亡数：" + stats.Deaths : "")}");
                             builder.AppendLine($"存活时长：{stats.LiveTime} / 存活回合数：{stats.LiveRound} / 行动回合数：{stats.ActionTurn}");
                             builder.AppendLine($"总计伤害：{stats.TotalDamage} / 总计物理伤害：{stats.TotalPhysicalDamage} / 总计魔法伤害：{stats.TotalMagicDamage}");
                             builder.AppendLine($"总承受伤害：{stats.TotalTakenDamage} / 总承受物理伤害：{stats.TotalTakenPhysicalDamage} / 总承受魔法伤害：{stats.TotalTakenMagicDamage}");
@@ -681,8 +685,9 @@ namespace Oshima.Core.Utils
                 if (d != null) 这次发放的空投.Add(d);
                 foreach (Item item in 这次发放的空投)
                 {
-                    Item realItem = item.Copy(1);
+                    Item realItem = item.Copy();
                     realItem.SetGamingQueue(queue);
+                    realItem.SetLevel(1);
                     queue.Equip(character, realItem);
                 }
             }

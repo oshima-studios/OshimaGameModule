@@ -17,6 +17,11 @@ namespace Oshima.FunGame.OshimaModules.Skills
         {
             Effects.Add(new 能量毁灭特效(this));
         }
+
+        public override List<Character> SelectTargets(Character caster, List<Character> enemys, List<Character> teammates)
+        {
+            return [.. enemys];
+        }
     }
 
     public class 能量毁灭特效(Skill skill) : Effect(skill)

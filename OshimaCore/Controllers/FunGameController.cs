@@ -60,12 +60,12 @@ namespace Oshima.Core.Controllers
                     builder.AppendLine($"总计前三数：{stats.Top3s}");
                     builder.AppendLine($"总计败场数：{stats.Loses}");
 
-                    List<string> names = [.. FunGameSimulation.TeamCharacterStatistics.OrderByDescending(kv => kv.Value.Winrates).Select(kv => kv.Key.GetName())];
-                    builder.AppendLine($"胜率：{stats.Winrates * 100:0.##}%（#{names.IndexOf(character.GetName())}）");
+                    List<string> names = [.. FunGameSimulation.CharacterStatistics.OrderByDescending(kv => kv.Value.Winrates).Select(kv => kv.Key.GetName())];
+                    builder.AppendLine($"胜率：{stats.Winrates * 100:0.##}%（#{names.IndexOf(character.GetName()) + 1}）");
                     builder.AppendLine($"前三率：{stats.Top3rates * 100:0.##}%");
 
-                    names = [.. FunGameSimulation.TeamCharacterStatistics.OrderByDescending(kv => kv.Value.Rating).Select(kv => kv.Key.GetName())];
-                    builder.AppendLine($"技术得分：{stats.Rating:0.##}（#{names.IndexOf(character.GetName())}）");
+                    names = [.. FunGameSimulation.CharacterStatistics.OrderByDescending(kv => kv.Value.Rating).Select(kv => kv.Key.GetName())];
+                    builder.AppendLine($"技术得分：{stats.Rating:0.##}（#{names.IndexOf(character.GetName()) + 1}）");
 
                     builder.AppendLine($"上次排名：{stats.LastRank} / 场均名次：{stats.AvgRank}");
 
@@ -112,9 +112,9 @@ namespace Oshima.Core.Controllers
                     builder.AppendLine($"总计败场数：{stats.Loses}");
 
                     List<string> names = [.. FunGameSimulation.TeamCharacterStatistics.OrderByDescending(kv => kv.Value.Winrates).Select(kv => kv.Key.GetName())];
-                    builder.AppendLine($"胜率：{stats.Winrates * 100:0.##}%（#{names.IndexOf(character.GetName())}）");
+                    builder.AppendLine($"胜率：{stats.Winrates * 100:0.##}%（#{names.IndexOf(character.GetName()) + 1}）");
                     names = [.. FunGameSimulation.TeamCharacterStatistics.OrderByDescending(kv => kv.Value.Rating).Select(kv => kv.Key.GetName())];
-                    builder.AppendLine($"技术得分：{stats.Rating:0.##}（#{names.IndexOf(character.GetName())}）");
+                    builder.AppendLine($"技术得分：{stats.Rating:0.##}（#{names.IndexOf(character.GetName()) + 1}）");
 
                     return NetworkUtility.JsonSerialize(builder.ToString());
                 }
