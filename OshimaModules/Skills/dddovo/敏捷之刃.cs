@@ -33,7 +33,7 @@ namespace Oshima.FunGame.OshimaModules.Skills
 
         public override void AfterDamageCalculation(Character character, Character enemy, double damage, bool isNormalAttack, bool isMagicDamage, MagicType magicType, DamageResult damageResult)
         {
-            if (character == Skill.Character && isNormalAttack && damageResult != DamageResult.Evaded && !是否是嵌套伤害)
+            if (character == Skill.Character && isNormalAttack && damageResult != DamageResult.Evaded && !是否是嵌套伤害 && enemy.HP > 0)
             {
                 WriteLine($"[ {character} ] 发动了敏捷之刃！将造成额外伤害！");
                 是否是嵌套伤害 = true;

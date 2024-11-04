@@ -54,7 +54,7 @@ namespace Oshima.FunGame.OshimaModules.Skills
             return false;
         }
 
-        public override void OnSkillCasting(Character caster)
+        public override void OnSkillCasting(Character caster, List<Character> targets)
         {
             释放时的能量值 = caster.EP;
         }

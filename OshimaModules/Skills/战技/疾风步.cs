@@ -11,6 +11,7 @@ namespace Oshima.FunGame.OshimaModules.Skills
         public override double EPCost => 60;
         public override double CD => 35;
         public override double HardnessTime { get; set; } = 5;
+        public override bool CanSelectSelf => true;
 
         public 疾风步(Character? character = null) : base(SkillType.Skill, character)
         {
@@ -73,6 +74,7 @@ namespace Oshima.FunGame.OshimaModules.Skills
         {
             if (!caster.Effects.Contains(this))
             {
+                GamingQueue?.LastRound.Effects.Add(caster, EffectType.Unselectable);
                 首次伤害 = true;
                 破隐一击 = false;
                 RemainDuration = Duration;

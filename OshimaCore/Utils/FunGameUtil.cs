@@ -22,12 +22,14 @@ namespace Oshima.Core.Utils
         public static bool IsRuning { get; set; } = false;
         public static bool IsWeb { get; set; } = false;
         public static bool PrintOut { get; set; } = false;
+        public static bool DeathMatchRoundDetail { get; set; } = false;
         public static string Msg { get; set; } = "";
 
-        public static List<string> StartGame(bool printout, bool isWeb = false, bool isTeam = false)
+        public static List<string> StartGame(bool printout, bool isWeb = false, bool isTeam = false, bool deathMatchRoundDetail = false)
         {
             PrintOut = printout;
             IsWeb = isWeb;
+            DeathMatchRoundDetail = deathMatchRoundDetail;
             try
             {
                 if (IsRuning) return ["游戏正在模拟中，请勿重复请求！"];
@@ -407,7 +409,7 @@ namespace Oshima.Core.Utils
                         if (characterToAct != null)
                         {
                             WriteLine($"=== Round {i++} ===");
-                            WriteLine("现在是 [ " + characterToAct + " ] 的回合！");
+                            WriteLine("现在是 [ " + characterToAct + (isTeam ? "（" + (actionQueue.GetTeam(characterToAct)?.Name ?? "") + "）" : "") + " ] 的回合！");
 
                             bool isGameEnd = actionQueue.ProcessTurn(characterToAct);
                             if (isGameEnd)
@@ -450,11 +452,15 @@ namespace Oshima.Core.Utils
                             }
                         }
 
-                        if (actionQueue.LastRound.Targets.Any(c => c.HP <= 0))
+                        if (actionQueue.LastRound.HasKill)
                         {
+                            string roundMsg = Msg;
+                            if (!deathMatchRoundDetail)
+                            {
+                                roundMsg = actionQueue.LastRound.ToString();
+                            }
                             if (!isWeb)
                             {
-                                string roundMsg = Msg;
                                 string[] strs = roundMsg.Split("==== 角色状态 ====");
                                 if (strs.Length > 0)
                                 {
@@ -462,7 +468,10 @@ namespace Oshima.Core.Utils
                                 }
                                 result.Add(roundMsg);
                             }
-                            else result.Add(Msg);
+                            else
+                            {
+                                result.Add(roundMsg);
+                            }
                         }
                     }
 
@@ -824,7 +833,11 @@ namespace Oshima.Core.Utils
                     baseScore += 0.5;
                 }
             }
-
+            else
+            {
+                baseScore = baseScore * 0.6 + 0.4 * (stats.Kills / (stats.Kills + stats.Deaths + 0.01));
+            }
+            
             // 伤害贡献
             double logDamageContribution = Math.Log(1 + (stats.TotalDamage / (stats.TotalTakenDamage + 1e-6)));
 
@@ -838,14 +851,14 @@ namespace Oshima.Core.Utils
                 teamContribution = (stats.Kills + stats.Assists) / (team.Score + 0.01);
                 if (team.IsWinner)
                 {
-                    teamContribution += 0.2;
+                    teamContribution += 0.15;
                 }
             }
 
             // 权重设置
             double k = stats.Deaths > 0 ? 0.2 : 0.075; // 伤害贡献权重
-            double l = stats.Deaths > 0 ? 0.3 : 0.05; // 存活时间权重
-            double t = stats.Deaths > 0 ? 0.225 : 0.1; // 参团率权重
+            double l = stats.Deaths > 0 ? 0.2 : 0.05; // 存活时间权重
+            double t = stats.Deaths > 0 ? 0.2 : 0.075; // 参团率权重
 
             // 计算最终评分
             double rating = baseScore + k * logDamageContribution + l * liveTimeContribution + t * teamContribution;
