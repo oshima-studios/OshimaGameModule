@@ -66,9 +66,9 @@ namespace Oshima.Core.Controllers
                     builder.AppendLine($"前三率：{stats.Top3rates * 100:0.##}%");
 
                     names = [.. FunGameSimulation.CharacterStatistics.OrderByDescending(kv => kv.Value.Rating).Select(kv => kv.Key.GetName())];
-                    builder.AppendLine($"技术得分：{stats.Rating:0.##}（#{names.IndexOf(character.GetName()) + 1}）");
+                    builder.AppendLine($"技术得分：{stats.Rating:0.0#}（#{names.IndexOf(character.GetName()) + 1}）");
 
-                    builder.AppendLine($"上次排名：{stats.LastRank} / 场均名次：{stats.AvgRank}");
+                    builder.AppendLine($"上次排名：{stats.LastRank} / 场均名次：{stats.AvgRank:0.##}");
 
                     return NetworkUtility.JsonSerialize(builder.ToString());
                 }
@@ -115,7 +115,7 @@ namespace Oshima.Core.Controllers
                     List<string> names = [.. FunGameSimulation.TeamCharacterStatistics.OrderByDescending(kv => kv.Value.Winrates).Select(kv => kv.Key.GetName())];
                     builder.AppendLine($"胜率：{stats.Winrates * 100:0.##}%（#{names.IndexOf(character.GetName()) + 1}）");
                     names = [.. FunGameSimulation.TeamCharacterStatistics.OrderByDescending(kv => kv.Value.Rating).Select(kv => kv.Key.GetName())];
-                    builder.AppendLine($"技术得分：{stats.Rating:0.##}（#{names.IndexOf(character.GetName()) + 1}）");
+                    builder.AppendLine($"技术得分：{stats.Rating:0.0#}（#{names.IndexOf(character.GetName()) + 1}）");
 
                     return NetworkUtility.JsonSerialize(builder.ToString());
                 }
@@ -139,7 +139,7 @@ namespace Oshima.Core.Controllers
                     builder.AppendLine($"总计参赛数：{stats.Plays}");
                     builder.AppendLine($"总计冠军数：{stats.Wins}");
                     builder.AppendLine($"胜率：{stats.Winrates * 100:0.##}%");
-                    builder.AppendLine($"技术得分：{stats.Rating:0.##}");
+                    builder.AppendLine($"技术得分：{stats.Rating:0.0#}");
                     strings.Add(builder.ToString());
                 }
                 return NetworkUtility.JsonSerialize(strings);
@@ -157,8 +157,8 @@ namespace Oshima.Core.Controllers
                     builder.AppendLine($"总计冠军数：{stats.Wins}");
                     builder.AppendLine($"胜率：{stats.Winrates * 100:0.##}%");
                     builder.AppendLine($"前三率：{stats.Top3rates * 100:0.##}%");
-                    builder.AppendLine($"技术得分：{stats.Rating:0.##}");
-                    builder.AppendLine($"上次排名：{stats.LastRank} / 场均名次：{stats.AvgRank}");
+                    builder.AppendLine($"技术得分：{stats.Rating:0.0#}");
+                    builder.AppendLine($"上次排名：{stats.LastRank} / 场均名次：{stats.AvgRank:0.##}");
                     strings.Add(builder.ToString());
                 }
                 return NetworkUtility.JsonSerialize(strings);
@@ -181,7 +181,7 @@ namespace Oshima.Core.Controllers
                     builder.AppendLine($"总计参赛数：{stats.Plays}");
                     builder.AppendLine($"总计冠军数：{stats.Wins}");
                     builder.AppendLine($"胜率：{stats.Winrates * 100:0.##}%");
-                    builder.AppendLine($"技术得分：{stats.Rating:0.##}");
+                    builder.AppendLine($"技术得分：{stats.Rating:0.0#}");
                     strings.Add(builder.ToString());
                 }
                 return NetworkUtility.JsonSerialize(strings);
@@ -199,8 +199,8 @@ namespace Oshima.Core.Controllers
                     builder.AppendLine($"总计冠军数：{stats.Wins}");
                     builder.AppendLine($"胜率：{stats.Winrates * 100:0.##}%");
                     builder.AppendLine($"前三率：{stats.Top3rates * 100:0.##}%");
-                    builder.AppendLine($"技术得分：{stats.Rating:0.##}");
-                    builder.AppendLine($"上次排名：{stats.LastRank} / 场均名次：{stats.AvgRank}");
+                    builder.AppendLine($"技术得分：{stats.Rating:0.0#}");
+                    builder.AppendLine($"上次排名：{stats.LastRank} / 场均名次：{stats.AvgRank:0.##}");
                     strings.Add(builder.ToString());
                 }
                 return NetworkUtility.JsonSerialize(strings);

@@ -23,12 +23,13 @@ namespace Oshima.FunGame.OshimaModules.Skills
     {
         public override long Id => Skill.Id;
         public override string Name => Skill.Name;
-        public override string Description => $"对目标敌人造成 {基础伤害:0.##} + {系数 * 100:0.##}% {CharacterSet.GetPrimaryAttributeName(Skill.Character?.PrimaryAttribute ?? PrimaryAttribute.INT)} [ {Damage:0.##} ] 点{CharacterSet.GetMagicDamageName(MagicType)}。";
+        public override string Description => $"对目标敌人造成 {基础伤害:0.##} + {系数 * 100:0.##}% {CharacterSet.GetPrimaryAttributeName(Skill.Character?.PrimaryAttribute ?? PrimaryAttribute.INT)} {(Skill.Level == 0 ? $"(+{等级系数 * 100:0.##}%/Lv)" : "")} [ {Damage:0.##} ] 点{CharacterSet.GetMagicDamageName(MagicType)}。";
         public override bool TargetSelf => false;
         public override int TargetCount => 1;
 
-        private double 基础伤害 => 85 + 65 * (Skill.Level - 1);
-        private double 系数 => 0.35 + 0.45 * (Skill.Level - 1);
+        private static double 等级系数 => 0.45;
+        private double 基础伤害 => Skill.Level != 0 ? 85 + 65 * (Skill.Level - 1) : 85;
+        private double 系数 => Skill.Level != 0 ? 0.35 + 等级系数 * (Skill.Level - 1) : 0.35;
         private double Damage => 基础伤害 + 系数 * Skill.Character?.PrimaryAttributeValue ?? 0;
 
         public override void OnSkillCasted(Character caster, List<Character> targets, Dictionary<string, object> others)
