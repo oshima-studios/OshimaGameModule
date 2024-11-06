@@ -35,6 +35,8 @@ namespace Oshima.FunGame.OshimaModules
                     (long)MagicID.心灵之霞 => new 心灵之霞(),
                     (long)MagicID.次元上升 => new 次元上升(),
                     (long)MagicID.暗物质 => new 暗物质(),
+                    (long)MagicID.回复术 => new 回复术(),
+                    (long)MagicID.治愈术 => new 治愈术(),
                     (long)SkillID.疾风步 => new 疾风步(),
                     (long)SuperSkillID.力量爆发 => new 力量爆发(),
                     (long)SuperSkillID.天赐之力 => new 天赐之力(),
