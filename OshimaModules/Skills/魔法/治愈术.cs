@@ -21,7 +21,7 @@ namespace Oshima.FunGame.OshimaModules.Skills
         public 治愈术(Character? character = null) : base(SkillType.Magic, character)
         {
             SelectTargetPredicates.Add(c => c.HP > 0 && c.HP < c.MaxHP);
-            Effects.Add(new 百分比回复生命值(this, 0.3, 0.3));
+            Effects.Add(new 百分比回复生命值(this, 0.03, 0.03));
         }
     }
 }
