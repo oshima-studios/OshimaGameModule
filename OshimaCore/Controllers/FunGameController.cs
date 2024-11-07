@@ -60,6 +60,7 @@ namespace Oshima.Core.Controllers
                     builder.AppendLine($"总计冠军数：{stats.Wins}");
                     builder.AppendLine($"总计前三数：{stats.Top3s}");
                     builder.AppendLine($"总计败场数：{stats.Loses}");
+                    builder.AppendLine($"MVP次数：{stats.MVPs}");
 
                     List<string> names = [.. FunGameSimulation.CharacterStatistics.OrderByDescending(kv => kv.Value.Winrates).Select(kv => kv.Key.GetName())];
                     builder.AppendLine($"胜率：{stats.Winrates * 100:0.##}%（#{names.IndexOf(character.GetName()) + 1}）");
@@ -111,6 +112,7 @@ namespace Oshima.Core.Controllers
                     builder.AppendLine($"总计参赛数：{stats.Plays}");
                     builder.AppendLine($"总计冠军数：{stats.Wins}");
                     builder.AppendLine($"总计败场数：{stats.Loses}");
+                    builder.AppendLine($"MVP次数：{stats.MVPs}");
 
                     List<string> names = [.. FunGameSimulation.TeamCharacterStatistics.OrderByDescending(kv => kv.Value.Winrates).Select(kv => kv.Key.GetName())];
                     builder.AppendLine($"胜率：{stats.Winrates * 100:0.##}%（#{names.IndexOf(character.GetName()) + 1}）");
@@ -140,6 +142,7 @@ namespace Oshima.Core.Controllers
                     builder.AppendLine($"总计冠军数：{stats.Wins}");
                     builder.AppendLine($"胜率：{stats.Winrates * 100:0.##}%");
                     builder.AppendLine($"技术得分：{stats.Rating:0.0#}");
+                    builder.AppendLine($"MVP次数：{stats.MVPs}");
                     strings.Add(builder.ToString());
                 }
                 return NetworkUtility.JsonSerialize(strings);
@@ -159,6 +162,7 @@ namespace Oshima.Core.Controllers
                     builder.AppendLine($"前三率：{stats.Top3rates * 100:0.##}%");
                     builder.AppendLine($"技术得分：{stats.Rating:0.0#}");
                     builder.AppendLine($"上次排名：{stats.LastRank} / 场均名次：{stats.AvgRank:0.##}");
+                    builder.AppendLine($"MVP次数：{stats.MVPs}");
                     strings.Add(builder.ToString());
                 }
                 return NetworkUtility.JsonSerialize(strings);
@@ -182,6 +186,7 @@ namespace Oshima.Core.Controllers
                     builder.AppendLine($"总计冠军数：{stats.Wins}");
                     builder.AppendLine($"胜率：{stats.Winrates * 100:0.##}%");
                     builder.AppendLine($"技术得分：{stats.Rating:0.0#}");
+                    builder.AppendLine($"MVP次数：{stats.MVPs}");
                     strings.Add(builder.ToString());
                 }
                 return NetworkUtility.JsonSerialize(strings);
@@ -201,6 +206,7 @@ namespace Oshima.Core.Controllers
                     builder.AppendLine($"前三率：{stats.Top3rates * 100:0.##}%");
                     builder.AppendLine($"技术得分：{stats.Rating:0.0#}");
                     builder.AppendLine($"上次排名：{stats.LastRank} / 场均名次：{stats.AvgRank:0.##}");
+                    builder.AppendLine($"MVP次数：{stats.MVPs}");
                     strings.Add(builder.ToString());
                 }
                 return NetworkUtility.JsonSerialize(strings);
@@ -397,6 +403,49 @@ namespace Oshima.Core.Controllers
                 }
 
                 return NetworkUtility.JsonSerialize(c.GetInfo().Trim());
+            }
+            return NetworkUtility.JsonSerialize("");
+        }
+
+        [HttpGet("cjn")]
+        public string GetSkillInfo([FromQuery] long? id = null)
+        {
+            IEnumerable<Skill> skills = FunGameSimulation.Skills.Union(FunGameSimulation.Magics);
+            if (id != null && FunGameSimulation.Characters.Count > 1)
+            {
+                List<string> msg = [];
+                Character c = FunGameSimulation.Characters[1].Copy();
+                Skill? s = skills.Where(s => s.Id == id).FirstOrDefault()?.Copy();
+                if (s != null)
+                {
+                    s.Character = c;
+                    msg.Add($"技能展示的属性基于演示角色：[ {c} ]");
+                    msg.Add(s.Description);
+                    s.Level++; ;
+                    msg.Add(s.Description);
+                    s.Level = s.IsMagic ? General.GameplayEquilibriumConstant.MaxMagicLevel : General.GameplayEquilibriumConstant.MaxSkillLevel;
+                    msg.Add(s.Description);
+                }
+
+                return NetworkUtility.JsonSerialize(string.Join("\r\n\r\n", msg));
+            }
+            return NetworkUtility.JsonSerialize("");
+        }
+        
+        [HttpGet("cwp")]
+        public string GetItemInfo([FromQuery] long? id = null)
+        {
+            IEnumerable<Item> items = FunGameSimulation.Items;
+            if (id != null)
+            {
+                List<string> msg = [];
+                Item? i = items.Where(i => i.Id == id).FirstOrDefault()?.Copy();
+                if (i != null)
+                {
+                    msg.Add(i.Description);
+                }
+
+                return NetworkUtility.JsonSerialize(string.Join("\r\n\r\n", msg));
             }
             return NetworkUtility.JsonSerialize("");
         }

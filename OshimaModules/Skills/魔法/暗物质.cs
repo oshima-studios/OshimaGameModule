@@ -9,14 +9,14 @@ namespace Oshima.FunGame.OshimaModules.Skills
         public override long Id => (long)MagicID.暗物质;
         public override string Name => "暗物质";
         public override string Description => Effects.Count > 0 ? Effects.First().Description : "";
-        public override double MPCost => Level > 0 ? 65 + (80 * (Level - 1)) : 65;
-        public override double CD => 35;
+        public override double MPCost => Level > 0 ? 70 + (80 * (Level - 1)) : 70;
+        public override double CD => 55;
         public override double CastTime => 10;
         public override double HardnessTime { get; set; } = 4;
 
         public 暗物质(Character? character = null) : base(SkillType.Magic, character)
         {
-            Effects.Add(new 基于攻击力的伤害_无基础伤害(this, 1.5, 0.35, true));
+            Effects.Add(new 基于攻击力的伤害_无基础伤害(this, 1.4, 0.28, true));
         }
     }
 }

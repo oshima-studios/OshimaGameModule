@@ -1,7 +1,7 @@
 ﻿using Milimoe.FunGame.Core.Entity;
 using Milimoe.FunGame.Core.Library.Constant;
 
-namespace Oshima.FunGame.OshimaModules.Effects.SkillEffects
+namespace Oshima.FunGame.OshimaModules.Effects.PassiveEffects
 {
     public class 眩晕 : Effect
     {

@@ -11,7 +11,7 @@ namespace Oshima.FunGame.OshimaModules.Skills
         public override double EPCost => 100;
         public override double CD => 55 - 3 * (Level - 1);
         public override double HardnessTime { get; set; } = 25;
-        public override string Slogan => "灭！！！！";
+        public override string Slogan => "从深渊引爆力量，世界将为之颤抖！！！！";
 
         public 能量毁灭(Character? character = null) : base(SkillType.SuperSkill, character)
         {

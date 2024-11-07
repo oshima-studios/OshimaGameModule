@@ -4,6 +4,7 @@ using Milimoe.FunGame.Core.Entity;
 using Milimoe.FunGame.Core.Model;
 using Oshima.FunGame.OshimaModules;
 using Oshima.FunGame.OshimaModules.Characters;
+using Oshima.FunGame.OshimaModules.Effects.OpenEffects;
 using Oshima.FunGame.OshimaModules.Items;
 using Oshima.FunGame.OshimaModules.Skills;
 
@@ -369,6 +370,10 @@ namespace Oshima.Core.Utils
 
                     // 总回合数
                     int maxRound = isTeam ? 9999 : 999;
+
+                    // 随机回合奖励
+                    Dictionary<int, List<Skill>> roundRewards = GenerateRoundRewards(maxRound);
+
                     int i = 1;
                     while (i < maxRound)
                     {
@@ -408,10 +413,54 @@ namespace Oshima.Core.Utils
                         // 处理回合
                         if (characterToAct != null)
                         {
+                            // 获取回合奖励
+                            List<Skill> skillRewards = [];
+                            if (roundRewards.TryGetValue(i, out List<Skill>? effectList) && effectList != null)
+                            {
+                                skillRewards = new(effectList);
+                            }
+
                             WriteLine($"=== Round {i++} ===");
                             WriteLine("现在是 [ " + characterToAct + (isTeam ? "（" + (actionQueue.GetTeam(characterToAct)?.Name ?? "") + "）" : "") + " ] 的回合！");
 
+                            // 实际的回合奖励
+                            List<Skill> realSkillRewards = [];
+                            if (skillRewards.Count > 0)
+                            {
+                                foreach (Skill skill in skillRewards)
+                                {
+                                    Dictionary<string, object> args = new()
+                                    {
+                                        { "skill", skill },
+                                        { "values", skill.Values }
+                                    };
+                                    skill.GamingQueue = actionQueue;
+                                    skill.Effects.Add(Factory.OpenFactory.GetInstance<Effect>(skill.Id, "回合奖励", args));
+                                    skill.Character = characterToAct;
+                                    skill.Level = 1;
+                                    characterToAct.Skills.Add(skill);
+                                    realSkillRewards.Add(skill);
+                                }
+                                string msg = $"[ {characterToAct} ] 获得了回合奖励！{string.Join(" / ", realSkillRewards.Select(s => s.Description))}";
+                                WriteLine(msg.Trim());
+                            }
+
                             bool isGameEnd = actionQueue.ProcessTurn(characterToAct);
+
+                            if (realSkillRewards.Count > 0)
+                            {
+                                foreach (Skill skill in realSkillRewards)
+                                {
+                                    foreach (Effect e in skill.Effects)
+                                    {
+                                        e.OnEffectLost(characterToAct);
+                                        characterToAct.Effects.Remove(e);
+                                    }
+                                    characterToAct.Skills.Remove(skill);
+                                    skill.Character = null;
+                                }
+                            }
+
                             if (isGameEnd)
                             {
                                 result.Add(Msg);
@@ -500,6 +549,7 @@ namespace Oshima.Core.Utils
                         if (character != null)
                         {
                             CharacterStatistics stats = actionQueue.CharacterStatistics[character];
+                            stats.MVPs++;
                             StringBuilder builder = new();
                             builder.AppendLine($"{(isWeb ? count + "." : (isTeam ? "[ " + actionQueue.GetTeamFromEliminated(character)?.Name + " ]" ?? "" : ""))} [ {character.ToStringWithLevel()} ]");
                             builder.AppendLine($"技术得分：{stats.Rating:0.##} / 击杀数：{stats.Kills} / 助攻数：{stats.Assists}{(actionQueue.MaxRespawnTimes != 0 ? " / 死亡数：" + stats.Deaths : "")}");
@@ -755,6 +805,63 @@ namespace Oshima.Core.Utils
             Magics.AddRange([new 冰霜攻击(), new 火之矢(), new 水之矢(), new 风之轮(), new 石之锤(), new 心灵之霞(), new 次元上升(), new 暗物质(), new 回复术(), new 治愈术()]);
         }
 
+        public static Dictionary<int, List<Skill>> GenerateRoundRewards(int maxRound)
+        {
+            Dictionary<int, List<Skill>> roundRewards = [];
+
+            // 设定产生的回合奖励
+            Dictionary<EffectID, Dictionary<string, object>> rewards = new()
+            {
+                {
+                    EffectID.ExATK,
+                    new()
+                    {
+                        { "exatk", "60" }
+                    }
+                },
+                {
+                    EffectID.ExCritRate,
+                    new()
+                    {
+                        { "excr", "0.5" }
+                    }
+                },
+                {
+                    EffectID.ExCritDMG,
+                    new()
+                    {
+                        { "excrd", "1" }
+                    }
+                },
+                {
+                    EffectID.ExATK2,
+                    new()
+                    {
+                        { "exatk", "0.3" }
+                    }
+                }
+            };
+
+            int currentRound = 1;
+            while (currentRound <= maxRound)
+            {
+                currentRound += Random.Shared.Next(1, 9);
+
+                if (currentRound <= maxRound)
+                {
+                    List<Skill> skills = [];
+
+                    // 添加回合奖励特效
+                    EffectID effectID = rewards.Keys.ToArray()[Random.Shared.Next(rewards.Count)];
+                    skills.Add(Factory.OpenFactory.GetInstance<Skill>((long)effectID, "", rewards[effectID]));
+
+                    roundRewards[currentRound] = skills;
+                }
+            }
+
+            return roundRewards;
+        }
+
         public static void UpdateStatistics(CharacterStatistics totalStats, CharacterStatistics stats)
         {
             // 统计此角色的所有数据
@@ -786,6 +893,7 @@ namespace Oshima.Core.Utils
             totalStats.Wins += stats.Wins;
             totalStats.Top3s += stats.Top3s;
             totalStats.Loses += stats.Loses;
+            totalStats.MVPs += stats.MVPs;
             if (totalStats.Plays != 0)
             {
                 totalStats.AvgDamage = Calculation.Round2Digits(totalStats.TotalDamage / totalStats.Plays);
