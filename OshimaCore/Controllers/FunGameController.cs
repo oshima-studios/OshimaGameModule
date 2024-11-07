@@ -420,11 +420,12 @@ namespace Oshima.Core.Controllers
                 {
                     s.Character = c;
                     msg.Add($"技能展示的属性基于演示角色：[ {c} ]");
-                    msg.Add(s.Description);
+                    msg.Add(c.ToStringWithLevel() + "\r\n" + s.ToString());
                     s.Level++; ;
-                    msg.Add(s.Description);
+                    msg.Add(c.ToStringWithLevel() + "\r\n" + s.ToString());
+                    c.Level = General.GameplayEquilibriumConstant.MaxLevel;
                     s.Level = s.IsMagic ? General.GameplayEquilibriumConstant.MaxMagicLevel : General.GameplayEquilibriumConstant.MaxSkillLevel;
-                    msg.Add(s.Description);
+                    msg.Add(c.ToStringWithLevel() + "\r\n" + s.ToString());
                 }
 
                 return NetworkUtility.JsonSerialize(string.Join("\r\n\r\n", msg));
@@ -442,7 +443,8 @@ namespace Oshima.Core.Controllers
                 Item? i = items.Where(i => i.Id == id).FirstOrDefault()?.Copy();
                 if (i != null)
                 {
-                    msg.Add(i.Description);
+                    i.SetLevel(1);
+                    msg.Add(i.ToString());
                 }
 
                 return NetworkUtility.JsonSerialize(string.Join("\r\n\r\n", msg));
