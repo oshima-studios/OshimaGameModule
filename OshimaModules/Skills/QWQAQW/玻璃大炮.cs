@@ -26,8 +26,7 @@ namespace Oshima.FunGame.OshimaModules.Skills
         public override string Name => Skill.Name;
         public override string Description => $"生命值高于 30% 时，受到额外的 [ {高于30额外伤害下限}~{高于30额外伤害上限}% ] 伤害，但是获得 [ 累计所受伤害的 {高于30的加成下限}~{高于30的加成上限}%  ] 伤害加成；生命值低于等于 30% 时，不会受到额外的伤害，仅能获得 [ 累计受到的伤害 {低于30的加成下限}~{低于30的加成上限}% ] 伤害加成。" +
             $"在没有受到任何伤害的时候，将获得 {常规伤害加成 * 100:0.##}% 伤害加成。" + (累计受到的伤害 > 0 ? $"（当前累计受到伤害：{累计受到的伤害:0.##}）" : "");
-        public override bool TargetSelf => true;
-
+        
         private double 累计受到的伤害 = 0;
         private double 这次的伤害加成 = 0;
         private double 受到伤害之前的HP = 0;

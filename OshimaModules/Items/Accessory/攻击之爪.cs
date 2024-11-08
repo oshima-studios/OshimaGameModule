@@ -1,6 +1,6 @@
 ﻿using Milimoe.FunGame.Core.Entity;
 using Milimoe.FunGame.Core.Library.Constant;
-using Oshima.FunGame.OshimaModules.Effects.ItemEffects;
+using Oshima.FunGame.OshimaModules.Effects.OpenEffects;
 using Oshima.FunGame.OshimaModules.Skills;
 
 namespace Oshima.FunGame.OshimaModules.Items
@@ -54,7 +54,11 @@ namespace Oshima.FunGame.OshimaModules.Items
         {
             Level = 1;
             Item = item;
-            Effects.Add(new 攻击力加成(this, exATK, character, item));
+            Dictionary<string, object> values = new()
+            {
+                { "exatk", exATK }
+            };
+            Effects.Add(new ExATK(this, values, character));
         }
 
         public override IEnumerable<Effect> AddInactiveEffectToCharacter()

@@ -11,6 +11,8 @@ namespace Oshima.FunGame.OshimaModules.Skills
         public override double EPCost => 100;
         public override double CD => 55;
         public override double HardnessTime { get; set; } = 0;
+        public override bool CanSelectSelf => true;
+        public override bool CanSelectEnemy => false;
 
         public 力量爆发(Character? character = null) : base(SkillType.SuperSkill, character)
         {
@@ -23,7 +25,6 @@ namespace Oshima.FunGame.OshimaModules.Skills
         public override long Id => Skill.Id;
         public override string Name => "力量爆发";
         public override string Description => $"获得 135% 力量 [ {攻击力加成:0.##} ] 的攻击力加成，但每次攻击都会损失 9% 当前生命值 [ {当前生命值:0.##} ]，持续 {Duration:0.##} 时间。";
-        public override bool TargetSelf => true;
         public override bool Durative => true;
         public override double Duration => 10 + 1 * (Level - 1);
 

@@ -25,7 +25,7 @@ namespace Oshima.FunGame.OshimaModules.Skills
         public override long Id => Skill.Id;
         public override string Name => Skill.Name;
         public override string Description => $"META马专属被动：力量+5，力量成长+0.5；在受到伤害时，获得的能量提升50%，每回合开始还能获得额外的 [ {EP:0.##} ] 能量值。";
-        public override bool TargetSelf => true;
+
         public static double EP => 7;
 
         public override void AlterEPAfterGetDamage(Character character, ref double baseEP)

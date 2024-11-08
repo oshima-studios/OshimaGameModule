@@ -25,8 +25,7 @@ namespace Oshima.FunGame.OshimaModules.Skills
         public override long Id => Skill.Id;
         public override string Name => Skill.Name;
         public override string Description => $"每次造成伤害都会随机减少对方 [ 7~15 ] 点能量值，对能量值低于一半的角色额外造成 30% 伤害。对于枯竭打击而言，能量值大于100且小于150时，视为低于一半。";
-        public override bool TargetSelf => true;
-
+        
         private bool 是否是嵌套伤害 = false;
 
         public override void AfterDamageCalculation(Character character, Character enemy, double damage, bool isNormalAttack, bool isMagicDamage, MagicType magicType, DamageResult damageResult)

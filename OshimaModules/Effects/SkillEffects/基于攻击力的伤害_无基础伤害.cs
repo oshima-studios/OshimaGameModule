@@ -7,11 +7,10 @@ namespace Oshima.FunGame.OshimaModules.Effects.SkillEffects
     {
         public override long Id => Skill.Id;
         public override string Name => Skill.Name;
-        public override string Description => $"对目标{(TargetCount > 1 ? $"至多 {TargetCount} 个" : "")}敌人造成 {ATKCoefficient * 100:0.##}% 攻击力 [ {Damage:0.##} ] 点{(IsMagic ? CharacterSet.GetMagicDamageName(MagicType) : "物理伤害")}。";
-        public override bool TargetSelf => false;
+        public override string Description => $"对目标{(Skill.CanSelectTargetCount > 1 ? $"至多 {Skill.CanSelectTargetCount} 个" : "")}敌人造成 {ATKCoefficient * 100:0.##}% 攻击力 [ {Damage:0.##} ] 点{(IsMagic ? CharacterSet.GetMagicDamageName(MagicType) : "物理伤害")}。";
+        
         private double ATKCoefficient => Skill.Level > 0 ? 基础攻击力系数 + 基础系数等级成长 * (Skill.Level - 1) : 基础攻击力系数;
         private double Damage => ATKCoefficient * Skill.Character?.ATK ?? 0;
-
         private double 基础攻击力系数 { get; set; } = 1.5;
         private double 基础系数等级成长 { get; set; } = 0.25;
         private bool IsMagic { get; set; } = true;

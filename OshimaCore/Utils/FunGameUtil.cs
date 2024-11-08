@@ -429,20 +429,33 @@ namespace Oshima.Core.Utils
                             {
                                 foreach (Skill skill in skillRewards)
                                 {
+                                    Dictionary<string, object> effectArgs = [];
+                                    if (RoundRewards.TryGetValue((EffectID)skill.Id, out Dictionary<string, object>? dict) && dict != null)
+                                    {
+                                        effectArgs = new(dict);
+                                    }
                                     Dictionary<string, object> args = new()
                                     {
                                         { "skill", skill },
-                                        { "values", skill.Values }
+                                        { "values", effectArgs }
                                     };
                                     skill.GamingQueue = actionQueue;
-                                    skill.Effects.Add(Factory.OpenFactory.GetInstance<Effect>(skill.Id, "回合奖励", args));
+                                    skill.Effects.Add(Factory.OpenFactory.GetInstance<Effect>(skill.Id, "", args));
                                     skill.Character = characterToAct;
                                     skill.Level = 1;
-                                    characterToAct.Skills.Add(skill);
-                                    realSkillRewards.Add(skill);
+                                    actionQueue.LastRound.RoundRewards.Add(skill);
+                                    WriteLine($"[ {characterToAct} ] 获得了回合奖励！{skill.Description}".Trim());
+                                    if (skill.IsActive)
+                                    {
+                                        actionQueue.LastRound.Targets.Add(characterToAct);
+                                        skill.OnSkillCasted(actionQueue, characterToAct, [characterToAct]);
+                                    }
+                                    else
+                                    {
+                                        characterToAct.Skills.Add(skill);
+                                        realSkillRewards.Add(skill);
+                                    }
                                 }
-                                string msg = $"[ {characterToAct} ] 获得了回合奖励！{string.Join(" / ", realSkillRewards.Select(s => s.Description))}";
-                                WriteLine(msg.Trim());
                             }
 
                             bool isGameEnd = actionQueue.ProcessTurn(characterToAct);
@@ -471,10 +484,30 @@ namespace Oshima.Core.Utils
                             WriteLine("");
                         }
 
+                        string roundMsg = "";
+                        if (actionQueue.LastRound.HasKill)
+                        {
+                            roundMsg = Msg;
+                            if (!deathMatchRoundDetail)
+                            {
+                                roundMsg = actionQueue.LastRound.ToString();
+                            }
+                            Msg = "";
+                        }
+
                         // 模拟时间流逝
                         double timeLapse = actionQueue.TimeLapse();
                         totalTime += timeLapse;
                         下一次空投 -= timeLapse;
+
+                        if (roundMsg != "")
+                        {
+                            if (isWeb)
+                            {
+                                roundMsg += "\r\n" + Msg;
+                            }
+                            result.Add(roundMsg);
+                        }
 
                         if (下一次空投 <= 0)
                         {
@@ -498,28 +531,6 @@ namespace Oshima.Core.Utils
                             if (发放的饰品品质 < 3)
                             {
                                 发放的饰品品质++;
-                            }
-                        }
-
-                        if (actionQueue.LastRound.HasKill)
-                        {
-                            string roundMsg = Msg;
-                            if (!deathMatchRoundDetail)
-                            {
-                                roundMsg = actionQueue.LastRound.ToString();
-                            }
-                            if (!isWeb)
-                            {
-                                string[] strs = roundMsg.Split("==== 角色状态 ====");
-                                if (strs.Length > 0)
-                                {
-                                    roundMsg = strs[0];
-                                }
-                                result.Add(roundMsg);
-                            }
-                            else
-                            {
-                                result.Add(roundMsg);
                             }
                         }
                     }
@@ -805,42 +816,75 @@ namespace Oshima.Core.Utils
             Magics.AddRange([new 冰霜攻击(), new 火之矢(), new 水之矢(), new 风之轮(), new 石之锤(), new 心灵之霞(), new 次元上升(), new 暗物质(), new 回复术(), new 治愈术()]);
         }
 
+        public static Dictionary<EffectID, Dictionary<string, object>> RoundRewards
+        {
+            get
+            {
+                return new()
+                {
+                    {
+                        EffectID.ExATK,
+                        new()
+                        {
+                            { "exatk", Random.Shared.Next(40, 80) }
+                        }
+                    },
+                    {
+                        EffectID.ExCritRate,
+                        new()
+                        {
+                            { "excr", Math.Clamp(Random.Shared.NextDouble(), 0.25, 0.5) }
+                        }
+                    },
+                    {
+                        EffectID.ExCritDMG,
+                        new()
+                        {
+                            { "excrd", Math.Clamp(Random.Shared.NextDouble(), 0.5, 1) }
+                        }
+                    },
+                    {
+                        EffectID.ExATK2,
+                        new()
+                        {
+                            { "exatk", Math.Clamp(Random.Shared.NextDouble(), 0.15, 0.3) }
+                        }
+                    },
+                    {
+                        EffectID.RecoverHP,
+                        new()
+                        {
+                            { "hp", Random.Shared.Next(160, 640) }
+                        }
+                    },
+                    {
+                        EffectID.RecoverMP,
+                        new()
+                        {
+                            { "mp", Random.Shared.Next(140, 490) }
+                        }
+                    },
+                    {
+                        EffectID.RecoverHP2,
+                        new()
+                        {
+                            { "hp", Math.Clamp(Random.Shared.NextDouble(), 0.04, 0.08) }
+                        }
+                    },
+                    {
+                        EffectID.RecoverMP2,
+                        new()
+                        {
+                            { "mp", Math.Clamp(Random.Shared.NextDouble(), 0.09, 0.18) }
+                        }
+                    }
+                };
+            }
+        }
+
         public static Dictionary<int, List<Skill>> GenerateRoundRewards(int maxRound)
         {
             Dictionary<int, List<Skill>> roundRewards = [];
-
-            // 设定产生的回合奖励
-            Dictionary<EffectID, Dictionary<string, object>> rewards = new()
-            {
-                {
-                    EffectID.ExATK,
-                    new()
-                    {
-                        { "exatk", "60" }
-                    }
-                },
-                {
-                    EffectID.ExCritRate,
-                    new()
-                    {
-                        { "excr", "0.5" }
-                    }
-                },
-                {
-                    EffectID.ExCritDMG,
-                    new()
-                    {
-                        { "excrd", "1" }
-                    }
-                },
-                {
-                    EffectID.ExATK2,
-                    new()
-                    {
-                        { "exatk", "0.3" }
-                    }
-                }
-            };
 
             int currentRound = 1;
             while (currentRound <= maxRound)
@@ -852,8 +896,16 @@ namespace Oshima.Core.Utils
                     List<Skill> skills = [];
 
                     // 添加回合奖励特效
-                    EffectID effectID = rewards.Keys.ToArray()[Random.Shared.Next(rewards.Count)];
-                    skills.Add(Factory.OpenFactory.GetInstance<Skill>((long)effectID, "", rewards[effectID]));
+                    long effectID = (long)RoundRewards.Keys.ToArray()[Random.Shared.Next(RoundRewards.Count)];
+                    Dictionary<string, object> args = [];
+                    if (effectID > (long)EffectID.Active_Start)
+                    {
+                        args.Add("active", true);
+                        args.Add("self", true);
+                        args.Add("enemy", false);
+                    }
+
+                    skills.Add(Factory.OpenFactory.GetInstance<Skill>(effectID, "回合奖励", args));
 
                     roundRewards[currentRound] = skills;
                 }

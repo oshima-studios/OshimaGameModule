@@ -11,6 +11,8 @@ namespace Oshima.FunGame.OshimaModules.Skills
         public override double EPCost => 100;
         public override double CD => 40 - 1 * (Level - 1);
         public override double HardnessTime { get; set; } = 8;
+        public override bool CanSelectSelf => true;
+        public override bool CanSelectEnemy => false;
 
         public 精准打击(Character? character = null) : base(SkillType.SuperSkill, character)
         {
@@ -23,7 +25,6 @@ namespace Oshima.FunGame.OshimaModules.Skills
         public override long Id => Skill.Id;
         public override string Name => Skill.Name;
         public override string Description => $"30 时间内暴击率提升 {暴击率提升 * 100:0.##}%，暴击伤害提升 {暴击伤害提升 * 100:0.##}%，物理穿透提升 {物理穿透提升 * 100:0.##}%。";
-        public override bool TargetSelf => true;
         public override bool Durative => true;
         public override double Duration => 30;
 

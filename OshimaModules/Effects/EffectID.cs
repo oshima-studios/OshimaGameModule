@@ -3,6 +3,11 @@
     public enum EffectID : long
     {
         /// <summary>
+        /// 被动特效起点
+        /// </summary>
+        Passive_Start = 8000,
+
+        /// <summary>
         /// 数值攻击力，参数：exatk
         /// </summary>
         ExATK = 8001,
@@ -159,5 +164,45 @@
         /// 最大魔法值%，参数：exmp
         /// </summary>
         ExMaxMP2 = 8031,
+
+        /// <summary>
+        /// 被动特效终点
+        /// </summary>
+        Passive_End = 8699,
+
+        /// <summary>
+        /// 主动特效起点
+        /// </summary>
+        Active_Start = 8700,
+
+        /// <summary>
+        /// 立即回复生命值，参数：hp
+        /// </summary>
+        RecoverHP = 8701,
+
+        /// <summary>
+        /// 立即回复魔法值，参数：mp
+        /// </summary>
+        RecoverMP = 8702,
+
+        /// <summary>
+        /// 立即回复生命值%，参数：hp
+        /// </summary>
+        RecoverHP2 = 8703,
+
+        /// <summary>
+        /// 立即回复魔法值%，参数：mp
+        /// </summary>
+        RecoverMP2 = 8704,
+
+        /// <summary>
+        /// 立即获得能量值，参数：ep
+        /// </summary>
+        GetEP = 8705,
+
+        /// <summary>
+        /// 主动特效终点
+        /// </summary>
+        Active_End = 8999
     }
 }

@@ -11,6 +11,8 @@ namespace Oshima.FunGame.OshimaModules.Skills
         public override double EPCost => 100;
         public override double CD => 60 - 2 * (Level - 1);
         public override double HardnessTime { get; set; } = 15;
+        public override bool CanSelectSelf => true;
+        public override bool CanSelectEnemy => false;
 
         public 迅捷之势(Character? character = null) : base(SkillType.SuperSkill, character)
         {
@@ -23,7 +25,6 @@ namespace Oshima.FunGame.OshimaModules.Skills
         public override long Id => Skill.Id;
         public override string Name => Skill.Name;
         public override string Description => $"{Duration:0.##} 时间内，提升自身 25% 物理伤害减免和魔法抗性，普通攻击转为魔法伤害，且硬直时间减少 30%，并基于 {智力系数 * 100:0.##}% 智力 [ {智力加成:0.##} ] 强化普通攻击伤害。";
-        public override bool TargetSelf => true;
         public override bool Durative => true;
         public override double Duration => 40;
 
@@ -47,10 +48,10 @@ namespace Oshima.FunGame.OshimaModules.Skills
         public override void OnEffectLost(Character character)
         {
             character.NormalAttack.SetMagicType(false, character.MagicType);
-            实际物理伤害减免 = 0;
-            实际魔法抗性 = 0;
             character.ExPDR -= 实际物理伤害减免;
             character.MDF.SetAllValue(-实际魔法抗性, false);
+            实际物理伤害减免 = 0;
+            实际魔法抗性 = 0;
         }
 
         public override void AlterExpectedDamageBeforeCalculation(Character character, Character enemy, ref double damage, bool isNormalAttack, bool isMagicDamage, MagicType magicType)

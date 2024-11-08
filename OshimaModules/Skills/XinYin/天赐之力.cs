@@ -11,6 +11,8 @@ namespace Oshima.FunGame.OshimaModules.Skills
         public override double EPCost => 100;
         public override double CD => 60;
         public override double HardnessTime { get; set; } = 15;
+        public override bool CanSelectSelf => true;
+        public override bool CanSelectEnemy => false;
 
         public 天赐之力(Character? character = null) : base(SkillType.SuperSkill, character)
         {
@@ -23,8 +25,6 @@ namespace Oshima.FunGame.OshimaModules.Skills
         public override long Id => Skill.Id;
         public override string Name => Skill.Name;
         public override string Description => $"{Duration:0.##} 时间内，增加 40% 攻击力 [ {攻击力提升:0.##} ]、30% 物理穿透和 25% 闪避率（不可叠加），普通攻击硬直时间额外减少 20%，基于 {系数 * 100:0.##}% 敏捷 [ {伤害加成:0.##} ] 强化普通攻击的伤害。在持续时间内，【心灵之火】的冷却时间降低至 3 时间。";
-        public override bool TargetSelf => false;
-        public override int TargetCount => 1;
         public override bool Durative => true;
         public override double Duration => 40;
 

@@ -12,6 +12,8 @@ namespace Oshima.FunGame.OshimaModules.Skills
         public override double CD => 55 - 3 * (Level - 1);
         public override double HardnessTime { get; set; } = 25;
         public override string Slogan => "从深渊引爆力量，世界将为之颤抖！！！！";
+        public override bool CanSelectSelf => true;
+        public override bool CanSelectEnemy => false;
 
         public 能量毁灭(Character? character = null) : base(SkillType.SuperSkill, character)
         {
@@ -30,8 +32,6 @@ namespace Oshima.FunGame.OshimaModules.Skills
         public override string Name => Skill.Name;
         public override string Description => $"对所有角色造成 " +
             $"{能量系数 * 100:0.##}% 其现有能量值 + {智力系数 * 100:0.##}% 智力 [ {智力伤害:0.##} ] 的魔法伤害。";
-        public override bool TargetSelf => false;
-        public override double TargetRange => 999;
 
         private double 智力系数 => 0.25 * Level;
         private double 智力伤害 => 智力系数 * Skill.Character?.INT ?? 0;

@@ -1,5 +1,6 @@
 ﻿using Milimoe.FunGame.Core.Api.Utility;
 using Milimoe.FunGame.Core.Entity;
+using Oshima.FunGame.OshimaModules.Effects.ItemEffects;
 using Oshima.FunGame.OshimaModules.Effects.OpenEffects;
 using Oshima.FunGame.OshimaModules.Items;
 using Oshima.FunGame.OshimaModules.Skills;
@@ -117,6 +118,11 @@ namespace Oshima.FunGame.OshimaModules
                         EffectID.NormalAttackHardTimeReduce2 => new NormalAttackHardTimeReduce2(skill, dict),
                         EffectID.ExMaxHP2 => new ExMaxHP2(skill, dict),
                         EffectID.ExMaxMP2 => new ExMaxMP2(skill, dict),
+                        EffectID.RecoverHP => new RecoverHP(skill, dict),
+                        EffectID.RecoverMP => new RecoverMP(skill, dict),
+                        EffectID.RecoverHP2 => new RecoverHP2(skill, dict),
+                        EffectID.RecoverMP2 => new RecoverMP2(skill, dict),
+                        EffectID.GetEP => new GetEP(skill, dict),
                         _ => null
                     };
                 }

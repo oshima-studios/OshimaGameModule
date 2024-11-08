@@ -11,6 +11,8 @@ namespace Oshima.FunGame.OshimaModules.Skills
         public override double EPCost => 100;
         public override double CD => 35;
         public override double HardnessTime { get; set; } = 10;
+        public override bool CanSelectSelf => true;
+        public override bool CanSelectEnemy => false;
 
         public 魔法涌流(Character? character = null) : base(SkillType.SuperSkill, character)
         {
@@ -23,7 +25,6 @@ namespace Oshima.FunGame.OshimaModules.Skills
         public override long Id => Skill.Id;
         public override string Name => "魔法涌流";
         public override string Description => $"{Duration:0.##} 时间内，增加所有伤害的 {减伤比例 * 100:0.##}% 伤害减免，并将普通攻击转为魔法伤害，可叠加魔法震荡的效果。";
-        public override bool TargetSelf => true;
         public override bool Durative => true;
         public override double Duration => 25;
 

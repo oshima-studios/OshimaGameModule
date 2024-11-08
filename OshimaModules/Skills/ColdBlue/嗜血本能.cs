@@ -12,6 +12,8 @@ namespace Oshima.FunGame.OshimaModules.Skills
         public override double EPCost => 100;
         public override double CD => 42 - 1 * (Level - 1);
         public override double HardnessTime { get; set; } = 12;
+        public override bool CanSelectSelf => true;
+        public override bool CanSelectEnemy => false;
 
         public 嗜血本能(Character? character = null) : base(SkillType.SuperSkill, character)
         {
@@ -24,7 +26,6 @@ namespace Oshima.FunGame.OshimaModules.Skills
         public override long Id => Skill.Id;
         public override string Name => Skill.Name;
         public override string Description => $"{Duration} 时间内，攻击拥有标记的角色将根据标记层数获得 {吸血 * 100:0.##}% 吸血每层。";
-        public override bool TargetSelf => true;
         public override bool Durative => true;
         public override double Duration => 30;
 

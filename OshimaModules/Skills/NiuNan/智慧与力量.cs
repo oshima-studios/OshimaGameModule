@@ -26,8 +26,7 @@ namespace Oshima.FunGame.OshimaModules.Skills
         public override string Name => Skill.Name;
         public override string Description => $"当生命值低于 30% 时，智力转化为力量；当生命值高于或等于 30% 时，力量转化为智力。力量模式下，造成伤害必定暴击；智力模式下，获得 30% 闪避率和 25% 魔法抗性。" +
             (Skill.Character != null ? "（当前模式：" + CharacterSet.GetPrimaryAttributeName(Skill.Character.PrimaryAttribute) + "）" : "");
-        public override bool TargetSelf => true;
-
+        
         private double 交换前的额外智力 = 0;
         private double 交换前的额外力量 = 0;
         private double 实际增加闪避率 = 0.3;

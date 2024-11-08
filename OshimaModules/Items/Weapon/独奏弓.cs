@@ -1,6 +1,6 @@
 ﻿using Milimoe.FunGame.Core.Entity;
 using Milimoe.FunGame.Core.Library.Constant;
-using Oshima.FunGame.OshimaModules.Effects.ItemEffects;
+using Oshima.FunGame.OshimaModules.Effects.OpenEffects;
 
 namespace Oshima.FunGame.OshimaModules.Items
 {
@@ -31,8 +31,13 @@ namespace Oshima.FunGame.OshimaModules.Items
         {
             Level = 1;
             Item = item;
-            Effects.Add(new 攻击力加成(this, 攻击力加成, character, item));
-            Effects.Add(new 普攻硬直时间减少(this, 硬直时间减少, character, item));
+            Dictionary<string, object> values = new()
+            {
+                { "exatk", 攻击力加成 },
+                { "hatr", 硬直时间减少 }
+            };
+            Effects.Add(new ExATK(this, values, character));
+            Effects.Add(new NormalAttackHardTimeReduce(this, values, character));
         }
 
         public override IEnumerable<Effect> AddInactiveEffectToCharacter()

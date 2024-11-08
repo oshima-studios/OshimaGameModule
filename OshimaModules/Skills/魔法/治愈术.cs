@@ -9,9 +9,9 @@ namespace Oshima.FunGame.OshimaModules.Skills
         public override long Id => (long)MagicID.治愈术;
         public override string Name => "治愈术";
         public override string Description => Effects.Count > 0 ? Effects.First().Description : "";
-        public override double MPCost => Level > 0 ? 90 + (95 * (Level - 1)) : 90;
-        public override double CD => 80;
-        public override double CastTime => 5;
+        public override double MPCost => Level > 0 ? 80 + (105 * (Level - 1)) : 80;
+        public override double CD => Level > 0 ? 90 - (1 * (Level - 1)) : 90;
+        public override double CastTime => Level > 0 ? 5 + (1.5 * (Level - 1)) : 5;
         public override double HardnessTime { get; set; } = 7;
         public override bool CanSelectSelf => true;
         public override bool CanSelectEnemy => false;
@@ -21,7 +21,7 @@ namespace Oshima.FunGame.OshimaModules.Skills
         public 治愈术(Character? character = null) : base(SkillType.Magic, character)
         {
             SelectTargetPredicates.Add(c => c.HP > 0 && c.HP < c.MaxHP);
-            Effects.Add(new 百分比回复生命值(this, 0.03, 0.03));
+            Effects.Add(new 百分比回复生命值(this, 0.3, 0.02));
         }
     }
 }

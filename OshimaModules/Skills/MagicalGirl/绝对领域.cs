@@ -11,6 +11,8 @@ namespace Oshima.FunGame.OshimaModules.Skills
         public override double EPCost => Math.Max(100, Character?.EP ?? 100);
         public override double CD => 32 + (1 * (Level - 1));
         public override double HardnessTime { get; set; } = 12;
+        public override bool CanSelectSelf => true;
+        public override bool CanSelectEnemy => false;
 
         public 绝对领域(Character? character = null) : base(SkillType.SuperSkill, character)
         {
@@ -23,7 +25,6 @@ namespace Oshima.FunGame.OshimaModules.Skills
         public override long Id => Skill.Id;
         public override string Name => Skill.Name;
         public override string Description => $"{Duration:0.##} 时间内无法受到任何伤害，且敏捷提升 {系数 * 100:0.##}% [ {敏捷提升:0.##} ]。此技能会消耗至少 100 点能量。";
-        public override bool TargetSelf => true;
         public override bool Durative => true;
         public override double Duration => 16 + 释放时的能量值 * 0.03;
 
