@@ -4,6 +4,7 @@ using Microsoft.Extensions.Logging;
 using Milimoe.FunGame.Core.Api.Utility;
 using Milimoe.FunGame.Core.Entity;
 using Milimoe.FunGame.Core.Library.Constant;
+using Oshima.Core.Configs;
 using Oshima.Core.Models;
 using Oshima.Core.Utils;
 using Oshima.FunGame.OshimaModules.Skills;
@@ -450,6 +451,17 @@ namespace Oshima.Core.Controllers
                 return NetworkUtility.JsonSerialize(string.Join("\r\n\r\n", msg));
             }
             return NetworkUtility.JsonSerialize("");
+        }
+        
+        [HttpGet("reload")]
+        public string Relaod([FromQuery] long? master  = null)
+        {
+            if (master != null && master == GeneralSettings.Master)
+            {
+                FunGameSimulation.Reload();
+                return NetworkUtility.JsonSerialize("FunGame已重新加载。");
+            }
+            return NetworkUtility.JsonSerialize("提供的参数不正确。");
         }
 
         [HttpPost("post")]

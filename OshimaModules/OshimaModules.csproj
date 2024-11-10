@@ -27,5 +27,11 @@
       <HintPath>..\..\FunGame.Core\bin\Debug\net8.0\FunGame.Core.dll</HintPath>
     </Reference>
   </ItemGroup>
+
+  <ItemGroup>
+    <None Update="configs\oshima-studios\oshima.fungame.items.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
 	
 </Project>

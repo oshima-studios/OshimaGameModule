@@ -1282,5 +1282,39 @@
         }
       ]
     }
+  },
+  "路人哥的cos服": {
+    "Id": 14513,
+    "Name": "路人哥的cos服",
+    "Description": "增加 10% 攻击力，增加 15% 魔法抗性，但是会减少 8% 物理伤害减免。",
+    "BackgroundStory": "一套神秘的服饰，据说穿上后会引发未知的力量变化。",
+    "ItemType": 4,
+    "WeaponType": 0,
+    "QualityType": 3,
+    "Skills": {
+      "Active": null,
+      "Passives": [
+        {
+          "Id": 7313,
+          "Name": "路人哥的cos服",
+          "SkillType": 3,
+          "Effects": [
+            {
+              "Id": 8023,
+              "exatk": 0.1
+            },
+            {
+              "Id": 8020,
+              "mdftype": 0,
+              "mdfvalue": 0.15
+            },
+            {
+              "Id": 8019,
+              "expdr": -0.08
+            }
+          ]
+        }
+      ]
+    }
   }
 }

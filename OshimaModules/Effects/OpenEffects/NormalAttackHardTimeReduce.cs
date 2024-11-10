@@ -29,7 +29,7 @@ namespace Oshima.FunGame.OshimaModules.Effects.OpenEffects
             if (Values.Count > 0)
             {
                 string key = Values.Keys.FirstOrDefault(s => s.Equals("nahtr", StringComparison.CurrentCultureIgnoreCase)) ?? "";
-                if (key.Length > 0 && double.TryParse(Values[key].ToString(), out double nahtr))
+                if (key.Length > 0 && double.TryParse(Values[key].ToString(), out double nahtr) && nahtr > 0)
                 {
                     实际硬直时间减少 = nahtr;
                 }

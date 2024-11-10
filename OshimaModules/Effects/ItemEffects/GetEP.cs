@@ -20,7 +20,7 @@ namespace Oshima.FunGame.OshimaModules.Effects.ItemEffects
             if (Values.Count > 0)
             {
                 string key = Values.Keys.FirstOrDefault(s => s.Equals("ep", StringComparison.CurrentCultureIgnoreCase)) ?? "";
-                if (key.Length > 0 && double.TryParse(Values[key].ToString(), out double ep))
+                if (key.Length > 0 && double.TryParse(Values[key].ToString(), out double ep) && ep > 0)
                 {
                     实际获得 = ep;
                 }

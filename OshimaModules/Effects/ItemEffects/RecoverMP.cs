@@ -20,7 +20,7 @@ namespace Oshima.FunGame.OshimaModules.Effects.ItemEffects
             if (Values.Count > 0)
             {
                 string key = Values.Keys.FirstOrDefault(s => s.Equals("mp", StringComparison.CurrentCultureIgnoreCase)) ?? "";
-                if (key.Length > 0 && double.TryParse(Values[key].ToString(), out double mp))
+                if (key.Length > 0 && double.TryParse(Values[key].ToString(), out double mp) && mp > 0)
                 {
                     实际回复 = mp;
                 }

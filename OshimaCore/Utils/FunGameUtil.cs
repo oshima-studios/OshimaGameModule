@@ -815,6 +815,18 @@ namespace Oshima.Core.Utils
 
             Magics.AddRange([new 冰霜攻击(), new 火之矢(), new 水之矢(), new 风之轮(), new 石之锤(), new 心灵之霞(), new 次元上升(), new 暗物质(), new 回复术(), new 治愈术()]);
         }
+        
+        public static void Reload()
+        {
+            Characters.Clear();
+            CharacterStatistics.Clear();
+            TeamCharacterStatistics.Clear();
+            Items.Clear();
+            Skills.Clear();
+            Magics.Clear();
+
+            InitCharacter();
+        }
 
         public static Dictionary<EffectID, Dictionary<string, object>> RoundRewards
         {
