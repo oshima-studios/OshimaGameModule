@@ -1,4 +1,5 @@
 ﻿using Milimoe.FunGame.Core.Entity;
+using Milimoe.FunGame.Core.Interface.Entity;
 using Milimoe.FunGame.Core.Library.Constant;
 
 namespace Oshima.FunGame.OshimaModules.Skills
@@ -24,11 +25,10 @@ namespace Oshima.FunGame.OshimaModules.Skills
     {
         public override long Id => Skill.Id;
         public override string Name => Skill.Name;
-        public override string Description => $"当生命值低于 30% 时，智力转化为力量；当生命值高于或等于 30% 时，力量转化为智力。力量模式下，造成伤害必定暴击；智力模式下，获得 30% 闪避率和 25% 魔法抗性。" +
+        public override string Description => $"当生命值低于 30% 时，进入力量模式，核心属性转为力量，将所有基础智力转化为额外力量；当生命值高于或等于 30% 时，进入智力模式，核心属性转为智力，还原所有基础智力。力量模式下，造成伤害必定暴击；智力模式下，获得 30% 闪避率和 25% 魔法抗性。" +
             (Skill.Character != null ? "（当前模式：" + CharacterSet.GetPrimaryAttributeName(Skill.Character.PrimaryAttribute) + "）" : "");
         
-        private double 交换前的额外智力 = 0;
-        private double 交换前的额外力量 = 0;
+        private double 交换的基础智力 = 0;
         private double 实际增加闪避率 = 0.3;
         private double 实际增加魔法抗性 = 0.25;
         private bool 已经加过 = false;
@@ -78,23 +78,6 @@ namespace Oshima.FunGame.OshimaModules.Skills
             }
         }
 
-        public override void OnAttributeChanged(Character character)
-        {
-            if (Skill.Character != null)
-            {
-                if (Skill.Character.PrimaryAttribute == PrimaryAttribute.INT)
-                {
-                    double diff = character.ExSTR - 交换前的额外力量;
-                    character.ExINT = 交换前的额外力量 + character.BaseSTR + diff;
-                }
-                else if (Skill.Character.PrimaryAttribute == PrimaryAttribute.STR)
-                {
-                    double diff = character.ExINT - 交换前的额外智力;
-                    character.ExSTR = 交换前的额外智力 + character.BaseINT + diff;
-                }
-            }
-        }
-
         public override bool BeforeCriticalCheck(Character character, ref double throwingBonus)
         {
             throwingBonus += 100;
@@ -102,6 +85,16 @@ namespace Oshima.FunGame.OshimaModules.Skills
         }
 
         public override void OnTimeElapsed(Character character, double elapsed)
+        {
+            Changed(character);
+        }
+
+        public override void OnAttributeChanged(Character character)
+        {
+            Changed(character);
+        }
+
+        private void Changed(Character character)
         {
             if (Skill.Character != null)
             {
@@ -115,10 +108,9 @@ namespace Oshima.FunGame.OshimaModules.Skills
                         double pastMP = c.MP;
                         double pastMaxMP = c.MaxMP;
                         c.PrimaryAttribute = PrimaryAttribute.STR;
-                        交换前的额外智力 = c.ExINT;
-                        交换前的额外力量 = c.ExSTR;
-                        c.ExINT = -c.BaseINT;
-                        c.ExSTR = 交换前的额外智力 + c.BaseINT + 交换前的额外力量;
+                        交换的基础智力 = c.BaseINT;
+                        c.ExINT -= 交换的基础智力;
+                        c.ExSTR += 交换的基础智力;
                         c.Recovery(pastHP, pastMP, pastMaxHP, pastMaxMP);
                         if (已经加过)
                         {
@@ -135,10 +127,9 @@ namespace Oshima.FunGame.OshimaModules.Skills
                         double pastMP = c.MP;
                         double pastMaxMP = c.MaxMP;
                         c.PrimaryAttribute = PrimaryAttribute.INT;
-                        交换前的额外智力 = c.ExINT;
-                        交换前的额外力量 = c.ExSTR;
-                        c.ExINT = 交换前的额外力量 + c.BaseSTR + 交换前的额外智力;
-                        c.ExSTR = -c.BaseSTR;
+                        c.ExSTR -= 交换的基础智力;
+                        c.ExINT += 交换的基础智力;
+                        交换的基础智力 = 0;
                         c.Recovery(pastHP, pastMP, pastMaxHP, pastMaxMP);
                         if (!已经加过)
                         {
