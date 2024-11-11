@@ -437,7 +437,7 @@ namespace Oshima.Core.Controllers
         [HttpGet("cwp")]
         public string GetItemInfo([FromQuery] long? id = null)
         {
-            IEnumerable<Item> items = FunGameSimulation.Items;
+            IEnumerable<Item> items = FunGameSimulation.Equipment;
             if (id != null)
             {
                 List<string> msg = [];
@@ -445,7 +445,7 @@ namespace Oshima.Core.Controllers
                 if (i != null)
                 {
                     i.SetLevel(1);
-                    msg.Add(i.ToString());
+                    msg.Add(i.ToString(false, true));
                 }
 
                 return NetworkUtility.JsonSerialize(string.Join("\r\n\r\n", msg));

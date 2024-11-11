@@ -52,29 +52,13 @@ namespace Oshima.FunGame.OshimaModules.Skills
             {
                 已经加过 = true;
                 character.ExEvadeRate += 实际增加闪避率;
-                character.MDF.None += 实际增加魔法抗性;
-                character.MDF.Particle += 实际增加魔法抗性;
-                character.MDF.Fleabane += 实际增加魔法抗性;
-                character.MDF.Element += 实际增加魔法抗性;
-                character.MDF.Shadow += 实际增加魔法抗性;
-                character.MDF.Bright += 实际增加魔法抗性;
-                character.MDF.PurityContemporary += 实际增加魔法抗性;
-                character.MDF.PurityNatural += 实际增加魔法抗性;
-                character.MDF.Starmark += 实际增加魔法抗性;
+                character.MDF.AddAllValue(实际增加魔法抗性);
             }
             else
             {
                 已经加过 = false;
                 character.ExEvadeRate -= 实际增加闪避率;
-                character.MDF.None -= 实际增加魔法抗性;
-                character.MDF.Particle -= 实际增加魔法抗性;
-                character.MDF.Fleabane -= 实际增加魔法抗性;
-                character.MDF.Element -= 实际增加魔法抗性;
-                character.MDF.Shadow -= 实际增加魔法抗性;
-                character.MDF.Bright -= 实际增加魔法抗性;
-                character.MDF.PurityContemporary -= 实际增加魔法抗性;
-                character.MDF.PurityNatural -= 实际增加魔法抗性;
-                character.MDF.Starmark -= 实际增加魔法抗性;
+                character.MDF.AddAllValue(-实际增加魔法抗性);
             }
         }
 

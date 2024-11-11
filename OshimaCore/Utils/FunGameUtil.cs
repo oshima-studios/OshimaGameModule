@@ -15,6 +15,7 @@ namespace Oshima.Core.Utils
         public static List<Character> Characters { get; } = [];
         public static List<Skill> Skills { get; } = [];
         public static List<Skill> Magics { get; } = [];
+        public static List<Item> Equipment { get; } = [];
         public static List<Item> Items { get; } = [];
         public static Dictionary<Character, CharacterStatistics> CharacterStatistics { get; } = [];
         public static Dictionary<Character, CharacterStatistics> TeamCharacterStatistics { get; } = [];
@@ -502,7 +503,7 @@ namespace Oshima.Core.Utils
 
                         if (roundMsg != "")
                         {
-                            if (isWeb)
+                            if ((isTeam && deathMatchRoundDetail || !isTeam) && isWeb)
                             {
                                 roundMsg += "\r\n" + Msg;
                             }
@@ -727,10 +728,10 @@ namespace Oshima.Core.Utils
             WriteLine($"社区送温暖了，现在随机发放空投！！");
             foreach (Character character in queue.Queue)
             {
-                Item[] 武器 = Items.Where(i => i.Id.ToString().StartsWith("11") && (int)i.QualityType == wQuality).ToArray();
-                Item[] 防具 = Items.Where(i => i.Id.ToString().StartsWith("12") && (int)i.QualityType == aQuality).ToArray();
-                Item[] 鞋子 = Items.Where(i => i.Id.ToString().StartsWith("13") && (int)i.QualityType == sQuality).ToArray();
-                Item[] 饰品 = Items.Where(i => i.Id.ToString().StartsWith("14") && (int)i.QualityType == acQuality).ToArray();
+                Item[] 武器 = Equipment.Where(i => i.Id.ToString().StartsWith("11") && (int)i.QualityType == wQuality).ToArray();
+                Item[] 防具 = Equipment.Where(i => i.Id.ToString().StartsWith("12") && (int)i.QualityType == aQuality).ToArray();
+                Item[] 鞋子 = Equipment.Where(i => i.Id.ToString().StartsWith("13") && (int)i.QualityType == sQuality).ToArray();
+                Item[] 饰品 = Equipment.Where(i => i.Id.ToString().StartsWith("14") && (int)i.QualityType == acQuality).ToArray();
                 Item? a = null, b = null, c = null, d = null;
                 if (武器.Length > 0)
                 {
@@ -808,8 +809,10 @@ namespace Oshima.Core.Utils
             }
 
             Dictionary<string, Item> exItems = Factory.GetGameModuleInstances<Item>(OshimaGameModuleConstant.General, OshimaGameModuleConstant.Item);
-            Items.AddRange(exItems.Values);
-            Items.AddRange([new 攻击之爪10(), new 攻击之爪30(), new 攻击之爪50()]);
+            Equipment.AddRange(exItems.Values.Where(i => (int)i.ItemType >= 0 && (int)i.ItemType < 5));
+            Equipment.AddRange([new 攻击之爪10(), new 攻击之爪30(), new 攻击之爪50()]);
+
+            Items.AddRange(exItems.Values.Where(i => (int)i.ItemType > 4));
 
             Skills.AddRange([new 疾风步()]);
 
@@ -821,7 +824,7 @@ namespace Oshima.Core.Utils
             Characters.Clear();
             CharacterStatistics.Clear();
             TeamCharacterStatistics.Clear();
-            Items.Clear();
+            Equipment.Clear();
             Skills.Clear();
             Magics.Clear();
 

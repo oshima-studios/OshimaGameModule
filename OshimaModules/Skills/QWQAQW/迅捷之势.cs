@@ -41,7 +41,7 @@ namespace Oshima.FunGame.OshimaModules.Skills
             实际物理伤害减免 = 物理伤害减免;
             实际魔法抗性 = 魔法抗性;
             character.ExPDR += 实际物理伤害减免;
-            character.MDF.SetAllValue(实际魔法抗性, false);
+            character.MDF.AddAllValue(实际魔法抗性);
             WriteLine($"[ {character} ] 提升了 {实际物理伤害减免 * 100:0.##}% 物理伤害减免，{实际魔法抗性 * 100:0.##}% 魔法抗性！！");
         }
 
@@ -49,7 +49,7 @@ namespace Oshima.FunGame.OshimaModules.Skills
         {
             character.NormalAttack.SetMagicType(false, character.MagicType);
             character.ExPDR -= 实际物理伤害减免;
-            character.MDF.SetAllValue(-实际魔法抗性, false);
+            character.MDF.AddAllValue(-实际魔法抗性);
             实际物理伤害减免 = 0;
             实际魔法抗性 = 0;
         }

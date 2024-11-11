@@ -43,7 +43,7 @@ namespace Oshima.FunGame.OshimaModules.Effects.OpenEffects
                     break;
                 case MagicType.None:
                 default:
-                    character.MDF.SetAllValue(实际加成, false);
+                    character.MDF.AddAllValue(实际加成);
                     break;
             }
         }
@@ -78,7 +78,7 @@ namespace Oshima.FunGame.OshimaModules.Effects.OpenEffects
                     break;
                 case MagicType.None:
                 default:
-                    character.MDF.SetAllValue(-实际加成, false);
+                    character.MDF.AddAllValue(-实际加成);
                     break;
             }
         }
