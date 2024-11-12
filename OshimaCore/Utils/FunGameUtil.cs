@@ -1070,11 +1070,20 @@ namespace Oshima.Core.Utils
                 if (intelligence > 0) strings.Add($"{intelligence:0.##} 点智力");
                 foreach (Skill skill in magics)
                 {
-                    Skill magic = skill.Copy();
-                    magic.Level = skill.Level;
-                    item.Skills.Magics.Add(magic);
+                    IEnumerable<Skill> has = item.Skills.Magics.Where(m => m.Id == skill.Id);
+                    if (has.Any() && has.First() is Skill s)
+                    {
+                        s.Level += skill.Level;
+                        if (s.Level > 1) s.Name = s.Name.Split(' ')[0] + $" +{s.Level - 1}";
+                    }
+                    else
+                    {
+                        Skill magic = skill.Copy();
+                        magic.Level = skill.Level;
+                        item.Skills.Magics.Add(magic);
+                    }
                 }
-                item.Description = $"包含魔法：{string.Join("，", item.Skills.Magics.Select(m => m.Name + $" +{m.Level - 1}"))}\r\n" +
+                item.Description = $"包含魔法：{string.Join("，", item.Skills.Magics.Select(m => m.Name + (m.Level > 1 ? $" +{m.Level - 1}" : "")))}\r\n" +
                     $"增加角色属性：{string.Join("，", strings)}";
                 double total = str + agi + intelligence;
                 if (total > 18 && total <= 36)
