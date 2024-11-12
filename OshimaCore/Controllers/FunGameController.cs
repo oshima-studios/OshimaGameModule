@@ -453,6 +453,24 @@ namespace Oshima.Core.Controllers
             return NetworkUtility.JsonSerialize("");
         }
         
+        [HttpGet("mfk")]
+        public string GenerateMagicCard()
+        {
+            Item i = FunGameSimulation.GenerateMagicCard();
+            return NetworkUtility.JsonSerialize(i.ToString(false, true));
+        }
+        
+        [HttpGet("mfkb")]
+        public string GenerateMagicCardPack()
+        {
+            Item? i = FunGameSimulation.GenerateMagicCardPack(3);
+            if (i != null)
+            {
+                return NetworkUtility.JsonSerialize(i.ToString(false, true));
+            }
+            return NetworkUtility.JsonSerialize("");
+        }
+        
         [HttpGet("reload")]
         public string Relaod([FromQuery] long? master  = null)
         {

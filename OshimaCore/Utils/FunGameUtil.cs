@@ -856,7 +856,6 @@ namespace Oshima.Core.Utils
             item.Id = Convert.ToInt64("16" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 8));
             item.Name = GenerateRandomChineseName();
             item.ItemType = ItemType.MagicCard;
-            item.BackgroundStory = "这是一张随机生成的魔法卡。";
 
             int total;
             if (qualityType != null)
@@ -1034,7 +1033,6 @@ namespace Oshima.Core.Utils
                 item.Id = Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 8));
                 item.Name = GenerateRandomChineseName();
                 item.ItemType = ItemType.MagicCardPack;
-                item.BackgroundStory = "这是一个由三张魔法卡合成而来的魔法卡包。";
                 double str = 0, agi = 0, intelligence = 0;
                 foreach (Skill skill in passives)
                 {
