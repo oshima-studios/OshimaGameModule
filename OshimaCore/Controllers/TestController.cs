@@ -28,7 +28,7 @@ namespace Oshima.Core.Controllers
             {
                 try
                 {
-                    SQLHelper? sql = Statics.RunningPlugin.SQLHelper;
+                    SQLHelper? sql = Statics.RunningPlugin.Controller.SQLHelper;
                     if (sql != null)
                     {
                         sql.ExecuteDataSet(ServerLoginLogs.Select_GetLastLoginTime());

@@ -33,6 +33,8 @@ namespace Oshima.Core.WebAPI
         public override void AfterLoad(params object[] objs)
         {
             Statics.RunningPlugin = this;
+            Controller.NewSQLHelper();
+            Controller.NewMailSender();
             GeneralSettings.LoadSetting();
             GeneralSettings.SaveConfig();
             QQOpenID.LoadConfig();
@@ -40,7 +42,7 @@ namespace Oshima.Core.WebAPI
             Daily.InitDaily();
             SayNo.InitSayNo();
             Ignore.InitIgnore();
-            FunGameSimulation.InitCharacter();
+            FunGameSimulation.InitFunGame();
             Task taskTime = Task.Factory.StartNew(async () =>
             {
                 while (true)

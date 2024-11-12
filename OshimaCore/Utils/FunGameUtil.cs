@@ -1,6 +1,7 @@
 ﻿using System.Text;
 using Milimoe.FunGame.Core.Api.Utility;
 using Milimoe.FunGame.Core.Entity;
+using Milimoe.FunGame.Core.Library.Constant;
 using Milimoe.FunGame.Core.Model;
 using Oshima.FunGame.OshimaModules;
 using Oshima.FunGame.OshimaModules.Characters;
@@ -26,6 +27,60 @@ namespace Oshima.Core.Utils
         public static bool PrintOut { get; set; } = false;
         public static bool DeathMatchRoundDetail { get; set; } = false;
         public static string Msg { get; set; } = "";
+
+        public static void InitFunGame()
+        {
+            Characters.Add(new OshimaShiya());
+            Characters.Add(new XinYin());
+            Characters.Add(new Yang());
+            Characters.Add(new NanGanYu());
+            Characters.Add(new NiuNan());
+            Characters.Add(new DokyoMayor());
+            Characters.Add(new MagicalGirl());
+            Characters.Add(new QingXiang());
+            Characters.Add(new QWQAQW());
+            Characters.Add(new ColdBlue());
+            Characters.Add(new dddovo());
+            Characters.Add(new Quduoduo());
+
+            foreach (Character c in Characters)
+            {
+                CharacterStatistics.Add(c, new());
+            }
+
+            StatsConfig.LoadConfig();
+            foreach (Character character in CharacterStatistics.Keys)
+            {
+                if (StatsConfig.ContainsKey(character.ToStringWithOutUser()))
+                {
+                    CharacterStatistics[character] = StatsConfig.Get<CharacterStatistics>(character.ToStringWithOutUser()) ?? CharacterStatistics[character];
+                }
+            }
+
+            foreach (Character c in Characters)
+            {
+                TeamCharacterStatistics.Add(c, new());
+            }
+
+            TeamStatsConfig.LoadConfig();
+            foreach (Character character in TeamCharacterStatistics.Keys)
+            {
+                if (TeamStatsConfig.ContainsKey(character.ToStringWithOutUser()))
+                {
+                    TeamCharacterStatistics[character] = TeamStatsConfig.Get<CharacterStatistics>(character.ToStringWithOutUser()) ?? TeamCharacterStatistics[character];
+                }
+            }
+
+            Dictionary<string, Item> exItems = Factory.GetGameModuleInstances<Item>(OshimaGameModuleConstant.General, OshimaGameModuleConstant.Item);
+            Equipment.AddRange(exItems.Values.Where(i => (int)i.ItemType >= 0 && (int)i.ItemType < 5));
+            Equipment.AddRange([new 攻击之爪10(), new 攻击之爪30(), new 攻击之爪50()]);
+
+            Items.AddRange(exItems.Values.Where(i => (int)i.ItemType > 4));
+
+            Skills.AddRange([new 疾风步()]);
+
+            Magics.AddRange([new 冰霜攻击(), new 火之矢(), new 水之矢(), new 风之轮(), new 石之锤(), new 心灵之霞(), new 次元上升(), new 暗物质(), new 回复术(), new 治愈术()]);
+        }
 
         public static List<string> StartGame(bool printout, bool isWeb = false, bool isTeam = false, bool deathMatchRoundDetail = false)
         {
@@ -88,14 +143,14 @@ namespace Oshima.Core.Utils
                         c.Level = clevel;
                         c.NormalAttack.Level = mlevel;
 
-                        IEnumerable<Skill> magics = Magics.OrderBy(x => Random.Shared.Next()).Take(3);
-                        foreach (Skill magic in magics)
-                        {
-                            Skill m = magic.Copy();
-                            m.Character = c;
-                            m.Level = mlevel;
-                            c.Skills.Add(m);
-                        }
+                        //IEnumerable<Skill> magics = Magics.OrderBy(x => Random.Shared.Next()).Take(3);
+                        //foreach (Skill magic in magics)
+                        //{
+                        //    Skill m = magic.Copy();
+                        //    m.Character = c;
+                        //    m.Level = mlevel;
+                        //    c.Skills.Add(m);
+                        //}
 
                         Skill 疾风步 = new 疾风步(c)
                         {
@@ -298,13 +353,18 @@ namespace Oshima.Core.Utils
 
                     // 开始空投
                     Msg = "";
+                    int 发放的卡包品质 = 0;
                     int 发放的武器品质 = 0;
                     int 发放的防具品质 = 0;
                     int 发放的鞋子品质 = 0;
                     int 发放的饰品品质 = 0;
-                    空投(actionQueue, 发放的武器品质, 发放的防具品质, 发放的鞋子品质, 发放的饰品品质);
+                    空投(actionQueue, 发放的卡包品质, 发放的武器品质, 发放的防具品质, 发放的鞋子品质, 发放的饰品品质);
                     if (isWeb) result.Add("=== 空投 ===\r\n" + Msg);
                     double 下一次空投 = isTeam ? 80 : 40;
+                    if (发放的卡包品质 < 4)
+                    {
+                        发放的卡包品质++;
+                    }
                     if (发放的武器品质 < 4)
                     {
                         发放的武器品质++;
@@ -514,9 +574,13 @@ namespace Oshima.Core.Utils
                         {
                             // 空投
                             Msg = "";
-                            空投(actionQueue, 发放的武器品质, 发放的防具品质, 发放的鞋子品质, 发放的饰品品质);
+                            空投(actionQueue, 发放的卡包品质, 发放的武器品质, 发放的防具品质, 发放的鞋子品质, 发放的饰品品质);
                             if (isWeb) result.Add("=== 空投 ===\r\n" + Msg);
                             下一次空投 = isTeam ? 100 : 40;
+                            if (发放的卡包品质 < 4)
+                            {
+                                发放的卡包品质++;
+                            }
                             if (发放的武器品质 < 4)
                             {
                                 发放的武器品质++;
@@ -723,7 +787,7 @@ namespace Oshima.Core.Utils
             if (PrintOut) Console.WriteLine(str);
         }
 
-        public static void 空投(ActionQueue queue, int wQuality, int aQuality, int sQuality, int acQuality)
+        public static void 空投(ActionQueue queue, int mQuality, int wQuality, int aQuality, int sQuality, int acQuality)
         {
             WriteLine($"社区送温暖了，现在随机发放空投！！");
             foreach (Character character in queue.Queue)
@@ -754,71 +818,295 @@ namespace Oshima.Core.Utils
                 if (b != null) 这次发放的空投.Add(b);
                 if (c != null) 这次发放的空投.Add(c);
                 if (d != null) 这次发放的空投.Add(d);
+                Item? 魔法卡包 = GenerateMagicCardPack(3, (QualityType)mQuality);
+                if (魔法卡包 != null)
+                {
+                    foreach (Skill magic in 魔法卡包.Skills.Magics)
+                    {
+                        magic.Level = 8;
+                    }
+                    魔法卡包.SetGamingQueue(queue);
+                    queue.Equip(character, 魔法卡包);
+                }
                 foreach (Item item in 这次发放的空投)
                 {
                     Item realItem = item.Copy();
                     realItem.SetGamingQueue(queue);
-                    realItem.SetLevel(1);
                     queue.Equip(character, realItem);
                 }
             }
             WriteLine("");
         }
 
-        public static void InitCharacter()
+        public static List<Item> GenerateMagicCards(int count, QualityType? qualityType = null)
         {
-            Characters.Add(new OshimaShiya());
-            Characters.Add(new XinYin());
-            Characters.Add(new Yang());
-            Characters.Add(new NanGanYu());
-            Characters.Add(new NiuNan());
-            Characters.Add(new DokyoMayor());
-            Characters.Add(new MagicalGirl());
-            Characters.Add(new QingXiang());
-            Characters.Add(new QWQAQW());
-            Characters.Add(new ColdBlue());
-            Characters.Add(new dddovo());
-            Characters.Add(new Quduoduo());
+            List<Item> items = [];
 
-            foreach (Character c in Characters)
+            for (int i = 0; i < count; i++)
             {
-                CharacterStatistics.Add(c, new());
-            }
-            
-            StatsConfig.LoadConfig();
-            foreach (Character character in CharacterStatistics.Keys)
-            {
-                if (StatsConfig.ContainsKey(character.ToStringWithOutUser()))
-                {
-                    CharacterStatistics[character] = StatsConfig.Get<CharacterStatistics>(character.ToStringWithOutUser()) ?? CharacterStatistics[character];
-                }
+                items.Add(GenerateMagicCard(qualityType));
             }
 
-            foreach (Character c in Characters)
-            {
-                TeamCharacterStatistics.Add(c, new());
-            }
-
-            TeamStatsConfig.LoadConfig();
-            foreach (Character character in TeamCharacterStatistics.Keys)
-            {
-                if (TeamStatsConfig.ContainsKey(character.ToStringWithOutUser()))
-                {
-                    TeamCharacterStatistics[character] = TeamStatsConfig.Get<CharacterStatistics>(character.ToStringWithOutUser()) ?? TeamCharacterStatistics[character];
-                }
-            }
-
-            Dictionary<string, Item> exItems = Factory.GetGameModuleInstances<Item>(OshimaGameModuleConstant.General, OshimaGameModuleConstant.Item);
-            Equipment.AddRange(exItems.Values.Where(i => (int)i.ItemType >= 0 && (int)i.ItemType < 5));
-            Equipment.AddRange([new 攻击之爪10(), new 攻击之爪30(), new 攻击之爪50()]);
-
-            Items.AddRange(exItems.Values.Where(i => (int)i.ItemType > 4));
-
-            Skills.AddRange([new 疾风步()]);
-
-            Magics.AddRange([new 冰霜攻击(), new 火之矢(), new 水之矢(), new 风之轮(), new 石之锤(), new 心灵之霞(), new 次元上升(), new 暗物质(), new 回复术(), new 治愈术()]);
+            return items;
         }
         
+        public static Item GenerateMagicCard(QualityType? qualityType = null)
+        {
+            Item item = Factory.GetItem();
+            item.Id = Convert.ToInt64("16" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 8));
+            item.Name = GenerateRandomChineseName();
+            item.ItemType = ItemType.MagicCard;
+            item.BackgroundStory = "这是一张随机生成的魔法卡。";
+
+            int total;
+            if (qualityType != null)
+            {
+                total = qualityType switch
+                {
+                    QualityType.Green => Random.Shared.Next(7, 13),
+                    QualityType.Blue => Random.Shared.Next(13, 19),
+                    QualityType.Purple => Random.Shared.Next(19, 25),
+                    QualityType.Orange => Random.Shared.Next(25, 31),
+                    _ => Random.Shared.Next(1, 7)
+                };
+                item.QualityType = (QualityType)qualityType;
+            }
+            else
+            {
+                total = Random.Shared.Next(1, 31);
+                if (total > 6 && total <= 12)
+                {
+                    item.QualityType = QualityType.Green;
+                }
+                else if (total > 12 && total <= 18)
+                {
+                    item.QualityType = QualityType.Blue;
+                }
+                else if (total > 18 && total <= 24)
+                {
+                    item.QualityType = QualityType.Purple;
+                }
+                else if (total > 24 && total <= 30)
+                {
+                    item.QualityType = QualityType.Orange;
+                }
+            }
+
+            GenerateAndAddSkillToMagicCard(item, total);
+
+            return item;
+        }
+
+        public static void GenerateAndAddSkillToMagicCard(Item item, int total)
+        {
+            Skill magic = Magics[Random.Shared.Next(Magics.Count)].Copy();
+            magic.Level = (int)item.QualityType switch
+            {
+                2 => 2,
+                4 => 3,
+                6 => 4,
+                _ => 1
+            };
+            item.Skills.Active = magic;
+
+            // 初始化属性值
+            int str = 0, agi = 0, intelligence = 0;
+
+            // 随机决定将多少个属性赋给其中一个属性，确保至少一个不为零
+            int nonZeroAttributes = Random.Shared.Next(1, Math.Min(4, total + 1)); // 随机决定非零属性的数量，确保在 total = 1 时最多只有1个非零属性
+
+            // 根据非零属性数量分配属性点
+            if (nonZeroAttributes == 1)
+            {
+                // 只有一个属性不为零
+                int attribute = Random.Shared.Next(0, 3);
+                if (attribute == 0) str = total;
+                else if (attribute == 1) agi = total;
+                else intelligence = total;
+            }
+            else if (nonZeroAttributes == 2 && total >= 2)
+            {
+                // 两个属性不为零
+                int first = Random.Shared.Next(1, total); // 第一个属性的值
+                int second = total - first; // 第二个属性的值
+
+                int attribute = Random.Shared.Next(0, 3);
+                if (attribute == 0)
+                {
+                    str = first;
+                }
+                else if (attribute == 1)
+                {
+                    agi = first;
+                }
+                else
+                {
+                    intelligence = first;
+                }
+
+                attribute = Random.Shared.Next(0, 3);
+                while ((attribute == 0 && str > 0) || (attribute == 1 && agi > 0) || (attribute == 2 && intelligence > 0))
+                {
+                    attribute = Random.Shared.Next(0, 3);
+                }
+
+                if (attribute == 0)
+                {
+                    str = second;
+                }
+                else if (attribute == 1)
+                {
+                    agi = second;
+                }
+                else
+                {
+                    intelligence = second;
+                }
+            }
+            else if (total >= 3)
+            {
+                // 三个属性都不为零
+                str = Random.Shared.Next(1, total - 1); // 第一个属性的值
+                agi = Random.Shared.Next(1, total - str); // 第二个属性的值
+                intelligence = total - str - agi; // 剩下的值给第三个属性
+            }
+
+            Skill skill = Factory.OpenFactory.GetInstance<Skill>(item.Id, item.Name, []);
+            GenerateAndAddEffectsToMagicCard(skill, str, agi, intelligence);
+
+            if (magic.Level > 1) item.Name += $" +{magic.Level - 1}";
+            skill.Level = 1;
+            item.Skills.Passives.Add(skill);
+        }
+
+        public static void GenerateAndAddEffectsToMagicCard(Skill skill, int str, int agi, int intelligence)
+        {
+            if (str > 0)
+            {
+                skill.Effects.Add(Factory.OpenFactory.GetInstance<Effect>((long)EffectID.ExSTR, "", new()
+                    {
+                        { "skill", skill },
+                        {
+                            "values", new Dictionary<string, object>()
+                            {
+                                { "exstr", str }
+                            }
+                        }
+                    }));
+            }
+
+            if (agi > 0)
+            {
+                skill.Effects.Add(Factory.OpenFactory.GetInstance<Effect>((long)EffectID.ExAGI, "", new()
+                    {
+                        { "skill", skill },
+                        {
+                            "values", new Dictionary<string, object>()
+                            {
+                                { "exagi", agi }
+                            }
+                        }
+                    }));
+            }
+
+            if (intelligence > 0)
+            {
+                skill.Effects.Add(Factory.OpenFactory.GetInstance<Effect>((long)EffectID.ExINT, "", new()
+                    {
+                        { "skill", skill },
+                        {
+                            "values", new Dictionary<string, object>()
+                            {
+                                { "exint", intelligence }
+                            }
+                        }
+                    }));
+            }
+        }
+
+        public static Item? ConflateMagicCardPack(IEnumerable<Item> magicCards)
+        {
+            if (magicCards.Any())
+            {
+                List<Skill> magics = [.. magicCards.Where(i => i.Skills.Active != null).Select(i => i.Skills.Active)];
+                List<Skill> passives = [.. magicCards.SelectMany(i => i.Skills.Passives)];
+                Item item = Factory.GetItem();
+                item.Id = Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 8));
+                item.Name = GenerateRandomChineseName();
+                item.ItemType = ItemType.MagicCardPack;
+                item.BackgroundStory = "这是一个由三张魔法卡合成而来的魔法卡包。";
+                double str = 0, agi = 0, intelligence = 0;
+                foreach (Skill skill in passives)
+                {
+                    Skill newSkill = skill.Copy();
+                    foreach (Effect effect in newSkill.Effects)
+                    {
+                        switch ((EffectID)effect.Id)
+                        {
+                            case EffectID.ExSTR:
+                                if (effect is ExSTR exstr)
+                                {
+                                    str += exstr.Value;
+                                }
+                                break;
+                            case EffectID.ExAGI:
+                                if (effect is ExAGI exagi)
+                                {
+                                    agi += exagi.Value;
+                                }
+                                break;
+                            case EffectID.ExINT:
+                                if (effect is ExINT exint)
+                                {
+                                    intelligence += exint.Value;
+                                }
+                                break;
+                        }
+                    }
+                    newSkill.Level = skill.Level;
+                    item.Skills.Passives.Add(newSkill);
+                }
+                List<string> strings = [];
+                if (str > 0) strings.Add($"{str:0.##} 点力量");
+                if (agi > 0) strings.Add($"{agi:0.##} 点敏捷");
+                if (intelligence > 0) strings.Add($"{intelligence:0.##} 点智力");
+                foreach (Skill skill in magics)
+                {
+                    Skill magic = skill.Copy();
+                    magic.Level = skill.Level;
+                    item.Skills.Magics.Add(magic);
+                }
+                item.Description = $"包含魔法：{string.Join("，", item.Skills.Magics.Select(m => m.Name + $" +{m.Level - 1}"))}\r\n" +
+                    $"增加角色属性：{string.Join("，", strings)}";
+                double total = str + agi + intelligence;
+                if (total > 18 && total <= 36)
+                {
+                    item.QualityType = QualityType.Green;
+                }
+                else if (total > 36 && total <= 54)
+                {
+                    item.QualityType = QualityType.Blue;
+                }
+                else if (total > 54 && total <= 72)
+                {
+                    item.QualityType = QualityType.Purple;
+                }
+                else if (total > 72 && total <= 90)
+                {
+                    item.QualityType = QualityType.Orange;
+                }
+                return item;
+            }
+            return null;
+        }
+
+        public static Item? GenerateMagicCardPack(int magicCardCount, QualityType? qualityType = null)
+        {
+            List<Item> magicCards = GenerateMagicCards(magicCardCount, qualityType);
+            Item? magicCardPack = ConflateMagicCardPack(magicCards);
+            return magicCardPack;
+        }
+
         public static void Reload()
         {
             Characters.Clear();
@@ -828,7 +1116,7 @@ namespace Oshima.Core.Utils
             Skills.Clear();
             Magics.Clear();
 
-            InitCharacter();
+            InitFunGame();
         }
 
         public static Dictionary<EffectID, Dictionary<string, object>> RoundRewards
@@ -1012,7 +1300,7 @@ namespace Oshima.Core.Utils
             {
                 baseScore = baseScore * 0.6 + 0.4 * (stats.Kills / (stats.Kills + stats.Deaths + 0.01));
             }
-            
+
             // 伤害贡献
             double logDamageContribution = Math.Log(1 + (stats.TotalDamage / (stats.TotalTakenDamage + 1e-6)));
 
@@ -1040,6 +1328,31 @@ namespace Oshima.Core.Utils
 
             // 确保评分在合理范围内
             return Math.Max(0.01, rating);
+        }
+
+        public static string GenerateRandomChineseName()
+        {
+            // 定义一个包含常用汉字的字符串
+            string commonChineseCharacters = "云星宝灵梦龙花雨风叶山川月石羽水竹金" +
+                "玉海火雷光天地云凤虎虹珠华霞鹏雪银沙松桃兰竹青霜鸿康龙骏波泉河湖江泽" +
+                "洋林枫梅桂樱桐竹晴韵凌兰若悠碧涛渊风雷壁石剑影霖玄承珍雅耀星瑞龙鹤烟" +
+                "影凤燕霏翼羽翔璃绮纱绫绣锦瑜琼瑾璇璧琳琪琳瑶瑛芝杏茜荷莉莹菡莲诗羽珍" +
+                "瑰翠椒槐榆槿柱梧桐曜曙晶暖智煌熙灵霓珠熠燕熹熠碧瑶琳嘉琪瑶琴瑶琴碧曼" +
+                "菁蓉菲瑾淑妙惠嘉华秋涵智映巧慧茹瑜瑶荣菱霏曦容芬玲瑛琪瑜澜碧影凌清涛" +
+                "湘泽澄泓泓翠澜润璇珺湘晨曦晶翠瑾澜涟润淑洁悠雅翠霏涵淑珍绮翠润";
+
+            // 随机生成名字长度，2到5个字
+            int nameLength = Random.Shared.Next(2, 6);
+            StringBuilder name = new();
+
+            for (int i = 0; i < nameLength; i++)
+            {
+                // 从常用汉字集中随机选择一个汉字
+                char chineseCharacter = commonChineseCharacters[Random.Shared.Next(commonChineseCharacters.Length)];
+                name.Append(chineseCharacter);
+            }
+
+            return name.ToString();
         }
     }
 }
