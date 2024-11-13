@@ -26,7 +26,7 @@ namespace Oshima.FunGame.OshimaModules
         {
             return (id, name, args) =>
             {
-                Skill skill = id switch
+                return id switch
                 {
                     (long)MagicID.冰霜攻击 => new 冰霜攻击(),
                     (long)MagicID.火之矢 => new 火之矢(),
@@ -64,18 +64,8 @@ namespace Oshima.FunGame.OshimaModules
                     (long)PassiveID.敏捷之刃 => new 敏捷之刃(),
                     (long)PassiveID.弱者猎手 => new 弱者猎手(),
                     (long)ItemPassiveID.攻击之爪 => new 攻击之爪技能(),
-                    _ => new OpenSkill(id, name, args)
+                    _ => null
                 };
-
-                if (skill is OpenSkill && args.TryGetValue("values", out object? value) && value is Dictionary<string, object> dict)
-                {
-                    foreach (string key in dict.Keys)
-                    {
-                        skill.Values[key] = dict[key];
-                    }
-                }
-
-                return skill;
             };
         }
 
