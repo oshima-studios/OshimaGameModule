@@ -489,6 +489,7 @@ namespace Oshima.Core.Controllers
             PluginConfig pc = new("saved", userid.ToString());
             pc.LoadConfig();
             pc.Add("user", user);
+            pc.SaveConfig();
             return NetworkUtility.JsonSerialize($"创建存档成功！你的用户名是【{username}】。");
         }
         
@@ -590,6 +591,7 @@ namespace Oshima.Core.Controllers
                         }
                         break;
                 }
+                pc.SaveConfig();
                 return NetworkUtility.JsonSerialize(msg + "】！");
             }
             else
