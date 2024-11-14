@@ -26,13 +26,14 @@ namespace Oshima.FunGame.OshimaModules.Skills
         public override string Name => Skill.Name;
         public override string Description => $"优先攻击血量更低的角色，对生命值百分比低于自己的角色造成 150% 伤害。";
         
-        public override void AlterExpectedDamageBeforeCalculation(Character character, Character enemy, ref double damage, bool isNormalAttack, bool isMagicDamage, MagicType magicType)
+        public override double AlterExpectedDamageBeforeCalculation(Character character, Character enemy, double damage, bool isNormalAttack, bool isMagicDamage, MagicType magicType, Dictionary<Effect, double> totalDamageBonus)
         {
             if (character == Skill.Character && (enemy.HP / enemy.MaxHP) <= (character.HP / character.MaxHP))
             {
                 double 额外伤害 = damage * 0.5;
-                damage += 额外伤害;
+                return 额外伤害;
             }
+            return 0;
         }
 
         public override bool AlterEnemyListBeforeAction(Character character, List<Character> enemys, List<Character> teammates, List<Skill> skills, Dictionary<Character, int> continuousKilling, Dictionary<Character, int> earnedMoney)

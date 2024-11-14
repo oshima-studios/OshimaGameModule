@@ -39,17 +39,18 @@ namespace Oshima.FunGame.OshimaModules.Skills
             Skill.IsInEffect = false;
         }
 
-        public override void AlterExpectedDamageBeforeCalculation(Character character, Character enemy, ref double damage, bool isNormalAttack, bool isMagicDamage, MagicType magicType)
+        public override double AlterExpectedDamageBeforeCalculation(Character character, Character enemy, double damage, bool isNormalAttack, bool isMagicDamage, MagicType magicType, Dictionary<Effect, double> totalDamageBonus)
         {
             if (character == Skill.Character && isMagicDamage)
             {
                 double 实际伤害提升百分比 = 伤害提升;
                 double 实际伤害提升 = damage * 实际伤害提升百分比;
-                damage += 实际伤害提升;
                 WriteLine($"[ {character} ] 发动了变幻之心！伤害提升了 {实际伤害提升:0.##} 点！");
                 character.Effects.Remove(this);
                 OnEffectLost(character);
+                return 实际伤害提升;
             }
+            return 0;
         }
 
         public override void OnSkillCasted(Character caster, List<Character> targets, Dictionary<string, object> others)

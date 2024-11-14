@@ -29,7 +29,7 @@ namespace Oshima.FunGame.OshimaModules.Skills
         private readonly double 伤害提升 = 0.04;
         private double 累计伤害 = 0;
 
-        public override bool AlterActualDamageAfterCalculation(Character character, Character enemy, ref double damage, bool isNormalAttack, bool isMagicDamage, MagicType magicType, DamageResult damageResult)
+        public override double AlterActualDamageAfterCalculation(Character character, Character enemy, double damage, bool isNormalAttack, bool isMagicDamage, MagicType magicType, DamageResult damageResult, ref bool isEvaded, Dictionary<Effect, double> totalDamageBonus)
         {
             if (damageResult != DamageResult.Evaded)
             {
@@ -41,11 +41,11 @@ namespace Oshima.FunGame.OshimaModules.Skills
                 if (character == Skill.Character)
                 {
                     double 实际伤害提升 = damage * 累计伤害;
-                    damage += 实际伤害提升;
                     if (实际伤害提升 > 0) WriteLine($"[ {character} ] 的伤害提升了 {实际伤害提升:0.##} 点！");
+                    return 实际伤害提升;
                 }
             }
-            return false;
+            return 0;
         }
 
         public override void OnTimeElapsed(Character character, double eapsed)

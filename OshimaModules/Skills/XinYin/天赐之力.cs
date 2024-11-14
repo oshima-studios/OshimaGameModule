@@ -63,12 +63,13 @@ namespace Oshima.FunGame.OshimaModules.Skills
             return CharacterActionType.None;
         }
 
-        public override void AlterExpectedDamageBeforeCalculation(Character character, Character enemy, ref double damage, bool isNormalAttack, bool isMagicDamage, MagicType magicType)
+        public override double AlterExpectedDamageBeforeCalculation(Character character, Character enemy, double damage, bool isNormalAttack, bool isMagicDamage, MagicType magicType, Dictionary<Effect, double> totalDamageBonus)
         {
             if (character == Skill.Character && isNormalAttack)
             {
-                damage += 伤害加成;
+                return 伤害加成;
             }
+            return 0;
         }
 
         public override void AlterHardnessTimeAfterNormalAttack(Character character, ref double baseHardnessTime, ref bool isCheckProtected)

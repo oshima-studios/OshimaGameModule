@@ -45,14 +45,14 @@ namespace Oshima.FunGame.OshimaModules.Skills
             character.ExAGI -= 实际敏捷提升;
         }
 
-        public override bool AlterActualDamageAfterCalculation(Character character, Character enemy, ref double damage, bool isNormalAttack, bool isMagicDamage, MagicType magicType, DamageResult damageResult)
+        public override double AlterActualDamageAfterCalculation(Character character, Character enemy, double damage, bool isNormalAttack, bool isMagicDamage, MagicType magicType, DamageResult damageResult, ref bool isEvaded, Dictionary<Effect, double> totalDamageBonus)
         {
             if (enemy == Skill.Character && damageResult != DamageResult.Evaded)
             {
                 WriteLine($"[ {enemy} ] 发动了绝对领域，巧妙的化解了此伤害！");
-                return true;
+                return 0;
             }
-            return false;
+            return 0;
         }
 
         public override void OnSkillCasting(Character caster, List<Character> targets)

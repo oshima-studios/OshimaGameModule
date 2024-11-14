@@ -42,13 +42,13 @@ namespace Oshima.FunGame.OshimaModules.Skills
             character.NormalAttack.SetMagicType(false, character.MagicType);
         }
 
-        public override bool AlterActualDamageAfterCalculation(Character character, Character enemy, ref double damage, bool isNormalAttack, bool isMagicDamage, MagicType magicType, DamageResult damageResult)
+        public override double AlterActualDamageAfterCalculation(Character character, Character enemy, double damage, bool isNormalAttack, bool isMagicDamage, MagicType magicType, DamageResult damageResult, ref bool isEvaded, Dictionary<Effect, double> totalDamageBonus)
         {
             if (enemy == Skill.Character)
             {
-                damage *= 1 - 实际比例;
+                return damage * (1 - 实际比例);
             }
-            return false;
+            return 0;
         }
 
         public override void OnSkillCasted(Character caster, List<Character> targets, Dictionary<string, object> others)

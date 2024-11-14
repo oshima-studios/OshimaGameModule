@@ -55,7 +55,7 @@ namespace Oshima.FunGame.OshimaModules.Skills
             character.ExCritRate -= 0.08;
         }
 
-        public override bool AlterActualDamageAfterCalculation(Character character, Character enemy, ref double damage, bool isNormalAttack, bool isMagicDamage, MagicType magicType, DamageResult damageResult)
+        public override double AlterActualDamageAfterCalculation(Character character, Character enemy, double damage, bool isNormalAttack, bool isMagicDamage, MagicType magicType, DamageResult damageResult, ref bool isEvaded, Dictionary<Effect, double> totalDamageBonus)
         {
             if (character == Skill.Character && 首次伤害)
             {
@@ -64,10 +64,10 @@ namespace Oshima.FunGame.OshimaModules.Skills
                 character.CharacterEffectTypes.Remove(this);
                 character.UpdateCharacterState();
                 double d = 伤害加成;
-                damage += d;
                 WriteLine($"[ {character} ] 触发了疾风步破隐一击，获得了 [ {d:0.##} ] 点伤害加成！");
+                return d;
             }
-            return false;
+            return 0;
         }
 
         public override void OnSkillCasted(Character caster, List<Character> targets, Dictionary<string, object> others)

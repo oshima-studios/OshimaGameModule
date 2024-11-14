@@ -58,14 +58,14 @@ namespace Oshima.FunGame.OshimaModules.Skills
             return 系数 * damage;
         }
 
-        public override void AlterExpectedDamageBeforeCalculation(Character character, Character enemy, ref double damage, bool isNormalAttack, bool isMagicDamage, MagicType magicType)
+        public override double AlterExpectedDamageBeforeCalculation(Character character, Character enemy, double damage, bool isNormalAttack, bool isMagicDamage, MagicType magicType, Dictionary<Effect, double> totalDamageBonus)
         {
             if (character == Skill.Character)
             {
                 这次的伤害加成 = 伤害加成(damage);
-                damage += 这次的伤害加成;
                 WriteLine($"[ {character} ] 发动了玻璃大炮，获得了 {这次的伤害加成:0.##} 点伤害加成！");
                 累计受到的伤害 = 0;
+                return 这次的伤害加成;
             }
 
             if (enemy == Skill.Character)
@@ -76,11 +76,13 @@ namespace Oshima.FunGame.OshimaModules.Skills
                     // 额外受到伤害
                     double 系数 = (Random.Shared.Next(高于30额外伤害下限, 高于30额外伤害上限) + 0.0) / 100;
                     这次受到的额外伤害 = damage * 系数;
-                    damage += 这次受到的额外伤害;
                     WriteLine($"[ {enemy} ] 的玻璃大炮触发，将额外受到 {这次受到的额外伤害:0.##} 点伤害！");
                 }
                 else 这次受到的额外伤害 = 0;
+                return 这次受到的额外伤害;
             }
+
+            return 0;
         }
 
         public override void AfterDamageCalculation(Character character, Character enemy, double damage, bool isNormalAttack, bool isMagicDamage, MagicType magicType, DamageResult damageResult)

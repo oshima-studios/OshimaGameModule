@@ -54,12 +54,14 @@ namespace Oshima.FunGame.OshimaModules.Skills
             实际魔法抗性 = 0;
         }
 
-        public override void AlterExpectedDamageBeforeCalculation(Character character, Character enemy, ref double damage, bool isNormalAttack, bool isMagicDamage, MagicType magicType)
+        public override double AlterExpectedDamageBeforeCalculation(Character character, Character enemy, double damage, bool isNormalAttack, bool isMagicDamage, MagicType magicType, Dictionary<Effect, double> totalDamageBonus)
         {
             if (character == Skill.Character && isNormalAttack)
             {
-                damage += 智力加成;
+                WriteLine($"[ {character} ] 发动了迅捷之势！伤害提升了 {智力加成:0.##} 点！");
+                return 智力加成;
             }
+            return 0;
         }
 
         public override void AlterHardnessTimeAfterNormalAttack(Character character, ref double baseHardnessTime, ref bool isCheckProtected)
