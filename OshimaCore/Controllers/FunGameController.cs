@@ -591,6 +591,7 @@ namespace Oshima.Core.Controllers
                         }
                         break;
                 }
+                pc.Add("user", user);
                 pc.SaveConfig();
                 return NetworkUtility.JsonSerialize(msg + "¡¿£¡");
             }
