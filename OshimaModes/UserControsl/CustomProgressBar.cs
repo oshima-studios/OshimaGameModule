@@ -1,4 +1,6 @@
-﻿namespace Oshima.FunGame.OshimaModes
+﻿using System.ComponentModel;
+
+namespace Oshima.FunGame.OshimaModes
 {
     public class CustomProgressBar : UserControl
     {
@@ -6,6 +8,7 @@
         private double _maximum = 100;
         private Color _progressColor = Color.Red;
 
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
         public double Value
         {
             get => _value;
@@ -16,6 +19,7 @@
             }
         }
 
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
         public double Maximum
         {
             get => _maximum;
@@ -26,6 +30,7 @@
             }
         }
 
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
         public Color ProgressColor
         {
             get => _progressColor;

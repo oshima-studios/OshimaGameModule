@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
 	<PropertyGroup>
-		<TargetFramework>net8.0</TargetFramework>
+		<TargetFramework>net9.0</TargetFramework>
 		<ImplicitUsings>enable</ImplicitUsings>
 		<Nullable>enable</Nullable>
 		<RootNamespace>Oshima.Core</RootNamespace>
@@ -24,10 +24,11 @@
 	<ItemGroup>
 		<ProjectReference Include="..\OshimaModules\OshimaModules.csproj" />
 	</ItemGroup>
+
 	<ItemGroup>
-		<Reference Include="FunGame.Core">
-			<HintPath>..\..\FunGame.Core\bin\Debug\net8.0\FunGame.Core.dll</HintPath>
-		</Reference>
+	  <Reference Include="FunGame.Core">
+	    <HintPath>..\..\FunGame.Core\bin\Release\net9.0\FunGame.Core.dll</HintPath>
+	  </Reference>
 	</ItemGroup>
 
 </Project>

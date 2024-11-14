@@ -899,6 +899,7 @@ namespace Oshima.Core.Utils
         public static void GenerateAndAddSkillToMagicCard(Item item, int total)
         {
             Skill magic = Magics[Random.Shared.Next(Magics.Count)].Copy();
+            magic.Guid = item.Guid;
             magic.Level = (int)item.QualityType switch
             {
                 2 => 2,
@@ -975,6 +976,12 @@ namespace Oshima.Core.Utils
 
             if (magic.Level > 1) item.Name += $" +{magic.Level - 1}";
             skill.Level = 1;
+            List<string> strings = [];
+            if (str > 0) strings.Add($"{str:0.##} 点力量");
+            if (agi > 0) strings.Add($"{agi:0.##} 点敏捷");
+            if (intelligence > 0) strings.Add($"{intelligence:0.##} 点智力");
+            item.Description = $"包含魔法：{item.Skills.Active.Name}\r\n" +
+                $"增加角色属性：{string.Join("，", strings)}";
             item.Skills.Passives.Add(skill);
         }
 
@@ -1079,6 +1086,7 @@ namespace Oshima.Core.Utils
                     else
                     {
                         Skill magic = skill.Copy();
+                        magic.Guid = item.Guid;
                         magic.Level = skill.Level;
                         item.Skills.Magics.Add(magic);
                     }
