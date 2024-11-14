@@ -61,9 +61,11 @@ namespace Oshima.Core.Controllers
                     builder.AppendLine($"总计冠军数：{stats.Wins}");
                     builder.AppendLine($"总计前三数：{stats.Top3s}");
                     builder.AppendLine($"总计败场数：{stats.Loses}");
-                    builder.AppendLine($"MVP次数：{stats.MVPs}");
 
-                    List<string> names = [.. FunGameSimulation.CharacterStatistics.OrderByDescending(kv => kv.Value.Winrates).Select(kv => kv.Key.GetName())];
+                    List<string> names = [.. FunGameSimulation.CharacterStatistics.OrderByDescending(kv => kv.Value.MVPs).Select(kv => kv.Key.GetName())];
+                    builder.AppendLine($"MVP次数：{stats.MVPs}（#{names.IndexOf(character.GetName()) + 1}）");
+
+                    names = [.. FunGameSimulation.CharacterStatistics.OrderByDescending(kv => kv.Value.Winrates).Select(kv => kv.Key.GetName())];
                     builder.AppendLine($"胜率：{stats.Winrates * 100:0.##}%（#{names.IndexOf(character.GetName()) + 1}）");
                     builder.AppendLine($"前三率：{stats.Top3rates * 100:0.##}%");
 
@@ -111,11 +113,12 @@ namespace Oshima.Core.Controllers
                     builder.AppendLine($"总计首杀数：{stats.FirstKills}" + (stats.Plays != 0 ? $" / 首杀率：{(double)stats.FirstKills / stats.Plays * 100:0.##}%" : ""));
                     builder.AppendLine($"总计首死数：{stats.FirstDeaths}" + (stats.Plays != 0 ? $" / 首死率：{(double)stats.FirstDeaths / stats.Plays * 100:0.##}%" : ""));
                     builder.AppendLine($"总计参赛数：{stats.Plays}");
-                    builder.AppendLine($"总计冠军数：{stats.Wins}");
+                    builder.AppendLine($"总计胜场数：{stats.Wins}");
                     builder.AppendLine($"总计败场数：{stats.Loses}");
-                    builder.AppendLine($"MVP次数：{stats.MVPs}");
 
-                    List<string> names = [.. FunGameSimulation.TeamCharacterStatistics.OrderByDescending(kv => kv.Value.Winrates).Select(kv => kv.Key.GetName())];
+                    List<string> names = [.. FunGameSimulation.TeamCharacterStatistics.OrderByDescending(kv => kv.Value.MVPs).Select(kv => kv.Key.GetName())];
+                    builder.AppendLine($"MVP次数：{stats.MVPs}（#{names.IndexOf(character.GetName()) + 1}）");
+                    names = [.. FunGameSimulation.TeamCharacterStatistics.OrderByDescending(kv => kv.Value.Winrates).Select(kv => kv.Key.GetName())];
                     builder.AppendLine($"胜率：{stats.Winrates * 100:0.##}%（#{names.IndexOf(character.GetName()) + 1}）");
                     names = [.. FunGameSimulation.TeamCharacterStatistics.OrderByDescending(kv => kv.Value.Rating).Select(kv => kv.Key.GetName())];
                     builder.AppendLine($"技术得分：{stats.Rating:0.0#}（#{names.IndexOf(character.GetName()) + 1}）");
@@ -470,7 +473,131 @@ namespace Oshima.Core.Controllers
             }
             return NetworkUtility.JsonSerialize("");
         }
+
+        [HttpPost("cjcd")]
+        public string CreateSaved([FromQuery] long? qq = null, string? name = null)
+        {
+            long userid = qq ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
+            string username = name ?? "Unknown";
+            string filepath = $@"{AppDomain.CurrentDomain.BaseDirectory}configs/saved/{userid}.json";
+            if (System.IO.File.Exists(filepath))
+            {
+                return NetworkUtility.JsonSerialize("你已经创建过存档！");
+            }
+            User user = Factory.GetUser(userid, username, DateTime.Now, DateTime.Now, userid + "@qq.com", username);
+            user.Inventory.Credits = 100;
+            PluginConfig pc = new("saved", userid.ToString());
+            pc.LoadConfig();
+            pc.Add("user", user);
+            return NetworkUtility.JsonSerialize($"创建存档成功！你的用户名是【{username}】。");
+        }
         
+        [HttpPost("ckkc")]
+        public string GetInventoryInfo([FromQuery] long? qq = null)
+        {
+            long userid = qq ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
+            string filepath = $@"{AppDomain.CurrentDomain.BaseDirectory}configs/saved/{userid}.json";
+            if (!System.IO.File.Exists(filepath))
+            {
+                return NetworkUtility.JsonSerialize("你还没有创建存档！请发送【创建存档】创建。");
+            }
+
+            PluginConfig pc = new("saved", userid.ToString());
+            pc.LoadConfig();
+
+            if (pc.Count > 0)
+            {
+                User user = FunGameSimulation.GetUser(pc);
+
+                return NetworkUtility.JsonSerialize(user.Inventory.ToString(false));
+            }
+            else
+            {
+                return NetworkUtility.JsonSerialize($"你好像一无所有……");
+            }
+        }
+
+        [HttpPost("ck")]
+        public string DrawCards([FromQuery] long? qq = null)
+        {
+            long userid = qq ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
+            string filepath = $@"{AppDomain.CurrentDomain.BaseDirectory}configs/saved/{userid}.json";
+            if (!System.IO.File.Exists(filepath))
+            {
+                return NetworkUtility.JsonSerialize("你还没有创建存档！请发送【创建存档】创建。");
+            }
+
+            PluginConfig pc = new("saved", userid.ToString());
+            pc.LoadConfig();
+            User user = FunGameSimulation.GetUser(pc);
+
+            double dice = Random.Shared.NextDouble();
+            if (dice > 0.8)
+            {
+                string msg = "恭喜你抽到了：【";
+                int r = Random.Shared.Next(7);
+                switch (r)
+                {
+                    case 1:
+                        Item[] 武器 = FunGameSimulation.Equipment.Where(i => i.Id.ToString().StartsWith("11")).ToArray();
+                        Item a = 武器[Random.Shared.Next(武器.Length)].Copy();
+                        user.Inventory.Items.Add(a);
+                        msg += a.Name;
+                        break;
+
+                    case 2:
+                        Item[] 防具 = FunGameSimulation.Equipment.Where(i => i.Id.ToString().StartsWith("12")).ToArray();
+                        Item b = 防具[Random.Shared.Next(防具.Length)].Copy();
+                        user.Inventory.Items.Add(b);
+                        msg += b.Name;
+                        break;
+                        
+                    case 3:
+                        Item[] 鞋子 = FunGameSimulation.Equipment.Where(i => i.Id.ToString().StartsWith("13")).ToArray();
+                        Item c = 鞋子[Random.Shared.Next(鞋子.Length)].Copy();
+                        user.Inventory.Items.Add(c);
+                        msg += c.Name;
+                        break;
+                        
+                    case 4:
+                        Item[] 饰品 = FunGameSimulation.Equipment.Where(i => i.Id.ToString().StartsWith("14")).ToArray();
+                        Item d = 饰品[Random.Shared.Next(饰品.Length)].Copy();
+                        user.Inventory.Items.Add(d);
+                        msg += d.Name;
+                        break;
+                        
+                    case 5:
+                        Character character = FunGameSimulation.Characters[Random.Shared.Next(FunGameSimulation.Characters.Count)].Copy();
+                        user.Inventory.Characters.Add(character);
+                        msg += character.ToStringWithOutUser();
+                        break;
+                        
+                    case 6:
+                        Item mfk = FunGameSimulation.GenerateMagicCard();
+                        user.Inventory.Items.Add(mfk);
+                        msg += mfk.Name;
+                        break;
+
+                    case 0:
+                    default:
+                        Item? mfkb = FunGameSimulation.GenerateMagicCardPack(3);
+                        if (mfkb != null)
+                        {
+                            mfkb.IsTradable = false;
+                            mfkb.NextTradableTime = DateTimeUtility.GetTradableTime();
+                            user.Inventory.Items.Add(mfkb);
+                            msg += mfkb.Name;
+                        }
+                        break;
+                }
+                return NetworkUtility.JsonSerialize(msg + "】！");
+            }
+            else
+            {
+                return NetworkUtility.JsonSerialize("你什么也没抽中……");
+            }
+        }
+
         [HttpGet("reload")]
         public string Relaod([FromQuery] long? master  = null)
         {

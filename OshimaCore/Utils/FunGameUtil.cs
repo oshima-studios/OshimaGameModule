@@ -1369,5 +1369,68 @@ namespace Oshima.Core.Utils
 
             return name.ToString();
         }
+
+        public static User GetUser(PluginConfig pc)
+        {
+            User user = pc.Get<User>("user") ?? Factory.GetUser();
+
+            List<Character> characters = new(user.Inventory.Characters);
+            List<Item> items = new(user.Inventory.Items);
+            user.Inventory.Characters.Clear();
+            user.Inventory.Items.Clear();
+
+            foreach (Character inventoryCharacter in characters)
+            {
+                Character realCharacter = CharacterBuilder.Build(inventoryCharacter, false);
+                realCharacter.User = user;
+                user.Inventory.Characters.Add(realCharacter);
+            }
+
+            foreach (Item inventoryItem in items)
+            {
+                Item realItem = inventoryItem.Copy(true, true);
+                if (realItem.IsEquipment)
+                {
+                    IEnumerable<Character> has = user.Inventory.Characters.Where(character =>
+                    {
+                        if (realItem.ItemType == ItemType.MagicCardPack && character.EquipSlot.MagicCardPack != null && realItem.Guid == character.EquipSlot.MagicCardPack.Guid)
+                        {
+                            return true;
+                        }
+                        if (realItem.ItemType == ItemType.Weapon && character.EquipSlot.Weapon != null && realItem.Guid == character.EquipSlot.Weapon.Guid)
+                        {
+                            return true;
+                        }
+                        if (realItem.ItemType == ItemType.Armor && character.EquipSlot.Armor != null && realItem.Guid == character.EquipSlot.Armor.Guid)
+                        {
+                            return true;
+                        }
+                        if (realItem.ItemType == ItemType.Shoes && character.EquipSlot.Shoes != null && realItem.Guid == character.EquipSlot.Shoes.Guid)
+                        {
+                            return true;
+                        }
+                        if (realItem.ItemType == ItemType.Accessory)
+                        {
+                            if (character.EquipSlot.Accessory1 != null && realItem.Guid == character.EquipSlot.Accessory1.Guid)
+                            {
+                                return true;
+                            }
+                            else if (character.EquipSlot.Accessory2 != null && realItem.Guid == character.EquipSlot.Accessory2.Guid)
+                            {
+                                return true;
+                            }
+                        }
+                        return false;
+                    });
+                    if (has.Any() && has.First() is Character character)
+                    {
+                        realItem.Character = character;
+                    }
+                }
+                user.Inventory.Items.Add(realItem);
+            }
+
+            return user;
+        }
     }
 }
