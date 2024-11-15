@@ -42,6 +42,7 @@ namespace Oshima.Core.WebAPI
             Daily.InitDaily();
             SayNo.InitSayNo();
             Ignore.InitIgnore();
+            FunGameService.InitFunGame();
             FunGameSimulation.InitFunGame();
             Task taskTime = Task.Factory.StartNew(async () =>
             {

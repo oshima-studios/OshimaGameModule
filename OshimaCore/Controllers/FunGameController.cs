@@ -29,9 +29,9 @@ namespace Oshima.Core.Controllers
         [HttpGet("stats")]
         public string GetStats([FromQuery] int? id = null)
         {
-            if (id != null && id > 0 && id <= FunGameSimulation.Characters.Count)
+            if (id != null && id > 0 && id <= FunGameService.Characters.Count)
             {
-                Character character = FunGameSimulation.Characters[Convert.ToInt32(id) - 1];
+                Character character = FunGameService.Characters[Convert.ToInt32(id) - 1];
                 if (FunGameSimulation.CharacterStatistics.TryGetValue(character, out CharacterStatistics? stats) && stats != null)
                 {
                     StringBuilder builder = new();
@@ -83,9 +83,9 @@ namespace Oshima.Core.Controllers
         [HttpGet("teamstats")]
         public string GetTeamStats([FromQuery] int? id = null)
         {
-            if (id != null && id > 0 && id <= FunGameSimulation.Characters.Count)
+            if (id != null && id > 0 && id <= FunGameService.Characters.Count)
             {
-                Character character = FunGameSimulation.Characters[Convert.ToInt32(id) - 1];
+                Character character = FunGameService.Characters[Convert.ToInt32(id) - 1];
                 if (FunGameSimulation.TeamCharacterStatistics.TryGetValue(character, out CharacterStatistics? stats) && stats != null)
                 {
                     StringBuilder builder = new();
@@ -220,9 +220,9 @@ namespace Oshima.Core.Controllers
         [HttpGet("cjs")]
         public string GetCharacterIntroduce([FromQuery] int? id = null)
         {
-            if (id != null && id > 0 && id <= FunGameSimulation.Characters.Count)
+            if (id != null && id > 0 && id <= FunGameService.Characters.Count)
             {
-                Character c = FunGameSimulation.Characters[Convert.ToInt32(id) - 1].Copy();
+                Character c = FunGameService.Characters[Convert.ToInt32(id) - 1].Copy();
                 c.Level = General.GameplayEquilibriumConstant.MaxLevel;
                 c.NormalAttack.Level = General.GameplayEquilibriumConstant.MaxNormalAttackLevel;
 
@@ -414,11 +414,11 @@ namespace Oshima.Core.Controllers
         [HttpGet("cjn")]
         public string GetSkillInfo([FromQuery] long? id = null)
         {
-            IEnumerable<Skill> skills = FunGameSimulation.Skills.Union(FunGameSimulation.Magics);
-            if (id != null && FunGameSimulation.Characters.Count > 1)
+            IEnumerable<Skill> skills = FunGameService.Skills.Union(FunGameService.Magics);
+            if (id != null && FunGameService.Characters.Count > 1)
             {
                 List<string> msg = [];
-                Character c = FunGameSimulation.Characters[1].Copy();
+                Character c = FunGameService.Characters[1].Copy();
                 Skill? s = skills.Where(s => s.Id == id).FirstOrDefault()?.Copy();
                 if (s != null)
                 {
@@ -440,7 +440,7 @@ namespace Oshima.Core.Controllers
         [HttpGet("cwp")]
         public string GetItemInfo([FromQuery] long? id = null)
         {
-            IEnumerable<Item> items = FunGameSimulation.Equipment;
+            IEnumerable<Item> items = FunGameService.Equipment;
             if (id != null)
             {
                 List<string> msg = [];
@@ -459,14 +459,14 @@ namespace Oshima.Core.Controllers
         [HttpGet("mfk")]
         public string GenerateMagicCard()
         {
-            Item i = FunGameSimulation.GenerateMagicCard();
+            Item i = FunGameService.GenerateMagicCard();
             return NetworkUtility.JsonSerialize(i.ToString(false, true));
         }
         
         [HttpGet("mfkb")]
         public string GenerateMagicCardPack()
         {
-            Item? i = FunGameSimulation.GenerateMagicCardPack(3);
+            Item? i = FunGameService.GenerateMagicCardPack(3);
             if (i != null)
             {
                 return NetworkUtility.JsonSerialize(i.ToString(false, true));
@@ -479,42 +479,41 @@ namespace Oshima.Core.Controllers
         {
             long userid = qq ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
             string username = name ?? "Unknown";
-            string filepath = $@"{AppDomain.CurrentDomain.BaseDirectory}configs/saved/{userid}.json";
-            if (System.IO.File.Exists(filepath))
+
+            PluginConfig pc = new("saved", userid.ToString());
+            pc.LoadConfig();
+
+            if (pc.Count == 0)
+            {
+                User user = Factory.GetUser(userid, username, DateTime.Now, DateTime.Now, userid + "@qq.com", username);
+                user.Inventory.Credits = 100;
+                pc.Add("user", user);
+                pc.SaveConfig();
+                return NetworkUtility.JsonSerialize($"创建存档成功！你的用户名是【{username}】。");
+            }
+            else
             {
                 return NetworkUtility.JsonSerialize("你已经创建过存档！");
             }
-            User user = Factory.GetUser(userid, username, DateTime.Now, DateTime.Now, userid + "@qq.com", username);
-            user.Inventory.Credits = 100;
-            PluginConfig pc = new("saved", userid.ToString());
-            pc.LoadConfig();
-            pc.Add("user", user);
-            pc.SaveConfig();
-            return NetworkUtility.JsonSerialize($"创建存档成功！你的用户名是【{username}】。");
         }
         
         [HttpPost("ckkc")]
         public string GetInventoryInfo([FromQuery] long? qq = null)
         {
             long userid = qq ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
-            string filepath = $@"{AppDomain.CurrentDomain.BaseDirectory}configs/saved/{userid}.json";
-            if (!System.IO.File.Exists(filepath))
-            {
-                return NetworkUtility.JsonSerialize("你还没有创建存档！请发送【创建存档】创建。");
-            }
 
             PluginConfig pc = new("saved", userid.ToString());
             pc.LoadConfig();
 
             if (pc.Count > 0)
             {
-                User user = FunGameSimulation.GetUser(pc);
+                User user = FunGameService.GetUser(pc);
 
                 return NetworkUtility.JsonSerialize(user.Inventory.ToString(false));
             }
             else
             {
-                return NetworkUtility.JsonSerialize($"你好像一无所有……");
+                return NetworkUtility.JsonSerialize("你还没有创建存档！请发送【创建存档】创建。");
             }
         }
 
@@ -522,82 +521,93 @@ namespace Oshima.Core.Controllers
         public string DrawCards([FromQuery] long? qq = null)
         {
             long userid = qq ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
-            string filepath = $@"{AppDomain.CurrentDomain.BaseDirectory}configs/saved/{userid}.json";
-            if (!System.IO.File.Exists(filepath))
-            {
-                return NetworkUtility.JsonSerialize("你还没有创建存档！请发送【创建存档】创建。");
-            }
 
             PluginConfig pc = new("saved", userid.ToString());
             pc.LoadConfig();
-            User user = FunGameSimulation.GetUser(pc);
 
-            double dice = Random.Shared.NextDouble();
-            if (dice > 0.8)
+            if (pc.Count > 0)
             {
-                string msg = "恭喜你抽到了：【";
-                int r = Random.Shared.Next(7);
-                switch (r)
+                User user = FunGameService.GetUser(pc);
+
+                double dice = Random.Shared.NextDouble();
+                if (dice > 0.8)
                 {
-                    case 1:
-                        Item[] 武器 = FunGameSimulation.Equipment.Where(i => i.Id.ToString().StartsWith("11")).ToArray();
-                        Item a = 武器[Random.Shared.Next(武器.Length)].Copy();
-                        user.Inventory.Items.Add(a);
-                        msg += a.Name;
-                        break;
+                    string msg = "恭喜你抽到了：";
+                    int r = Random.Shared.Next(7);
+                    switch (r)
+                    {
+                        case 1:
+                            Item[] 武器 = FunGameService.Equipment.Where(i => i.Id.ToString().StartsWith("11")).ToArray();
+                            Item a = 武器[Random.Shared.Next(武器.Length)].Copy();
+                            user.Inventory.Items.Add(a);
+                            msg += ItemSet.GetQualityTypeName(a.QualityType) + ItemSet.GetItemTypeName(a.ItemType) + "【" + a.Name + "】！";
+                            break;
 
-                    case 2:
-                        Item[] 防具 = FunGameSimulation.Equipment.Where(i => i.Id.ToString().StartsWith("12")).ToArray();
-                        Item b = 防具[Random.Shared.Next(防具.Length)].Copy();
-                        user.Inventory.Items.Add(b);
-                        msg += b.Name;
-                        break;
-                        
-                    case 3:
-                        Item[] 鞋子 = FunGameSimulation.Equipment.Where(i => i.Id.ToString().StartsWith("13")).ToArray();
-                        Item c = 鞋子[Random.Shared.Next(鞋子.Length)].Copy();
-                        user.Inventory.Items.Add(c);
-                        msg += c.Name;
-                        break;
-                        
-                    case 4:
-                        Item[] 饰品 = FunGameSimulation.Equipment.Where(i => i.Id.ToString().StartsWith("14")).ToArray();
-                        Item d = 饰品[Random.Shared.Next(饰品.Length)].Copy();
-                        user.Inventory.Items.Add(d);
-                        msg += d.Name;
-                        break;
-                        
-                    case 5:
-                        Character character = FunGameSimulation.Characters[Random.Shared.Next(FunGameSimulation.Characters.Count)].Copy();
-                        user.Inventory.Characters.Add(character);
-                        msg += character.ToStringWithOutUser();
-                        break;
-                        
-                    case 6:
-                        Item mfk = FunGameSimulation.GenerateMagicCard();
-                        user.Inventory.Items.Add(mfk);
-                        msg += mfk.Name;
-                        break;
+                        case 2:
+                            Item[] 防具 = FunGameService.Equipment.Where(i => i.Id.ToString().StartsWith("12")).ToArray();
+                            Item b = 防具[Random.Shared.Next(防具.Length)].Copy();
+                            user.Inventory.Items.Add(b);
+                            msg += ItemSet.GetQualityTypeName(b.QualityType) + ItemSet.GetItemTypeName(b.ItemType) + "【" + b.Name + "】！";
+                            break;
 
-                    case 0:
-                    default:
-                        Item? mfkb = FunGameSimulation.GenerateMagicCardPack(3);
-                        if (mfkb != null)
-                        {
-                            mfkb.IsTradable = false;
-                            mfkb.NextTradableTime = DateTimeUtility.GetTradableTime();
-                            user.Inventory.Items.Add(mfkb);
-                            msg += mfkb.Name;
-                        }
-                        break;
+                        case 3:
+                            Item[] 鞋子 = FunGameService.Equipment.Where(i => i.Id.ToString().StartsWith("13")).ToArray();
+                            Item c = 鞋子[Random.Shared.Next(鞋子.Length)].Copy();
+                            user.Inventory.Items.Add(c);
+                            msg += ItemSet.GetQualityTypeName(c.QualityType) + ItemSet.GetItemTypeName(c.ItemType) + "【" + c.Name + "】！";
+                            break;
+
+                        case 4:
+                            Item[] 饰品 = FunGameService.Equipment.Where(i => i.Id.ToString().StartsWith("14")).ToArray();
+                            Item d = 饰品[Random.Shared.Next(饰品.Length)].Copy();
+                            user.Inventory.Items.Add(d);
+                            msg += ItemSet.GetQualityTypeName(d.QualityType) + ItemSet.GetItemTypeName(d.ItemType) + "【" + d.Name + "】！";
+                            break;
+
+                        case 5:
+                            Character character = FunGameService.Characters[Random.Shared.Next(FunGameService.Characters.Count)].Copy();
+                            if (user.Inventory.Characters.Any(c => c.Id == character.Id))
+                            {
+                                user.Inventory.Materials += 50;
+                                msg += "【" + character.ToStringWithOutUser() + "】！但是你已经拥有此角色，转换为【50】" + General.GameplayEquilibriumConstant.InGameMaterial + "！";
+                            }
+                            else
+                            {
+                                user.Inventory.Characters.Add(character);
+                                msg += "【" + character.ToStringWithOutUser() + "】！";
+                            }
+                            break;
+
+                        case 6:
+                            Item mfk = FunGameService.GenerateMagicCard();
+                            user.Inventory.Items.Add(mfk);
+                            msg += ItemSet.GetQualityTypeName(mfk.QualityType) + ItemSet.GetItemTypeName(mfk.ItemType) + "【" + mfk.Name + "】！";
+                            break;
+
+                        case 0:
+                        default:
+                            Item? mfkb = FunGameService.GenerateMagicCardPack(3);
+                            if (mfkb != null)
+                            {
+                                mfkb.IsTradable = false;
+                                mfkb.NextTradableTime = DateTimeUtility.GetTradableTime();
+                                user.Inventory.Items.Add(mfkb);
+                                msg += ItemSet.GetQualityTypeName(mfkb.QualityType) + ItemSet.GetItemTypeName(mfkb.ItemType) + "【" + mfkb.Name + "】！";
+                            }
+                            break;
+                    }
+                    pc.Add("user", user);
+                    pc.SaveConfig();
+                    return NetworkUtility.JsonSerialize(msg);
                 }
-                pc.Add("user", user);
-                pc.SaveConfig();
-                return NetworkUtility.JsonSerialize(msg + "】！");
+                else
+                {
+                    return NetworkUtility.JsonSerialize("你什么也没抽中……");
+                }
             }
             else
             {
-                return NetworkUtility.JsonSerialize("你什么也没抽中……");
+                return NetworkUtility.JsonSerialize("你还没有创建存档！请发送【创建存档】创建。");
             }
         }
 
@@ -606,7 +616,8 @@ namespace Oshima.Core.Controllers
         {
             if (master != null && master == GeneralSettings.Master)
             {
-                FunGameSimulation.Reload();
+                FunGameService.Reload();
+                FunGameSimulation.InitFunGame();
                 return NetworkUtility.JsonSerialize("FunGame已重新加载。");
             }
             return NetworkUtility.JsonSerialize("提供的参数不正确。");
