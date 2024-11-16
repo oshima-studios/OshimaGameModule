@@ -550,7 +550,8 @@ namespace Oshima.Core.Controllers
                     int itemCount = 0;
 
                     int characterSequence = characters.Take((showPage - 1) * 10).Count();
-                    int itemSequence = items.Take((showPage - 1) * 10).Count();
+                    int itemSequence = items.Take((showPage - 1) * 10).Count() - characterSequence;
+                    if (showPage > 1) itemSequence++;
 
                     foreach (int index in seq)
                     {
@@ -564,8 +565,7 @@ namespace Oshima.Core.Controllers
                                 showCharacter = false;
                                 list.Add("======= ½ÇÉ« =======");
                             }
-                            characterSequence++;
-                            str = $"{characterSequence}. {character.ToStringWithLevelWithOutUser()}";
+                            str = $"{characterSequence + characterCount}. {character.ToStringWithLevelWithOutUser()}";
                         }
                         if (obj is Item item)
                         {
@@ -575,8 +575,7 @@ namespace Oshima.Core.Controllers
                                 showItem = false;
                                 list.Add("======= ÎïÆ· =======");
                             }
-                            itemSequence++;
-                            str = $"{itemSequence}. [{ItemSet.GetQualityTypeName(item.QualityType)}|{ItemSet.GetItemTypeName(item.ItemType)}] {item.Name}\r\n";
+                            str = $"{itemSequence + itemCount}. [{ItemSet.GetQualityTypeName(item.QualityType)}|{ItemSet.GetItemTypeName(item.ItemType)}] {item.Name}\r\n";
                             str += $"{item.ToStringInventory(false).Trim()}";
                         }
                         list.Add(str);
