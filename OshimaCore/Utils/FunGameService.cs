@@ -471,5 +471,10 @@ namespace Oshima.Core.Utils
 
             return user;
         }
+
+        public static IEnumerable<T> GetPage<T>(IEnumerable<T> list, int showPage, int pageSize)
+        {
+            return list.Skip((showPage - 1) * pageSize).Take(pageSize).ToList();
+        }
     }
 }

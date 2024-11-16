@@ -16,6 +16,7 @@ namespace Oshima.Core.Controllers
     public class FunGameController(ILogger<UserDailyController> logger) : ControllerBase
     {
         private readonly ILogger<UserDailyController> _logger = logger;
+        private const string noSaved = "你还没有创建存档！请发送【创建存档】创建。";
 
         [HttpGet("test")]
         public List<string> GetTest([FromQuery] bool? isweb = null, [FromQuery] bool? isteam = null, [FromQuery] bool? showall = null)
@@ -475,7 +476,7 @@ namespace Oshima.Core.Controllers
         }
 
         [HttpPost("cjcd")]
-        public string CreateSaved([FromQuery] long? qq = null, string? name = null)
+        public string CreateSaved([FromQuery] long? qq = null, [FromQuery] string? name = null)
         {
             long userid = qq ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
             string username = name ?? "Unknown";
@@ -513,8 +514,86 @@ namespace Oshima.Core.Controllers
             }
             else
             {
-                return NetworkUtility.JsonSerialize("你还没有创建存档！请发送【创建存档】创建。");
+                return NetworkUtility.JsonSerialize(noSaved);
             }
+        }
+        
+        [HttpPost("ckkc2")]
+        public List<string> GetInventoryInfo2([FromQuery] long? qq = null, [FromQuery] int? page = null)
+        {
+            long userid = qq ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
+            int showPage = page ?? 1;
+            if (showPage <= 0) showPage = 1;
+
+            PluginConfig pc = new("saved", userid.ToString());
+            pc.LoadConfig();
+
+            List<string> list = [];
+            if (pc.Count > 0)
+            {
+                User user = FunGameService.GetUser(pc);
+                list.Add($"☆★☆ {user.Inventory.Name} ☆★☆");
+                list.Add($"{General.GameplayEquilibriumConstant.InGameCurrency}：{user.Inventory.Credits:0.00}");
+                list.Add($"{General.GameplayEquilibriumConstant.InGameMaterial}：{user.Inventory.Materials:0.00}");
+                List<Character> characters = [.. user.Inventory.Characters];
+                List<Item> items = [.. user.Inventory.Items];
+                int total = characters.Count + items.Count;
+                int maxPage = (int)Math.Ceiling((double)total / 10);
+                if (showPage <= maxPage)
+                {
+                    List<object> inventory = [.. characters, .. items];
+                    Dictionary<int, object> dict = inventory.Select((obj, index) => new { Index = index + 1, Value = obj }).ToDictionary(k => k.Index, v => v.Value);
+                    List<int> seq = [.. FunGameService.GetPage(dict.Keys, showPage, 10)];
+                    bool showCharacter = true;
+                    bool showItem = true;
+                    int characterCount = 0;
+                    int itemCount = 0;
+
+                    int characterSequence = characters.Take((showPage - 1) * 10).Count();
+                    int itemSequence = items.Take((showPage - 1) * 10).Count();
+
+                    foreach (int index in seq)
+                    {
+                        object obj = dict[index];
+                        string str = "";
+                        if (obj is Character character)
+                        {
+                            characterCount++;
+                            if (showCharacter)
+                            {
+                                showCharacter = false;
+                                list.Add("======= 角色 =======");
+                            }
+                            characterSequence++;
+                            str = $"{characterSequence}. {character.ToStringWithLevelWithOutUser()}";
+                        }
+                        if (obj is Item item)
+                        {
+                            itemCount++;
+                            if (showItem)
+                            {
+                                showItem = false;
+                                list.Add("======= 物品 =======");
+                            }
+                            itemSequence++;
+                            str = $"{itemSequence}. [{ItemSet.GetQualityTypeName(item.QualityType)}|{ItemSet.GetItemTypeName(item.ItemType)}] {item.Name}\r\n";
+                            str += $"{item.ToStringInventory(false).Trim()}";
+                        }
+                        list.Add(str);
+                    }
+
+                    list.Add($"页数：{showPage} / {maxPage}");
+                }
+                else
+                {
+                    list.Add($"没有这么多页！当前总页数为 {maxPage}，但你请求的是第 {showPage} 页。");
+                }
+            }
+            else
+            {
+                list.Add(noSaved);
+            }
+            return list;
         }
 
         [HttpPost("ck")]
@@ -529,10 +608,20 @@ namespace Oshima.Core.Controllers
             {
                 User user = FunGameService.GetUser(pc);
 
+                int reduce = 1;
+                if (user.Inventory.Credits > 0)
+                {
+                    user.Inventory.Credits -= reduce;
+                }
+                else
+                {
+                    return NetworkUtility.JsonSerialize($"你的{General.GameplayEquilibriumConstant.InGameCurrency}不足 {reduce} 呢，无法抽卡！");
+                }
+
                 double dice = Random.Shared.NextDouble();
                 if (dice > 0.8)
                 {
-                    string msg = "恭喜你抽到了：";
+                    string msg = $"消耗 {reduce} {General.GameplayEquilibriumConstant.InGameCurrency}，恭喜你抽到了：";
                     int r = Random.Shared.Next(7);
                     switch (r)
                     {
@@ -540,28 +629,28 @@ namespace Oshima.Core.Controllers
                             Item[] 武器 = FunGameService.Equipment.Where(i => i.Id.ToString().StartsWith("11")).ToArray();
                             Item a = 武器[Random.Shared.Next(武器.Length)].Copy();
                             user.Inventory.Items.Add(a);
-                            msg += ItemSet.GetQualityTypeName(a.QualityType) + ItemSet.GetItemTypeName(a.ItemType) + "【" + a.Name + "】！";
+                            msg += ItemSet.GetQualityTypeName(a.QualityType) + ItemSet.GetItemTypeName(a.ItemType) + "【" + a.Name + "】！\r\n" + a.Description;
                             break;
 
                         case 2:
                             Item[] 防具 = FunGameService.Equipment.Where(i => i.Id.ToString().StartsWith("12")).ToArray();
                             Item b = 防具[Random.Shared.Next(防具.Length)].Copy();
                             user.Inventory.Items.Add(b);
-                            msg += ItemSet.GetQualityTypeName(b.QualityType) + ItemSet.GetItemTypeName(b.ItemType) + "【" + b.Name + "】！";
+                            msg += ItemSet.GetQualityTypeName(b.QualityType) + ItemSet.GetItemTypeName(b.ItemType) + "【" + b.Name + "】！\r\n" + b.Description;
                             break;
 
                         case 3:
                             Item[] 鞋子 = FunGameService.Equipment.Where(i => i.Id.ToString().StartsWith("13")).ToArray();
                             Item c = 鞋子[Random.Shared.Next(鞋子.Length)].Copy();
                             user.Inventory.Items.Add(c);
-                            msg += ItemSet.GetQualityTypeName(c.QualityType) + ItemSet.GetItemTypeName(c.ItemType) + "【" + c.Name + "】！";
+                            msg += ItemSet.GetQualityTypeName(c.QualityType) + ItemSet.GetItemTypeName(c.ItemType) + "【" + c.Name + "】！\r\n" + c.Description;
                             break;
 
                         case 4:
                             Item[] 饰品 = FunGameService.Equipment.Where(i => i.Id.ToString().StartsWith("14")).ToArray();
                             Item d = 饰品[Random.Shared.Next(饰品.Length)].Copy();
                             user.Inventory.Items.Add(d);
-                            msg += ItemSet.GetQualityTypeName(d.QualityType) + ItemSet.GetItemTypeName(d.ItemType) + "【" + d.Name + "】！";
+                            msg += ItemSet.GetQualityTypeName(d.QualityType) + ItemSet.GetItemTypeName(d.ItemType) + "【" + d.Name + "】！\r\n" + d.Description;
                             break;
 
                         case 5:
@@ -569,19 +658,19 @@ namespace Oshima.Core.Controllers
                             if (user.Inventory.Characters.Any(c => c.Id == character.Id))
                             {
                                 user.Inventory.Materials += 50;
-                                msg += "【" + character.ToStringWithOutUser() + "】！但是你已经拥有此角色，转换为【50】" + General.GameplayEquilibriumConstant.InGameMaterial + "！";
+                                msg += "【" + character.ToStringWithOutUser() + "】！\r\n但是你已经拥有此角色，转换为【50】" + General.GameplayEquilibriumConstant.InGameMaterial + "！";
                             }
                             else
                             {
                                 user.Inventory.Characters.Add(character);
-                                msg += "【" + character.ToStringWithOutUser() + "】！";
+                                msg += "【" + character.ToStringWithOutUser() + "】！\r\n输入【查角色" + character.Id + "】可以获取此角色完整信息。";
                             }
                             break;
 
                         case 6:
                             Item mfk = FunGameService.GenerateMagicCard();
                             user.Inventory.Items.Add(mfk);
-                            msg += ItemSet.GetQualityTypeName(mfk.QualityType) + ItemSet.GetItemTypeName(mfk.ItemType) + "【" + mfk.Name + "】！";
+                            msg += ItemSet.GetQualityTypeName(mfk.QualityType) + ItemSet.GetItemTypeName(mfk.ItemType) + "【" + mfk.Name + "】！\r\n" + mfk.Description;    
                             break;
 
                         case 0:
@@ -592,7 +681,7 @@ namespace Oshima.Core.Controllers
                                 mfkb.IsTradable = false;
                                 mfkb.NextTradableTime = DateTimeUtility.GetTradableTime();
                                 user.Inventory.Items.Add(mfkb);
-                                msg += ItemSet.GetQualityTypeName(mfkb.QualityType) + ItemSet.GetItemTypeName(mfkb.ItemType) + "【" + mfkb.Name + "】！";
+                                msg += ItemSet.GetQualityTypeName(mfkb.QualityType) + ItemSet.GetItemTypeName(mfkb.ItemType) + "【" + mfkb.Name + "】！\r\n" + mfkb.Description;
                             }
                             break;
                     }
@@ -602,12 +691,13 @@ namespace Oshima.Core.Controllers
                 }
                 else
                 {
-                    return NetworkUtility.JsonSerialize("你什么也没抽中……");
+                    pc.SaveConfig();
+                    return NetworkUtility.JsonSerialize($"消耗 {reduce} {General.GameplayEquilibriumConstant.InGameCurrency}，你什么也没抽中……");
                 }
             }
             else
             {
-                return NetworkUtility.JsonSerialize("你还没有创建存档！请发送【创建存档】创建。");
+                return NetworkUtility.JsonSerialize(noSaved);
             }
         }
 
