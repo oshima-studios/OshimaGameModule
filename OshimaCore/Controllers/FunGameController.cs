@@ -13,9 +13,9 @@ namespace Oshima.Core.Controllers
 {
     [ApiController]
     [Route("[controller]")]
-    public class FunGameController(ILogger<UserDailyController> logger) : ControllerBase
+    public class FunGameController(ILogger<FunGameController> logger) : ControllerBase
     {
-        private readonly ILogger<UserDailyController> _logger = logger;
+        private readonly ILogger<FunGameController> _logger = logger;
         private const string noSaved = "你还没有创建存档！请发送【创建存档】创建。";
 
         [HttpGet("test")]
@@ -551,7 +551,6 @@ namespace Oshima.Core.Controllers
 
                     int characterSequence = characters.Take((showPage - 1) * 10).Count();
                     int itemSequence = items.Take((showPage - 1) * 10).Count() - characterSequence;
-                    if (showPage > 1) itemSequence++;
 
                     foreach (int index in seq)
                     {
@@ -690,6 +689,7 @@ namespace Oshima.Core.Controllers
                 }
                 else
                 {
+                    pc.Add("user", user);
                     pc.SaveConfig();
                     return NetworkUtility.JsonSerialize($"消耗 {reduce} {General.GameplayEquilibriumConstant.InGameCurrency}，你什么也没抽中……");
                 }

@@ -180,7 +180,11 @@ namespace Oshima.Core.Utils
             Skill skill = Factory.OpenFactory.GetInstance<Skill>(item.Id, item.Name, []);
             GenerateAndAddEffectsToMagicCard(skill, str, agi, intelligence);
 
-            if (magic.Level > 1) item.Name += $" +{magic.Level - 1}";
+            if (magic.Level > 1)
+            {
+                item.Name += $" +{magic.Level - 1}";
+                magic.Name += $" +{magic.Level - 1}";
+            }
             skill.Level = 1;
             List<string> strings = [];
             if (str > 0) strings.Add($"{str:0.##} 点力量");

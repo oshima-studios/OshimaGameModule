@@ -46,6 +46,8 @@ namespace Oshima.Core.WebAPI
             FunGameSimulation.InitFunGame();
             Task taskTime = Task.Factory.StartNew(async () =>
             {
+                bool check9 = true;
+                bool check15 = true;
                 while (true)
                 {
                     try
@@ -74,6 +76,30 @@ namespace Oshima.Core.WebAPI
                         if (now.Hour == 0 && now.Minute == 1)
                         {
                             Daily.ClearDailys = true;
+                        }
+                        if (now.Hour == 9 && now.Minute == 0 && check9)
+                        {
+                            check9 = false;
+                            Console.ForegroundColor = ConsoleColor.Magenta;
+                            Console.WriteLine("\r重置物品交易冷却时间。");
+                            Console.ForegroundColor = ConsoleColor.Gray;
+                            Console.Write("\r> ");
+                        }
+                        if (now.Hour == 9 && now.Minute == 1)
+                        {
+                            check9 = true;
+                        }
+                        if (now.Hour == 15 && now.Minute == 0 && check15)
+                        {
+                            check15 = false;
+                            Console.ForegroundColor = ConsoleColor.Magenta;
+                            Console.WriteLine("\r重置物品交易冷却时间。");
+                            Console.ForegroundColor = ConsoleColor.Gray;
+                            Console.Write("\r> ");
+                        }
+                        if (now.Hour == 15 && now.Minute == 1)
+                        {
+                            check15 = true;
                         }
                         await Task.Delay(1000);
                     }
