@@ -309,7 +309,7 @@ namespace Oshima.Core.Controllers
             if (pc.Count == 0)
             {
                 User user = Factory.GetUser(userid, username, DateTime.Now, DateTime.Now, userid + "@qq.com", username);
-                user.Inventory.Credits = 5000;
+                user.Inventory.Credits = 5000000;
                 pc.Add("user", user);
                 pc.SaveConfig();
                 return NetworkUtility.JsonSerialize($"创建存档成功！你的用户名是【{username}】。");
