@@ -82,6 +82,7 @@ namespace Oshima.Core.WebAPI
                             check9 = false;
                             Console.ForegroundColor = ConsoleColor.Magenta;
                             Console.WriteLine("\r重置物品交易冷却时间。");
+                            await FunGameService.AllowSellAndTrade();
                             Console.ForegroundColor = ConsoleColor.Gray;
                             Console.Write("\r> ");
                         }
@@ -94,6 +95,7 @@ namespace Oshima.Core.WebAPI
                             check15 = false;
                             Console.ForegroundColor = ConsoleColor.Magenta;
                             Console.WriteLine("\r重置物品交易冷却时间。");
+                            await FunGameService.AllowSellAndTrade();
                             Console.ForegroundColor = ConsoleColor.Gray;
                             Console.Write("\r> ");
                         }

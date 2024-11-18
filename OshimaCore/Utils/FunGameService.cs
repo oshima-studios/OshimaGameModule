@@ -480,5 +480,345 @@ namespace Oshima.Core.Utils
         {
             return list.Skip((showPage - 1) * pageSize).Take(pageSize).ToList();
         }
+
+        public static string GetDrawCardResult(int reduce, User user, bool isMulti = false, int multiCount = 1)
+        {
+            string msg = "";
+            if (!isMulti)
+            {
+                msg = $"消耗 {reduce} {General.GameplayEquilibriumConstant.InGameCurrency}，恭喜你抽到了：";
+            }
+            int r = Random.Shared.Next(7);
+            double q = Random.Shared.NextDouble() * 100;
+            QualityType type = q switch
+            {
+                <= 37.21 => QualityType.White,
+                <= 37.21 + 27.94 => QualityType.Green,
+                <= 37.21 + 27.94 + 16.68 => QualityType.Blue,
+                <= 37.21 + 27.94 + 16.68 + 9.79 => QualityType.Purple,
+                <= 37.21 + 27.94 + 16.68 + 9.79 + 5.05 => QualityType.Orange,
+                <= 37.21 + 27.94 + 16.68 + 9.79 + 5.05 + 2.73 => QualityType.Red,
+                _ => QualityType.Gold
+            };
+            switch (r)
+            {
+                case 1:
+                    if ((int)type > (int)QualityType.Orange) type = QualityType.Orange;
+                    Item[] 武器 = Equipment.Where(i => i.Id.ToString().StartsWith("11") && i.QualityType == type).ToArray();
+                    Item a = 武器[Random.Shared.Next(武器.Length)].Copy();
+                    SetSellAndTradeTime(a);
+                    user.Inventory.Items.Add(a);
+                    msg += ItemSet.GetQualityTypeName(a.QualityType) + ItemSet.GetItemTypeName(a.ItemType) + "【" + a.Name + "】！\r\n" + a.Description;
+                    break;
+
+                case 2:
+                    if ((int)type > (int)QualityType.Green) type = QualityType.Green;
+                    Item[] 防具 = Equipment.Where(i => i.Id.ToString().StartsWith("12") && i.QualityType == type).ToArray();
+                    Item b = 防具[Random.Shared.Next(防具.Length)].Copy();
+                    SetSellAndTradeTime(b);
+                    user.Inventory.Items.Add(b);
+                    msg += ItemSet.GetQualityTypeName(b.QualityType) + ItemSet.GetItemTypeName(b.ItemType) + "【" + b.Name + "】！\r\n" + b.Description;
+                    break;
+
+                case 3:
+                    if ((int)type > (int)QualityType.Green) type = QualityType.Green;
+                    Item[] 鞋子 = Equipment.Where(i => i.Id.ToString().StartsWith("13") && i.QualityType == type).ToArray();
+                    Item c = 鞋子[Random.Shared.Next(鞋子.Length)].Copy();
+                    SetSellAndTradeTime(c);
+                    user.Inventory.Items.Add(c);
+                    msg += ItemSet.GetQualityTypeName(c.QualityType) + ItemSet.GetItemTypeName(c.ItemType) + "【" + c.Name + "】！\r\n" + c.Description;
+                    break;
+
+                case 4:
+                    if ((int)type > (int)QualityType.Purple) type = QualityType.Purple;
+                    Item[] 饰品 = Equipment.Where(i => i.Id.ToString().StartsWith("14") && i.QualityType == type).ToArray();
+                    Item d = 饰品[Random.Shared.Next(饰品.Length)].Copy();
+                    SetSellAndTradeTime(d);
+                    user.Inventory.Items.Add(d);
+                    msg += ItemSet.GetQualityTypeName(d.QualityType) + ItemSet.GetItemTypeName(d.ItemType) + "【" + d.Name + "】！\r\n" + d.Description;
+                    break;
+
+                case 5:
+                    Character character = Characters[Random.Shared.Next(Characters.Count)].Copy();
+                    AddCharacterSkills(character, 1, 0, 0);
+                    if (user.Inventory.Characters.Any(c => c.Id == character.Id))
+                    {
+                        user.Inventory.Materials += 50;
+                        msg += "【" + character.ToStringWithOutUser() + "】！\r\n但是你已经拥有此角色，转换为【50】" + General.GameplayEquilibriumConstant.InGameMaterial + "！";
+                    }
+                    else
+                    {
+                        user.Inventory.Characters.Add(character);
+                        msg += "【" + character.ToStringWithOutUser() + "】！\r\n输入【查角色" + character.Id + "】可以获取此角色完整信息。";
+                    }
+                    break;
+
+                case 6:
+                    Item mfk = GenerateMagicCard(type);
+                    SetSellAndTradeTime(mfk);
+                    user.Inventory.Items.Add(mfk);
+                    msg += ItemSet.GetQualityTypeName(mfk.QualityType) + ItemSet.GetItemTypeName(mfk.ItemType) + "【" + mfk.Name + "】！\r\n" + mfk.Description;
+                    break;
+
+                case 0:
+                default:
+                    Item? mfkb = GenerateMagicCardPack(3, type);
+                    if (mfkb != null)
+                    {
+                        SetSellAndTradeTime(mfkb);
+                        user.Inventory.Items.Add(mfkb);
+                        msg += ItemSet.GetQualityTypeName(mfkb.QualityType) + ItemSet.GetItemTypeName(mfkb.ItemType) + "【" + mfkb.Name + "】！\r\n" + mfkb.Description;
+                    }
+                    break;
+            }
+            if (isMulti) msg = $"{multiCount}. \r\n{msg}";
+            return msg;
+        }
+
+        public static void SetSellAndTradeTime(Item item, bool sell = false, bool trade = true, DateTime? nextSell = null, DateTime? nextTrade = null)
+        {
+            if (sell)
+            {
+                item.IsSellable = false;
+                item.NextSellableTime = DateTimeUtility.GetTradableTime(nextSell);
+            }
+            if (trade)
+            {
+                item.IsTradable = false;
+                item.NextTradableTime = DateTimeUtility.GetTradableTime(nextTrade);
+            }
+        }
+
+        public static async Task<string> AllowSellAndTrade()
+        {
+            string msg;
+            string dpath = $@"{AppDomain.CurrentDomain.BaseDirectory}configs/saved";
+            if (Directory.Exists(dpath))
+            {
+                string[] jsonFiles = Directory.GetFiles(dpath, "*.json");
+
+                List<Task> tasks = [];
+                foreach (string file in jsonFiles)
+                {
+                    tasks.Add(Task.Run(() =>
+                    {
+                        string fileNameWithoutExtension = Path.GetFileNameWithoutExtension(file);
+                        PluginConfig pc = new("saved", fileNameWithoutExtension);
+                        pc.LoadConfig();
+                        if (pc.Count > 0)
+                        {
+                            User user = GetUser(pc);
+                            foreach (Item item in user.Inventory.Items)
+                            {
+                                if (!item.IsSellable && item.NextSellableTime != DateTime.MinValue && DateTime.Now >= item.NextSellableTime)
+                                {
+                                    item.NextSellableTime = DateTime.MinValue;
+                                    item.IsSellable = true;
+                                }
+                                if (!item.IsTradable && item.NextTradableTime != DateTime.MinValue && DateTime.Now >= item.NextTradableTime)
+                                {
+                                    item.NextTradableTime = DateTime.MinValue;
+                                    item.IsTradable = true;
+                                }
+                            }
+                            pc.Add("user", user);
+                            pc.SaveConfig();
+                        }
+                    }));
+                }
+                await Task.WhenAll(tasks);
+                msg = "已清理所有玩家的物品交易时间。";
+            }
+            else
+            {
+                msg = "存档目录不存在，无法清理交易时间。";
+            }
+            return msg;
+        }
+
+        public static void AddCharacterSkills(Character character, int passiveLevel, int skillLevel, int superLevel)
+        {
+            long id = character.Id;
+            Math.Sign(skillLevel);
+            if (id == 1)
+            {
+                Skill META马 = new META马(character)
+                {
+                    Level = passiveLevel
+                };
+                character.Skills.Add(META马);
+
+                Skill 力量爆发 = new 力量爆发(character)
+                {
+                    Level = superLevel
+                };
+                character.Skills.Add(力量爆发);
+            }
+
+            if (id == 2)
+            {
+                Skill 心灵之火 = new 心灵之火(character)
+                {
+                    Level = passiveLevel
+                };
+                character.Skills.Add(心灵之火);
+
+                Skill 天赐之力 = new 天赐之力(character)
+                {
+                    Level = superLevel
+                };
+                character.Skills.Add(天赐之力);
+            }
+
+            if (id == 3)
+            {
+                Skill 魔法震荡 = new 魔法震荡(character)
+                {
+                    Level = passiveLevel
+                };
+                character.Skills.Add(魔法震荡);
+
+                Skill 魔法涌流 = new 魔法涌流(character)
+                {
+                    Level = superLevel
+                };
+                character.Skills.Add(魔法涌流);
+            }
+
+            if (id == 4)
+            {
+                Skill 灵能反射 = new 灵能反射(character)
+                {
+                    Level = passiveLevel
+                };
+                character.Skills.Add(灵能反射);
+
+                Skill 三重叠加 = new 三重叠加(character)
+                {
+                    Level = superLevel
+                };
+                character.Skills.Add(三重叠加);
+            }
+
+            if (id == 5)
+            {
+                Skill 智慧与力量 = new 智慧与力量(character)
+                {
+                    Level = passiveLevel
+                };
+                character.Skills.Add(智慧与力量);
+
+                Skill 变幻之心 = new 变幻之心(character)
+                {
+                    Level = superLevel
+                };
+                character.Skills.Add(变幻之心);
+            }
+
+            if (id == 6)
+            {
+                Skill 致命打击 = new 致命打击(character)
+                {
+                    Level = passiveLevel
+                };
+                character.Skills.Add(致命打击);
+
+                Skill 精准打击 = new 精准打击(character)
+                {
+                    Level = superLevel
+                };
+                character.Skills.Add(精准打击);
+            }
+
+            if (id == 7)
+            {
+                Skill 毁灭之势 = new 毁灭之势(character)
+                {
+                    Level = passiveLevel
+                };
+                character.Skills.Add(毁灭之势);
+
+                Skill 绝对领域 = new 绝对领域(character)
+                {
+                    Level = superLevel
+                };
+                character.Skills.Add(绝对领域);
+            }
+
+            if (id == 8)
+            {
+                Skill 枯竭打击 = new 枯竭打击(character)
+                {
+                    Level = passiveLevel
+                };
+                character.Skills.Add(枯竭打击);
+
+                Skill 能量毁灭 = new 能量毁灭(character)
+                {
+                    Level = superLevel
+                };
+                character.Skills.Add(能量毁灭);
+            }
+
+            if (id == 9)
+            {
+                Skill 玻璃大炮 = new 玻璃大炮(character)
+                {
+                    Level = passiveLevel
+                };
+                character.Skills.Add(玻璃大炮);
+
+                Skill 迅捷之势 = new 迅捷之势(character)
+                {
+                    Level = superLevel
+                };
+                character.Skills.Add(迅捷之势);
+            }
+
+            if (id == 10)
+            {
+                Skill 累积之压 = new 累积之压(character)
+                {
+                    Level = passiveLevel
+                };
+                character.Skills.Add(累积之压);
+
+                Skill 嗜血本能 = new 嗜血本能(character)
+                {
+                    Level = superLevel
+                };
+                character.Skills.Add(嗜血本能);
+            }
+
+            if (id == 11)
+            {
+                Skill 敏捷之刃 = new 敏捷之刃(character)
+                {
+                    Level = passiveLevel
+                };
+                character.Skills.Add(敏捷之刃);
+
+                Skill 平衡强化 = new 平衡强化(character)
+                {
+                    Level = superLevel
+                };
+                character.Skills.Add(平衡强化);
+            }
+
+            if (id == 12)
+            {
+                Skill 弱者猎手 = new 弱者猎手(character)
+                {
+                    Level = passiveLevel
+                };
+                character.Skills.Add(弱者猎手);
+
+                Skill 血之狂欢 = new 血之狂欢(character)
+                {
+                    Level = superLevel
+                };
+                character.Skills.Add(血之狂欢);
+            }
+        }
     }
 }

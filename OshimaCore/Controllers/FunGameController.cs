@@ -7,7 +7,6 @@ using Milimoe.FunGame.Core.Library.Constant;
 using Oshima.Core.Configs;
 using Oshima.Core.Models;
 using Oshima.Core.Utils;
-using Oshima.FunGame.OshimaModules.Skills;
 
 namespace Oshima.Core.Controllers
 {
@@ -16,6 +15,8 @@ namespace Oshima.Core.Controllers
     public class FunGameController(ILogger<FunGameController> logger) : ControllerBase
     {
         private readonly ILogger<FunGameController> _logger = logger;
+        private const int drawCardReduce = 2000;
+        private const int drawCardReduce_Material = 10;
         private const string noSaved = "你还没有创建存档！请发送【创建存档】创建。";
 
         [HttpGet("test")]
@@ -219,193 +220,14 @@ namespace Oshima.Core.Controllers
         }
 
         [HttpGet("cjs")]
-        public string GetCharacterIntroduce([FromQuery] int? id = null)
+        public string GetCharacterInfo([FromQuery] int? id = null)
         {
             if (id != null && id > 0 && id <= FunGameService.Characters.Count)
             {
                 Character c = FunGameService.Characters[Convert.ToInt32(id) - 1].Copy();
                 c.Level = General.GameplayEquilibriumConstant.MaxLevel;
                 c.NormalAttack.Level = General.GameplayEquilibriumConstant.MaxNormalAttackLevel;
-
-                if (id == 1)
-                {
-                    Skill META马 = new META马(c)
-                    {
-                        Level = 1
-                    };
-                    c.Skills.Add(META马);
-
-                    Skill 力量爆发 = new 力量爆发(c)
-                    {
-                        Level = General.GameplayEquilibriumConstant.MaxMagicLevel
-                    };
-                    c.Skills.Add(力量爆发);
-                }
-
-                if (id == 2)
-                {
-                    Skill 心灵之火 = new 心灵之火(c)
-                    {
-                        Level = 1
-                    };
-                    c.Skills.Add(心灵之火);
-
-                    Skill 天赐之力 = new 天赐之力(c)
-                    {
-                        Level = General.GameplayEquilibriumConstant.MaxSkillLevel
-                    };
-                    c.Skills.Add(天赐之力);
-                }
-
-                if (id == 3)
-                {
-                    Skill 魔法震荡 = new 魔法震荡(c)
-                    {
-                        Level = 1
-                    };
-                    c.Skills.Add(魔法震荡);
-
-                    Skill 魔法涌流 = new 魔法涌流(c)
-                    {
-                        Level = General.GameplayEquilibriumConstant.MaxSkillLevel
-                    };
-                    c.Skills.Add(魔法涌流);
-                }
-
-                if (id == 4)
-                {
-                    Skill 灵能反射 = new 灵能反射(c)
-                    {
-                        Level = 1
-                    };
-                    c.Skills.Add(灵能反射);
-
-                    Skill 三重叠加 = new 三重叠加(c)
-                    {
-                        Level = General.GameplayEquilibriumConstant.MaxSkillLevel
-                    };
-                    c.Skills.Add(三重叠加);
-                }
-
-                if (id == 5)
-                {
-                    Skill 智慧与力量 = new 智慧与力量(c)
-                    {
-                        Level = 1
-                    };
-                    c.Skills.Add(智慧与力量);
-
-                    Skill 变幻之心 = new 变幻之心(c)
-                    {
-                        Level = General.GameplayEquilibriumConstant.MaxSkillLevel
-                    };
-                    c.Skills.Add(变幻之心);
-                }
-
-                if (id == 6)
-                {
-                    Skill 致命打击 = new 致命打击(c)
-                    {
-                        Level = 1
-                    };
-                    c.Skills.Add(致命打击);
-
-                    Skill 精准打击 = new 精准打击(c)
-                    {
-                        Level = General.GameplayEquilibriumConstant.MaxSkillLevel
-                    };
-                    c.Skills.Add(精准打击);
-                }
-
-                if (id == 7)
-                {
-                    Skill 毁灭之势 = new 毁灭之势(c)
-                    {
-                        Level = 1
-                    };
-                    c.Skills.Add(毁灭之势);
-
-                    Skill 绝对领域 = new 绝对领域(c)
-                    {
-                        Level = General.GameplayEquilibriumConstant.MaxSkillLevel
-                    };
-                    c.Skills.Add(绝对领域);
-                }
-
-                if (id == 8)
-                {
-                    Skill 枯竭打击 = new 枯竭打击(c)
-                    {
-                        Level = 1
-                    };
-                    c.Skills.Add(枯竭打击);
-
-                    Skill 能量毁灭 = new 能量毁灭(c)
-                    {
-                        Level = General.GameplayEquilibriumConstant.MaxSkillLevel
-                    };
-                    c.Skills.Add(能量毁灭);
-                }
-
-                if (id == 9)
-                {
-                    Skill 玻璃大炮 = new 玻璃大炮(c)
-                    {
-                        Level = 1
-                    };
-                    c.Skills.Add(玻璃大炮);
-
-                    Skill 迅捷之势 = new 迅捷之势(c)
-                    {
-                        Level = General.GameplayEquilibriumConstant.MaxSkillLevel
-                    };
-                    c.Skills.Add(迅捷之势);
-                }
-
-                if (id == 10)
-                {
-                    Skill 累积之压 = new 累积之压(c)
-                    {
-                        Level = 1
-                    };
-                    c.Skills.Add(累积之压);
-
-                    Skill 嗜血本能 = new 嗜血本能(c)
-                    {
-                        Level = General.GameplayEquilibriumConstant.MaxSkillLevel
-                    };
-                    c.Skills.Add(嗜血本能);
-                }
-
-                if (id == 11)
-                {
-                    Skill 敏捷之刃 = new 敏捷之刃(c)
-                    {
-                        Level = 1
-                    };
-                    c.Skills.Add(敏捷之刃);
-
-                    Skill 平衡强化 = new 平衡强化(c)
-                    {
-                        Level = General.GameplayEquilibriumConstant.MaxSkillLevel
-                    };
-                    c.Skills.Add(平衡强化);
-                }
-
-                if (id == 12)
-                {
-                    Skill 弱者猎手 = new 弱者猎手(c)
-                    {
-                        Level = 1
-                    };
-                    c.Skills.Add(弱者猎手);
-
-                    Skill 血之狂欢 = new 血之狂欢(c)
-                    {
-                        Level = General.GameplayEquilibriumConstant.MaxSkillLevel
-                    };
-                    c.Skills.Add(血之狂欢);
-                }
+                FunGameService.AddCharacterSkills(c, 1, General.GameplayEquilibriumConstant.MaxSkillLevel, General.GameplayEquilibriumConstant.MaxSuperSkillLevel);
 
                 return NetworkUtility.JsonSerialize(c.GetInfo().Trim());
             }
@@ -487,7 +309,7 @@ namespace Oshima.Core.Controllers
             if (pc.Count == 0)
             {
                 User user = Factory.GetUser(userid, username, DateTime.Now, DateTime.Now, userid + "@qq.com", username);
-                user.Inventory.Credits = 100;
+                user.Inventory.Credits = 5000;
                 pc.Add("user", user);
                 pc.SaveConfig();
                 return NetworkUtility.JsonSerialize($"创建存档成功！你的用户名是【{username}】。");
@@ -549,8 +371,7 @@ namespace Oshima.Core.Controllers
                     int characterCount = 0;
                     int itemCount = 0;
 
-                    int characterSequence = characters.Take((showPage - 1) * 10).Count();
-                    int itemSequence = items.Take((showPage - 1) * 10).Count() - characterSequence;
+                    int prevSequence = dict.Take((showPage - 1) * 10).Count();
 
                     foreach (int index in seq)
                     {
@@ -564,7 +385,7 @@ namespace Oshima.Core.Controllers
                                 showCharacter = false;
                                 list.Add("======= 角色 =======");
                             }
-                            str = $"{characterSequence + characterCount}. {character.ToStringWithLevelWithOutUser()}";
+                            str = $"{prevSequence + characterCount}. {character.ToStringWithLevelWithOutUser()}";
                         }
                         if (obj is Item item)
                         {
@@ -574,7 +395,7 @@ namespace Oshima.Core.Controllers
                                 showItem = false;
                                 list.Add("======= 物品 =======");
                             }
-                            str = $"{itemSequence + itemCount}. [{ItemSet.GetQualityTypeName(item.QualityType)}|{ItemSet.GetItemTypeName(item.ItemType)}] {item.Name}\r\n";
+                            str = $"{index - (characterCount > 0 ? prevSequence + characterCount : characters.Count)}. [{ItemSet.GetQualityTypeName(item.QualityType)}|{ItemSet.GetItemTypeName(item.ItemType)}] {item.Name}\r\n";
                             str += $"{item.ToStringInventory(false).Trim()}";
                         }
                         list.Add(str);
@@ -593,9 +414,93 @@ namespace Oshima.Core.Controllers
             }
             return list;
         }
+        
+        [HttpPost("ckkc3")]
+        public List<string> GetInventoryInfo3([FromQuery] long? qq = null, [FromQuery] int? page = null, [FromQuery] int? order = null, [FromQuery] int? orderqty = null)
+        {
+            long userid = qq ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
+            int showPage = page ?? 1;
+            if (showPage <= 0) showPage = 1;
+
+            PluginConfig pc = new("saved", userid.ToString());
+            pc.LoadConfig();
+
+            List<string> list = [];
+            if (pc.Count > 0)
+            {
+                User user = FunGameService.GetUser(pc);
+                list.Add($"☆★☆ {user.Inventory.Name} ☆★☆");
+                list.Add($"{General.GameplayEquilibriumConstant.InGameCurrency}：{user.Inventory.Credits:0.00}");
+                list.Add($"{General.GameplayEquilibriumConstant.InGameMaterial}：{user.Inventory.Materials:0.00}");
+                List<Item> items = [.. user.Inventory.Items];
+
+                Dictionary<string, List<Item>> itemCategory = [];
+                foreach (Item item in items)
+                {
+                    if (!itemCategory.TryAdd(item.GetIdName(), [item]))
+                    {
+                        itemCategory[item.GetIdName()].Add(item);
+                    }
+                }
+                if (orderqty != 0)
+                {
+                    IOrderedEnumerable<KeyValuePair<string, List<Item>>>? orderEnum = null;
+                    if (order != 0)
+                    {
+                        orderEnum = order switch
+                        {
+                            1 => itemCategory.OrderBy(kv => kv.Value.FirstOrDefault()?.QualityType ?? 0),
+                            2 => itemCategory.OrderByDescending(kv => kv.Value.FirstOrDefault()?.QualityType ?? 0),
+                            3 => itemCategory.OrderBy(kv => kv.Value.FirstOrDefault()?.ItemType ?? 0),
+                            4 => itemCategory.OrderByDescending(kv => kv.Value.FirstOrDefault()?.ItemType ?? 0),
+                            _ => itemCategory.OrderBy(kv => 0)
+                        };
+                    }
+                    if (orderEnum != null)
+                    {
+                        if (orderqty == 1)
+                        {
+                            orderEnum = orderEnum.ThenBy(kv => kv.Value.Count);
+                        }
+                        else
+                        {
+                            orderEnum = orderEnum.ThenByDescending(kv => kv.Value.Count);
+                        }
+                        itemCategory = orderEnum.ToDictionary();
+                    }
+                }
+
+                int maxPage = (int)Math.Ceiling((double)itemCategory.Count / 10);
+                if (showPage <= maxPage)
+                {
+                    List<string> keys = [.. FunGameService.GetPage(itemCategory.Keys, showPage, 10)];
+                    int itemCount = 0;
+                    list.Add("======= 物品 =======");
+                    foreach (string key in keys)
+                    {
+                        itemCount++;
+                        List<Item> objs = itemCategory[key];
+                        string str = $"{itemCount}. [{ItemSet.GetQualityTypeName(objs[0].QualityType)}|{ItemSet.GetItemTypeName(objs[0].ItemType)}] {objs[0].Name}\r\n";
+                        str += $"物品序号：{string.Join("，", objs.Select(i => items.IndexOf(i) + 1))}\r\n";
+                        str += $"拥有数量：{objs.Count}（可出售数量：{objs.Count(i => i.IsSellable)}，可交易数量：{objs.Count(i => i.IsTradable)}）";
+                        list.Add(str);
+                    }
+                    list.Add($"页数：{showPage} / {maxPage}");
+                }
+                else
+                {
+                    list.Add($"没有这么多页！当前总页数为 {maxPage}，但你请求的是第 {showPage} 页。");
+                }
+            }
+            else
+            {
+                list.Add(noSaved);
+            }
+            return list;
+        }
 
         [HttpPost("ck")]
-        public string DrawCards([FromQuery] long? qq = null)
+        public string DrawCard([FromQuery] long? qq = null)
         {
             long userid = qq ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
 
@@ -606,8 +511,8 @@ namespace Oshima.Core.Controllers
             {
                 User user = FunGameService.GetUser(pc);
 
-                int reduce = 1;
-                if (user.Inventory.Credits > 0)
+                int reduce = drawCardReduce;
+                if (user.Inventory.Credits >= reduce)
                 {
                     user.Inventory.Credits -= reduce;
                 }
@@ -619,79 +524,252 @@ namespace Oshima.Core.Controllers
                 double dice = Random.Shared.NextDouble();
                 if (dice > 0.8)
                 {
-                    string msg = $"消耗 {reduce} {General.GameplayEquilibriumConstant.InGameCurrency}，恭喜你抽到了：";
-                    int r = Random.Shared.Next(7);
-                    switch (r)
-                    {
-                        case 1:
-                            Item[] 武器 = FunGameService.Equipment.Where(i => i.Id.ToString().StartsWith("11")).ToArray();
-                            Item a = 武器[Random.Shared.Next(武器.Length)].Copy();
-                            user.Inventory.Items.Add(a);
-                            msg += ItemSet.GetQualityTypeName(a.QualityType) + ItemSet.GetItemTypeName(a.ItemType) + "【" + a.Name + "】！\r\n" + a.Description;
-                            break;
-
-                        case 2:
-                            Item[] 防具 = FunGameService.Equipment.Where(i => i.Id.ToString().StartsWith("12")).ToArray();
-                            Item b = 防具[Random.Shared.Next(防具.Length)].Copy();
-                            user.Inventory.Items.Add(b);
-                            msg += ItemSet.GetQualityTypeName(b.QualityType) + ItemSet.GetItemTypeName(b.ItemType) + "【" + b.Name + "】！\r\n" + b.Description;
-                            break;
-
-                        case 3:
-                            Item[] 鞋子 = FunGameService.Equipment.Where(i => i.Id.ToString().StartsWith("13")).ToArray();
-                            Item c = 鞋子[Random.Shared.Next(鞋子.Length)].Copy();
-                            user.Inventory.Items.Add(c);
-                            msg += ItemSet.GetQualityTypeName(c.QualityType) + ItemSet.GetItemTypeName(c.ItemType) + "【" + c.Name + "】！\r\n" + c.Description;
-                            break;
-
-                        case 4:
-                            Item[] 饰品 = FunGameService.Equipment.Where(i => i.Id.ToString().StartsWith("14")).ToArray();
-                            Item d = 饰品[Random.Shared.Next(饰品.Length)].Copy();
-                            user.Inventory.Items.Add(d);
-                            msg += ItemSet.GetQualityTypeName(d.QualityType) + ItemSet.GetItemTypeName(d.ItemType) + "【" + d.Name + "】！\r\n" + d.Description;
-                            break;
-
-                        case 5:
-                            Character character = FunGameService.Characters[Random.Shared.Next(FunGameService.Characters.Count)].Copy();
-                            if (user.Inventory.Characters.Any(c => c.Id == character.Id))
-                            {
-                                user.Inventory.Materials += 50;
-                                msg += "【" + character.ToStringWithOutUser() + "】！\r\n但是你已经拥有此角色，转换为【50】" + General.GameplayEquilibriumConstant.InGameMaterial + "！";
-                            }
-                            else
-                            {
-                                user.Inventory.Characters.Add(character);
-                                msg += "【" + character.ToStringWithOutUser() + "】！\r\n输入【查角色" + character.Id + "】可以获取此角色完整信息。";
-                            }
-                            break;
-
-                        case 6:
-                            Item mfk = FunGameService.GenerateMagicCard();
-                            user.Inventory.Items.Add(mfk);
-                            msg += ItemSet.GetQualityTypeName(mfk.QualityType) + ItemSet.GetItemTypeName(mfk.ItemType) + "【" + mfk.Name + "】！\r\n" + mfk.Description;    
-                            break;
-
-                        case 0:
-                        default:
-                            Item? mfkb = FunGameService.GenerateMagicCardPack(3);
-                            if (mfkb != null)
-                            {
-                                mfkb.IsTradable = false;
-                                mfkb.NextTradableTime = DateTimeUtility.GetTradableTime();
-                                user.Inventory.Items.Add(mfkb);
-                                msg += ItemSet.GetQualityTypeName(mfkb.QualityType) + ItemSet.GetItemTypeName(mfkb.ItemType) + "【" + mfkb.Name + "】！\r\n" + mfkb.Description;
-                            }
-                            break;
-                    }
+                    string msg = FunGameService.GetDrawCardResult(reduce, user);
                     pc.Add("user", user);
                     pc.SaveConfig();
                     return NetworkUtility.JsonSerialize(msg);
                 }
                 else
                 {
-                    pc.Add("user", user);
                     pc.SaveConfig();
                     return NetworkUtility.JsonSerialize($"消耗 {reduce} {General.GameplayEquilibriumConstant.InGameCurrency}，你什么也没抽中……");
+                }
+            }
+            else
+            {
+                return NetworkUtility.JsonSerialize(noSaved);
+            }
+        }
+        
+        [HttpPost("ck10")]
+        public List<string> DrawCards([FromQuery] long? qq = null)
+        {
+            long userid = qq ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
+
+            PluginConfig pc = new("saved", userid.ToString());
+            pc.LoadConfig();
+
+            if (pc.Count > 0)
+            {
+                User user = FunGameService.GetUser(pc);
+
+                int reduce = drawCardReduce * 10;
+                if (user.Inventory.Credits >= reduce)
+                {
+                    user.Inventory.Credits -= reduce;
+                }
+                else
+                {
+                    return [$"你的{General.GameplayEquilibriumConstant.InGameCurrency}不足 {reduce} 呢，无法十连抽卡！"];
+                }
+
+                List<string> result = [$"消耗 {reduce} {General.GameplayEquilibriumConstant.InGameCurrency}，恭喜你抽到了："];
+                int count = 0;
+                for (int i = 0; i < 10; i++)
+                {
+                    double dice = Random.Shared.NextDouble();
+                    if (dice > 0.8)
+                    {
+                        count++;
+                        result.Add(FunGameService.GetDrawCardResult(reduce, user, true, count));
+                    }
+                }
+                if (result.Count == 1)
+                {
+                    result[0] = $"消耗 {reduce} {General.GameplayEquilibriumConstant.InGameCurrency}，你什么也没抽中……";
+                }
+                pc.Add("user", user);
+                pc.SaveConfig();
+                return result;
+            }
+            else
+            {
+                return [noSaved];
+            }
+        }
+
+        [HttpPost("clck")]
+        public string DrawCard_Material([FromQuery] long? qq = null)
+        {
+            long userid = qq ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
+
+            PluginConfig pc = new("saved", userid.ToString());
+            pc.LoadConfig();
+
+            if (pc.Count > 0)
+            {
+                User user = FunGameService.GetUser(pc);
+
+                int reduce = drawCardReduce_Material;
+                if (user.Inventory.Materials >= reduce)
+                {
+                    user.Inventory.Materials -= reduce;
+                }
+                else
+                {
+                    return NetworkUtility.JsonSerialize($"你的{General.GameplayEquilibriumConstant.InGameMaterial}不足 {reduce} 呢，无法抽卡！");
+                }
+
+                double dice = Random.Shared.NextDouble();
+                if (dice > 0.8)
+                {
+                    string msg = FunGameService.GetDrawCardResult(reduce, user);
+                    pc.Add("user", user);
+                    pc.SaveConfig();
+                    return NetworkUtility.JsonSerialize(msg);
+                }
+                else
+                {
+                    pc.SaveConfig();
+                    return NetworkUtility.JsonSerialize($"消耗 {reduce} {General.GameplayEquilibriumConstant.InGameMaterial}，你什么也没抽中……");
+                }
+            }
+            else
+            {
+                return NetworkUtility.JsonSerialize(noSaved);
+            }
+        }
+        
+        [HttpPost("clck10")]
+        public List<string> DrawCards_Material([FromQuery] long? qq = null)
+        {
+            long userid = qq ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
+
+            PluginConfig pc = new("saved", userid.ToString());
+            pc.LoadConfig();
+
+            if (pc.Count > 0)
+            {
+                User user = FunGameService.GetUser(pc);
+
+                int reduce = drawCardReduce_Material * 10;
+                if (user.Inventory.Materials >= reduce)
+                {
+                    user.Inventory.Materials -= reduce;
+                }
+                else
+                {
+                    return [$"你的{General.GameplayEquilibriumConstant.InGameMaterial}不足 {reduce} 呢，无法十连抽卡！"];
+                }
+
+                List<string> result = [$"消耗 {reduce} {General.GameplayEquilibriumConstant.InGameMaterial}，恭喜你抽到了："];
+                int count = 0;
+                for (int i = 0; i < 10; i++)
+                {
+                    double dice = Random.Shared.NextDouble();
+                    if (dice > 0.8)
+                    {
+                        count++;
+                        result.Add(FunGameService.GetDrawCardResult(reduce, user, true, count));
+                    }
+                }
+                if (result.Count == 1)
+                {
+                    result[0] = $"消耗 {reduce} {General.GameplayEquilibriumConstant.InGameMaterial}，你什么也没抽中……";
+                }
+                pc.Add("user", user);
+                pc.SaveConfig();
+                return result;
+            }
+            else
+            {
+                return [noSaved];
+            }
+        }
+
+        [HttpPost("dhjb")]
+        public string ExchangeCredits([FromQuery] long? qq = null, [FromQuery] double? materials = null)
+        {
+            long userid = qq ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
+            double useMaterials = materials ?? 0;
+
+            PluginConfig pc = new("saved", userid.ToString());
+            pc.LoadConfig();
+
+            if (pc.Count > 0)
+            {
+                User user = FunGameService.GetUser(pc);
+
+                int reduce = useMaterials > 0 && useMaterials > 10 ? (int)useMaterials : 10;
+                
+                if (reduce % 10 != 0 && reduce > reduce % 10)
+                {
+                    reduce -= reduce % 10;
+                }
+                else
+                {
+                    return NetworkUtility.JsonSerialize($"你的{General.GameplayEquilibriumConstant.InGameMaterial}不足 {reduce}，兑换失败！");
+                }
+                if (user.Inventory.Materials >= reduce)
+                {
+                    int reward = reduce / 10 * 2000;
+                    user.Inventory.Credits += reward;
+                    user.Inventory.Materials -= reduce;
+                    pc.Add("user", user);
+                    pc.SaveConfig();
+                    return NetworkUtility.JsonSerialize($"兑换成功！你消耗了 {reduce} {General.GameplayEquilibriumConstant.InGameMaterial}，增加了 {reward} {General.GameplayEquilibriumConstant.InGameCurrency}！");
+                }
+                else
+                {
+                    return NetworkUtility.JsonSerialize($"你的{General.GameplayEquilibriumConstant.InGameMaterial}不足 {reduce}，兑换失败！");
+                }
+            }
+            else
+            {
+                return NetworkUtility.JsonSerialize(noSaved);
+            }
+        }
+        
+        [HttpPost("cckjs")]
+        public string GetCharacterInfoFromInventory([FromQuery] long? qq = null, [FromQuery] int? index = null)
+        {
+            long userid = qq ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
+            int itemIndex = index ?? 0;
+
+            PluginConfig pc = new("saved", userid.ToString());
+            pc.LoadConfig();
+
+            if (pc.Count > 0)
+            {
+                User user = FunGameService.GetUser(pc);
+
+                if (itemIndex > 0 && itemIndex <= user.Inventory.Characters.Count)
+                {
+                    Character character = user.Inventory.Characters.ToList()[itemIndex - 1];
+                    return NetworkUtility.JsonSerialize($"这是你库存中序号为 {itemIndex} 的角色详细信息：\r\n{character.GetInfo().Trim()}");
+                }
+                else
+                {
+                    return NetworkUtility.JsonSerialize($"没有找到与这个序号相对应的角色！");
+                }
+            }
+            else
+            {
+                return NetworkUtility.JsonSerialize(noSaved);
+            }
+        }
+        
+        [HttpPost("cckwp")]
+        public string GetItemInfoFromInventory([FromQuery] long? qq = null, [FromQuery] int? index = null)
+        {
+            long userid = qq ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
+            int itemIndex = index ?? 0;
+
+            PluginConfig pc = new("saved", userid.ToString());
+            pc.LoadConfig();
+
+            if (pc.Count > 0)
+            {
+                User user = FunGameService.GetUser(pc);
+
+                if (itemIndex > 0 && itemIndex <= user.Inventory.Items.Count)
+                {
+                    Item item = user.Inventory.Items.ToList()[itemIndex - 1];
+                    return NetworkUtility.JsonSerialize($"这是你库存中序号为 {itemIndex} 的物品详细信息：\r\n{item.ToStringInventory(true).Trim()}");
+                }
+                else
+                {
+                    return NetworkUtility.JsonSerialize($"没有找到与这个序号相对应的物品！");
                 }
             }
             else

@@ -50,6 +50,7 @@ namespace Oshima.FunGame.OshimaModules.Skills
             if (enemy == Skill.Character && damageResult != DamageResult.Evaded)
             {
                 WriteLine($"[ {enemy} ] 发动了绝对领域，巧妙的化解了此伤害！");
+                isEvaded = true;
                 return 0;
             }
             return 0;
