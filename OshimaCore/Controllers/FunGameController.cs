@@ -259,7 +259,7 @@ namespace Oshima.Core.Controllers
             }
             return NetworkUtility.JsonSerialize("");
         }
-        
+
         [HttpGet("cwp")]
         public string GetItemInfo([FromQuery] long? id = null)
         {
@@ -278,14 +278,14 @@ namespace Oshima.Core.Controllers
             }
             return NetworkUtility.JsonSerialize("");
         }
-        
+
         [HttpGet("mfk")]
         public string GenerateMagicCard()
         {
             Item i = FunGameService.GenerateMagicCard();
             return NetworkUtility.JsonSerialize(i.ToString(false, true));
         }
-        
+
         [HttpGet("mfkb")]
         public string GenerateMagicCardPack()
         {
@@ -319,7 +319,7 @@ namespace Oshima.Core.Controllers
                 return NetworkUtility.JsonSerialize("你已经创建过存档！");
             }
         }
-        
+
         [HttpPost("ckkc")]
         public string GetInventoryInfo([FromQuery] long? qq = null)
         {
@@ -339,7 +339,7 @@ namespace Oshima.Core.Controllers
                 return NetworkUtility.JsonSerialize(noSaved);
             }
         }
-        
+
         [HttpPost("ckkc2")]
         public List<string> GetInventoryInfo2([FromQuery] long? qq = null, [FromQuery] int? page = null)
         {
@@ -414,7 +414,7 @@ namespace Oshima.Core.Controllers
             }
             return list;
         }
-        
+
         [HttpPost("ckkc3")]
         public List<string> GetInventoryInfo3([FromQuery] long? qq = null, [FromQuery] int? page = null, [FromQuery] int? order = null, [FromQuery] int? orderqty = null)
         {
@@ -540,7 +540,7 @@ namespace Oshima.Core.Controllers
                 return NetworkUtility.JsonSerialize(noSaved);
             }
         }
-        
+
         [HttpPost("ck10")]
         public List<string> DrawCards([FromQuery] long? qq = null)
         {
@@ -629,7 +629,7 @@ namespace Oshima.Core.Controllers
                 return NetworkUtility.JsonSerialize(noSaved);
             }
         }
-        
+
         [HttpPost("clck10")]
         public List<string> DrawCards_Material([FromQuery] long? qq = null)
         {
@@ -691,7 +691,7 @@ namespace Oshima.Core.Controllers
                 User user = FunGameService.GetUser(pc);
 
                 int reduce = useMaterials > 0 && useMaterials > 10 ? (int)useMaterials : 10;
-                
+
                 if (reduce % 10 != 0 && reduce > reduce % 10)
                 {
                     reduce -= reduce % 10;
@@ -719,67 +719,81 @@ namespace Oshima.Core.Controllers
                 return NetworkUtility.JsonSerialize(noSaved);
             }
         }
-        
+
         [HttpPost("cckjs")]
-        public string GetCharacterInfoFromInventory([FromQuery] long? qq = null, [FromQuery] int? index = null)
+        public string GetCharacterInfoFromInventory([FromQuery] long? qq = null, [FromQuery] int? seq = null)
         {
-            long userid = qq ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
-            int itemIndex = index ?? 0;
-
-            PluginConfig pc = new("saved", userid.ToString());
-            pc.LoadConfig();
-
-            if (pc.Count > 0)
+            try
             {
-                User user = FunGameService.GetUser(pc);
+                long userid = qq ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
+                int cIndex = seq ?? 0;
 
-                if (itemIndex > 0 && itemIndex <= user.Inventory.Characters.Count)
+                PluginConfig pc = new("saved", userid.ToString());
+                pc.LoadConfig();
+
+                if (pc.Count > 0)
                 {
-                    Character character = user.Inventory.Characters.ToList()[itemIndex - 1];
-                    return NetworkUtility.JsonSerialize($"这是你库存中序号为 {itemIndex} 的角色详细信息：\r\n{character.GetInfo().Trim()}");
+                    User user = FunGameService.GetUser(pc);
+
+                    if (cIndex > 0 && cIndex <= user.Inventory.Characters.Count)
+                    {
+                        Character character = user.Inventory.Characters.ToList()[cIndex - 1];
+                        return NetworkUtility.JsonSerialize($"这是你库存中序号为 {cIndex} 的角色详细信息：\r\n{character.GetInfo().Trim()}");
+                    }
+                    else
+                    {
+                        return NetworkUtility.JsonSerialize($"没有找到与这个序号相对应的角色！");
+                    }
                 }
                 else
                 {
-                    return NetworkUtility.JsonSerialize($"没有找到与这个序号相对应的角色！");
+                    return NetworkUtility.JsonSerialize(noSaved);
                 }
             }
-            else
+            catch (Exception e)
             {
-                return NetworkUtility.JsonSerialize(noSaved);
+                return NetworkUtility.JsonSerialize(e.ToString());
             }
         }
-        
+
         [HttpPost("cckwp")]
-        public string GetItemInfoFromInventory([FromQuery] long? qq = null, [FromQuery] int? index = null)
+        public string GetItemInfoFromInventory([FromQuery] long? qq = null, [FromQuery] int? seq = null)
         {
-            long userid = qq ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
-            int itemIndex = index ?? 0;
-
-            PluginConfig pc = new("saved", userid.ToString());
-            pc.LoadConfig();
-
-            if (pc.Count > 0)
+            try
             {
-                User user = FunGameService.GetUser(pc);
+                long userid = qq ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
+                int itemIndex = seq ?? 0;
 
-                if (itemIndex > 0 && itemIndex <= user.Inventory.Items.Count)
+                PluginConfig pc = new("saved", userid.ToString());
+                pc.LoadConfig();
+
+                if (pc.Count > 0)
                 {
-                    Item item = user.Inventory.Items.ToList()[itemIndex - 1];
-                    return NetworkUtility.JsonSerialize($"这是你库存中序号为 {itemIndex} 的物品详细信息：\r\n{item.ToStringInventory(true).Trim()}");
+                    User user = FunGameService.GetUser(pc);
+
+                    if (itemIndex > 0 && itemIndex <= user.Inventory.Items.Count)
+                    {
+                        Item item = user.Inventory.Items.ToList()[itemIndex - 1];
+                        return NetworkUtility.JsonSerialize($"这是你库存中序号为 {itemIndex} 的物品详细信息：\r\n{item.ToStringInventory(true).Trim()}");
+                    }
+                    else
+                    {
+                        return NetworkUtility.JsonSerialize($"没有找到与这个序号相对应的物品！");
+                    }
                 }
                 else
                 {
-                    return NetworkUtility.JsonSerialize($"没有找到与这个序号相对应的物品！");
+                    return NetworkUtility.JsonSerialize(noSaved);
                 }
             }
-            else
+            catch (Exception e)
             {
-                return NetworkUtility.JsonSerialize(noSaved);
+                return NetworkUtility.JsonSerialize(e.ToString());
             }
         }
 
         [HttpGet("reload")]
-        public string Relaod([FromQuery] long? master  = null)
+        public string Relaod([FromQuery] long? master = null)
         {
             if (master != null && master == GeneralSettings.Master)
             {
