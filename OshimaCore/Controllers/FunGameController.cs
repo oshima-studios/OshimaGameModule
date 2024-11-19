@@ -690,17 +690,9 @@ namespace Oshima.Core.Controllers
             {
                 User user = FunGameService.GetUser(pc);
 
-                int reduce = useMaterials > 0 && useMaterials > 10 ? (int)useMaterials : 10;
-
-                if (reduce % 10 != 0 && reduce > reduce % 10)
-                {
-                    reduce -= reduce % 10;
-                }
-                else
-                {
-                    return NetworkUtility.JsonSerialize($"ÄãµÄ{General.GameplayEquilibriumConstant.InGameMaterial}²»×ã {reduce}£¬¶Ò»»Ê§°Ü£¡");
-                }
-                if (user.Inventory.Materials >= reduce)
+                int reduce = (int)useMaterials >= 10 ? (int)useMaterials : 10;
+                reduce -= reduce % 10;
+                if (reduce >= 10 && user.Inventory.Materials >= reduce)
                 {
                     int reward = reduce / 10 * 2000;
                     user.Inventory.Credits += reward;
@@ -711,7 +703,7 @@ namespace Oshima.Core.Controllers
                 }
                 else
                 {
-                    return NetworkUtility.JsonSerialize($"ÄãµÄ{General.GameplayEquilibriumConstant.InGameMaterial}²»×ã {reduce}£¬¶Ò»»Ê§°Ü£¡");
+                    return NetworkUtility.JsonSerialize($"ÄãµÄ{General.GameplayEquilibriumConstant.InGameMaterial}²»×ã {reduce}£¬×îµÍÏûºÄ 10 {General.GameplayEquilibriumConstant.InGameMaterial}¶Ò»» 2000 {General.GameplayEquilibriumConstant.InGameCurrency}£¡");
                 }
             }
             else

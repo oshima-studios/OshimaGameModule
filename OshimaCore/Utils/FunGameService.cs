@@ -41,7 +41,8 @@ namespace Oshima.Core.Utils
 
             Skills.AddRange([new 疾风步()]);
 
-            Magics.AddRange([new 冰霜攻击(), new 火之矢(), new 水之矢(), new 风之轮(), new 石之锤(), new 心灵之霞(), new 次元上升(), new 暗物质(), new 回复术(), new 治愈术()]);
+            Magics.AddRange([new 冰霜攻击(), new 火之矢(), new 水之矢(), new 风之轮(), new 石之锤(), new 心灵之霞(), new 次元上升(), new 暗物质(), new 回复术(), new 治愈术(),
+                new 时间加速(), new 时间减速()]);
         }
 
         public static List<Item> GenerateMagicCards(int count, QualityType? qualityType = null)
@@ -554,6 +555,7 @@ namespace Oshima.Core.Utils
                     break;
 
                 case 6:
+                    if ((int)type > (int)QualityType.Orange) type = QualityType.Orange;
                     Item mfk = GenerateMagicCard(type);
                     SetSellAndTradeTime(mfk);
                     user.Inventory.Items.Add(mfk);
@@ -562,6 +564,7 @@ namespace Oshima.Core.Utils
 
                 case 0:
                 default:
+                    if ((int)type > (int)QualityType.Orange) type = QualityType.Orange;
                     Item? mfkb = GenerateMagicCardPack(3, type);
                     if (mfkb != null)
                     {
