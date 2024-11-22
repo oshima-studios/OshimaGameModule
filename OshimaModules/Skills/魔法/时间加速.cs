@@ -18,11 +18,9 @@ namespace Oshima.FunGame.OshimaModules.Skills
         public override bool CanSelectTeammate => true;
         public override int CanSelectTargetCount => 1;
 
-        private double SPD => Level > 0 ? 65 + 25 * (Level - 1) : 65;
-
         public 时间加速(Character? character = null) : base(SkillType.Magic, character)
         {
-            Effects.Add(new 提升友方行动速度(this, SPD));
+            Effects.Add(new 提升友方行动速度(this, 65, 25));
         }
     }
 }

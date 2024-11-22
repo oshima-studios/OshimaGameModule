@@ -14,11 +14,9 @@ namespace Oshima.FunGame.OshimaModules.Skills
         public override double CastTime => Level > 0 ? 7 + (1.5 * (Level - 1)) : 7;
         public override double HardnessTime { get; set; } = 8;
 
-        private double SPD => Level > 0 ? 30 + 20 * (Level - 1) : 30;
-
         public 时间减速(Character? character = null) : base(SkillType.Magic, character)
         {
-            Effects.Add(new 降低敌方行动速度(this, SPD));
+            Effects.Add(new 降低敌方行动速度(this, 30, 20));
         }
     }
 }
