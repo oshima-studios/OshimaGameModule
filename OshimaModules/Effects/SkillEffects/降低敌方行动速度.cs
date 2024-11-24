@@ -7,7 +7,7 @@ namespace Oshima.FunGame.OshimaModules.Effects.SkillEffects
     {
         public override long Id => Skill.Id;
         public override string Name => Skill.Name;
-        public override string Description => $"降低目标{(Skill.CanSelectTargetCount > 1 ? $"至多 {Skill.CanSelectTargetCount} 个" : "")}敌人 {Math.Abs(SPD):0.##} 点行动速度。";
+        public override string Description => $"降低目标{(Skill.CanSelectTargetCount > 1 ? $"至多 {Skill.CanSelectTargetCount} 个" : "")}敌人 {Math.Abs(SPD):0.##} 点行动速度 {持续时间}。";
 
         private double SPD => Level > 0 ? -Math.Abs(基础数值速度 + 基础速度等级成长 * (Level - 1)) : -Math.Abs(基础数值速度);
         private double 基础数值速度 { get; set; } = 30;

@@ -42,7 +42,7 @@ namespace Oshima.Core.Utils
             Skills.AddRange([new 疾风步()]);
 
             Magics.AddRange([new 冰霜攻击(), new 火之矢(), new 水之矢(), new 风之轮(), new 石之锤(), new 心灵之霞(), new 次元上升(), new 暗物质(), new 回复术(), new 治愈术(),
-                new 时间加速(), new 时间减速()]);
+                new 时间加速(), new 时间减速(), new 沉默十字(), new 反魔法领域()]);
         }
 
         public static List<Item> GenerateMagicCards(int count, QualityType? qualityType = null)

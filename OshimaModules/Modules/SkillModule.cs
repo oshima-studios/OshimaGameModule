@@ -40,6 +40,8 @@ namespace Oshima.FunGame.OshimaModules
                     (long)MagicID.治愈术 => new 治愈术(),
                     (long)MagicID.时间加速 => new 时间加速(),
                     (long)MagicID.时间减速 => new 时间减速(),
+                    (long)MagicID.沉默十字 => new 沉默十字(),
+                    (long)MagicID.反魔法领域 => new 反魔法领域(),
                     (long)SkillID.疾风步 => new 疾风步(),
                     (long)SuperSkillID.力量爆发 => new 力量爆发(),
                     (long)SuperSkillID.天赐之力 => new 天赐之力(),
