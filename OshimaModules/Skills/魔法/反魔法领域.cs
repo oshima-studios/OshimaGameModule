@@ -10,14 +10,10 @@ namespace Oshima.FunGame.OshimaModules.Skills
         public override string Name => "反魔法领域";
         public override string Description => Effects.Count > 0 ? string.Join("\r\n", Effects.Select(e => e.Description)) : "";
         public override double MPCost => Level > 0 ? 85 + (80 * (Level - 1)) : 85;
-        public override double CD => Level > 0 ? 90 - (1.5 * (Level - 1)) : 75;
+        public override double CD => Level > 0 ? 90 - (2 * (Level - 1)) : 75;
         public override double CastTime => Level > 0 ? 15 + (1 * (Level - 1)) : 15;
         public override double HardnessTime { get; set; } = 10;
-
-        public override List<Character> SelectTargets(Character caster, List<Character> enemys, List<Character> teammates)
-        {
-            return [.. enemys];
-        }
+        public override int CanSelectTargetCount { get; set; } = 6;
 
         public 反魔法领域(Character? character = null) : base(SkillType.Magic, character)
         {
