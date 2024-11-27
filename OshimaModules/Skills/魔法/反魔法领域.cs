@@ -13,7 +13,22 @@ namespace Oshima.FunGame.OshimaModules.Skills
         public override double CD => Level > 0 ? 90 - (2 * (Level - 1)) : 75;
         public override double CastTime => Level > 0 ? 15 + (1 * (Level - 1)) : 15;
         public override double HardnessTime { get; set; } = 10;
-        public override int CanSelectTargetCount { get; set; } = 6;
+        public override int CanSelectTargetCount
+        {
+            get
+            {
+                return Level switch
+                {
+                    8 => 6,
+                    7 => 5,
+                    6 => 4,
+                    5 => 4,
+                    4 => 3,
+                    3 => 2,
+                    _ => 1
+                };
+            }
+        }
 
         public 反魔法领域(Character? character = null) : base(SkillType.Magic, character)
         {
