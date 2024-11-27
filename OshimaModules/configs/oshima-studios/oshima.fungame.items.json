@@ -2,7 +2,7 @@
   "黑暗之刃": {
     "Id": 11543,
     "Name": "黑暗之刃",
-    "Description": "增加 20 点攻击力。",
+    "Description": "增加角色 20 点攻击力。",
     "BackgroundStory": "传说中的黑暗之刃，蕴含邪恶力量。",
     "ItemType": 1,
     "WeaponType": 1,
@@ -28,7 +28,7 @@
   "烈焰长剑": {
     "Id": 11544,
     "Name": "烈焰长剑",
-    "Description": "增加 20 点攻击力。",
+    "Description": "增加角色 20 点攻击力。",
     "BackgroundStory": "火焰中锻造的长剑，散发着炙热气息。",
     "ItemType": 1,
     "WeaponType": 2,
@@ -54,7 +54,7 @@
   "银月弓": {
     "Id": 11545,
     "Name": "银月弓",
-    "Description": "增加 20 点攻击力。",
+    "Description": "增加角色 20 点攻击力。",
     "BackgroundStory": "由稀有银月材料制成，精准无比。",
     "ItemType": 1,
     "WeaponType": 3,
@@ -80,7 +80,7 @@
   "风暴步枪": {
     "Id": 11546,
     "Name": "风暴步枪",
-    "Description": "增加 20 点攻击力。",
+    "Description": "增加角色 20 点攻击力。",
     "BackgroundStory": "捕捉风暴之力的武器，射速惊人。",
     "ItemType": 1,
     "WeaponType": 5,
@@ -106,7 +106,7 @@
   "幽灵拳套": {
     "Id": 11547,
     "Name": "幽灵拳套",
-    "Description": "增加 20 点攻击力。",
+    "Description": "增加角色 20 点攻击力。",
     "BackgroundStory": "无形的力量增强拳套，适合迅捷攻击。",
     "ItemType": 1,
     "WeaponType": 11,
@@ -132,7 +132,7 @@
   "雷霆之刃": {
     "Id": 11548,
     "Name": "雷霆之刃",
-    "Description": "增加 40 点攻击力。",
+    "Description": "增加角色 40 点攻击力。",
     "BackgroundStory": "蕴含雷霆之力的神秘之剑，斩击时带有雷电。",
     "ItemType": 1,
     "WeaponType": 1,
@@ -158,7 +158,7 @@
   "龙骨重剑": {
     "Id": 11549,
     "Name": "龙骨重剑",
-    "Description": "增加 40 点攻击力。",
+    "Description": "增加角色 40 点攻击力。",
     "BackgroundStory": "由远古龙骨锻造而成的巨剑，威力无比。",
     "ItemType": 1,
     "WeaponType": 2,
@@ -184,7 +184,7 @@
   "暗影弓": {
     "Id": 11550,
     "Name": "暗影弓",
-    "Description": "增加 40 点攻击力。",
+    "Description": "增加角色 40 点攻击力。",
     "BackgroundStory": "能够穿透黑暗的弓，适合隐匿射击。",
     "ItemType": 1,
     "WeaponType": 3,
@@ -210,7 +210,7 @@
   "赤焰手枪": {
     "Id": 11551,
     "Name": "赤焰手枪",
-    "Description": "增加 40 点攻击力。",
+    "Description": "增加角色 40 点攻击力。",
     "BackgroundStory": "能够发射赤焰的手枪，近距离威力极大。",
     "ItemType": 1,
     "WeaponType": 4,
@@ -236,7 +236,7 @@
   "苍穹法杖": {
     "Id": 11552,
     "Name": "苍穹法杖",
-    "Description": "增加 40 点攻击力。",
+    "Description": "增加角色 40 点攻击力。",
     "BackgroundStory": "据说能够召唤天空之力的法杖，拥有强大魔力。",
     "ItemType": 1,
     "WeaponType": 8,
@@ -262,7 +262,7 @@
   "炽炎剑": {
     "Id": 11553,
     "Name": "炽炎剑",
-    "Description": "增加 60 点攻击力。",
+    "Description": "增加角色 60 点攻击力。",
     "BackgroundStory": "这把剑燃烧着永恒的火焰，传说可以焚尽一切。",
     "ItemType": 1,
     "WeaponType": 1,
@@ -287,7 +287,7 @@
   "狂风弓": {
     "Id": 11554,
     "Name": "狂风弓",
-    "Description": "增加 60 点攻击力。",
+    "Description": "增加角色 60 点攻击力。",
     "BackgroundStory": "每次射击都能引发狂风，传说它由风神亲手打造。",
     "ItemType": 1,
     "WeaponType": 3,
@@ -312,7 +312,7 @@
   "破晓枪": {
     "Id": 11555,
     "Name": "破晓枪",
-    "Description": "增加 60 点攻击力。",
+    "Description": "增加角色 60 点攻击力。",
     "BackgroundStory": "在破晓时分，这把长枪能够穿透任何黑暗。",
     "ItemType": 1,
     "WeaponType": 9,
@@ -337,7 +337,7 @@
   "幽冥匕首": {
     "Id": 11556,
     "Name": "幽冥匕首",
-    "Description": "增加 60 点攻击力。",
+    "Description": "增加角色 60 点攻击力。",
     "BackgroundStory": "这对匕首闪烁着死亡的光芒，专为刺客所用。",
     "ItemType": 1,
     "WeaponType": 6,
@@ -362,7 +362,7 @@
   "天雷杖": {
     "Id": 11557,
     "Name": "天雷杖",
-    "Description": "增加 60 点攻击力。",
+    "Description": "增加角色 60 点攻击力。",
     "BackgroundStory": "召唤天雷的法杖，拥有毁天灭地的力量。",
     "ItemType": 1,
     "WeaponType": 8,
@@ -387,7 +387,7 @@
   "飞雷剑": {
     "Id": 11558,
     "Name": "飞雷剑",
-    "Description": "增加 80 点攻击力。",
+    "Description": "增加角色 80 点攻击力。",
     "BackgroundStory": "此剑驾驭飞雷之力，能引发猛烈的雷击。",
     "ItemType": 1,
     "WeaponType": 1,
@@ -412,7 +412,7 @@
   "烈焰法杖": {
     "Id": 11559,
     "Name": "烈焰法杖",
-    "Description": "增加 80 点攻击力。",
+    "Description": "增加角色 80 点攻击力。",
     "BackgroundStory": "法杖中燃烧着不灭的火焰，象征着无尽的力量。",
     "ItemType": 1,
     "WeaponType": 8,
@@ -437,7 +437,7 @@
   "龙骨枪": {
     "Id": 11560,
     "Name": "龙骨枪",
-    "Description": "增加 80 点攻击力。",
+    "Description": "增加角色 80 点攻击力。",
     "BackgroundStory": "由远古龙骨制成的长柄武器，坚不可摧。",
     "ItemType": 1,
     "WeaponType": 9,
@@ -462,7 +462,7 @@
   "疾风双刀": {
     "Id": 11561,
     "Name": "疾风双刀",
-    "Description": "增加 80 点攻击力。",
+    "Description": "增加角色 80 点攻击力。",
     "BackgroundStory": "双持短刀，速度如疾风般迅捷。",
     "ItemType": 1,
     "WeaponType": 6,
@@ -487,7 +487,7 @@
   "冰晶手枪": {
     "Id": 11562,
     "Name": "冰晶手枪",
-    "Description": "增加 80 点攻击力。",
+    "Description": "增加角色 80 点攻击力。",
     "BackgroundStory": "由冰晶打造的手枪，子弹带有极寒之力。",
     "ItemType": 1,
     "WeaponType": 4,
@@ -511,7 +511,7 @@
   },
   "影刃": {
     "Id": 11563,
-    "Description": "增加 105 点攻击力。",
+    "Description": "增加角色 105 点攻击力。",
     "Name": "影刃",
     "BackgroundStory": "藏于黑暗中的锋利刀刃，只在敌人未察觉时现身。",
     "ItemType": 1,
@@ -537,7 +537,7 @@
   "寒霜之弓": {
     "Id": 11564,
     "Name": "寒霜之弓",
-    "Description": "增加 105 点攻击力。",
+    "Description": "增加角色 105 点攻击力。",
     "BackgroundStory": "弓弦上凝聚寒霜，箭矢能冻结一切。",
     "ItemType": 1,
     "WeaponType": 3,
@@ -562,7 +562,7 @@
   "雷鸣战斧": {
     "Id": 11565,
     "Name": "雷鸣战斧",
-    "Description": "增加 105 点攻击力。",
+    "Description": "增加角色 105 点攻击力。",
     "BackgroundStory": "携带雷电之力的巨斧，一击之下，雷声轰鸣。",
     "ItemType": 1,
     "WeaponType": 2,
@@ -587,7 +587,7 @@
   "狂怒拳套": {
     "Id": 11566,
     "Name": "狂怒拳套",
-    "Description": "增加 105 点攻击力。",
+    "Description": "增加角色 105 点攻击力。",
     "BackgroundStory": "拳套内的力量能激发佩戴者的狂怒，造成大量伤害。",
     "ItemType": 1,
     "WeaponType": 10,
@@ -612,7 +612,7 @@
   "星辰法器": {
     "Id": 11567,
     "Name": "星辰法器",
-    "Description": "增加 105 点攻击力。",
+    "Description": "增加角色 105 点攻击力。",
     "BackgroundStory": "法器中蕴含着星辰之力，每一次攻击都如天外陨石降临。",
     "ItemType": 1,
     "WeaponType": 7,
@@ -637,7 +637,7 @@
   "初级法袍": {
     "Id": 12501,
     "Name": "初级法袍",
-    "Description": "增加 10% 魔法抗性。",
+    "Description": "增加角色 10% 魔法抗性。",
     "BackgroundStory": "可以不穿，不能没有。",
     "ItemType": 2,
     "WeaponType": 0,
@@ -663,7 +663,7 @@
   "高中校服": {
     "Id": 12502,
     "Name": "高中校服",
-    "Description": "增加 20 点物理护甲。",
+    "Description": "增加角色 20 点物理护甲。",
     "BackgroundStory": "珍藏的回忆。",
     "ItemType": 2,
     "WeaponType": 0,
@@ -713,7 +713,7 @@
   "魔能法袍": {
     "Id": 12504,
     "Name": "魔能法袍",
-    "Description": "增加 15 点智力和 20% 魔法抗性。",
+    "Description": "增加角色 15 点智力和 20% 魔法抗性。",
     "BackgroundStory": "法袍蕴含着神秘的魔力，穿戴者能增强魔法威力。",
     "ItemType": 2,
     "WeaponType": 0,
@@ -743,7 +743,7 @@
   "炼狱战铠": {
     "Id": 12505,
     "Name": "炼狱战铠",
-    "Description": "增加 40 点物理护甲，增加 10 点每时间生命回复。",
+    "Description": "增加角色 40 点物理护甲，增加角色 10 点每时间生命回复。",
     "BackgroundStory": "在无尽战火中锻造而成，具有极高的防御力。",
     "ItemType": 2,
     "WeaponType": 0,
@@ -772,7 +772,7 @@
   "幽影斗篷": {
     "Id": 12506,
     "Name": "幽影斗篷",
-    "Description": "增加 30 点物理护甲和 8% 闪避率。",
+    "Description": "增加角色 30 点物理护甲和 8% 闪避率。",
     "BackgroundStory": "黑暗中编织而成的斗篷，能让穿戴者更加敏捷。",
     "ItemType": 2,
     "WeaponType": 0,
@@ -801,7 +801,7 @@
   "帆布鞋": {
     "Id": 13501,
     "Name": "帆布鞋",
-    "Description": "增加 30 点行动速度。",
+    "Description": "增加角色 30 点行动速度。",
     "BackgroundStory": "一如年少模样。",
     "ItemType": 3,
     "WeaponType": 0,
@@ -826,7 +826,7 @@
   "疾风靴": {
     "Id": 13502,
     "Name": "疾风靴",
-    "Description": "增加 65 点行动速度，使穿戴者行动更加敏捷。",
+    "Description": "增加角色 65 点行动速度，使穿戴者行动更加敏捷。",
     "BackgroundStory": "这双靴子由风元素加持，步伐轻盈如风。",
     "ItemType": 3,
     "WeaponType": 0,
@@ -851,7 +851,7 @@
   "轻灵之鞋": {
     "Id": 13503,
     "Name": "轻灵之鞋",
-    "Description": "增加 45 点行动速度，并提高 10% 闪避率。",
+    "Description": "增加角色 45 点行动速度，并提高 10% 闪避率。",
     "BackgroundStory": "传说这双鞋能让穿戴者的步伐鬼魅般飘忽不定。",
     "ItemType": 3,
     "WeaponType": 0,
@@ -880,7 +880,7 @@
   "雷电靴": {
     "Id": 13504,
     "Name": "雷电靴",
-    "Description": "增加 45 点行动速度，并提高 10% 冷却缩减。",
+    "Description": "增加角色 45 点行动速度，并提高 10% 冷却缩减。",
     "BackgroundStory": "这双靴子蕴含雷电之力，使穿戴者快速出击。",
     "ItemType": 3,
     "WeaponType": 0,
@@ -909,7 +909,7 @@
   "暗影之靴": {
     "Id": 13505,
     "Name": "暗影之靴",
-    "Description": "增加 38 点行动速度，并提高 8% 暴击率。",
+    "Description": "增加角色 38 点行动速度，并提高 8% 暴击率。",
     "BackgroundStory": "这双鞋在黑暗中隐藏，赋予穿戴者暗影的力量。",
     "ItemType": 3,
     "WeaponType": 0,
@@ -938,7 +938,7 @@
   "守护吊坠": {
     "Id": 14501,
     "Name": "守护吊坠",
-    "Description": "增加 3 点所有力量、敏捷、智力。",
+    "Description": "增加角色 3 点所有力量、敏捷、智力。",
     "BackgroundStory": "带着一丝丝念想。",
     "ItemType": 4,
     "WeaponType": 0,
@@ -971,7 +971,7 @@
   "富贵头冠": {
     "Id": 14502,
     "Name": "富贵头冠",
-    "Description": "增加 170 点最大生命值和 80 点最大魔法值。",
+    "Description": "增加角色 170 点最大生命值和 80 点最大魔法值。",
     "BackgroundStory": "辉煌华贵的头冠。",
     "ItemType": 4,
     "WeaponType": 0,
@@ -1000,7 +1000,7 @@
   "黄金挂坠": {
     "Id": 14503,
     "Name": "黄金挂坠",
-    "Description": "增加 300 点最大生命值。",
+    "Description": "增加角色 300 点最大生命值。",
     "BackgroundStory": "珍贵稀有的黄金挂件，象征财富与荣耀的护身符。",
     "ItemType": 4,
     "WeaponType": 0,
@@ -1025,7 +1025,7 @@
   "辉煌光环": {
     "Id": 14504,
     "Name": "辉煌光环",
-    "Description": "增加 170 点最大魔法值和 6 点每时间魔法回复。",
+    "Description": "增加角色 170 点最大魔法值和 6 点每时间魔法回复。",
     "BackgroundStory": "流光溢彩的光环。",
     "ItemType": 4,
     "WeaponType": 0,
@@ -1054,7 +1054,7 @@
   "银质手环": {
     "Id": 14505,
     "Name": "银质手环",
-    "Description": "提升 6 点所有力量、敏捷、智力。",
+    "Description": "增加角色 6 点所有力量、敏捷、智力。",
     "BackgroundStory": "素雅精致的银质手环。",
     "ItemType": 4,
     "WeaponType": 0,
@@ -1087,7 +1087,7 @@
   "星辉护符": {
     "Id": 14506,
     "Name": "星辉护符",
-    "Description": "提升 15 点智力，提升暴击伤害 12%。",
+    "Description": "增加角色 15 点智力，提升暴击伤害 12%。",
     "BackgroundStory": "护符上镶嵌着神秘的星辉宝石，传说能提升佩戴者的法术威力。",
     "ItemType": 4,
     "WeaponType": 0,
@@ -1116,7 +1116,7 @@
   "雷鸣之戒": {
     "Id": 14507,
     "Name": "雷鸣之戒",
-    "Description": "增加 12 点力量和 8% 暴击率。",
+    "Description": "增加角色 12 点力量和 8% 暴击率。",
     "BackgroundStory": "戒指中流淌着雷电的力量，增强佩戴者的战斗威力。",
     "ItemType": 4,
     "WeaponType": 0,
@@ -1145,7 +1145,7 @@
   "精灵之戒": {
     "Id": 14508,
     "Name": "精灵之戒",
-    "Description": "提升 10 每时间魔法回复，并增加 8 点智力。",
+    "Description": "增加角色 10 每时间魔法回复，并增加角色 8 点智力。",
     "BackgroundStory": "这枚戒指由精灵制成，能够帮助法师更快地恢复法力。",
     "ItemType": 4,
     "WeaponType": 0,
@@ -1174,7 +1174,7 @@
   "暗影项链": {
     "Id": 14509,
     "Name": "暗影项链",
-    "Description": "增加 20 点敏捷和 20 点行动速度。",
+    "Description": "增加角色 20 点敏捷和 20 点行动速度。",
     "BackgroundStory": "项链蕴含着黑暗的力量，让佩戴者更具敏捷性。",
     "ItemType": 4,
     "WeaponType": 0,
@@ -1203,7 +1203,7 @@
   "YukiのCalfSocks": {
     "Id": 14510,
     "Name": "YukiのCalfSocks",
-    "Description": "增加 15% 暴击率和 30% 暴击伤害。",
+    "Description": "增加角色 15% 暴击率和 30% 暴击伤害。",
     "BackgroundStory": "小雪的小腿袜，拥有神秘的力量，令人神往。",
     "ItemType": 4,
     "WeaponType": 0,
@@ -1232,7 +1232,7 @@
   "诺尔希的现代汉语字典": {
     "Id": 14511,
     "Name": "诺尔希的现代汉语字典",
-    "Description": "增加 15% 攻击力和 8% 物理护甲。",
+    "Description": "增加角色 15% 攻击力和 8% 物理护甲。",
     "BackgroundStory": "懂又不懂。",
     "ItemType": 4,
     "WeaponType": 0,
@@ -1261,7 +1261,7 @@
   "金刚石": {
     "Id": 14512,
     "Name": "金刚石",
-    "Description": "增加 10% 最大生命值。",
+    "Description": "增加角色 10% 最大生命值。",
     "BackgroundStory": "罕见宝石，蕴含不可动摇的坚韧之力。",
     "ItemType": 4,
     "WeaponType": 0,
@@ -1286,7 +1286,7 @@
   "路人哥的cos服": {
     "Id": 14513,
     "Name": "路人哥的cos服",
-    "Description": "增加 10% 攻击力，增加 15% 魔法抗性，但是会减少 8% 物理伤害减免。",
+    "Description": "增加角色 10% 攻击力，增加角色 15% 魔法抗性，但是会减少 8% 物理伤害减免。",
     "BackgroundStory": "一套神秘的服饰，据说穿上后会引发未知的力量变化。",
     "ItemType": 4,
     "WeaponType": 0,

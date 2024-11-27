@@ -9,9 +9,40 @@ namespace Oshima.FunGame.OshimaModules.Skills
         public override long Id => (long)MagicID.反魔法领域;
         public override string Name => "反魔法领域";
         public override string Description => Effects.Count > 0 ? string.Join("\r\n", Effects.Select(e => e.Description)) : "";
-        public override double MPCost => Level > 0 ? 85 + (80 * (Level - 1)) : 85;
+        public override double MPCost
+        {
+            get
+            {
+                return Level switch
+                {
+                    8 => 魔法消耗基础 + 7 * 魔法消耗等级成长,
+                    7 => 魔法消耗基础 + 5 * 魔法消耗等级成长,
+                    6 => 魔法消耗基础 + 5 * 魔法消耗等级成长,
+                    5 => 魔法消耗基础 + 4 * 魔法消耗等级成长,
+                    4 => 魔法消耗基础 + 3 * 魔法消耗等级成长,
+                    3 => 魔法消耗基础 + 2 * 魔法消耗等级成长,
+                    _ => 魔法消耗基础
+                };
+            }
+        }
         public override double CD => Level > 0 ? 90 - (2 * (Level - 1)) : 75;
-        public override double CastTime => Level > 0 ? 15 + (1 * (Level - 1)) : 15;
+        public override double CastTime
+        {
+            get
+            {
+                return Level switch
+                {
+                    8 => 20,
+                    7 => 18,
+                    6 => 14,
+                    5 => 16,
+                    4 => 14,
+                    3 => 12,
+                    2 => 8,
+                    _ => 10
+                };
+            }
+        }
         public override double HardnessTime { get; set; } = 10;
         public override int CanSelectTargetCount
         {
@@ -29,10 +60,12 @@ namespace Oshima.FunGame.OshimaModules.Skills
                 };
             }
         }
+        private double 魔法消耗基础 { get; set; } = 85;
+        private double 魔法消耗等级成长 { get; set; } = 80;
 
         public 反魔法领域(Character? character = null) : base(SkillType.Magic, character)
         {
-            Effects.Add(new 造成封技(this, true, 15, 0));
+            Effects.Add(new 造成封技(this, true, 15, 0, 1));
         }
     }
 }
