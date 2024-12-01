@@ -63,7 +63,7 @@ namespace Oshima.FunGame.OshimaModules
                     (long)PassiveID.致命打击 => new 致命打击(),
                     (long)PassiveID.毁灭之势 => new 毁灭之势(),
                     (long)PassiveID.枯竭打击 => new 枯竭打击(),
-                    (long)PassiveID.玻璃大炮 => new 玻璃大炮(),
+                    (long)PassiveID.破釜沉舟 => new 破釜沉舟(),
                     (long)PassiveID.累积之压 => new 累积之压(),
                     (long)PassiveID.敏捷之刃 => new 敏捷之刃(),
                     (long)PassiveID.弱者猎手 => new 弱者猎手(),

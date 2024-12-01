@@ -255,11 +255,11 @@ namespace Oshima.Core.Utils
 
                         if (c == character9)
                         {
-                            Skill 玻璃大炮 = new 玻璃大炮(c)
+                            Skill 破釜沉舟 = new 破釜沉舟(c)
                             {
                                 Level = 1
                             };
-                            c.Skills.Add(玻璃大炮);
+                            c.Skills.Add(破釜沉舟);
 
                             Skill 迅捷之势 = new 迅捷之势(c)
                             {

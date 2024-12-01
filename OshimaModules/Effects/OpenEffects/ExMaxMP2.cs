@@ -25,6 +25,13 @@ namespace Oshima.FunGame.OshimaModules.Effects.OpenEffects
             character.ExMP2 -= 实际加成;
         }
 
+        public override void OnAttributeChanged(Character character)
+        {
+            // 刷新加成
+            OnEffectLost(character);
+            OnEffectGained(character);
+        }
+
         public ExMaxMP2(Skill skill, Dictionary<string, object> args, Character? source = null) : base(skill, args)
         {
             GamingQueue = skill.GamingQueue;

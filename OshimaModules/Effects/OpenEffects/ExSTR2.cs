@@ -25,6 +25,13 @@ namespace Oshima.FunGame.OshimaModules.Effects.OpenEffects
             character.ExSTR -= 实际加成;
         }
 
+        public override void OnAttributeChanged(Character character)
+        {
+            // 刷新加成
+            OnEffectLost(character);
+            OnEffectGained(character);
+        }
+
         public ExSTR2(Skill skill, Dictionary<string, object> args, Character? source = null) : base(skill, args)
         {
             GamingQueue = skill.GamingQueue;
