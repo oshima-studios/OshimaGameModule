@@ -15,7 +15,7 @@ namespace Oshima.FunGame.OshimaModules.Skills
             Effects.Add(new 破釜沉舟特效(this));
             Effects.Add(new ExMaxHP2(this, new()
             {
-                { "exhp", -0.3 }
+                { "exhp", -0.2 }
             }));
         }
 
