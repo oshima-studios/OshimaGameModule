@@ -22,7 +22,7 @@ namespace Oshima.FunGame.OshimaModules.Effects.OpenEffects
 
         public override void OnEffectLost(Character character)
         {
-            character.ExHPPercentage -= 实际加成;
+            character.ExHPPercentage -= 加成比例;
         }
 
         public override void OnAttributeChanged(Character character)

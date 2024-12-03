@@ -35,7 +35,12 @@ namespace Oshima.FunGame.OshimaModules.Effects.SkillEffects
                 ExSPD e = new(Skill, new Dictionary<string, object>()
                 {
                     { "exspd", SPD }
-                }, caster);
+                }, caster)
+                {
+                    Durative = _durative,
+                    Duration = _duration,
+                    DurationTurn = _durationTurn
+                };
                 target.Effects.Add(e);
                 e.OnEffectGained(target);
                 GamingQueue?.LastRound.Effects.TryAdd(target, e.EffectType);
