@@ -110,10 +110,16 @@ namespace Oshima.Core.Utils
             magic.Level = (int)item.QualityType switch
             {
                 2 => 2,
+                3 => 2,
                 4 => 3,
+                5 => 3,
                 6 => 4,
                 _ => 1
             };
+            if (magic.Level > 1)
+            {
+                item.Name += $" +{magic.Level - 1}";
+            }
             item.Skills.Active = magic;
 
             // 初始化属性值
@@ -181,17 +187,12 @@ namespace Oshima.Core.Utils
             Skill skill = Factory.OpenFactory.GetInstance<Skill>(item.Id, item.Name, []);
             GenerateAndAddEffectsToMagicCard(skill, str, agi, intelligence);
 
-            if (magic.Level > 1)
-            {
-                item.Name += $" +{magic.Level - 1}";
-                magic.Name += $" +{magic.Level - 1}";
-            }
             skill.Level = 1;
             List<string> strings = [];
             if (str > 0) strings.Add($"{str:0.##} 点力量");
             if (agi > 0) strings.Add($"{agi:0.##} 点敏捷");
             if (intelligence > 0) strings.Add($"{intelligence:0.##} 点智力");
-            item.Description = $"包含魔法：{item.Skills.Active.Name}\r\n" +
+            item.Description = $"包含魔法：{item.Skills.Active.Name + (item.Skills.Active.Level > 1 ? $" +{item.Skills.Active.Level - 1}" : "")}\r\n" +
                 $"增加角色属性：{string.Join("，", strings)}";
             item.Skills.Passives.Add(skill);
         }

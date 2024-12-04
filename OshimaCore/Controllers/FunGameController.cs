@@ -783,6 +783,113 @@ namespace Oshima.Core.Controllers
                 return NetworkUtility.JsonSerialize(e.ToString());
             }
         }
+        
+        [HttpPost("zb")]
+        public string EquipItem([FromQuery] long? qq = null, [FromQuery] int? c = null, [FromQuery] int? i = null)
+        {
+            try
+            {
+                long userid = qq ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
+                int characterIndex = c ?? 0;
+                int itemIndex = i ?? 0;
+
+                PluginConfig pc = new("saved", userid.ToString());
+                pc.LoadConfig();
+
+                if (pc.Count > 0)
+                {
+                    User user = FunGameService.GetUser(pc);
+
+                    Character? character = null;
+                    Item? item = null;
+                    if (characterIndex > 0 && characterIndex <= user.Inventory.Characters.Count)
+                    {
+                        character = user.Inventory.Characters.ToList()[characterIndex - 1];
+                    }
+                    else
+                    {
+                        return NetworkUtility.JsonSerialize($"没有找到与这个序号相对应的角色！");
+                    }
+                    if (itemIndex > 0 && itemIndex <= user.Inventory.Items.Count)
+                    {
+                        item = user.Inventory.Items.ToList()[itemIndex - 1];
+                        if ((int)item.ItemType >= (int)ItemType.MagicCardPack && (int)item.ItemType <= (int)ItemType.Accessory && item.EquipSlotType == EquipSlotType.None)
+                        {
+                            // nothing
+                        }
+                        else
+                        {
+                            return NetworkUtility.JsonSerialize($"这个物品无法被装备！");
+                        }
+                    }
+                    else
+                    {
+                        return NetworkUtility.JsonSerialize($"没有找到与这个序号相对应的物品！");
+                    }
+                    if (character != null && item != null && character.Equip(item))
+                    {
+                        return NetworkUtility.JsonSerialize($"装备成功！");
+                    }
+                    else
+                    {
+                        return NetworkUtility.JsonSerialize($"装备失败！可能是角色、物品不存在或者其他原因。");
+                    }
+                }
+                else
+                {
+                    return NetworkUtility.JsonSerialize(noSaved);
+                }
+            }
+            catch (Exception e)
+            {
+                return NetworkUtility.JsonSerialize(e.ToString());
+            }
+        }
+        
+        [HttpPost("qxzb")]
+        public string UnEquipItem([FromQuery] long? qq = null, [FromQuery] int? c = null, [FromQuery] int? i = null)
+        {
+            try
+            {
+                long userid = qq ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
+                int characterIndex = c ?? 0;
+                EquipSlotType type = (EquipSlotType)(i ?? 0);
+
+                PluginConfig pc = new("saved", userid.ToString());
+                pc.LoadConfig();
+
+                if (pc.Count > 0)
+                {
+                    User user = FunGameService.GetUser(pc);
+
+                    Character? character = null;
+                    if (characterIndex > 0 && characterIndex <= user.Inventory.Characters.Count)
+                    {
+                        character = user.Inventory.Characters.ToList()[characterIndex - 1];
+                    }
+                    else
+                    {
+                        return NetworkUtility.JsonSerialize($"没有找到与这个序号相对应的角色！");
+                    }
+                    if (character != null && character.UnEquip(type) != null)
+                    {
+                        return NetworkUtility.JsonSerialize($"取消装备成功！");
+                    }
+                    else
+                    {
+                        return NetworkUtility.JsonSerialize($"取消装备失败！可能是角色、物品不存在或者其他原因。");
+                    }
+                }
+                else
+                {
+                    return NetworkUtility.JsonSerialize(noSaved);
+                }
+            }
+            catch (Exception e)
+            {
+                return NetworkUtility.JsonSerialize(e.ToString());
+            }
+        }
 
         [HttpGet("reload")]
         public string Relaod([FromQuery] long? master = null)

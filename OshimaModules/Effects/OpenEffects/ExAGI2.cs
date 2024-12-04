@@ -17,12 +17,12 @@ namespace Oshima.FunGame.OshimaModules.Effects.OpenEffects
         public override void OnEffectGained(Character character)
         {
             实际加成 = character.BaseAGI * 加成比例;
-            character.ExAGI += 实际加成;
+            character.ExAGIPercentage += 加成比例;
         }
 
         public override void OnEffectLost(Character character)
         {
-            character.ExAGI -= 实际加成;
+            character.ExAGIPercentage -= 加成比例;
         }
 
         public override void OnAttributeChanged(Character character)
