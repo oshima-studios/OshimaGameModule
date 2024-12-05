@@ -219,7 +219,7 @@ namespace Oshima.Core.Controllers
             }
         }
 
-        [HttpGet("cjs")]
+        [HttpGet("characterinfo")]
         public string GetCharacterInfo([FromQuery] int? id = null)
         {
             if (id != null && id > 0 && id <= FunGameService.Characters.Count)
@@ -234,7 +234,7 @@ namespace Oshima.Core.Controllers
             return NetworkUtility.JsonSerialize("");
         }
 
-        [HttpGet("cjn")]
+        [HttpGet("skillinfo")]
         public string GetSkillInfo([FromQuery] long? id = null)
         {
             IEnumerable<Skill> skills = FunGameService.Skills.Union(FunGameService.Magics);
@@ -260,7 +260,7 @@ namespace Oshima.Core.Controllers
             return NetworkUtility.JsonSerialize("");
         }
 
-        [HttpGet("cwp")]
+        [HttpGet("iteminfo")]
         public string GetItemInfo([FromQuery] long? id = null)
         {
             IEnumerable<Item> items = FunGameService.Equipment;
@@ -279,14 +279,14 @@ namespace Oshima.Core.Controllers
             return NetworkUtility.JsonSerialize("");
         }
 
-        [HttpGet("mfk")]
+        [HttpGet("newmagiccard")]
         public string GenerateMagicCard()
         {
             Item i = FunGameService.GenerateMagicCard();
             return NetworkUtility.JsonSerialize(i.ToString(false, true));
         }
 
-        [HttpGet("mfkb")]
+        [HttpGet("newmagiccardpack")]
         public string GenerateMagicCardPack()
         {
             Item? i = FunGameService.GenerateMagicCardPack(3);
@@ -297,7 +297,7 @@ namespace Oshima.Core.Controllers
             return NetworkUtility.JsonSerialize("");
         }
 
-        [HttpPost("cjcd")]
+        [HttpPost("createsaved")]
         public string CreateSaved([FromQuery] long? qq = null, [FromQuery] string? name = null)
         {
             long userid = qq ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
@@ -320,7 +320,7 @@ namespace Oshima.Core.Controllers
             }
         }
 
-        [HttpPost("ckkc")]
+        [HttpPost("inventoryinfo")]
         public string GetInventoryInfo([FromQuery] long? qq = null)
         {
             long userid = qq ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
@@ -340,7 +340,7 @@ namespace Oshima.Core.Controllers
             }
         }
 
-        [HttpPost("ckkc2")]
+        [HttpPost("inventoryinfo2")]
         public List<string> GetInventoryInfo2([FromQuery] long? qq = null, [FromQuery] int? page = null)
         {
             long userid = qq ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
@@ -361,6 +361,7 @@ namespace Oshima.Core.Controllers
                 List<Item> items = [.. user.Inventory.Items];
                 int total = characters.Count + items.Count;
                 int maxPage = (int)Math.Ceiling((double)total / 10);
+                if (maxPage < 1) maxPage = 1;
                 if (showPage <= maxPage)
                 {
                     List<object> inventory = [.. characters, .. items];
@@ -415,7 +416,7 @@ namespace Oshima.Core.Controllers
             return list;
         }
 
-        [HttpPost("ckkc3")]
+        [HttpPost("inventoryinfo3")]
         public List<string> GetInventoryInfo3([FromQuery] long? qq = null, [FromQuery] int? page = null, [FromQuery] int? order = null, [FromQuery] int? orderqty = null)
         {
             long userid = qq ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
@@ -471,6 +472,7 @@ namespace Oshima.Core.Controllers
                 }
 
                 int maxPage = (int)Math.Ceiling((double)itemCategory.Count / 10);
+                if (maxPage < 1) maxPage = 1;
                 if (showPage <= maxPage)
                 {
                     List<string> keys = [.. FunGameService.GetPage(itemCategory.Keys, showPage, 10)];
@@ -481,6 +483,83 @@ namespace Oshima.Core.Controllers
                         itemCount++;
                         List<Item> objs = itemCategory[key];
                         string str = $"{itemCount}. [{ItemSet.GetQualityTypeName(objs[0].QualityType)}|{ItemSet.GetItemTypeName(objs[0].ItemType)}] {objs[0].Name}\r\n";
+                        str += $"物品描述：{objs.First().Description}\r\n";
+                        str += $"物品序号：{string.Join("，", objs.Select(i => items.IndexOf(i) + 1))}\r\n";
+                        str += $"拥有数量：{objs.Count}（可出售数量：{objs.Count(i => i.IsSellable)}，可交易数量：{objs.Count(i => i.IsTradable)}）";
+                        list.Add(str);
+                    }
+                    list.Add($"页数：{showPage} / {maxPage}");
+                }
+                else
+                {
+                    list.Add($"没有这么多页！当前总页数为 {maxPage}，但你请求的是第 {showPage} 页。");
+                }
+            }
+            else
+            {
+                list.Add(noSaved);
+            }
+            return list;
+        }
+        
+        [HttpPost("inventoryinfo4")]
+        public List<string> GetInventoryInfo4([FromQuery] long? qq = null, [FromQuery] int? page = null, [FromQuery] int? type = null)
+        {
+            long userid = qq ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
+            int showPage = page ?? 1;
+            int itemtype = type ?? -1;
+            if (showPage <= 0) showPage = 1;
+
+            PluginConfig pc = new("saved", userid.ToString());
+            pc.LoadConfig();
+
+            List<string> list = [];
+            if (pc.Count > 0)
+            {
+                if (type == -1)
+                {
+                    return ["没有指定物品的类型，请使用通用查询方法！"];
+                }
+
+                User user = FunGameService.GetUser(pc);
+                list.Add($"☆★☆ {user.Inventory.Name} ☆★☆");
+                list.Add($"{General.GameplayEquilibriumConstant.InGameCurrency}：{user.Inventory.Credits:0.00}");
+                list.Add($"{General.GameplayEquilibriumConstant.InGameMaterial}：{user.Inventory.Materials:0.00}");
+                List<Item> items = [.. user.Inventory.Items];
+
+                Dictionary<string, List<Item>> itemCategory = [];
+                foreach (Item item in items)
+                {
+                    if (!itemCategory.TryAdd(item.GetIdName(), [item]))
+                    {
+                        itemCategory[item.GetIdName()].Add(item);
+                    }
+                }
+
+                // 按数量倒序排序
+                itemCategory = itemCategory.OrderByDescending(kv => kv.Value.Count).ToDictionary();
+
+                // 移除所有非指定类型的物品
+                foreach (List<Item> listTemp in itemCategory.Values)
+                {
+                    if (listTemp.First() is Item item && (int)item.ItemType != itemtype)
+                    {
+                        itemCategory.Remove(item.GetIdName());
+                    }
+                }
+
+                int maxPage = (int)Math.Ceiling((double)itemCategory.Count / 10);
+                if (showPage <= maxPage)
+                {
+                    List<string> keys = [.. FunGameService.GetPage(itemCategory.Keys, showPage, 10)];
+                    int itemCount = 0;
+                    list.Add($"======= {ItemSet.GetItemTypeName((ItemType)itemtype)}物品 =======");
+                    foreach (string key in keys)
+                    {
+                        itemCount++;
+                        List<Item> objs = itemCategory[key];
+                        string str = $"{itemCount}. [{ItemSet.GetQualityTypeName(objs[0].QualityType)}|{ItemSet.GetItemTypeName(objs[0].ItemType)}] {objs[0].Name}\r\n";
+                        str += $"物品描述：{objs.First().Description}\r\n";
                         str += $"物品序号：{string.Join("，", objs.Select(i => items.IndexOf(i) + 1))}\r\n";
                         str += $"拥有数量：{objs.Count}（可出售数量：{objs.Count(i => i.IsSellable)}，可交易数量：{objs.Count(i => i.IsTradable)}）";
                         list.Add(str);
@@ -499,7 +578,7 @@ namespace Oshima.Core.Controllers
             return list;
         }
 
-        [HttpPost("ck")]
+        [HttpPost("drawcard")]
         public string DrawCard([FromQuery] long? qq = null)
         {
             long userid = qq ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
@@ -541,7 +620,7 @@ namespace Oshima.Core.Controllers
             }
         }
 
-        [HttpPost("ck10")]
+        [HttpPost("drawcards")]
         public List<string> DrawCards([FromQuery] long? qq = null)
         {
             long userid = qq ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
@@ -588,7 +667,7 @@ namespace Oshima.Core.Controllers
             }
         }
 
-        [HttpPost("clck")]
+        [HttpPost("drawcardm")]
         public string DrawCard_Material([FromQuery] long? qq = null)
         {
             long userid = qq ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
@@ -630,7 +709,7 @@ namespace Oshima.Core.Controllers
             }
         }
 
-        [HttpPost("clck10")]
+        [HttpPost("drawcardsm")]
         public List<string> DrawCards_Material([FromQuery] long? qq = null)
         {
             long userid = qq ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
@@ -677,7 +756,7 @@ namespace Oshima.Core.Controllers
             }
         }
 
-        [HttpPost("dhjb")]
+        [HttpPost("exchangecredits")]
         public string ExchangeCredits([FromQuery] long? qq = null, [FromQuery] double? materials = null)
         {
             long userid = qq ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
@@ -712,7 +791,7 @@ namespace Oshima.Core.Controllers
             }
         }
 
-        [HttpPost("cckjs")]
+        [HttpPost("showcharacterinfo")]
         public string GetCharacterInfoFromInventory([FromQuery] long? qq = null, [FromQuery] int? seq = null)
         {
             try
@@ -748,7 +827,7 @@ namespace Oshima.Core.Controllers
             }
         }
 
-        [HttpPost("cckwp")]
+        [HttpPost("showiteminfo")]
         public string GetItemInfoFromInventory([FromQuery] long? qq = null, [FromQuery] int? seq = null)
         {
             try
@@ -784,7 +863,7 @@ namespace Oshima.Core.Controllers
             }
         }
         
-        [HttpPost("zb")]
+        [HttpPost("equipitem")]
         public string EquipItem([FromQuery] long? qq = null, [FromQuery] int? c = null, [FromQuery] int? i = null)
         {
             try
@@ -828,7 +907,9 @@ namespace Oshima.Core.Controllers
                     }
                     if (character != null && item != null && character.Equip(item))
                     {
-                        return NetworkUtility.JsonSerialize($"装备成功！");
+                        pc.Add("user", user);
+                        pc.SaveConfig();
+                        return NetworkUtility.JsonSerialize($"装备【{item.Name}】成功！效果：{item.Description}");
                     }
                     else
                     {
@@ -846,7 +927,7 @@ namespace Oshima.Core.Controllers
             }
         }
         
-        [HttpPost("qxzb")]
+        [HttpPost("unequipitem")]
         public string UnEquipItem([FromQuery] long? qq = null, [FromQuery] int? c = null, [FromQuery] int? i = null)
         {
             try
@@ -873,6 +954,8 @@ namespace Oshima.Core.Controllers
                     }
                     if (character != null && character.UnEquip(type) != null)
                     {
+                        pc.Add("user", user);
+                        pc.SaveConfig();
                         return NetworkUtility.JsonSerialize($"取消装备成功！");
                     }
                     else
