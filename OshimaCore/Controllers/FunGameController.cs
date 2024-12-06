@@ -998,7 +998,7 @@ namespace Oshima.Core.Controllers
                         {
                             return NetworkUtility.JsonSerialize($"这个物品无法被装备！");
                         }
-                        else if (item.EquipSlotType != EquipSlotType.None || item.Character != null)
+                        else if (item.EquipSlotType != EquipSlotType.None)
                         {
                             return NetworkUtility.JsonSerialize($"这个物品无法被装备！" + (item.Character != null ? $"[ {item.Character.ToStringWithLevelWithOutUser()} ] 已装备此物品。" : ""));
                         }
