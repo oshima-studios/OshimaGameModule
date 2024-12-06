@@ -323,7 +323,7 @@ namespace Oshima.Core.Controllers
         }
         
         [HttpPost("restoresaved")]
-        public string RestoreSaved([FromQuery] long? qq = null, [FromQuery] string? name = null)
+        public string RestoreSaved([FromQuery] long? qq = null)
         {
             long userid = qq ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
 
@@ -1052,14 +1052,15 @@ namespace Oshima.Core.Controllers
                     {
                         character = user.Inventory.Characters.ToList()[characterIndex - 1];
                         Item? item = character.UnEquip(type);
-                        if (item != null)
+                        if (item != null && user.Inventory.Items.Where(i => i.Guid == item.Guid).FirstOrDefault() is Item itemInventory)
                         {
+                            itemInventory.EquipSlotType = EquipSlotType.None;
                             user.LastTime = DateTime.Now;
                             pc.Add("user", user);
                             pc.SaveConfig();
                             return NetworkUtility.JsonSerialize($"取消装备{ItemSet.GetQualityTypeName(item.QualityType)}{ItemSet.GetItemTypeName(item.ItemType)}【{item.Name}】成功！（{ItemSet.GetEquipSlotTypeName(type)}栏位）");
                         }
-                        else return NetworkUtility.JsonSerialize($"取消装备失败！角色并没有装备{ItemSet.GetEquipSlotTypeName(type)}。");
+                        else return NetworkUtility.JsonSerialize($"取消装备失败！角色并没有装备{ItemSet.GetEquipSlotTypeName(type)}，或者库存中不存在此物品！");
                     }
                     else
                     {
