@@ -18,6 +18,8 @@ namespace Oshima.Core.Controllers
         private const int drawCardReduce = 2000;
         private const int drawCardReduce_Material = 10;
         private const string noSaved = "你还没有创建存档！请发送【创建存档】创建。";
+        private readonly ItemType[] itemCanEquip = [ItemType.MagicCardPack, ItemType.Weapon, ItemType.Armor, ItemType.Shoes, ItemType.Accessory];
+        private readonly ItemType[] itemCanUsed = [ItemType.Consumable, ItemType.MagicCard, ItemType.SpecialItem, ItemType.GiftBox, ItemType.Others];
 
         [HttpGet("test")]
         public List<string> GetTest([FromQuery] bool? isweb = null, [FromQuery] bool? isteam = null, [FromQuery] bool? showall = null)
@@ -319,6 +321,32 @@ namespace Oshima.Core.Controllers
                 return NetworkUtility.JsonSerialize("你已经创建过存档！");
             }
         }
+        
+        [HttpPost("restoresaved")]
+        public string RestoreSaved([FromQuery] long? qq = null, [FromQuery] string? name = null)
+        {
+            long userid = qq ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
+
+            PluginConfig pc = new("saved", userid.ToString());
+            pc.LoadConfig();
+
+            if (pc.Count > 0)
+            {
+                User user = FunGameService.GetUser(pc);
+                user.Inventory.Credits = 5000000;
+                user.Inventory.Materials = 0;
+                user.Inventory.Characters.Clear();
+                user.Inventory.Items.Clear();
+                user.LastTime = DateTime.Now;
+                pc.Add("user", user);
+                pc.SaveConfig();
+                return NetworkUtility.JsonSerialize($"你的存档已还原成功。");
+            }
+            else
+            {
+                return NetworkUtility.JsonSerialize(noSaved);
+            }
+        }
 
         [HttpPost("inventoryinfo")]
         public string GetInventoryInfo([FromQuery] long? qq = null)
@@ -482,10 +510,13 @@ namespace Oshima.Core.Controllers
                     {
                         itemCount++;
                         List<Item> objs = itemCategory[key];
-                        string str = $"{itemCount}. [{ItemSet.GetQualityTypeName(objs[0].QualityType)}|{ItemSet.GetItemTypeName(objs[0].ItemType)}] {objs[0].Name}\r\n";
-                        str += $"物品描述：{objs.First().Description}\r\n";
+                        Item first = objs[0];
+                        string str = $"{itemCount}. [{ItemSet.GetQualityTypeName(first.QualityType)}|{ItemSet.GetItemTypeName(first.ItemType)}] {first.Name}\r\n";
+                        str += $"物品描述：{first.Description}\r\n";
                         str += $"物品序号：{string.Join("，", objs.Select(i => items.IndexOf(i) + 1))}\r\n";
-                        str += $"拥有数量：{objs.Count}（可出售数量：{objs.Count(i => i.IsSellable)}，可交易数量：{objs.Count(i => i.IsTradable)}）";
+                        str += $"拥有数量：{objs.Count}（" + (itemCanEquip.Contains(first.ItemType) ? $"可装备数量：{objs.Count(i => i.EquipSlotType == EquipSlotType.None)}，" : "") +
+                            (itemCanUsed.Contains(first.ItemType) ? $"可使用数量：{objs.Count(i => i.EquipSlotType == EquipSlotType.None)}，" : "") +
+                            $"可出售数量：{objs.Count(i => i.IsSellable)}，可交易数量：{objs.Count(i => i.IsTradable)}）";
                         list.Add(str);
                     }
                     list.Add($"页数：{showPage} / {maxPage}");
@@ -536,8 +567,8 @@ namespace Oshima.Core.Controllers
                     }
                 }
 
-                // 按数量倒序排序
-                itemCategory = itemCategory.OrderByDescending(kv => kv.Value.Count).ToDictionary();
+                // 按品质倒序、数量倒序排序
+                itemCategory = itemCategory.OrderByDescending(kv => kv.Value.FirstOrDefault()?.QualityType ?? 0).ThenByDescending(kv => kv.Value.Count).ToDictionary();
 
                 // 移除所有非指定类型的物品
                 foreach (List<Item> listTemp in itemCategory.Values)
@@ -549,21 +580,87 @@ namespace Oshima.Core.Controllers
                 }
 
                 int maxPage = (int)Math.Ceiling((double)itemCategory.Count / 10);
+                if (maxPage < 1) maxPage = 1;
                 if (showPage <= maxPage)
                 {
                     List<string> keys = [.. FunGameService.GetPage(itemCategory.Keys, showPage, 10)];
                     int itemCount = 0;
-                    list.Add($"======= {ItemSet.GetItemTypeName((ItemType)itemtype)}物品 =======");
+                    list.Add($"======= {ItemSet.GetItemTypeName((ItemType)itemtype).Replace("物品", "")}物品 =======");
                     foreach (string key in keys)
                     {
                         itemCount++;
                         List<Item> objs = itemCategory[key];
-                        string str = $"{itemCount}. [{ItemSet.GetQualityTypeName(objs[0].QualityType)}|{ItemSet.GetItemTypeName(objs[0].ItemType)}] {objs[0].Name}\r\n";
-                        str += $"物品描述：{objs.First().Description}\r\n";
+                        Item first = objs[0];
+                        string str = $"{itemCount}. [{ItemSet.GetQualityTypeName(first.QualityType)}|{ItemSet.GetItemTypeName(first.ItemType)}] {first.Name}\r\n";
+                        str += $"物品描述：{first.Description}\r\n";
                         str += $"物品序号：{string.Join("，", objs.Select(i => items.IndexOf(i) + 1))}\r\n";
-                        str += $"拥有数量：{objs.Count}（可出售数量：{objs.Count(i => i.IsSellable)}，可交易数量：{objs.Count(i => i.IsTradable)}）";
+                        str += $"拥有数量：{objs.Count}（" + (itemCanEquip.Contains(first.ItemType) ? $"可装备数量：{objs.Count(i => i.EquipSlotType == EquipSlotType.None)}，" : "") +
+                            (itemCanUsed.Contains(first.ItemType) ? $"可使用数量：{objs.Count(i => i.EquipSlotType == EquipSlotType.None)}，" : "") +
+                            $"可出售数量：{objs.Count(i => i.IsSellable)}，可交易数量：{objs.Count(i => i.IsTradable)}）";
                         list.Add(str);
                     }
+                    list.Add($"页数：{showPage} / {maxPage}");
+                }
+                else
+                {
+                    list.Add($"没有这么多页！当前总页数为 {maxPage}，但你请求的是第 {showPage} 页。");
+                }
+            }
+            else
+            {
+                list.Add(noSaved);
+            }
+            return list;
+        }
+
+        [HttpPost("inventoryinfo5")]
+        public List<string> GetInventoryInfo5([FromQuery] long? qq = null, [FromQuery] int? page = null)
+        {
+            long userid = qq ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
+            int showPage = page ?? 1;
+            if (showPage <= 0) showPage = 1;
+
+            PluginConfig pc = new("saved", userid.ToString());
+            pc.LoadConfig();
+
+            List<string> list = [];
+            if (pc.Count > 0)
+            {
+                User user = FunGameService.GetUser(pc);
+                list.Add($"☆★☆ {user.Inventory.Name} ☆★☆");
+                list.Add($"{General.GameplayEquilibriumConstant.InGameCurrency}：{user.Inventory.Credits:0.00}");
+                list.Add($"{General.GameplayEquilibriumConstant.InGameMaterial}：{user.Inventory.Materials:0.00}");
+                List<Character> characters = [.. user.Inventory.Characters];
+                int total = characters.Count;
+                int maxPage = (int)Math.Ceiling((double)total / 12);
+                if (maxPage < 1) maxPage = 1;
+                if (showPage <= maxPage)
+                {
+                    List<object> inventory = [.. characters];
+                    Dictionary<int, object> dict = inventory.Select((obj, index) => new { Index = index + 1, Value = obj }).ToDictionary(k => k.Index, v => v.Value);
+                    List<int> seq = [.. FunGameService.GetPage(dict.Keys, showPage, 12)];
+                    bool showCharacter = true;
+                    int characterCount = 0;
+
+                    int prevSequence = dict.Take((showPage - 1) * 12).Count();
+
+                    foreach (int index in seq)
+                    {
+                        object obj = dict[index];
+                        string str = "";
+                        if (obj is Character character)
+                        {
+                            characterCount++;
+                            if (showCharacter)
+                            {
+                                showCharacter = false;
+                                list.Add("======= 角色 =======");
+                            }
+                            str = $"{prevSequence + characterCount}. {character.ToStringWithLevelWithOutUser()}";
+                        }
+                        list.Add(str);
+                    }
+
                     list.Add($"页数：{showPage} / {maxPage}");
                 }
                 else
@@ -604,6 +701,7 @@ namespace Oshima.Core.Controllers
                 if (dice > 0.8)
                 {
                     string msg = FunGameService.GetDrawCardResult(reduce, user);
+                    user.LastTime = DateTime.Now;
                     pc.Add("user", user);
                     pc.SaveConfig();
                     return NetworkUtility.JsonSerialize(msg);
@@ -657,6 +755,7 @@ namespace Oshima.Core.Controllers
                 {
                     result[0] = $"消耗 {reduce} {General.GameplayEquilibriumConstant.InGameCurrency}，你什么也没抽中……";
                 }
+                user.LastTime = DateTime.Now;
                 pc.Add("user", user);
                 pc.SaveConfig();
                 return result;
@@ -693,6 +792,7 @@ namespace Oshima.Core.Controllers
                 if (dice > 0.8)
                 {
                     string msg = FunGameService.GetDrawCardResult(reduce, user);
+                    user.LastTime = DateTime.Now;
                     pc.Add("user", user);
                     pc.SaveConfig();
                     return NetworkUtility.JsonSerialize(msg);
@@ -746,6 +846,7 @@ namespace Oshima.Core.Controllers
                 {
                     result[0] = $"消耗 {reduce} {General.GameplayEquilibriumConstant.InGameMaterial}，你什么也没抽中……";
                 }
+                user.LastTime = DateTime.Now;
                 pc.Add("user", user);
                 pc.SaveConfig();
                 return result;
@@ -776,6 +877,7 @@ namespace Oshima.Core.Controllers
                     int reward = reduce / 10 * 2000;
                     user.Inventory.Credits += reward;
                     user.Inventory.Materials -= reduce;
+                    user.LastTime = DateTime.Now;
                     pc.Add("user", user);
                     pc.SaveConfig();
                     return NetworkUtility.JsonSerialize($"兑换成功！你消耗了 {reduce} {General.GameplayEquilibriumConstant.InGameMaterial}，增加了 {reward} {General.GameplayEquilibriumConstant.InGameCurrency}！");
@@ -892,13 +994,13 @@ namespace Oshima.Core.Controllers
                     if (itemIndex > 0 && itemIndex <= user.Inventory.Items.Count)
                     {
                         item = user.Inventory.Items.ToList()[itemIndex - 1];
-                        if ((int)item.ItemType >= (int)ItemType.MagicCardPack && (int)item.ItemType <= (int)ItemType.Accessory && item.EquipSlotType == EquipSlotType.None)
-                        {
-                            // nothing
-                        }
-                        else
+                        if ((int)item.ItemType < (int)ItemType.MagicCardPack || (int)item.ItemType > (int)ItemType.Accessory)
                         {
                             return NetworkUtility.JsonSerialize($"这个物品无法被装备！");
+                        }
+                        else if (item.EquipSlotType != EquipSlotType.None || item.Character != null)
+                        {
+                            return NetworkUtility.JsonSerialize($"这个物品无法被装备！" + (item.Character != null ? $"[ {item.Character.ToStringWithLevelWithOutUser()} ] 已装备此物品。" : ""));
                         }
                     }
                     else
@@ -907,9 +1009,11 @@ namespace Oshima.Core.Controllers
                     }
                     if (character != null && item != null && character.Equip(item))
                     {
+                        user.LastTime = DateTime.Now;
                         pc.Add("user", user);
                         pc.SaveConfig();
-                        return NetworkUtility.JsonSerialize($"装备【{item.Name}】成功！效果：{item.Description}");
+                        return NetworkUtility.JsonSerialize($"装备{ItemSet.GetQualityTypeName(item.QualityType)}{ItemSet.GetItemTypeName(item.ItemType)}【{item.Name}】成功！" +
+                            $"（{ItemSet.GetEquipSlotTypeName(item.EquipSlotType)}栏位）\r\n物品描述：{item.Description}");
                     }
                     else
                     {
@@ -947,20 +1051,19 @@ namespace Oshima.Core.Controllers
                     if (characterIndex > 0 && characterIndex <= user.Inventory.Characters.Count)
                     {
                         character = user.Inventory.Characters.ToList()[characterIndex - 1];
+                        Item? item = character.UnEquip(type);
+                        if (item != null)
+                        {
+                            user.LastTime = DateTime.Now;
+                            pc.Add("user", user);
+                            pc.SaveConfig();
+                            return NetworkUtility.JsonSerialize($"取消装备{ItemSet.GetQualityTypeName(item.QualityType)}{ItemSet.GetItemTypeName(item.ItemType)}【{item.Name}】成功！（{ItemSet.GetEquipSlotTypeName(type)}栏位）");
+                        }
+                        else return NetworkUtility.JsonSerialize($"取消装备失败！角色并没有装备{ItemSet.GetEquipSlotTypeName(type)}。");
                     }
                     else
                     {
                         return NetworkUtility.JsonSerialize($"没有找到与这个序号相对应的角色！");
-                    }
-                    if (character != null && character.UnEquip(type) != null)
-                    {
-                        pc.Add("user", user);
-                        pc.SaveConfig();
-                        return NetworkUtility.JsonSerialize($"取消装备成功！");
-                    }
-                    else
-                    {
-                        return NetworkUtility.JsonSerialize($"取消装备失败！可能是角色、物品不存在或者其他原因。");
                     }
                 }
                 else
