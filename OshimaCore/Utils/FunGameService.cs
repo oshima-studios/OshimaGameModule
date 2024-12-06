@@ -63,6 +63,7 @@ namespace Oshima.Core.Utils
             item.Id = Convert.ToInt64("16" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 8));
             item.Name = GenerateRandomChineseName();
             item.ItemType = ItemType.MagicCard;
+            item.RemainUseTimes = 1;
 
             int total;
             if (qualityType != null)

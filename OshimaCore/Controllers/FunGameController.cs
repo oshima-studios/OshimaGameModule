@@ -514,8 +514,8 @@ namespace Oshima.Core.Controllers
                         string str = $"{itemCount}. [{ItemSet.GetQualityTypeName(first.QualityType)}|{ItemSet.GetItemTypeName(first.ItemType)}] {first.Name}\r\n";
                         str += $"物品描述：{first.Description}\r\n";
                         str += $"物品序号：{string.Join("，", objs.Select(i => items.IndexOf(i) + 1))}\r\n";
-                        str += $"拥有数量：{objs.Count}（" + (itemCanEquip.Contains(first.ItemType) ? $"可装备数量：{objs.Count(i => i.EquipSlotType == EquipSlotType.None)}，" : "") +
-                            (itemCanUsed.Contains(first.ItemType) ? $"可使用数量：{objs.Count(i => i.EquipSlotType == EquipSlotType.None)}，" : "") +
+                        str += $"拥有数量：{objs.Count}（" + (itemCanEquip.Contains(first.ItemType) ? $"可装备数量：{objs.Count(i => i.Character is null)}，" : "") +
+                            (itemCanUsed.Contains(first.ItemType) ? $"可使用数量：{objs.Count(i => i.RemainUseTimes > 0)}，" : "") +
                             $"可出售数量：{objs.Count(i => i.IsSellable)}，可交易数量：{objs.Count(i => i.IsTradable)}）";
                         list.Add(str);
                     }
@@ -594,8 +594,8 @@ namespace Oshima.Core.Controllers
                         string str = $"{itemCount}. [{ItemSet.GetQualityTypeName(first.QualityType)}|{ItemSet.GetItemTypeName(first.ItemType)}] {first.Name}\r\n";
                         str += $"物品描述：{first.Description}\r\n";
                         str += $"物品序号：{string.Join("，", objs.Select(i => items.IndexOf(i) + 1))}\r\n";
-                        str += $"拥有数量：{objs.Count}（" + (itemCanEquip.Contains(first.ItemType) ? $"可装备数量：{objs.Count(i => i.EquipSlotType == EquipSlotType.None)}，" : "") +
-                            (itemCanUsed.Contains(first.ItemType) ? $"可使用数量：{objs.Count(i => i.EquipSlotType == EquipSlotType.None)}，" : "") +
+                        str += $"拥有数量：{objs.Count}（" + (itemCanEquip.Contains(first.ItemType) ? $"可装备数量：{objs.Count(i => i.Character is null)}，" : "") +
+                            (itemCanUsed.Contains(first.ItemType) ? $"可使用数量：{objs.Count(i => i.RemainUseTimes > 0)}，" : "") +
                             $"可出售数量：{objs.Count(i => i.IsSellable)}，可交易数量：{objs.Count(i => i.IsTradable)}）";
                         list.Add(str);
                     }
@@ -998,9 +998,9 @@ namespace Oshima.Core.Controllers
                         {
                             return NetworkUtility.JsonSerialize($"这个物品无法被装备！");
                         }
-                        else if (item.EquipSlotType != EquipSlotType.None)
+                        else if (item.Character != null)
                         {
-                            return NetworkUtility.JsonSerialize($"这个物品无法被装备！" + (item.Character != null ? $"[ {item.Character.ToStringWithLevelWithOutUser()} ] 已装备此物品。" : ""));
+                            return NetworkUtility.JsonSerialize($"这个物品无法被装备！[ {item.Character.ToStringWithLevelWithOutUser()} ] 已装备此物品。");
                         }
                     }
                     else
