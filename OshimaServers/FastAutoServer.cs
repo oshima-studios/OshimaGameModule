@@ -516,7 +516,7 @@ namespace Oshima.FunGame.OshimaServers
                     这次发放的空投 = [new 攻击之爪50()];
                     foreach (Item item in 这次发放的空投)
                     {
-                        queue.Equip(character, EquipSlotType.Accessory1, item);
+                        queue.Equip(character, EquipSlotType.Accessory1, item, out _);
                     }
                 }
             }
