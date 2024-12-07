@@ -18,7 +18,6 @@ namespace Oshima.Core.Controllers
         private const int drawCardReduce = 2000;
         private const int drawCardReduce_Material = 10;
         private const string noSaved = "你还没有创建存档！请发送【创建存档】创建。";
-        private readonly ItemType[] itemCanEquip = [ItemType.MagicCardPack, ItemType.Weapon, ItemType.Armor, ItemType.Shoes, ItemType.Accessory];
         private readonly ItemType[] itemCanUsed = [ItemType.Consumable, ItemType.MagicCard, ItemType.SpecialItem, ItemType.GiftBox, ItemType.Others];
 
         [HttpGet("test")]
@@ -514,7 +513,7 @@ namespace Oshima.Core.Controllers
                         string str = $"{itemCount}. [{ItemSet.GetQualityTypeName(first.QualityType)}|{ItemSet.GetItemTypeName(first.ItemType)}] {first.Name}\r\n";
                         str += $"物品描述：{first.Description}\r\n";
                         str += $"物品序号：{string.Join("，", objs.Select(i => items.IndexOf(i) + 1))}\r\n";
-                        str += $"拥有数量：{objs.Count}（" + (itemCanEquip.Contains(first.ItemType) ? $"可装备数量：{objs.Count(i => i.Character is null)}，" : "") +
+                        str += $"拥有数量：{objs.Count}（" + (first.IsEquipment ? $"可装备数量：{objs.Count(i => i.Character is null)}，" : "") +
                             (itemCanUsed.Contains(first.ItemType) ? $"可使用数量：{objs.Count(i => i.RemainUseTimes > 0)}，" : "") +
                             $"可出售数量：{objs.Count(i => i.IsSellable)}，可交易数量：{objs.Count(i => i.IsTradable)}）";
                         list.Add(str);
@@ -594,7 +593,7 @@ namespace Oshima.Core.Controllers
                         string str = $"{itemCount}. [{ItemSet.GetQualityTypeName(first.QualityType)}|{ItemSet.GetItemTypeName(first.ItemType)}] {first.Name}\r\n";
                         str += $"物品描述：{first.Description}\r\n";
                         str += $"物品序号：{string.Join("，", objs.Select(i => items.IndexOf(i) + 1))}\r\n";
-                        str += $"拥有数量：{objs.Count}（" + (itemCanEquip.Contains(first.ItemType) ? $"可装备数量：{objs.Count(i => i.Character is null)}，" : "") +
+                        str += $"拥有数量：{objs.Count}（" + (first.IsEquipment ? $"可装备数量：{objs.Count(i => i.Character is null)}，" : "") +
                             (itemCanUsed.Contains(first.ItemType) ? $"可使用数量：{objs.Count(i => i.RemainUseTimes > 0)}，" : "") +
                             $"可出售数量：{objs.Count(i => i.IsSellable)}，可交易数量：{objs.Count(i => i.IsTradable)}）";
                         list.Add(str);
