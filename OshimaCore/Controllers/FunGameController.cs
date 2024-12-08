@@ -349,6 +349,107 @@ namespace Oshima.Core.Controllers
             }
         }
 
+        [HttpPost("rename")]
+        public string ReName([FromQuery] long? qq = null)
+        {
+            long userid = qq ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
+
+            PluginConfig pc = new("saved", userid.ToString());
+            pc.LoadConfig();
+
+            if (pc.Count > 0)
+            {
+                User user = FunGameService.GetUser(pc);
+
+                int reduce = 1500;
+                if (user.Inventory.Credits >= reduce)
+                {
+                    user.Inventory.Credits -= reduce;
+                }
+                else
+                {
+                    return NetworkUtility.JsonSerialize($"你的{General.GameplayEquilibriumConstant.InGameCurrency}不足 {reduce} 呢，无法改名！");
+                }
+
+                user.Username = FunGameService.GenerateRandomChineseUserName();
+                if (user.Inventory.Characters.FirstOrDefault(c => c.Id == user.Id) is Character character)
+                {
+                    character.Name = user.Username;
+                }
+                if (user.Inventory.Name.EndsWith("的库存"))
+                {
+                    user.Inventory.Name = user.Username + "的库存";
+                }
+                user.LastTime = DateTime.Now;
+                pc.Add("user", user);
+                pc.SaveConfig();
+                return NetworkUtility.JsonSerialize($"消耗 {reduce} {General.GameplayEquilibriumConstant.InGameCurrency}，你的新名字是【{user.Username}】");
+            }
+            else
+            {
+                return NetworkUtility.JsonSerialize(noSaved);
+            }
+        }
+        
+        [HttpPost("randomcustom")]
+        public string RandomCustomCharacter([FromQuery] long? qq = null)
+        {
+            long userid = qq ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
+
+            PluginConfig pc = new("saved", userid.ToString());
+            pc.LoadConfig();
+
+            if (pc.Count > 0)
+            {
+                User user = FunGameService.GetUser(pc);
+
+                if (user.Inventory.Characters.FirstOrDefault(c => c.Id == user.Id) is Character character)
+                {
+                    int reduce = 20;
+                    if (user.Inventory.Materials >= reduce)
+                    {
+                        user.Inventory.Materials -= reduce;
+                    }
+                    else
+                    {
+                        return NetworkUtility.JsonSerialize($"你的{General.GameplayEquilibriumConstant.InGameMaterial}不足 {reduce} 呢，无法重随自建角色属性！");
+                    }
+
+                    PrimaryAttribute oldPA = character.PrimaryAttribute;
+                    double oldSTR = character.InitialSTR;
+                    double oldAGI = character.InitialAGI;
+                    double oldINT = character.InitialINT;
+                    double oldSTRG = character.STRGrowth;
+                    double oldAGIG = character.AGIGrowth;
+                    double oldINTG = character.INTGrowth;
+                    Character temp = new CustomCharacter(0, "");
+                    character.PrimaryAttribute = temp.PrimaryAttribute;
+                    character.InitialSTR = temp.InitialSTR;
+                    character.InitialAGI = temp.InitialAGI;
+                    character.InitialINT = temp.InitialINT;
+                    character.STRGrowth = temp.STRGrowth;
+                    character.AGIGrowth = temp.AGIGrowth;
+                    character.INTGrowth = temp.INTGrowth;
+                    user.LastTime = DateTime.Now;
+                    pc.Add("user", user);
+                    pc.SaveConfig();
+                    return NetworkUtility.JsonSerialize($"消耗 {reduce} {General.GameplayEquilibriumConstant.InGameMaterial}，你的自建角色已更改初始属性：\r\n" +
+                        $"核心属性：{CharacterSet.GetPrimaryAttributeName(oldPA)} => {CharacterSet.GetPrimaryAttributeName(character.PrimaryAttribute)}\r\n" +
+                        $"初始力量：{oldSTR}（+{oldSTRG}/Lv）=> {character.InitialSTR}（+{character.STRGrowth}/Lv）\r\n" +
+                        $"初始敏捷：{oldAGI}（+{oldAGIG}/Lv）=> {character.InitialAGI}（+{character.AGIGrowth}/Lv）\r\n" +
+                        $"初始智力：{oldINT}（+{oldINTG}/Lv）=> {character.InitialINT}（+{character.INTGrowth}/Lv）");
+                }
+                else
+                {
+                    return NetworkUtility.JsonSerialize($"你似乎没有自建角色，请发送【生成自建角色】创建！");
+                }
+            }
+            else
+            {
+                return NetworkUtility.JsonSerialize(noSaved);
+            }
+        }
+
         [HttpPost("inventoryinfo")]
         public string GetInventoryInfo([FromQuery] long? qq = null)
         {
@@ -633,17 +734,17 @@ namespace Oshima.Core.Controllers
                 list.Add($"{General.GameplayEquilibriumConstant.InGameMaterial}：{user.Inventory.Materials:0.00}");
                 List<Character> characters = [.. user.Inventory.Characters];
                 int total = characters.Count;
-                int maxPage = (int)Math.Ceiling((double)total / 12);
+                int maxPage = (int)Math.Ceiling((double)total / 6);
                 if (maxPage < 1) maxPage = 1;
                 if (showPage <= maxPage)
                 {
                     List<object> inventory = [.. characters];
                     Dictionary<int, object> dict = inventory.Select((obj, index) => new { Index = index + 1, Value = obj }).ToDictionary(k => k.Index, v => v.Value);
-                    List<int> seq = [.. FunGameService.GetPage(dict.Keys, showPage, 12)];
+                    List<int> seq = [.. FunGameService.GetPage(dict.Keys, showPage, 6)];
                     bool showCharacter = true;
                     int characterCount = 0;
 
-                    int prevSequence = dict.Take((showPage - 1) * 12).Count();
+                    int prevSequence = dict.Take((showPage - 1) * 6).Count();
 
                     foreach (int index in seq)
                     {
