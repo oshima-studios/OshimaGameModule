@@ -7,6 +7,7 @@ using Milimoe.FunGame.Core.Library.Constant;
 using Oshima.Core.Configs;
 using Oshima.Core.Models;
 using Oshima.Core.Utils;
+using Oshima.FunGame.OshimaModules.Characters;
 
 namespace Oshima.Core.Controllers
 {
@@ -302,7 +303,7 @@ namespace Oshima.Core.Controllers
         public string CreateSaved([FromQuery] long? qq = null, [FromQuery] string? name = null)
         {
             long userid = qq ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
-            string username = name ?? "Unknown";
+            string username = name ?? FunGameService.GenerateRandomChineseUserName();
 
             PluginConfig pc = new("saved", userid.ToString());
             pc.LoadConfig();
@@ -311,6 +312,7 @@ namespace Oshima.Core.Controllers
             {
                 User user = Factory.GetUser(userid, username, DateTime.Now, DateTime.Now, userid + "@qq.com", username);
                 user.Inventory.Credits = 5000000;
+                user.Inventory.Characters.Add(new CustomCharacter(userid, username));
                 pc.Add("user", user);
                 pc.SaveConfig();
                 return NetworkUtility.JsonSerialize($"创建存档成功！你的用户名是【{username}】。");
@@ -674,6 +676,36 @@ namespace Oshima.Core.Controllers
             return list;
         }
 
+        [HttpPost("newcustomcharacter")]
+        public string NewCustomCharacter([FromQuery] long? qq = null)
+        {
+            long userid = qq ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
+
+            PluginConfig pc = new("saved", userid.ToString());
+            pc.LoadConfig();
+
+            if (pc.Count > 0)
+            {
+                User user = FunGameService.GetUser(pc);
+                if (user.Inventory.Characters.Any(c => c.Id == user.Id))
+                {
+                    return NetworkUtility.JsonSerialize($"你已经拥有一个自建角色【{user.Username}】，无法再创建！");
+                }
+                else
+                {
+                    user.Inventory.Characters.Add(new CustomCharacter(userid, user.Username));
+                    user.LastTime = DateTime.Now;
+                    pc.Add("user", user);
+                    pc.SaveConfig();
+                    return NetworkUtility.JsonSerialize($"恭喜你成功创建了一个自建角色【{user.Username}】，请查看你的角色库存！");
+                }
+            }
+            else
+            {
+                return NetworkUtility.JsonSerialize(noSaved);
+            }
+        }
+        
         [HttpPost("drawcard")]
         public string DrawCard([FromQuery] long? qq = null)
         {
