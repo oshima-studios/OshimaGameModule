@@ -392,29 +392,22 @@ namespace Oshima.Core.Controllers
         }
         
         [HttpPost("randomcustom")]
-        public string RandomCustomCharacter([FromQuery] long? qq = null)
+        public string RandomCustomCharacter([FromQuery] long? qq = null, [FromQuery] bool? confirm = null)
         {
             long userid = qq ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
+            bool isConfirm = confirm ?? false;
 
             PluginConfig pc = new("saved", userid.ToString());
             pc.LoadConfig();
+            
+            EntityModuleConfig<Character> emc = new("randomcustom", userid.ToString());
+            emc.LoadConfig();
 
             if (pc.Count > 0)
             {
                 User user = FunGameService.GetUser(pc);
-
                 if (user.Inventory.Characters.FirstOrDefault(c => c.Id == user.Id) is Character character)
                 {
-                    int reduce = 20;
-                    if (user.Inventory.Materials >= reduce)
-                    {
-                        user.Inventory.Materials -= reduce;
-                    }
-                    else
-                    {
-                        return NetworkUtility.JsonSerialize($"你的{General.GameplayEquilibriumConstant.InGameMaterial}不足 {reduce} 呢，无法重随自建角色属性！");
-                    }
-
                     PrimaryAttribute oldPA = character.PrimaryAttribute;
                     double oldSTR = character.InitialSTR;
                     double oldAGI = character.InitialAGI;
@@ -422,22 +415,75 @@ namespace Oshima.Core.Controllers
                     double oldSTRG = character.STRGrowth;
                     double oldAGIG = character.AGIGrowth;
                     double oldINTG = character.INTGrowth;
-                    Character temp = new CustomCharacter(0, "");
-                    character.PrimaryAttribute = temp.PrimaryAttribute;
-                    character.InitialSTR = temp.InitialSTR;
-                    character.InitialAGI = temp.InitialAGI;
-                    character.InitialINT = temp.InitialINT;
-                    character.STRGrowth = temp.STRGrowth;
-                    character.AGIGrowth = temp.AGIGrowth;
-                    character.INTGrowth = temp.INTGrowth;
-                    user.LastTime = DateTime.Now;
-                    pc.Add("user", user);
-                    pc.SaveConfig();
-                    return NetworkUtility.JsonSerialize($"消耗 {reduce} {General.GameplayEquilibriumConstant.InGameMaterial}，你的自建角色已更改初始属性：\r\n" +
-                        $"核心属性：{CharacterSet.GetPrimaryAttributeName(oldPA)} => {CharacterSet.GetPrimaryAttributeName(character.PrimaryAttribute)}\r\n" +
-                        $"初始力量：{oldSTR}（+{oldSTRG}/Lv）=> {character.InitialSTR}（+{character.STRGrowth}/Lv）\r\n" +
-                        $"初始敏捷：{oldAGI}（+{oldAGIG}/Lv）=> {character.InitialAGI}（+{character.AGIGrowth}/Lv）\r\n" +
-                        $"初始智力：{oldINT}（+{oldINTG}/Lv）=> {character.InitialINT}（+{character.INTGrowth}/Lv）");
+                    Character? newCustom = emc.Count > 0 ? emc.Get("newCustom") : null;
+
+                    if (isConfirm)
+                    {
+                        if (newCustom != null)
+                        {
+                            character.PrimaryAttribute = newCustom.PrimaryAttribute;
+                            character.InitialSTR = newCustom.InitialSTR;
+                            character.InitialAGI = newCustom.InitialAGI;
+                            character.InitialINT = newCustom.InitialINT;
+                            character.STRGrowth = newCustom.STRGrowth;
+                            character.AGIGrowth = newCustom.AGIGrowth;
+                            character.INTGrowth = newCustom.INTGrowth;
+                            user.LastTime = DateTime.Now;
+                            pc.Add("user", user);
+                            pc.SaveConfig();
+                            emc.Clear();
+                            emc.SaveConfig();
+                            return NetworkUtility.JsonSerialize($"你已完成重随属性确认，新的自建角色属性如下：\r\n" +
+                                $"核心属性：{CharacterSet.GetPrimaryAttributeName(oldPA)} => {CharacterSet.GetPrimaryAttributeName(character.PrimaryAttribute)}\r\n" +
+                                $"初始力量：{oldSTR}（+{oldSTRG}/Lv）=> {character.InitialSTR}（+{character.STRGrowth}/Lv）\r\n" +
+                                $"初始敏捷：{oldAGI}（+{oldAGIG}/Lv）=> {character.InitialAGI}（+{character.AGIGrowth}/Lv）\r\n" +
+                                $"初始智力：{oldINT}（+{oldINTG}/Lv）=> {character.InitialINT}（+{character.INTGrowth}/Lv）");
+                        }
+                        else
+                        {
+                            return NetworkUtility.JsonSerialize($"你还没有获取过重随属性预览！");
+                        }
+                    }
+                    else
+                    {
+                        if (newCustom is null)
+                        {
+                            int reduce = 20;
+                            if (user.Inventory.Materials >= reduce)
+                            {
+                                user.Inventory.Materials -= reduce;
+                            }
+                            else
+                            {
+                                return NetworkUtility.JsonSerialize($"你的{General.GameplayEquilibriumConstant.InGameMaterial}不足 {reduce} 呢，无法重随自建角色属性！");
+                            }
+                            newCustom = new CustomCharacter(user.Id, "");
+                            user.LastTime = DateTime.Now;
+                            pc.Add("user", user);
+                            pc.SaveConfig();
+                            emc.Add("newCustom", newCustom);
+                            emc.SaveConfig();
+                            return NetworkUtility.JsonSerialize($"消耗 {reduce} {General.GameplayEquilibriumConstant.InGameMaterial}，获取到重随属性预览如下：\r\n" +
+                                $"核心属性：{CharacterSet.GetPrimaryAttributeName(oldPA)} => {CharacterSet.GetPrimaryAttributeName(newCustom.PrimaryAttribute)}\r\n" +
+                                $"初始力量：{oldSTR}（+{oldSTRG}/Lv）=> {newCustom.InitialSTR}（+{newCustom.STRGrowth}/Lv）\r\n" +
+                                $"初始敏捷：{oldAGI}（+{oldAGIG}/Lv）=> {newCustom.InitialAGI}（+{newCustom.AGIGrowth}/Lv）\r\n" +
+                                $"初始智力：{oldINT}（+{oldINTG}/Lv）=> {newCustom.InitialINT}（+{newCustom.INTGrowth}/Lv）\r\n" +
+                                $"请发送【确认角色重随】来确认更新，或者发送【取消角色重随】来取消操作。");
+                        }
+                        else if (newCustom.Id == user.Id)
+                        {
+                            return NetworkUtility.JsonSerialize($"你已经有一个待确认的重随属性如下：\r\n" +
+                                $"核心属性：{CharacterSet.GetPrimaryAttributeName(oldPA)} => {CharacterSet.GetPrimaryAttributeName(newCustom.PrimaryAttribute)}\r\n" +
+                                $"初始力量：{oldSTR}（+{oldSTRG}/Lv）=> {newCustom.InitialSTR}（+{newCustom.STRGrowth}/Lv）\r\n" +
+                                $"初始敏捷：{oldAGI}（+{oldAGIG}/Lv）=> {newCustom.InitialAGI}（+{newCustom.AGIGrowth}/Lv）\r\n" +
+                                $"初始智力：{oldINT}（+{oldINTG}/Lv）=> {newCustom.InitialINT}（+{newCustom.INTGrowth}/Lv）\r\n"+
+                                $"请发送【确认角色重随】来确认更新，或者发送【取消角色重随】来取消操作。");
+                        }
+                        else
+                        {
+                            return NetworkUtility.JsonSerialize($"重随自建角色属性失败！");
+                        }
+                    }
                 }
                 else
                 {
@@ -450,6 +496,35 @@ namespace Oshima.Core.Controllers
             }
         }
 
+        [HttpPost("cancelrandomcustom")]
+        public string CancelRandomCustomCharacter([FromQuery] long? qq = null)
+        {
+            long userid = qq ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
+
+            PluginConfig pc = new("saved", userid.ToString());
+            pc.LoadConfig();
+
+            if (pc.Count > 0)
+            {
+                EntityModuleConfig<Character> emc = new("randomcustom", userid.ToString());
+                emc.LoadConfig();
+                if (emc.Count > 0)
+                {
+                    emc.Clear();
+                    emc.SaveConfig();
+                    return NetworkUtility.JsonSerialize($"已取消角色重随。");
+                }
+                else
+                {
+                    return NetworkUtility.JsonSerialize($"你目前没有待确认的角色重随。");
+                }
+            }
+            else
+            {
+                return NetworkUtility.JsonSerialize(noSaved);
+            }
+        }
+        
         [HttpPost("inventoryinfo")]
         public string GetInventoryInfo([FromQuery] long? qq = null)
         {
