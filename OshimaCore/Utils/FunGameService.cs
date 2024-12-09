@@ -471,6 +471,7 @@ namespace Oshima.Core.Utils
                     if (has.Any() && has.First() is Character character)
                     {
                         realItem.Character = character;
+                        realItem.User = user;
                     }
                 }
                 user.Inventory.Items.Add(realItem);

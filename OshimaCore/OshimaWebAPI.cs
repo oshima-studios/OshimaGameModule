@@ -20,7 +20,7 @@ namespace Oshima.Core.WebAPI
         {
             if (input.StartsWith("fungametest"))
             {
-                FunGameSimulation.StartGame(true, true);
+                FunGameActionQueue.StartSimulationGame(true, true);
             }
             // OSM指令
             if (input.Length >= 4 && input[..4].Equals(".osm", StringComparison.CurrentCultureIgnoreCase))
@@ -43,7 +43,7 @@ namespace Oshima.Core.WebAPI
             SayNo.InitSayNo();
             Ignore.InitIgnore();
             FunGameService.InitFunGame();
-            FunGameSimulation.InitFunGame();
+            FunGameActionQueue.InitFunGame();
             Task taskTime = Task.Factory.StartNew(async () =>
             {
                 bool check9 = true;

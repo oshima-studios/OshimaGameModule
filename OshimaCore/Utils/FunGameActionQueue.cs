@@ -8,12 +8,12 @@ using Oshima.FunGame.OshimaModules.Skills;
 
 namespace Oshima.Core.Utils
 {
-    public class FunGameSimulation
+    public class FunGameActionQueue
     {
         public static Dictionary<Character, CharacterStatistics> CharacterStatistics { get; } = [];
         public static Dictionary<Character, CharacterStatistics> TeamCharacterStatistics { get; } = [];
-        public static PluginConfig StatsConfig { get; } = new(nameof(FunGameSimulation), nameof(CharacterStatistics));
-        public static PluginConfig TeamStatsConfig { get; } = new(nameof(FunGameSimulation), nameof(TeamCharacterStatistics));
+        public static PluginConfig StatsConfig { get; } = new("FunGameSimulation", nameof(CharacterStatistics));
+        public static PluginConfig TeamStatsConfig { get; } = new("FunGameSimulation", nameof(TeamCharacterStatistics));
         public static bool IsRuning { get; set; } = false;
         public static bool IsWeb { get; set; } = false;
         public static bool PrintOut { get; set; } = false;
@@ -54,7 +54,7 @@ namespace Oshima.Core.Utils
             }
         }
 
-        public static List<string> StartGame(bool printout, bool isWeb = false, bool isTeam = false, bool deathMatchRoundDetail = false)
+        public static List<string> StartSimulationGame(bool printout, bool isWeb = false, bool isTeam = false, bool deathMatchRoundDetail = false)
         {
             PrintOut = printout;
             IsWeb = isWeb;
@@ -114,201 +114,7 @@ namespace Oshima.Core.Utils
                         Character c = characters[index];
                         c.Level = clevel;
                         c.NormalAttack.Level = mlevel;
-
-                        //IEnumerable<Skill> magics = Magics.OrderBy(x => Random.Shared.Next()).Take(3);
-                        //foreach (Skill magic in magics)
-                        //{
-                        //    Skill m = magic.Copy();
-                        //    m.Character = c;
-                        //    m.Level = mlevel;
-                        //    c.Skills.Add(m);
-                        //}
-
-                        Skill 疾风步 = new 疾风步(c)
-                        {
-                            Level = slevel
-                        };
-                        c.Skills.Add(疾风步);
-
-                        if (c == character1)
-                        {
-                            Skill META马 = new META马(c)
-                            {
-                                Level = 1
-                            };
-                            c.Skills.Add(META马);
-
-                            Skill 力量爆发 = new 力量爆发(c)
-                            {
-                                Level = mlevel
-                            };
-                            c.Skills.Add(力量爆发);
-                        }
-
-                        if (c == character2)
-                        {
-                            Skill 心灵之火 = new 心灵之火(c)
-                            {
-                                Level = 1
-                            };
-                            c.Skills.Add(心灵之火);
-
-                            Skill 天赐之力 = new 天赐之力(c)
-                            {
-                                Level = slevel
-                            };
-                            c.Skills.Add(天赐之力);
-                        }
-
-                        if (c == character3)
-                        {
-                            Skill 魔法震荡 = new 魔法震荡(c)
-                            {
-                                Level = 1
-                            };
-                            c.Skills.Add(魔法震荡);
-
-                            Skill 魔法涌流 = new 魔法涌流(c)
-                            {
-                                Level = slevel
-                            };
-                            c.Skills.Add(魔法涌流);
-                        }
-
-                        if (c == character4)
-                        {
-                            Skill 灵能反射 = new 灵能反射(c)
-                            {
-                                Level = 1
-                            };
-                            c.Skills.Add(灵能反射);
-
-                            Skill 三重叠加 = new 三重叠加(c)
-                            {
-                                Level = slevel
-                            };
-                            c.Skills.Add(三重叠加);
-                        }
-
-                        if (c == character5)
-                        {
-                            Skill 智慧与力量 = new 智慧与力量(c)
-                            {
-                                Level = 1
-                            };
-                            c.Skills.Add(智慧与力量);
-
-                            Skill 变幻之心 = new 变幻之心(c)
-                            {
-                                Level = slevel
-                            };
-                            c.Skills.Add(变幻之心);
-                        }
-
-                        if (c == character6)
-                        {
-                            Skill 致命打击 = new 致命打击(c)
-                            {
-                                Level = 1
-                            };
-                            c.Skills.Add(致命打击);
-
-                            Skill 精准打击 = new 精准打击(c)
-                            {
-                                Level = slevel
-                            };
-                            c.Skills.Add(精准打击);
-                        }
-
-                        if (c == character7)
-                        {
-                            Skill 毁灭之势 = new 毁灭之势(c)
-                            {
-                                Level = 1
-                            };
-                            c.Skills.Add(毁灭之势);
-
-                            Skill 绝对领域 = new 绝对领域(c)
-                            {
-                                Level = slevel
-                            };
-                            c.Skills.Add(绝对领域);
-                        }
-
-                        if (c == character8)
-                        {
-                            Skill 枯竭打击 = new 枯竭打击(c)
-                            {
-                                Level = 1
-                            };
-                            c.Skills.Add(枯竭打击);
-
-                            Skill 能量毁灭 = new 能量毁灭(c)
-                            {
-                                Level = slevel
-                            };
-                            c.Skills.Add(能量毁灭);
-                        }
-
-                        if (c == character9)
-                        {
-                            Skill 破釜沉舟 = new 破釜沉舟(c)
-                            {
-                                Level = 1
-                            };
-                            c.Skills.Add(破釜沉舟);
-
-                            Skill 迅捷之势 = new 迅捷之势(c)
-                            {
-                                Level = slevel
-                            };
-                            c.Skills.Add(迅捷之势);
-                        }
-
-                        if (c == character10)
-                        {
-                            Skill 累积之压 = new 累积之压(c)
-                            {
-                                Level = 1
-                            };
-                            c.Skills.Add(累积之压);
-
-                            Skill 嗜血本能 = new 嗜血本能(c)
-                            {
-                                Level = slevel
-                            };
-                            c.Skills.Add(嗜血本能);
-                        }
-
-                        if (c == character11)
-                        {
-                            Skill 敏捷之刃 = new 敏捷之刃(c)
-                            {
-                                Level = 1
-                            };
-                            c.Skills.Add(敏捷之刃);
-
-                            Skill 平衡强化 = new 平衡强化(c)
-                            {
-                                Level = slevel
-                            };
-                            c.Skills.Add(平衡强化);
-                        }
-
-                        if (c == character12)
-                        {
-                            Skill 弱者猎手 = new 弱者猎手(c)
-                            {
-                                Level = 1
-                            };
-                            c.Skills.Add(弱者猎手);
-
-                            Skill 血之狂欢 = new 血之狂欢(c)
-                            {
-                                Level = slevel
-                            };
-                            c.Skills.Add(血之狂欢);
-                        }
+                        FunGameService.AddCharacterSkills(c, 1, slevel, slevel);
                     }
 
                     // 创建顺序表并排序
@@ -742,6 +548,366 @@ namespace Oshima.Core.Utils
 
                     IsRuning = false;
                 }
+
+                return result;
+            }
+            catch (Exception ex)
+            {
+                IsRuning = false;
+                Console.WriteLine(ex);
+                return [ex.ToString()];
+            }
+        }
+
+        public static List<string> StartGame(List<Character> characters, bool printout, bool isWeb = false, bool isTeam = false, bool deathMatchRoundDetail = false)
+        {
+            PrintOut = printout;
+            IsWeb = isWeb;
+            DeathMatchRoundDetail = deathMatchRoundDetail;
+            try
+            {
+                if (IsRuning) return ["游戏正在进行中，请勿重复请求！"];
+
+                List<string> result = [];
+                Msg = "";
+
+                IsRuning = true;
+
+                if (PrintOut) Console.WriteLine();
+                if (PrintOut) Console.WriteLine("Start!!!");
+                if (PrintOut) Console.WriteLine();
+
+                // 创建顺序表并排序
+                ActionQueue actionQueue = new(characters, isTeam, WriteLine);
+                if (isTeam)
+                {
+                    actionQueue.MaxRespawnTimes = -1;
+                    actionQueue.MaxScoreToWin = 30;
+                }
+                if (PrintOut) Console.WriteLine();
+
+                // 总游戏时长
+                double totalTime = 0;
+
+                // 显示角色信息
+                if (PrintOut) characters.ForEach(c => Console.WriteLine(c.GetInfo()));
+
+                // 团队模式
+                if (isTeam)
+                {
+                    Msg = "=== 团队模式随机分组 ===\r\n\r\n";
+                    // 打乱角色列表
+                    List<Character> shuffledCharacters = [.. characters.OrderBy(c => Random.Shared.Next())];
+
+                    // 创建两个团队
+                    List<Character> group1 = [];
+                    List<Character> group2 = [];
+
+                    // 将角色交替分配到两个团队中
+                    for (int cid = 0; cid < shuffledCharacters.Count; cid++)
+                    {
+                        if (cid % 2 == 0)
+                        {
+                            group1.Add(shuffledCharacters[cid]);
+                        }
+                        else
+                        {
+                            group2.Add(shuffledCharacters[cid]);
+                        }
+                    }
+
+                    // 添加到团队字典
+                    actionQueue.AddTeam("队伍一", group1);
+                    actionQueue.AddTeam("队伍二", group2);
+
+                    foreach (string team in actionQueue.Teams.Keys)
+                    {
+                        WriteLine($"团队【{team}】的成员：\r\n{string.Join("\r\n", actionQueue.Teams[team].Members)}\r\n");
+                    }
+                    result.Add(Msg);
+                }
+
+                // 显示初始顺序表
+                actionQueue.DisplayQueue();
+                if (PrintOut) Console.WriteLine();
+
+                // 总回合数
+                int maxRound = isTeam ? 9999 : 999;
+
+                // 随机回合奖励
+                Dictionary<int, List<Skill>> roundRewards = GenerateRoundRewards(maxRound);
+
+                int i = 1;
+                while (i < maxRound)
+                {
+                    Msg = "";
+                    if (i == maxRound - 1)
+                    {
+                        if (isTeam)
+                        {
+                            WriteLine("两队打到天昏地暗，流局了！！");
+                            break;
+                        }
+                        else
+                        {
+                            WriteLine($"=== 终局审判 ===");
+                            Dictionary<Character, double> 他们的血量百分比 = [];
+                            foreach (Character c in characters)
+                            {
+                                他们的血量百分比.TryAdd(c, c.HP / c.MaxHP);
+                            }
+                            double max = 他们的血量百分比.Values.Max();
+                            Character winner = 他们的血量百分比.Keys.Where(c => 他们的血量百分比[c] == max).First();
+                            WriteLine("[ " + winner + " ] 成为了天选之人！！");
+                            foreach (Character c in characters.Where(c => c != winner && c.HP > 0))
+                            {
+                                WriteLine("[ " + winner + " ] 对 [ " + c + " ] 造成了 99999999999 点真实伤害。");
+                                actionQueue.DeathCalculation(winner, c);
+                            }
+                            actionQueue.EndGameInfo(winner);
+                            result.Add(Msg);
+                            break;
+                        }
+                    }
+
+                    // 检查是否有角色可以行动
+                    Character? characterToAct = actionQueue.NextCharacter();
+
+                    // 处理回合
+                    if (characterToAct != null)
+                    {
+                        // 获取回合奖励
+                        List<Skill> skillRewards = [];
+                        if (roundRewards.TryGetValue(i, out List<Skill>? effectList) && effectList != null)
+                        {
+                            skillRewards = new(effectList);
+                        }
+
+                        WriteLine($"=== Round {i++} ===");
+                        WriteLine("现在是 [ " + characterToAct + (isTeam ? "（" + (actionQueue.GetTeam(characterToAct)?.Name ?? "") + "）" : "") + " ] 的回合！");
+
+                        // 实际的回合奖励
+                        List<Skill> realSkillRewards = [];
+                        if (skillRewards.Count > 0)
+                        {
+                            foreach (Skill skill in skillRewards)
+                            {
+                                Dictionary<string, object> effectArgs = [];
+                                if (RoundRewards.TryGetValue((EffectID)skill.Id, out Dictionary<string, object>? dict) && dict != null)
+                                {
+                                    effectArgs = new(dict);
+                                }
+                                Dictionary<string, object> args = new()
+                                {
+                                    { "skill", skill },
+                                    { "values", effectArgs }
+                                };
+                                skill.GamingQueue = actionQueue;
+                                skill.Effects.Add(Factory.OpenFactory.GetInstance<Effect>(skill.Id, "", args));
+                                skill.Character = characterToAct;
+                                skill.Level = 1;
+                                actionQueue.LastRound.RoundRewards.Add(skill);
+                                WriteLine($"[ {characterToAct} ] 获得了回合奖励！{skill.Description}".Trim());
+                                if (skill.IsActive)
+                                {
+                                    actionQueue.LastRound.Targets.Add(characterToAct);
+                                    skill.OnSkillCasted(actionQueue, characterToAct, [characterToAct]);
+                                }
+                                else
+                                {
+                                    characterToAct.Skills.Add(skill);
+                                    realSkillRewards.Add(skill);
+                                }
+                            }
+                        }
+
+                        bool isGameEnd = actionQueue.ProcessTurn(characterToAct);
+
+                        if (realSkillRewards.Count > 0)
+                        {
+                            foreach (Skill skill in realSkillRewards)
+                            {
+                                foreach (Effect e in skill.Effects)
+                                {
+                                    e.OnEffectLost(characterToAct);
+                                    characterToAct.Effects.Remove(e);
+                                }
+                                characterToAct.Skills.Remove(skill);
+                                skill.Character = null;
+                            }
+                        }
+
+                        if (isGameEnd)
+                        {
+                            result.Add(Msg);
+                            break;
+                        }
+
+                        actionQueue.DisplayQueue();
+                        WriteLine("");
+                    }
+
+                    string roundMsg = "";
+                    if (actionQueue.LastRound.HasKill)
+                    {
+                        roundMsg = Msg;
+                        if (!deathMatchRoundDetail)
+                        {
+                            roundMsg = actionQueue.LastRound.ToString().Trim() + $"\r\n{(isTeam ? $"比分：{string.Join(" / ", actionQueue.Teams.Values.Select(t => $"{t.Name}({t.Score})"))}，击杀来自{actionQueue.GetTeam(actionQueue.LastRound.Actor)}" : "")}\r\n";
+                        }
+                        Msg = "";
+                    }
+
+                    // 模拟时间流逝
+                    double timeLapse = actionQueue.TimeLapse();
+                    totalTime += timeLapse;
+
+                    if (roundMsg != "")
+                    {
+                        if ((isTeam && deathMatchRoundDetail || !isTeam) && isWeb)
+                        {
+                            roundMsg += "\r\n" + Msg;
+                        }
+                        result.Add(roundMsg);
+                    }
+                }
+
+                if (PrintOut)
+                {
+                    Console.WriteLine("--- End ---");
+                    Console.WriteLine($"总游戏时长：{totalTime:0.##}");
+                    Console.WriteLine("");
+                }
+
+                // 赛后统计
+                GetCharacterRating(actionQueue.CharacterStatistics, isTeam, actionQueue.EliminatedTeams);
+                int top = isWeb ? actionQueue.CharacterStatistics.Count : 4; // 回执多少个角色的统计信息
+                int count = 1;
+                if (isWeb)
+                {
+                    WriteLine("=== 技术得分排行榜 ==="); // 这是输出在界面上的
+                    Msg = $"=== 技术得分排行榜 TOP{top} ===\r\n"; // 这个是下一条给Result回执的标题，覆盖掉上面方法里的赋值了
+                }
+                else
+                {
+                    //WriteLine("=== 本场比赛最佳角色 ===");
+                    //Msg = $"=== 本场比赛最佳角色 ===\r\n";
+                    //// 统计技术得分
+                    //Character? character = actionQueue.CharacterStatistics.OrderByDescending(d => d.Value.Rating).Select(d => d.Key).FirstOrDefault();
+                    //if (character != null)
+                    //{
+                    //    CharacterStatistics stats = actionQueue.CharacterStatistics[character];
+                    //    stats.MVPs++;
+                    //    StringBuilder builder = new();
+                    //    builder.AppendLine($"{(isWeb ? count + "." : (isTeam ? "[ " + actionQueue.GetTeamFromEliminated(character)?.Name + " ]" ?? " " : ""))}[ {character.ToStringWithLevel()} ]");
+                    //    builder.AppendLine($"技术得分：{stats.Rating:0.##} / 击杀数：{stats.Kills} / 助攻数：{stats.Assists}{(actionQueue.MaxRespawnTimes != 0 ? " / 死亡数：" + stats.Deaths : "")}");
+                    //    builder.AppendLine($"存活时长：{stats.LiveTime} / 存活回合数：{stats.LiveRound} / 行动回合数：{stats.ActionTurn}");
+                    //    builder.AppendLine($"总计伤害：{stats.TotalDamage} / 总计物理伤害：{stats.TotalPhysicalDamage} / 总计魔法伤害：{stats.TotalMagicDamage}");
+                    //    builder.AppendLine($"总承受伤害：{stats.TotalTakenDamage} / 总承受物理伤害：{stats.TotalTakenPhysicalDamage} / 总承受魔法伤害：{stats.TotalTakenMagicDamage}");
+                    //    builder.Append($"每秒伤害：{stats.DamagePerSecond} / 每回合伤害：{stats.DamagePerTurn}");
+                    //    WriteLine(builder.ToString());
+                    //}
+                }
+
+                if (PrintOut)
+                {
+                    Console.WriteLine();
+                    Console.WriteLine("=== 技术得分排行榜 ===");
+                }
+
+                Msg = "=== 技术得分排行榜 ===\r\n";
+
+                if (isTeam)
+                {
+                    foreach (Character character in actionQueue.CharacterStatistics.OrderByDescending(d => d.Value.Rating).Select(d => d.Key))
+                    {
+                        StringBuilder builder = new();
+                        CharacterStatistics stats = actionQueue.CharacterStatistics[character];
+                        builder.AppendLine($"{(isWeb ? count + "." : ("[ " + actionQueue.GetTeamFromEliminated(character)?.Name + " ]" ?? ""))} [ {character.ToStringWithLevel()} ]");
+                        builder.AppendLine($"技术得分：{stats.Rating:0.##} / 击杀数：{stats.Kills} / 助攻数：{stats.Assists}{(actionQueue.MaxRespawnTimes != 0 ? " / 死亡数：" + stats.Deaths : "")}");
+                        builder.AppendLine($"存活时长：{stats.LiveTime} / 存活回合数：{stats.LiveRound} / 行动回合数：{stats.ActionTurn}");
+                        builder.AppendLine($"总计伤害：{stats.TotalDamage} / 总计物理伤害：{stats.TotalPhysicalDamage} / 总计魔法伤害：{stats.TotalMagicDamage}");
+                        builder.AppendLine($"总承受伤害：{stats.TotalTakenDamage} / 总承受物理伤害：{stats.TotalTakenPhysicalDamage} / 总承受魔法伤害：{stats.TotalTakenMagicDamage}");
+                        builder.Append($"每秒伤害：{stats.DamagePerSecond} / 每回合伤害：{stats.DamagePerTurn}");
+                        if (count++ <= top)
+                        {
+                            WriteLine(builder.ToString());
+                        }
+                        else
+                        {
+                            if (PrintOut) Console.WriteLine(builder.ToString());
+                        }
+                    }
+                }
+                else
+                {
+                    foreach (Character character in actionQueue.CharacterStatistics.OrderByDescending(d => d.Value.Rating).Select(d => d.Key))
+                    {
+                        StringBuilder builder = new();
+                        CharacterStatistics stats = actionQueue.CharacterStatistics[character];
+                        builder.AppendLine($"{(isWeb ? count + ". " : "")}[ {character.ToStringWithLevel()} ]");
+                        builder.AppendLine($"技术得分：{stats.Rating:0.##} / 击杀数：{stats.Kills} / 助攻数：{stats.Assists}{(actionQueue.MaxRespawnTimes != 0 ? " / 死亡数：" + stats.Deaths : "")}");
+                        builder.AppendLine($"存活时长：{stats.LiveTime} / 存活回合数：{stats.LiveRound} / 行动回合数：{stats.ActionTurn}");
+                        builder.AppendLine($"总计伤害：{stats.TotalDamage} / 总计物理伤害：{stats.TotalPhysicalDamage} / 总计魔法伤害：{stats.TotalMagicDamage}");
+                        builder.AppendLine($"总承受伤害：{stats.TotalTakenDamage} / 总承受物理伤害：{stats.TotalTakenPhysicalDamage} / 总承受魔法伤害：{stats.TotalTakenMagicDamage}");
+                        builder.Append($"每秒伤害：{stats.DamagePerSecond} / 每回合伤害：{stats.DamagePerTurn}");
+                        if (count++ <= top)
+                        {
+                            WriteLine(builder.ToString());
+                        }
+                        else
+                        {
+                            if (PrintOut) Console.WriteLine(builder.ToString());
+                        }
+                    }
+                }
+
+                result.Add(Msg);
+
+                // 显示每个角色的信息
+                if (isWeb)
+                {
+                    if (isTeam)
+                    {
+                        top = 1;
+                        for (i = actionQueue.EliminatedTeams.Count - 1; i >= 0; i--)
+                        {
+                            Team team = actionQueue.EliminatedTeams[i];
+                            string topTeam = "";
+                            if (top == 1)
+                            {
+                                topTeam = "冠军";
+                            }
+                            if (top == 2)
+                            {
+                                topTeam = "亚军";
+                            }
+                            if (top == 3)
+                            {
+                                topTeam = "季军";
+                            }
+                            if (top > 3)
+                            {
+                                topTeam = $"第 {top} 名";
+                            }
+                            foreach (Character character in team.Members)
+                            {
+                                result.Add($"== {topTeam}团队 [ {team.Name} ] ==\r\n== 角色：[ {character} ] ==\r\n{character.GetInfo()}");
+                            }
+                            top++;
+                        }
+                    }
+                    else
+                    {
+                        for (i = actionQueue.Eliminated.Count - 1; i >= 0; i--)
+                        {
+                            Character character = actionQueue.Eliminated[i];
+                            result.Add($"=== 角色 [ {character} ] ===\r\n{character.GetInfo()}");
+                        }
+                    }
+                }
+
+                IsRuning = false;
 
                 return result;
             }
