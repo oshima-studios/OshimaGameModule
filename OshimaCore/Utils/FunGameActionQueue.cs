@@ -751,12 +751,6 @@ namespace Oshima.Core.Utils
                         {
                             roundMsg = actionQueue.LastRound.ToString().Trim() + $"\r\n{(isTeam ? $"比分：{string.Join(" / ", actionQueue.Teams.Values.Select(t => $"{t.Name}({t.Score})"))}，击杀来自{actionQueue.GetTeam(actionQueue.LastRound.Actor)}" : "")}\r\n";
                         }
-                        roundMsg += "\r\n";
-                        foreach (Character character in characters)
-                        {
-                            roundMsg += $"[ {character} ] 生命值：{character.HP}/{character.MaxHP}" + "\r\n";
-                        }
-                        roundMsg = roundMsg.Trim();
                         Msg = "";
                     }
 
@@ -855,7 +849,8 @@ namespace Oshima.Core.Utils
                         builder.AppendLine($"存活时长：{stats.LiveTime} / 存活回合数：{stats.LiveRound} / 行动回合数：{stats.ActionTurn}");
                         builder.AppendLine($"总计伤害：{stats.TotalDamage} / 总计物理伤害：{stats.TotalPhysicalDamage} / 总计魔法伤害：{stats.TotalMagicDamage}");
                         builder.AppendLine($"总承受伤害：{stats.TotalTakenDamage} / 总承受物理伤害：{stats.TotalTakenPhysicalDamage} / 总承受魔法伤害：{stats.TotalTakenMagicDamage}");
-                        builder.Append($"每秒伤害：{stats.DamagePerSecond} / 每回合伤害：{stats.DamagePerTurn}");
+                        builder.AppendLine($"每秒伤害：{stats.DamagePerSecond} / 每回合伤害：{stats.DamagePerTurn}");
+                        builder.Append($"生命值：{character.HP:0.##}/{character.MaxHP:0.##} / 魔法值：{character.MP:0.##}/{character.MaxMP:0.##}");
                         if (count++ <= top)
                         {
                             WriteLine(builder.ToString());
