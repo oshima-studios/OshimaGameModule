@@ -637,7 +637,7 @@
   "初级法袍": {
     "Id": 12501,
     "Name": "初级法袍",
-    "Description": "增加角色 10% 魔法抗性。",
+    "Description": "增加角色 8% 魔法抗性。",
     "BackgroundStory": "可以不穿，不能没有。",
     "ItemType": 2,
     "WeaponType": 0,
@@ -653,7 +653,7 @@
             {
               "Id": 8020,
               "mdftype": 0,
-              "mdfvalue": 0.1
+              "mdfvalue": 0.08
             }
           ]
         }
@@ -688,7 +688,7 @@
   "圣洁之盾": {
     "Id": 12503,
     "Name": "圣洁之盾",
-    "Description": "受到的物理伤害减少 20%。",
+    "Description": "增加 10% 物理伤害减免。",
     "BackgroundStory": "传说中由圣光祝福的盾牌，能够抵挡邪恶的力量。",
     "ItemType": 2,
     "WeaponType": 0,
@@ -703,7 +703,7 @@
           "Effects": [
             {
               "Id": 8019,
-              "expdr": 0.20
+              "expdr": 0.10
             }
           ]
         }
@@ -713,7 +713,7 @@
   "魔能法袍": {
     "Id": 12504,
     "Name": "魔能法袍",
-    "Description": "增加角色 15 点智力和 20% 魔法抗性。",
+    "Description": "增加角色 15 点智力和 15% 魔法抗性。",
     "BackgroundStory": "法袍蕴含着神秘的魔力，穿戴者能增强魔法威力。",
     "ItemType": 2,
     "WeaponType": 0,
@@ -733,7 +733,7 @@
             {
               "Id": 8020,
               "mdftype": 0,
-              "mdfvalue": 0.2
+              "mdfvalue": 0.15
             }
           ]
         }
@@ -971,7 +971,7 @@
   "富贵头冠": {
     "Id": 14502,
     "Name": "富贵头冠",
-    "Description": "增加角色 170 点最大生命值和 80 点最大魔法值。",
+    "Description": "增加角色 70 点最大生命值和 40 点最大魔法值。",
     "BackgroundStory": "辉煌华贵的头冠。",
     "ItemType": 4,
     "WeaponType": 0,
@@ -986,11 +986,11 @@
           "Effects": [
             {
               "Id": 8012,
-              "exhp": 170
+              "exhp": 70
             },
             {
               "Id": 8013,
-              "exmp": 80
+              "exmp": 40
             }
           ]
         }
@@ -1000,7 +1000,7 @@
   "黄金挂坠": {
     "Id": 14503,
     "Name": "黄金挂坠",
-    "Description": "增加角色 300 点最大生命值。",
+    "Description": "增加角色 150 点最大生命值。",
     "BackgroundStory": "珍贵稀有的黄金挂件，象征财富与荣耀的护身符。",
     "ItemType": 4,
     "WeaponType": 0,
@@ -1015,7 +1015,7 @@
           "Effects": [
             {
               "Id": 8012,
-              "exhp": 300
+              "exhp": 150
             }
           ]
         }
@@ -1025,7 +1025,7 @@
   "辉煌光环": {
     "Id": 14504,
     "Name": "辉煌光环",
-    "Description": "增加角色 170 点最大魔法值和 6 点每时间魔法回复。",
+    "Description": "增加角色 80 点最大魔法值和 5 点每时间魔法回复。",
     "BackgroundStory": "流光溢彩的光环。",
     "ItemType": 4,
     "WeaponType": 0,
@@ -1040,11 +1040,11 @@
           "Effects": [
             {
               "Id": 8013,
-              "exmp": 170
+              "exmp": 80
             },
             {
               "Id": 8022,
-              "exmr": 6
+              "exmr": 5
             }
           ]
         }
@@ -1203,7 +1203,7 @@
   "YukiのCalfSocks": {
     "Id": 14510,
     "Name": "YukiのCalfSocks",
-    "Description": "增加角色 15% 暴击率和 30% 暴击伤害。",
+    "Description": "增加角色 10% 暴击率和 20% 暴击伤害。",
     "BackgroundStory": "小雪的小腿袜，拥有神秘的力量，令人神往。",
     "ItemType": 4,
     "WeaponType": 0,
@@ -1218,11 +1218,11 @@
           "Effects": [
             {
               "Id": 8014,
-              "excr": 0.15
+              "excr": 0.1
             },
             {
               "Id": 8015,
-              "excrd": 0.3
+              "excrd": 0.2
             }
           ]
         }
@@ -1286,7 +1286,7 @@
   "路人哥的cos服": {
     "Id": 14513,
     "Name": "路人哥的cos服",
-    "Description": "增加角色 10% 攻击力，增加角色 15% 魔法抗性，但是会减少 8% 物理伤害减免。",
+    "Description": "增加角色 10% 攻击力，增加角色 10% 魔法抗性，但是会减少 8% 物理伤害减免。",
     "BackgroundStory": "一套神秘的服饰，据说穿上后会引发未知的力量变化。",
     "ItemType": 4,
     "WeaponType": 0,
@@ -1306,11 +1306,44 @@
             {
               "Id": 8020,
               "mdftype": 0,
-              "mdfvalue": 0.15
+              "mdfvalue": 0.10
             },
             {
               "Id": 8019,
               "expdr": -0.08
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "白月光的玉佩": {
+    "Id": 14514,
+    "Name": "白月光的玉佩",
+    "Description": "增加角色 15% 魔法抗性，8 点每时间魔法回复和 15% 冷却缩减。",
+    "BackgroundStory": "据说每个总裁都有一个救命恩人，还有一个冒充救命恩人的人。",
+    "ItemType": 4,
+    "WeaponType": 0,
+    "QualityType": 3,
+    "Skills": {
+      "Active": null,
+      "Passives": [
+        {
+          "Id": 7314,
+          "Name": "白月光的玉佩",
+          "SkillType": 3,
+          "Effects": [
+            {
+              "Id": 8020,
+              "exatk": 0.15
+            },
+            {
+              "Id": 8022,
+              "exmr": 8
+            },
+            {
+              "Id": 8011,
+              "excdr": 0.1
             }
           ]
         }

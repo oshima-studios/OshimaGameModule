@@ -17,6 +17,7 @@ namespace Oshima.Core.Utils
         public static List<Skill> Magics { get; } = [];
         public static List<Item> Equipment { get; } = [];
         public static List<Item> Items { get; } = [];
+        public static Dictionary<long, string> UserIdAndUsername { get; } = [];
 
         public static void InitFunGame()
         {
@@ -35,7 +36,7 @@ namespace Oshima.Core.Utils
 
             Dictionary<string, Item> exItems = Factory.GetGameModuleInstances<Item>(OshimaGameModuleConstant.General, OshimaGameModuleConstant.Item);
             Equipment.AddRange(exItems.Values.Where(i => (int)i.ItemType >= 0 && (int)i.ItemType < 5));
-            Equipment.AddRange([new 攻击之爪10(), new 攻击之爪30(), new 攻击之爪50()]);
+            Equipment.AddRange([new 攻击之爪10(), new 攻击之爪20(), new 攻击之爪35(), new 攻击之爪50()]);
 
             Items.AddRange(exItems.Values.Where(i => (int)i.ItemType > 4));
 

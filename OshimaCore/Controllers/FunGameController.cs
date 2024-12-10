@@ -313,6 +313,7 @@ namespace Oshima.Core.Controllers
                 User user = Factory.GetUser(userid, username, DateTime.Now, DateTime.Now, userid + "@qq.com", username);
                 user.Inventory.Credits = 5000000;
                 user.Inventory.Characters.Add(new CustomCharacter(userid, username));
+                FunGameService.UserIdAndUsername[userid] = username;
                 pc.Add("user", user);
                 pc.SaveConfig();
                 return NetworkUtility.JsonSerialize($"创建存档成功！你的用户名是【{username}】。");
@@ -338,6 +339,7 @@ namespace Oshima.Core.Controllers
                 user.Inventory.Materials = 0;
                 user.Inventory.Characters.Clear();
                 user.Inventory.Items.Clear();
+                user.Inventory.Characters.Add(new CustomCharacter(userid, user.Username));
                 user.LastTime = DateTime.Now;
                 pc.Add("user", user);
                 pc.SaveConfig();
@@ -380,6 +382,7 @@ namespace Oshima.Core.Controllers
                 {
                     user.Inventory.Name = user.Username + "的库存";
                 }
+                FunGameService.UserIdAndUsername[user.Id] = user.Username;
                 user.LastTime = DateTime.Now;
                 pc.Add("user", user);
                 pc.SaveConfig();
@@ -1101,12 +1104,13 @@ namespace Oshima.Core.Controllers
         }
 
         [HttpPost("showcharacterinfo")]
-        public string GetCharacterInfoFromInventory([FromQuery] long? qq = null, [FromQuery] int? seq = null)
+        public string GetCharacterInfoFromInventory([FromQuery] long? qq = null, [FromQuery] int? seq = null, [FromQuery] bool? simple = null)
         {
             try
             {
                 long userid = qq ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
                 int cIndex = seq ?? 0;
+                bool isSimple = simple ?? false;
 
                 PluginConfig pc = new("saved", userid.ToString());
                 pc.LoadConfig();
@@ -1118,6 +1122,10 @@ namespace Oshima.Core.Controllers
                     if (cIndex > 0 && cIndex <= user.Inventory.Characters.Count)
                     {
                         Character character = user.Inventory.Characters.ToList()[cIndex - 1];
+                        if (isSimple)
+                        {
+                            return NetworkUtility.JsonSerialize($"这是你库存中序号为 {cIndex} 的角色简略信息：\r\n{character.GetSimpleInfo().Trim()}");
+                        }
                         return NetworkUtility.JsonSerialize($"这是你库存中序号为 {cIndex} 的角色详细信息：\r\n{character.GetInfo().Trim()}");
                     }
                     else
@@ -1338,6 +1346,28 @@ namespace Oshima.Core.Controllers
                 {
                     return [$"决斗发起失败！"];
                 }
+            }
+            catch (Exception e)
+            {
+                return [e.ToString()];
+            }
+        }
+        
+        [HttpPost("fightcustom2")]
+        public List<string> FightCustom2([FromQuery] long? qq = null, [FromQuery] string? name = null)
+        {
+            try
+            {
+                if (name != null)
+                {
+                    long enemyid = FunGameService.UserIdAndUsername.Where(kv => kv.Value == name).Select(kv => kv.Key).FirstOrDefault();
+                    if (enemyid == 0)
+                    {
+                        return [$"找不到此名称对应的玩家！"];
+                    }
+                    return FightCustom(qq, enemyid);
+                }
+                return [$"决斗发起失败！"];
             }
             catch (Exception e)
             {

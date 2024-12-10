@@ -566,12 +566,8 @@ namespace Oshima.Core.Utils
             DeathMatchRoundDetail = deathMatchRoundDetail;
             try
             {
-                if (IsRuning) return ["游戏正在进行中，请勿重复请求！"];
-
                 List<string> result = [];
                 Msg = "";
-
-                IsRuning = true;
 
                 if (PrintOut) Console.WriteLine();
                 if (PrintOut) Console.WriteLine("Start!!!");
@@ -755,6 +751,12 @@ namespace Oshima.Core.Utils
                         {
                             roundMsg = actionQueue.LastRound.ToString().Trim() + $"\r\n{(isTeam ? $"比分：{string.Join(" / ", actionQueue.Teams.Values.Select(t => $"{t.Name}({t.Score})"))}，击杀来自{actionQueue.GetTeam(actionQueue.LastRound.Actor)}" : "")}\r\n";
                         }
+                        roundMsg += "\r\n";
+                        foreach (Character character in characters)
+                        {
+                            roundMsg += $"[ {character} ] 生命值：{character.HP}/{character.MaxHP}" + "\r\n";
+                        }
+                        roundMsg = roundMsg.Trim();
                         Msg = "";
                     }
 
@@ -781,7 +783,7 @@ namespace Oshima.Core.Utils
 
                 // 赛后统计
                 GetCharacterRating(actionQueue.CharacterStatistics, isTeam, actionQueue.EliminatedTeams);
-                int top = isWeb ? actionQueue.CharacterStatistics.Count : 4; // 回执多少个角色的统计信息
+                int top = isWeb ? actionQueue.CharacterStatistics.Count : 2; // 回执多少个角色的统计信息
                 int count = 1;
                 if (isWeb)
                 {
@@ -790,23 +792,26 @@ namespace Oshima.Core.Utils
                 }
                 else
                 {
-                    //WriteLine("=== 本场比赛最佳角色 ===");
-                    //Msg = $"=== 本场比赛最佳角色 ===\r\n";
-                    //// 统计技术得分
-                    //Character? character = actionQueue.CharacterStatistics.OrderByDescending(d => d.Value.Rating).Select(d => d.Key).FirstOrDefault();
-                    //if (character != null)
-                    //{
-                    //    CharacterStatistics stats = actionQueue.CharacterStatistics[character];
-                    //    stats.MVPs++;
-                    //    StringBuilder builder = new();
-                    //    builder.AppendLine($"{(isWeb ? count + "." : (isTeam ? "[ " + actionQueue.GetTeamFromEliminated(character)?.Name + " ]" ?? " " : ""))}[ {character.ToStringWithLevel()} ]");
-                    //    builder.AppendLine($"技术得分：{stats.Rating:0.##} / 击杀数：{stats.Kills} / 助攻数：{stats.Assists}{(actionQueue.MaxRespawnTimes != 0 ? " / 死亡数：" + stats.Deaths : "")}");
-                    //    builder.AppendLine($"存活时长：{stats.LiveTime} / 存活回合数：{stats.LiveRound} / 行动回合数：{stats.ActionTurn}");
-                    //    builder.AppendLine($"总计伤害：{stats.TotalDamage} / 总计物理伤害：{stats.TotalPhysicalDamage} / 总计魔法伤害：{stats.TotalMagicDamage}");
-                    //    builder.AppendLine($"总承受伤害：{stats.TotalTakenDamage} / 总承受物理伤害：{stats.TotalTakenPhysicalDamage} / 总承受魔法伤害：{stats.TotalTakenMagicDamage}");
-                    //    builder.Append($"每秒伤害：{stats.DamagePerSecond} / 每回合伤害：{stats.DamagePerTurn}");
-                    //    WriteLine(builder.ToString());
-                    //}
+                    if (isTeam)
+                    {
+                        WriteLine("=== 本场比赛最佳角色 ===");
+                        Msg = $"=== 本场比赛最佳角色 ===\r\n";
+                        // 统计技术得分
+                        Character? character = actionQueue.CharacterStatistics.OrderByDescending(d => d.Value.Rating).Select(d => d.Key).FirstOrDefault();
+                        if (character != null)
+                        {
+                            CharacterStatistics stats = actionQueue.CharacterStatistics[character];
+                            stats.MVPs++;
+                            StringBuilder builder = new();
+                            builder.AppendLine($"{(isTeam ? "[ " + actionQueue.GetTeamFromEliminated(character)?.Name + " ] " : "")}[ {character.ToStringWithLevel()} ]");
+                            builder.AppendLine($"技术得分：{stats.Rating:0.##} / 击杀数：{stats.Kills} / 助攻数：{stats.Assists}{(actionQueue.MaxRespawnTimes != 0 ? " / 死亡数：" + stats.Deaths : "")}");
+                            builder.AppendLine($"存活时长：{stats.LiveTime} / 存活回合数：{stats.LiveRound} / 行动回合数：{stats.ActionTurn}");
+                            builder.AppendLine($"总计伤害：{stats.TotalDamage} / 总计物理伤害：{stats.TotalPhysicalDamage} / 总计魔法伤害：{stats.TotalMagicDamage}");
+                            builder.AppendLine($"总承受伤害：{stats.TotalTakenDamage} / 总承受物理伤害：{stats.TotalTakenPhysicalDamage} / 总承受魔法伤害：{stats.TotalTakenMagicDamage}");
+                            builder.Append($"每秒伤害：{stats.DamagePerSecond} / 每回合伤害：{stats.DamagePerTurn}");
+                            WriteLine(builder.ToString());
+                        }
+                    }
                 }
 
                 if (PrintOut)
@@ -815,7 +820,7 @@ namespace Oshima.Core.Utils
                     Console.WriteLine("=== 技术得分排行榜 ===");
                 }
 
-                Msg = "=== 技术得分排行榜 ===\r\n";
+                Msg = $"=== 技术得分排行榜 TOP{top} ===\r\n";
 
                 if (isTeam)
                 {
@@ -845,7 +850,7 @@ namespace Oshima.Core.Utils
                     {
                         StringBuilder builder = new();
                         CharacterStatistics stats = actionQueue.CharacterStatistics[character];
-                        builder.AppendLine($"{(isWeb ? count + ". " : "")}[ {character.ToStringWithLevel()} ]");
+                        builder.AppendLine($"{count + ". "}[ {character.ToStringWithLevel()} ]");
                         builder.AppendLine($"技术得分：{stats.Rating:0.##} / 击杀数：{stats.Kills} / 助攻数：{stats.Assists}{(actionQueue.MaxRespawnTimes != 0 ? " / 死亡数：" + stats.Deaths : "")}");
                         builder.AppendLine($"存活时长：{stats.LiveTime} / 存活回合数：{stats.LiveRound} / 行动回合数：{stats.ActionTurn}");
                         builder.AppendLine($"总计伤害：{stats.TotalDamage} / 总计物理伤害：{stats.TotalPhysicalDamage} / 总计魔法伤害：{stats.TotalMagicDamage}");
@@ -907,13 +912,10 @@ namespace Oshima.Core.Utils
                     }
                 }
 
-                IsRuning = false;
-
                 return result;
             }
             catch (Exception ex)
             {
-                IsRuning = false;
                 Console.WriteLine(ex);
                 return [ex.ToString()];
             }

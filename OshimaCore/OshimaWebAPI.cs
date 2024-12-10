@@ -1,4 +1,6 @@
-﻿using Milimoe.FunGame.Core.Library.Common.Addon;
+﻿using Milimoe.FunGame.Core.Api.Utility;
+using Milimoe.FunGame.Core.Entity;
+using Milimoe.FunGame.Core.Library.Common.Addon;
 using Oshima.Core.Configs;
 using Oshima.Core.Constant;
 using Oshima.Core.Utils;
@@ -113,6 +115,27 @@ namespace Oshima.Core.WebAPI
                         Console.Write("\r> ");
                     }
                 }
+            });
+            Task taskCache = Task.Factory.StartNew(async () =>
+            {
+                string directoryPath = $@"{AppDomain.CurrentDomain.BaseDirectory}configs/saved";
+                if (Directory.Exists(directoryPath))
+                {
+                    string[] filePaths = Directory.GetFiles(directoryPath);
+                    foreach (string filePath in filePaths)
+                    {
+                        string fileName = Path.GetFileNameWithoutExtension(filePath);
+                        PluginConfig pc = new("saved", fileName);
+                        pc.LoadConfig();
+                        if (pc.Count > 0)
+                        {
+                            User user = FunGameService.GetUser(pc);
+                            FunGameService.UserIdAndUsername[user.Id] = user.Username;
+                        }
+                    }
+                    Controller.WriteLine("读取 FunGame 存档缓存");
+                }
+                await Task.Delay(3000 * 60 * 10);
             });
         }
     }
