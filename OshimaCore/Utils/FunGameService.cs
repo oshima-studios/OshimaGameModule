@@ -36,7 +36,7 @@ namespace Oshima.Core.Utils
 
             Dictionary<string, Item> exItems = Factory.GetGameModuleInstances<Item>(OshimaGameModuleConstant.General, OshimaGameModuleConstant.Item);
             Equipment.AddRange(exItems.Values.Where(i => (int)i.ItemType >= 0 && (int)i.ItemType < 5));
-            Equipment.AddRange([new 攻击之爪10(), new 攻击之爪20(), new 攻击之爪35(), new 攻击之爪50()]);
+            Equipment.AddRange([new 攻击之爪5(), new 攻击之爪15(), new 攻击之爪25(), new 攻击之爪35()]);
 
             Items.AddRange(exItems.Values.Where(i => (int)i.ItemType > 4));
 
@@ -428,14 +428,14 @@ namespace Oshima.Core.Utils
 
             foreach (Character inventoryCharacter in characters)
             {
-                Character realCharacter = CharacterBuilder.Build(inventoryCharacter, false);
+                Character realCharacter = CharacterBuilder.Build(inventoryCharacter, false, Items, Skills);
                 realCharacter.User = user;
                 user.Inventory.Characters.Add(realCharacter);
             }
 
             foreach (Item inventoryItem in items)
             {
-                Item realItem = inventoryItem.Copy(true, true);
+                Item realItem = inventoryItem.Copy(true, true, true, Items, Skills);
                 if (realItem.IsEquipment)
                 {
                     IEnumerable<Character> has = user.Inventory.Characters.Where(character =>

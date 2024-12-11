@@ -16,7 +16,7 @@ namespace Oshima.FunGame.OshimaModules.Skills
 
         public 暗物质(Character? character = null) : base(SkillType.Magic, character)
         {
-            Effects.Add(new 基于攻击力的伤害_无基础伤害(this, 1.4, 0.28, true));
+            Effects.Add(new 基于攻击力的伤害_无基础伤害(this, 1.3, 0.28, true));
         }
     }
 }

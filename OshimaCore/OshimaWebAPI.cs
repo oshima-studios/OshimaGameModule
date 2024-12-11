@@ -116,7 +116,7 @@ namespace Oshima.Core.WebAPI
                     }
                 }
             });
-            Task taskCache = Task.Factory.StartNew(async () =>
+            Milimoe.FunGame.Core.Api.Utility.TaskScheduler.Shared.AddRecurringTask("刷新存档缓存", TimeSpan.FromSeconds(20), () =>
             {
                 string directoryPath = $@"{AppDomain.CurrentDomain.BaseDirectory}configs/saved";
                 if (Directory.Exists(directoryPath))
@@ -135,8 +135,7 @@ namespace Oshima.Core.WebAPI
                     }
                     Controller.WriteLine("读取 FunGame 存档缓存");
                 }
-                await Task.Delay(3000 * 60 * 10);
-            });
+            }, true);
         }
     }
 }
