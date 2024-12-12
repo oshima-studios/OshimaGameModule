@@ -17,6 +17,8 @@ namespace Oshima.Core.Utils
         public static List<Skill> Magics { get; } = [];
         public static List<Item> Equipment { get; } = [];
         public static List<Item> Items { get; } = [];
+        public static List<Skill> ItemSkills { get; } = [];
+        public static List<Item> AllItems { get; } = [];
         public static Dictionary<long, string> UserIdAndUsername { get; } = [];
 
         public static void InitFunGame()
@@ -34,16 +36,29 @@ namespace Oshima.Core.Utils
             Characters.Add(new dddovo());
             Characters.Add(new Quduoduo());
 
+            Skills.AddRange([new 疾风步()]);
+
+            Magics.AddRange([new 冰霜攻击(), new 火之矢(), new 水之矢(), new 风之轮(), new 石之锤(), new 心灵之霞(), new 次元上升(), new 暗物质(), new 回复术(), new 治愈术(),
+                new 时间加速(), new 时间减速(), new 沉默十字(), new 反魔法领域()]);
+
             Dictionary<string, Item> exItems = Factory.GetGameModuleInstances<Item>(OshimaGameModuleConstant.General, OshimaGameModuleConstant.Item);
             Equipment.AddRange(exItems.Values.Where(i => (int)i.ItemType >= 0 && (int)i.ItemType < 5));
             Equipment.AddRange([new 攻击之爪5(), new 攻击之爪15(), new 攻击之爪25(), new 攻击之爪35()]);
 
             Items.AddRange(exItems.Values.Where(i => (int)i.ItemType > 4));
 
-            Skills.AddRange([new 疾风步()]);
+            AllItems.AddRange(Equipment);
+            AllItems.AddRange(Items);
 
-            Magics.AddRange([new 冰霜攻击(), new 火之矢(), new 水之矢(), new 风之轮(), new 石之锤(), new 心灵之霞(), new 次元上升(), new 暗物质(), new 回复术(), new 治愈术(),
-                new 时间加速(), new 时间减速(), new 沉默十字(), new 反魔法领域()]);
+            Skill?[] activeSkills = [.. Equipment.Select(i => i.Skills.Active), .. Items.Select(i => i.Skills.Active)];
+            foreach (Skill? skill in activeSkills)
+            {
+                if (skill != null)
+                {
+                    ItemSkills.Add(skill);
+                }
+            }
+            ItemSkills.AddRange([.. Equipment.SelectMany(i => i.Skills.Passives), .. Items.SelectMany(i => i.Skills.Passives)]);
         }
 
         public static List<Item> GenerateMagicCards(int count, QualityType? qualityType = null)
@@ -57,7 +72,7 @@ namespace Oshima.Core.Utils
 
             return items;
         }
-        
+
         public static Item GenerateMagicCard(QualityType? qualityType = null)
         {
             Item item = Factory.GetItem();
@@ -370,7 +385,7 @@ namespace Oshima.Core.Utils
 
             return name.ToString();
         }
-        
+
         public static string GenerateRandomChineseUserName()
         {
             string[] commonSurnames = [
@@ -428,14 +443,14 @@ namespace Oshima.Core.Utils
 
             foreach (Character inventoryCharacter in characters)
             {
-                Character realCharacter = CharacterBuilder.Build(inventoryCharacter, false, Items, Skills);
+                Character realCharacter = CharacterBuilder.Build(inventoryCharacter, false, [.. Equipment, .. Items], ItemSkills);
                 realCharacter.User = user;
                 user.Inventory.Characters.Add(realCharacter);
             }
 
             foreach (Item inventoryItem in items)
             {
-                Item realItem = inventoryItem.Copy(true, true, true, Items, Skills);
+                Item realItem = inventoryItem.Copy(true, true, true, [.. Equipment, .. Items], ItemSkills);
                 if (realItem.IsEquipment)
                 {
                     IEnumerable<Character> has = user.Inventory.Characters.Where(character =>
