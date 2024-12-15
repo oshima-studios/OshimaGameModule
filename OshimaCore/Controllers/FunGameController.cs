@@ -1124,7 +1124,7 @@ namespace Oshima.Core.Controllers
                         Character character = user.Inventory.Characters.ToList()[cIndex - 1];
                         if (isSimple)
                         {
-                            return NetworkUtility.JsonSerialize($"这是你库存中序号为 {cIndex} 的角色简略信息：\r\n{character.GetSimpleInfo().Trim()}");
+                            return NetworkUtility.JsonSerialize($"这是你库存中序号为 {cIndex} 的角色简略信息：\r\n{character.GetSimpleInfo(showEXP: true).Trim()}");
                         }
                         return NetworkUtility.JsonSerialize($"这是你库存中序号为 {cIndex} 的角色详细信息：\r\n{character.GetInfo().Trim()}");
                     }
@@ -1340,7 +1340,7 @@ namespace Oshima.Core.Controllers
                         return [$"对方似乎还没有自建角色，请发送【生成自建角色】创建！"];
                     }
 
-                    return FunGameActionQueue.StartGame([character1, character2], false, false, false, false);
+                    return FunGameActionQueue.StartGame([character1, character2], false, false, false, false, false);
                 }
                 else
                 {
@@ -1381,7 +1381,7 @@ namespace Oshima.Core.Controllers
             if (master != null && master == GeneralSettings.Master)
             {
                 FunGameService.Reload();
-                FunGameActionQueue.InitFunGame();
+                FunGameActionQueue.InitFunGameActionQueue();
                 return NetworkUtility.JsonSerialize("FunGame已重新加载。");
             }
             return NetworkUtility.JsonSerialize("提供的参数不正确。");

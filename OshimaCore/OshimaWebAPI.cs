@@ -1,10 +1,12 @@
 ﻿using Milimoe.FunGame.Core.Api.Utility;
 using Milimoe.FunGame.Core.Entity;
 using Milimoe.FunGame.Core.Library.Common.Addon;
+using Milimoe.FunGame.Core.Library.Constant;
 using Oshima.Core.Configs;
 using Oshima.Core.Constant;
 using Oshima.Core.Utils;
 using Oshima.FunGame.OshimaModules;
+using TaskScheduler = Milimoe.FunGame.Core.Api.Utility.TaskScheduler;
 
 namespace Oshima.Core.WebAPI
 {
@@ -45,78 +47,39 @@ namespace Oshima.Core.WebAPI
             SayNo.InitSayNo();
             Ignore.InitIgnore();
             FunGameService.InitFunGame();
-            FunGameActionQueue.InitFunGame();
-            Task taskTime = Task.Factory.StartNew(async () =>
+            FunGameActionQueue.InitFunGameActionQueue();
+            List<(int start, int end, double expPerLevel)> levelRanges = [
+                (1, 9, 1000),
+                (10, 19, 1500),
+                (20, 29, 2000),
+                (30, 39, 3000),
+                (40, 49, 4000),
+                (50, 59, 5000)
+            ];
+            foreach (var (start, end, expPerLevel) in levelRanges)
             {
-                bool check9 = true;
-                bool check15 = true;
-                while (true)
+                for (int level = start; level <= end; level++)
                 {
-                    try
-                    {
-                        DateTime now = DateTime.Now;
-                        if (now.Hour == 8 && now.Minute == 30 && !Daily.DailyNews)
-                        {
-                            Daily.DailyNews = true;
-                            Console.ForegroundColor = ConsoleColor.Magenta;
-                            Console.ForegroundColor = ConsoleColor.Gray;
-                        }
-                        if (now.Hour == 8 && now.Minute == 31)
-                        {
-                            Daily.DailyNews = false;
-                        }
-                        if (now.Hour == 0 && now.Minute == 0 && Daily.ClearDailys)
-                        {
-                            Daily.ClearDailys = false;
-                            // 清空运势
-                            Daily.ClearDaily();
-                            Console.ForegroundColor = ConsoleColor.Magenta;
-                            Console.WriteLine("\r已重置所有人的今日运势。");
-                            Console.ForegroundColor = ConsoleColor.Gray;
-                            Console.Write("\r> ");
-                        }
-                        if (now.Hour == 0 && now.Minute == 1)
-                        {
-                            Daily.ClearDailys = true;
-                        }
-                        if (now.Hour == 9 && now.Minute == 0 && check9)
-                        {
-                            check9 = false;
-                            Console.ForegroundColor = ConsoleColor.Magenta;
-                            Console.WriteLine("\r重置物品交易冷却时间。");
-                            await FunGameService.AllowSellAndTrade();
-                            Console.ForegroundColor = ConsoleColor.Gray;
-                            Console.Write("\r> ");
-                        }
-                        if (now.Hour == 9 && now.Minute == 1)
-                        {
-                            check9 = true;
-                        }
-                        if (now.Hour == 15 && now.Minute == 0 && check15)
-                        {
-                            check15 = false;
-                            Console.ForegroundColor = ConsoleColor.Magenta;
-                            Console.WriteLine("\r重置物品交易冷却时间。");
-                            await FunGameService.AllowSellAndTrade();
-                            Console.ForegroundColor = ConsoleColor.Gray;
-                            Console.Write("\r> ");
-                        }
-                        if (now.Hour == 15 && now.Minute == 1)
-                        {
-                            check15 = true;
-                        }
-                        await Task.Delay(1000);
-                    }
-                    catch (Exception e)
-                    {
-                        Console.ForegroundColor = ConsoleColor.Red;
-                        Console.WriteLine("\r" + e);
-                        Console.ForegroundColor = ConsoleColor.Gray;
-                        Console.Write("\r> ");
-                    }
+                    General.GameplayEquilibriumConstant.EXPUpperLimit[level] = expPerLevel;
                 }
+            }
+            General.GameplayEquilibriumConstant.EXPUpperLimit[60] = 9999999999999;
+            TaskScheduler.Shared.AddTask("重置每日运势", new TimeSpan(0, 0, 0), () =>
+            {
+                Controller.WriteLine("已重置所有人的今日运势");
+                Daily.ClearDaily();
             });
-            Milimoe.FunGame.Core.Api.Utility.TaskScheduler.Shared.AddRecurringTask("刷新存档缓存", TimeSpan.FromSeconds(20), () =>
+            TaskScheduler.Shared.AddTask("重置交易冷却1", new TimeSpan(9, 0, 0), () =>
+            {
+                Controller.WriteLine("重置物品交易冷却时间");
+                _ = FunGameService.AllowSellAndTrade();
+            });
+            TaskScheduler.Shared.AddTask("重置交易冷却2", new TimeSpan(15, 0, 0), () =>
+            {
+                Controller.WriteLine("重置物品交易冷却时间");
+                _ = FunGameService.AllowSellAndTrade();
+            });
+            TaskScheduler.Shared.AddRecurringTask("刷新存档缓存", TimeSpan.FromSeconds(20), () =>
             {
                 string directoryPath = $@"{AppDomain.CurrentDomain.BaseDirectory}configs/saved";
                 if (Directory.Exists(directoryPath))

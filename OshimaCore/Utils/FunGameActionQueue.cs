@@ -20,7 +20,7 @@ namespace Oshima.Core.Utils
         public static bool DeathMatchRoundDetail { get; set; } = false;
         public static string Msg { get; set; } = "";
 
-        public static void InitFunGame()
+        public static void InitFunGameActionQueue()
         {
             CharacterStatistics.Clear();
             TeamCharacterStatistics.Clear();
@@ -387,6 +387,22 @@ namespace Oshima.Core.Utils
 
                     // 赛后统计
                     GetCharacterRating(actionQueue.CharacterStatistics, isTeam, actionQueue.EliminatedTeams);
+
+                    // 统计技术得分，评选 MVP
+                    Character? mvp = actionQueue.CharacterStatistics.OrderByDescending(d => d.Value.Rating).Select(d => d.Key).FirstOrDefault();
+                    StringBuilder mvpBuilder = new();
+                    if (mvp != null)
+                    {
+                        CharacterStatistics stats = actionQueue.CharacterStatistics[mvp];
+                        stats.MVPs++;
+                        mvpBuilder.AppendLine($"{(isTeam ? "[ " + actionQueue.GetTeamFromEliminated(mvp)?.Name + " ] " : "")}[ {mvp.ToStringWithLevel()} ]");
+                        mvpBuilder.AppendLine($"技术得分：{stats.Rating:0.##} / 击杀数：{stats.Kills} / 助攻数：{stats.Assists}{(actionQueue.MaxRespawnTimes != 0 ? " / 死亡数：" + stats.Deaths : "")}");
+                        mvpBuilder.AppendLine($"存活时长：{stats.LiveTime} / 存活回合数：{stats.LiveRound} / 行动回合数：{stats.ActionTurn}");
+                        mvpBuilder.AppendLine($"总计伤害：{stats.TotalDamage} / 总计物理伤害：{stats.TotalPhysicalDamage} / 总计魔法伤害：{stats.TotalMagicDamage}");
+                        mvpBuilder.AppendLine($"总承受伤害：{stats.TotalTakenDamage} / 总承受物理伤害：{stats.TotalTakenPhysicalDamage} / 总承受魔法伤害：{stats.TotalTakenMagicDamage}");
+                        mvpBuilder.Append($"每秒伤害：{stats.DamagePerSecond} / 每回合伤害：{stats.DamagePerTurn}");
+                    }
+
                     int top = isWeb ? actionQueue.CharacterStatistics.Count : 0; // 回执多少个角色的统计信息
                     int count = 1;
                     if (isWeb)
@@ -398,27 +414,13 @@ namespace Oshima.Core.Utils
                     {
                         WriteLine("=== 本场比赛最佳角色 ===");
                         Msg = $"=== 本场比赛最佳角色 ===\r\n";
-                        // 统计技术得分
-                        Character? character = actionQueue.CharacterStatistics.OrderByDescending(d => d.Value.Rating).Select(d => d.Key).FirstOrDefault();
-                        if (character != null)
-                        {
-                            CharacterStatistics stats = actionQueue.CharacterStatistics[character];
-                            stats.MVPs++;
-                            StringBuilder builder = new();
-                            builder.AppendLine($"{(isWeb ? count + "." : (isTeam ? "[ " + actionQueue.GetTeamFromEliminated(character)?.Name + " ]" ?? "" : ""))} [ {character.ToStringWithLevel()} ]");
-                            builder.AppendLine($"技术得分：{stats.Rating:0.##} / 击杀数：{stats.Kills} / 助攻数：{stats.Assists}{(actionQueue.MaxRespawnTimes != 0 ? " / 死亡数：" + stats.Deaths : "")}");
-                            builder.AppendLine($"存活时长：{stats.LiveTime} / 存活回合数：{stats.LiveRound} / 行动回合数：{stats.ActionTurn}");
-                            builder.AppendLine($"总计伤害：{stats.TotalDamage} / 总计物理伤害：{stats.TotalPhysicalDamage} / 总计魔法伤害：{stats.TotalMagicDamage}");
-                            builder.AppendLine($"总承受伤害：{stats.TotalTakenDamage} / 总承受物理伤害：{stats.TotalTakenPhysicalDamage} / 总承受魔法伤害：{stats.TotalTakenMagicDamage}");
-                            builder.Append($"每秒伤害：{stats.DamagePerSecond} / 每回合伤害：{stats.DamagePerTurn}");
-                            WriteLine(builder.ToString());
-                        }
-                    }
+                        WriteLine(mvpBuilder.ToString());
 
-                    if (PrintOut)
-                    {
-                        Console.WriteLine();
-                        Console.WriteLine("=== 技术得分排行榜 ===");
+                        if (PrintOut)
+                        {
+                            Console.WriteLine();
+                            Console.WriteLine("=== 技术得分排行榜 ===");
+                        }
                     }
 
                     if (isTeam)
@@ -559,7 +561,7 @@ namespace Oshima.Core.Utils
             }
         }
 
-        public static List<string> StartGame(List<Character> characters, bool printout, bool isWeb = false, bool isTeam = false, bool deathMatchRoundDetail = false)
+        public static List<string> StartGame(List<Character> characters, bool printout, bool isWeb = false, bool isTeam = false, bool deathMatchRoundDetail = false, bool showRoundEndDetail = false)
         {
             PrintOut = printout;
             IsWeb = isWeb;
@@ -739,7 +741,7 @@ namespace Oshima.Core.Utils
                             break;
                         }
 
-                        actionQueue.DisplayQueue();
+                        if (showRoundEndDetail) actionQueue.DisplayQueue();
                         WriteLine("");
                     }
 
@@ -777,43 +779,24 @@ namespace Oshima.Core.Utils
 
                 // 赛后统计
                 GetCharacterRating(actionQueue.CharacterStatistics, isTeam, actionQueue.EliminatedTeams);
+
+                // 统计技术得分，评选 MVP
+                Character? mvp = actionQueue.CharacterStatistics.OrderByDescending(d => d.Value.Rating).Select(d => d.Key).FirstOrDefault();
+                StringBuilder mvpBuilder = new();
+                if (mvp != null)
+                {
+                    CharacterStatistics stats = actionQueue.CharacterStatistics[mvp];
+                    stats.MVPs++;
+                    mvpBuilder.AppendLine($"{(isTeam ? "[ " + actionQueue.GetTeamFromEliminated(mvp)?.Name + " ] " : "")}[ {mvp.ToStringWithLevel()} ]");
+                    mvpBuilder.AppendLine($"技术得分：{stats.Rating:0.##} / 击杀数：{stats.Kills} / 助攻数：{stats.Assists}{(actionQueue.MaxRespawnTimes != 0 ? " / 死亡数：" + stats.Deaths : "")}");
+                    mvpBuilder.AppendLine($"存活时长：{stats.LiveTime} / 存活回合数：{stats.LiveRound} / 行动回合数：{stats.ActionTurn}");
+                    mvpBuilder.AppendLine($"总计伤害：{stats.TotalDamage} / 总计物理伤害：{stats.TotalPhysicalDamage} / 总计魔法伤害：{stats.TotalMagicDamage}");
+                    mvpBuilder.AppendLine($"总承受伤害：{stats.TotalTakenDamage} / 总承受物理伤害：{stats.TotalTakenPhysicalDamage} / 总承受魔法伤害：{stats.TotalTakenMagicDamage}");
+                    mvpBuilder.Append($"每秒伤害：{stats.DamagePerSecond} / 每回合伤害：{stats.DamagePerTurn}");
+                }
+
                 int top = isWeb ? actionQueue.CharacterStatistics.Count : 2; // 回执多少个角色的统计信息
                 int count = 1;
-                if (isWeb)
-                {
-                    WriteLine("=== 技术得分排行榜 ==="); // 这是输出在界面上的
-                    Msg = $"=== 技术得分排行榜 TOP{top} ===\r\n"; // 这个是下一条给Result回执的标题，覆盖掉上面方法里的赋值了
-                }
-                else
-                {
-                    if (isTeam)
-                    {
-                        WriteLine("=== 本场比赛最佳角色 ===");
-                        Msg = $"=== 本场比赛最佳角色 ===\r\n";
-                        // 统计技术得分
-                        Character? character = actionQueue.CharacterStatistics.OrderByDescending(d => d.Value.Rating).Select(d => d.Key).FirstOrDefault();
-                        if (character != null)
-                        {
-                            CharacterStatistics stats = actionQueue.CharacterStatistics[character];
-                            stats.MVPs++;
-                            StringBuilder builder = new();
-                            builder.AppendLine($"{(isTeam ? "[ " + actionQueue.GetTeamFromEliminated(character)?.Name + " ] " : "")}[ {character.ToStringWithLevel()} ]");
-                            builder.AppendLine($"技术得分：{stats.Rating:0.##} / 击杀数：{stats.Kills} / 助攻数：{stats.Assists}{(actionQueue.MaxRespawnTimes != 0 ? " / 死亡数：" + stats.Deaths : "")}");
-                            builder.AppendLine($"存活时长：{stats.LiveTime} / 存活回合数：{stats.LiveRound} / 行动回合数：{stats.ActionTurn}");
-                            builder.AppendLine($"总计伤害：{stats.TotalDamage} / 总计物理伤害：{stats.TotalPhysicalDamage} / 总计魔法伤害：{stats.TotalMagicDamage}");
-                            builder.AppendLine($"总承受伤害：{stats.TotalTakenDamage} / 总承受物理伤害：{stats.TotalTakenPhysicalDamage} / 总承受魔法伤害：{stats.TotalTakenMagicDamage}");
-                            builder.Append($"每秒伤害：{stats.DamagePerSecond} / 每回合伤害：{stats.DamagePerTurn}");
-                            WriteLine(builder.ToString());
-                        }
-                    }
-                }
-
-                if (PrintOut)
-                {
-                    Console.WriteLine();
-                    Console.WriteLine("=== 技术得分排行榜 ===");
-                }
-
                 Msg = $"=== 技术得分排行榜 TOP{top} ===\r\n";
 
                 if (isTeam)

@@ -12,7 +12,7 @@ namespace Oshima.FunGame.OshimaModules.Characters
             Name = name;
             FirstName = firstname;
             NickName = nickname;
-            PrimaryAttribute = (PrimaryAttribute)Random.Shared.Next(4);
+            PrimaryAttribute = (PrimaryAttribute)Random.Shared.Next(1, 4);
             InitialATK = Random.Shared.Next(15, 26);
             InitialHP = Random.Shared.Next(40, 86);
             InitialMP = Random.Shared.Next(20, 56);

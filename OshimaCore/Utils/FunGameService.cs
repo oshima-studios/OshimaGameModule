@@ -357,6 +357,8 @@ namespace Oshima.Core.Utils
             Equipment.Clear();
             Skills.Clear();
             Magics.Clear();
+            AllItems.Clear();
+            ItemSkills.Clear();
 
             InitFunGame();
         }

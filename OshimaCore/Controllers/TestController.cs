@@ -3,9 +3,11 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Milimoe.FunGame.Core.Api.Transmittal;
 using Milimoe.FunGame.Core.Api.Utility;
+using Milimoe.FunGame.Core.Library.Constant;
 using Milimoe.FunGame.Core.Library.Exception;
 using Milimoe.FunGame.Core.Library.SQLScript.Common;
 using Oshima.Core.Constant;
+using TaskScheduler = Milimoe.FunGame.Core.Api.Utility.TaskScheduler;
 
 namespace Oshima.Core.Controllers
 {
@@ -50,6 +52,12 @@ namespace Oshima.Core.Controllers
                 }
             }
             return NetworkUtility.JsonSerialize("无法调用此接口。原因：与 SQL 服务器通信失败。");
+        }
+
+        [HttpGet("gettask")]
+        public string GetTaskScheduler(string name)
+        {
+            return NetworkUtility.JsonSerialize(TaskScheduler.Shared.GetRunTimeInfo(name));
         }
     }
 }
