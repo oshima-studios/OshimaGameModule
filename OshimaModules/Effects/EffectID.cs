@@ -199,6 +199,11 @@
         /// 立即获得能量值，参数：ep
         /// </summary>
         GetEP = 8705,
+        
+        /// <summary>
+        /// 立即获得经验值，参数：exp
+        /// </summary>
+        GetEXP = 8706,
 
         /// <summary>
         /// 主动特效终点

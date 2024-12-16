@@ -117,6 +117,7 @@ namespace Oshima.FunGame.OshimaModules
                         EffectID.RecoverHP2 => new RecoverHP2(skill, dict),
                         EffectID.RecoverMP2 => new RecoverMP2(skill, dict),
                         EffectID.GetEP => new GetEP(skill, dict),
+                        EffectID.GetEXP => new GetEXP(skill, dict),
                         _ => null
                     };
                 }

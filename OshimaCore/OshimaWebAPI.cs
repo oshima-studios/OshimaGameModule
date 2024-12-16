@@ -48,22 +48,6 @@ namespace Oshima.Core.WebAPI
             Ignore.InitIgnore();
             FunGameService.InitFunGame();
             FunGameActionQueue.InitFunGameActionQueue();
-            List<(int start, int end, double expPerLevel)> levelRanges = [
-                (1, 9, 1000),
-                (10, 19, 1500),
-                (20, 29, 2000),
-                (30, 39, 3000),
-                (40, 49, 4000),
-                (50, 59, 5000)
-            ];
-            foreach (var (start, end, expPerLevel) in levelRanges)
-            {
-                for (int level = start; level <= end; level++)
-                {
-                    General.GameplayEquilibriumConstant.EXPUpperLimit[level] = expPerLevel;
-                }
-            }
-            General.GameplayEquilibriumConstant.EXPUpperLimit[60] = 9999999999999;
             TaskScheduler.Shared.AddTask("重置每日运势", new TimeSpan(0, 0, 0), () =>
             {
                 Controller.WriteLine("已重置所有人的今日运势");

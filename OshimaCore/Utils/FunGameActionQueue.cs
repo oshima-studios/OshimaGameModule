@@ -1017,6 +1017,13 @@ namespace Oshima.Core.Utils
                         {
                             { "mp", Math.Clamp(Random.Shared.NextDouble(), 0.09, 0.18) }
                         }
+                    },
+                    {
+                        EffectID.GetEP,
+                        new()
+                        {
+                            { "ep", Random.Shared.Next(20, 40) }
+                        }
                     }
                 };
             }
