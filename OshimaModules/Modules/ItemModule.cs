@@ -1,6 +1,7 @@
 ﻿using Milimoe.FunGame.Core.Api.Utility;
 using Milimoe.FunGame.Core.Entity;
 using Oshima.FunGame.OshimaModules.Items;
+using Oshima.FunGame.OshimaModules.Items.Consumable;
 
 namespace Oshima.FunGame.OshimaModules
 {
@@ -29,6 +30,9 @@ namespace Oshima.FunGame.OshimaModules
                     (long)AccessoryID.攻击之爪15 => new 攻击之爪15(),
                     (long)AccessoryID.攻击之爪25 => new 攻击之爪25(),
                     (long)AccessoryID.攻击之爪35 => new 攻击之爪35(),
+                    (long)ConsumableID.小经验书 => new 小经验书(),
+                    (long)ConsumableID.中经验书 => new 中经验书(),
+                    (long)ConsumableID.大经验书 => new 大经验书(),
                     _ => null,
                 };
             };

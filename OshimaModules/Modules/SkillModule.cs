@@ -3,6 +3,7 @@ using Milimoe.FunGame.Core.Entity;
 using Oshima.FunGame.OshimaModules.Effects.ItemEffects;
 using Oshima.FunGame.OshimaModules.Effects.OpenEffects;
 using Oshima.FunGame.OshimaModules.Items;
+using Oshima.FunGame.OshimaModules.Items.Consumable;
 using Oshima.FunGame.OshimaModules.Skills;
 
 namespace Oshima.FunGame.OshimaModules
@@ -68,6 +69,7 @@ namespace Oshima.FunGame.OshimaModules
                     (long)PassiveID.敏捷之刃 => new 敏捷之刃(),
                     (long)PassiveID.弱者猎手 => new 弱者猎手(),
                     (long)ItemPassiveID.攻击之爪 => new 攻击之爪技能(),
+                    (long)ItemActiveID.经验书 => new 经验书技能(),
                     _ => null
                 };
             };
