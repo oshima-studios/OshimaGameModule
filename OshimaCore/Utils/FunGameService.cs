@@ -6,6 +6,7 @@ using Oshima.FunGame.OshimaModules;
 using Oshima.FunGame.OshimaModules.Characters;
 using Oshima.FunGame.OshimaModules.Effects.OpenEffects;
 using Oshima.FunGame.OshimaModules.Items;
+using Oshima.FunGame.OshimaModules.Items.Consumable;
 using Oshima.FunGame.OshimaModules.Skills;
 
 namespace Oshima.Core.Utils
@@ -46,6 +47,7 @@ namespace Oshima.Core.Utils
             Equipment.AddRange([new 攻击之爪5(), new 攻击之爪15(), new 攻击之爪25(), new 攻击之爪35()]);
 
             Items.AddRange(exItems.Values.Where(i => (int)i.ItemType > 4));
+            Items.AddRange([new 小经验书(), new 中经验书(), new 大经验书()]);
 
             AllItems.AddRange(Equipment);
             AllItems.AddRange(Items);
@@ -581,6 +583,13 @@ namespace Oshima.Core.Utils
                     SetSellAndTradeTime(mfk);
                     user.Inventory.Items.Add(mfk);
                     msg += ItemSet.GetQualityTypeName(mfk.QualityType) + ItemSet.GetItemTypeName(mfk.ItemType) + "【" + mfk.Name + "】！\r\n" + mfk.Description;
+                    break;
+                    
+                case 7:
+                    Item 物品 = Items[Random.Shared.Next(Items.Count)].Copy();
+                    SetSellAndTradeTime(物品);
+                    user.Inventory.Items.Add(物品);
+                    msg += ItemSet.GetQualityTypeName(物品.QualityType) + ItemSet.GetItemTypeName(物品.ItemType) + "【" + 物品.Name + "】！\r\n" + 物品.Description;
                     break;
 
                 case 0:

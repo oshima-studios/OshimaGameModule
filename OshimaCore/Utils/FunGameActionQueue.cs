@@ -561,7 +561,7 @@ namespace Oshima.Core.Utils
             }
         }
 
-        public static List<string> StartGame(List<Character> characters, bool printout, bool isWeb = false, bool isTeam = false, bool deathMatchRoundDetail = false, bool showRoundEndDetail = false)
+        public static List<string> StartGame(List<Character> characters, bool printout, bool isWeb = false, bool isTeam = false, bool deathMatchRoundDetail = false, bool showRoundEndDetail = false, bool showAllRound = false)
         {
             PrintOut = printout;
             IsWeb = isWeb;
@@ -746,12 +746,19 @@ namespace Oshima.Core.Utils
                     }
 
                     string roundMsg = "";
-                    if (actionQueue.LastRound.HasKill)
+                    if (actionQueue.LastRound.HasKill || showAllRound)
                     {
                         roundMsg = Msg;
                         if (!deathMatchRoundDetail)
                         {
-                            roundMsg = actionQueue.LastRound.ToString().Trim() + $"\r\n{(isTeam ? $"比分：{string.Join(" / ", actionQueue.Teams.Values.Select(t => $"{t.Name}({t.Score})"))}，击杀来自{actionQueue.GetTeam(actionQueue.LastRound.Actor)}" : "")}\r\n";
+                            roundMsg = actionQueue.LastRound.ToString().Trim() + $"\r\n{(isTeam ? $"比分：{string.Join(" / ", actionQueue.Teams.Values.Select(t => $"{t.Name}({t.Score})"))}，击杀来自{actionQueue.GetTeam(actionQueue.LastRound.Actor)}" : "")}";
+                            if (showAllRound)
+                            {
+                                foreach (Character character in actionQueue.Queue)
+                                {
+                                    roundMsg += $"[ {character} ] 生命值：{character.HP:0.##}/{character.MaxHP:0.##} / 魔法值：{character.MP:0.##}/{character.MaxMP:0.##}\r\n";
+                                }
+                            }
                         }
                         Msg = "";
                     }

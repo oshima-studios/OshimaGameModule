@@ -1294,12 +1294,13 @@ namespace Oshima.Core.Controllers
         }
 
         [HttpPost("fightcustom")]
-        public List<string> FightCustom([FromQuery] long? qq = null, [FromQuery] long? eqq = null)
+        public List<string> FightCustom([FromQuery] long? qq = null, [FromQuery] long? eqq = null, [FromQuery] bool? all = null)
         {
             try
             {
                 long userid = qq ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
                 long enemyid = eqq ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
+                bool showAllRound = all ?? false;
 
                 PluginConfig pc = new("saved", userid.ToString());
                 pc.LoadConfig();
@@ -1340,7 +1341,7 @@ namespace Oshima.Core.Controllers
                         return [$"对方似乎还没有自建角色，请发送【生成自建角色】创建！"];
                     }
 
-                    return FunGameActionQueue.StartGame([character1, character2], false, false, false, false, false);
+                    return FunGameActionQueue.StartGame([character1, character2], false, false, false, false, false, showAllRound);
                 }
                 else
                 {
@@ -1354,7 +1355,7 @@ namespace Oshima.Core.Controllers
         }
         
         [HttpPost("fightcustom2")]
-        public List<string> FightCustom2([FromQuery] long? qq = null, [FromQuery] string? name = null)
+        public List<string> FightCustom2([FromQuery] long? qq = null, [FromQuery] string? name = null, [FromQuery] bool? all = null)
         {
             try
             {
@@ -1365,7 +1366,7 @@ namespace Oshima.Core.Controllers
                     {
                         return [$"找不到此名称对应的玩家！"];
                     }
-                    return FightCustom(qq, enemyid);
+                    return FightCustom(qq, enemyid, all);
                 }
                 return [$"决斗发起失败！"];
             }

@@ -104,6 +104,6 @@
 
     public enum ItemActiveID : long
     {
-
+        经验书 = 6001,
     }
 }
