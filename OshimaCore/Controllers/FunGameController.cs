@@ -1680,36 +1680,39 @@ namespace Oshima.Core.Controllers
 
                     int originalBreak = character.LevelBreak;
 
-                    if (FunGameService.LevelBreakNeedyList.TryGetValue(originalBreak, out Dictionary<string, int>? needy) && needy != null && needy.Count > 0)
+                    if (FunGameService.LevelBreakNeedyList.TryGetValue(originalBreak + 1, out Dictionary<string, int>? needy) && needy != null && needy.Count > 0)
                     {
                         foreach (string key in needy.Keys)
                         {
                             int needCount = needy[key];
                             if (key == General.GameplayEquilibriumConstant.InGameMaterial)
                             {
-                                if (user.Inventory.Credits >= needCount)
+                                if (user.Inventory.Materials >= needCount)
                                 {
-                                    user.Inventory.Credits -= needCount;
+                                    user.Inventory.Materials -= needCount;
                                 }
                                 else
                                 {
-                                    return NetworkUtility.JsonSerialize($"你的{General.GameplayEquilibriumConstant.InGameCurrency}不足 {needCount} 呢，不满足突破条件！");
+                                    return NetworkUtility.JsonSerialize($"你的{General.GameplayEquilibriumConstant.InGameMaterial}不足 {needCount} 呢，不满足突破条件！");
                                 }
                             }
-                            if (needCount > 0)
+                            else
                             {
-                                IEnumerable<Item> items = user.Inventory.Items.Where(i => i.Name == key);
-                                if (items.Count() >= needCount)
+                                if (needCount > 0)
                                 {
-                                    items = items.Reverse().Take(needCount);
-                                    foreach (Item item in items)
+                                    IEnumerable<Item> items = user.Inventory.Items.Where(i => i.Name == key);
+                                    if (items.Count() >= needCount)
                                     {
-                                        user.Inventory.Items.Remove(item);
+                                        items = items.Reverse().Take(needCount);
+                                        foreach (Item item in items)
+                                        {
+                                            user.Inventory.Items.Remove(item);
+                                        }
                                     }
-                                }
-                                else
-                                {
-                                    return NetworkUtility.JsonSerialize($"你的物品【{key}】数量不足 {needCount} 呢，不满足突破条件！");
+                                    else
+                                    {
+                                        return NetworkUtility.JsonSerialize($"你的物品【{key}】数量不足 {needCount} 呢，不满足突破条件！");
+                                    }
                                 }
                             }
                         }
