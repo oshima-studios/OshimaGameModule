@@ -14,4 +14,9 @@
         中经验书 = 15002,
         大经验书 = 15003,
     }
+
+    public enum SpecialItemID : long
+    {
+        升华之印 = 18001,
+    }
 }

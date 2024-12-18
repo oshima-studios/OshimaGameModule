@@ -3,7 +3,6 @@ using Milimoe.FunGame.Core.Entity;
 using Oshima.FunGame.OshimaModules.Effects.ItemEffects;
 using Oshima.FunGame.OshimaModules.Effects.OpenEffects;
 using Oshima.FunGame.OshimaModules.Items;
-using Oshima.FunGame.OshimaModules.Items.Consumable;
 using Oshima.FunGame.OshimaModules.Skills;
 
 namespace Oshima.FunGame.OshimaModules

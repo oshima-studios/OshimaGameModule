@@ -1,7 +1,6 @@
 ﻿using Milimoe.FunGame.Core.Api.Utility;
 using Milimoe.FunGame.Core.Entity;
 using Oshima.FunGame.OshimaModules.Items;
-using Oshima.FunGame.OshimaModules.Items.Consumable;
 
 namespace Oshima.FunGame.OshimaModules
 {
@@ -33,6 +32,7 @@ namespace Oshima.FunGame.OshimaModules
                     (long)ConsumableID.小经验书 => new 小经验书(),
                     (long)ConsumableID.中经验书 => new 中经验书(),
                     (long)ConsumableID.大经验书 => new 大经验书(),
+                    (long)SpecialItemID.升华之印 => new 升华之印(),
                     _ => null,
                 };
             };

@@ -6,7 +6,6 @@ using Oshima.FunGame.OshimaModules;
 using Oshima.FunGame.OshimaModules.Characters;
 using Oshima.FunGame.OshimaModules.Effects.OpenEffects;
 using Oshima.FunGame.OshimaModules.Items;
-using Oshima.FunGame.OshimaModules.Items.Consumable;
 using Oshima.FunGame.OshimaModules.Skills;
 
 namespace Oshima.Core.Utils
@@ -20,7 +19,59 @@ namespace Oshima.Core.Utils
         public static List<Item> Items { get; } = [];
         public static List<Skill> ItemSkills { get; } = [];
         public static List<Item> AllItems { get; } = [];
+        public static List<Skill> AllSkills { get; } = [];
         public static Dictionary<long, string> UserIdAndUsername { get; } = [];
+        public static Dictionary<int, Dictionary<string, int>> LevelBreakNeedyList
+        {
+            get
+            {
+                return new()
+                {
+                    {
+                        0, new()
+                        {
+                            { General.GameplayEquilibriumConstant.InGameMaterial, 80 },
+                            { nameof(升华之印), 10 }
+                        }
+                    },
+                    {
+                        1, new()
+                        {
+                            { General.GameplayEquilibriumConstant.InGameMaterial, 400 },
+                            { nameof(升华之印), 40 }
+                        }
+                    },
+                    {
+                        2, new()
+                        {
+                            { General.GameplayEquilibriumConstant.InGameMaterial, 1040 },
+                            { nameof(升华之印), 75 }
+                        }
+                    },
+                    {
+                        3, new()
+                        {
+                            { General.GameplayEquilibriumConstant.InGameMaterial, 2320 },
+                            { nameof(升华之印), 115 }
+                        }
+                    },
+                    {
+                        4, new()
+                        {
+                            { General.GameplayEquilibriumConstant.InGameMaterial, 4880 },
+                            { nameof(升华之印), 160 }
+                        }
+                    },
+                    {
+                        5, new()
+                        {
+                            { General.GameplayEquilibriumConstant.InGameMaterial, 10000 },
+                            { nameof(升华之印), 210 }
+                        }
+                    },
+                };
+            }
+        }
 
         public static void InitFunGame()
         {
@@ -47,7 +98,7 @@ namespace Oshima.Core.Utils
             Equipment.AddRange([new 攻击之爪5(), new 攻击之爪15(), new 攻击之爪25(), new 攻击之爪35()]);
 
             Items.AddRange(exItems.Values.Where(i => (int)i.ItemType > 4));
-            Items.AddRange([new 小经验书(), new 中经验书(), new 大经验书()]);
+            Items.AddRange([new 小经验书(), new 中经验书(), new 大经验书(), new 升华之印()]);
 
             AllItems.AddRange(Equipment);
             AllItems.AddRange(Items);
@@ -61,6 +112,9 @@ namespace Oshima.Core.Utils
                 }
             }
             ItemSkills.AddRange([.. Equipment.SelectMany(i => i.Skills.Passives), .. Items.SelectMany(i => i.Skills.Passives)]);
+
+            AllSkills.AddRange(Skills);
+            AllSkills.AddRange(ItemSkills);
         }
 
         public static List<Item> GenerateMagicCards(int count, QualityType? qualityType = null)
@@ -361,6 +415,7 @@ namespace Oshima.Core.Utils
             Magics.Clear();
             AllItems.Clear();
             ItemSkills.Clear();
+            AllSkills.Clear();
 
             InitFunGame();
         }
@@ -447,14 +502,14 @@ namespace Oshima.Core.Utils
 
             foreach (Character inventoryCharacter in characters)
             {
-                Character realCharacter = CharacterBuilder.Build(inventoryCharacter, false, [.. Equipment, .. Items], ItemSkills);
+                Character realCharacter = CharacterBuilder.Build(inventoryCharacter, false, AllItems, AllSkills);
                 realCharacter.User = user;
                 user.Inventory.Characters.Add(realCharacter);
             }
 
             foreach (Item inventoryItem in items)
             {
-                Item realItem = inventoryItem.Copy(true, true, true, [.. Equipment, .. Items], ItemSkills);
+                Item realItem = inventoryItem.Copy(true, true, true, AllItems, AllSkills);
                 if (realItem.IsEquipment)
                 {
                     IEnumerable<Character> has = user.Inventory.Characters.Where(character =>
@@ -491,9 +546,9 @@ namespace Oshima.Core.Utils
                     if (has.Any() && has.First() is Character character)
                     {
                         realItem.Character = character;
-                        realItem.User = user;
                     }
                 }
+                realItem.User = user;
                 user.Inventory.Items.Add(realItem);
             }
 
@@ -852,6 +907,31 @@ namespace Oshima.Core.Utils
                 };
                 character.Skills.Add(血之狂欢);
             }
+        }
+
+        public static bool UseItem(Item item, User user, Character[] targets, out string msg)
+        {
+            msg = "";
+            Dictionary<string, object> args = new()
+            {
+                { "targets", targets }
+            };
+            bool result = item.UseItem(args);
+            string key = args.Keys.FirstOrDefault(s => s.Equals("msg", StringComparison.CurrentCultureIgnoreCase)) ?? "";
+            if (key != "" && args.TryGetValue(key, out object? value) && value is string str)
+            {
+                msg = str;
+            }
+            return result;
+        }
+
+        public static string GetLevelBreakNeedy(int levelBreak)
+        {
+            if (LevelBreakNeedyList.TryGetValue(levelBreak, out Dictionary<string, int>? needy) && needy != null && needy.Count > 0)
+            {
+                return string.Join("，", needy.Select(kv => kv.Key + " * " + kv.Value));
+            }
+            return "";
         }
     }
 }

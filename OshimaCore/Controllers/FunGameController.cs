@@ -693,7 +693,12 @@ namespace Oshima.Core.Controllers
                         Item first = objs[0];
                         string str = $"{itemCount}. [{ItemSet.GetQualityTypeName(first.QualityType)}|{ItemSet.GetItemTypeName(first.ItemType)}] {first.Name}\r\n";
                         str += $"物品描述：{first.Description}\r\n";
-                        str += $"物品序号：{string.Join("，", objs.Select(i => items.IndexOf(i) + 1))}\r\n";
+                        string itemsIndex = string.Join("，", objs.Select(i => items.IndexOf(i) + 1));
+                        if (objs.Count > 10)
+                        {
+                            itemsIndex = string.Join("，", objs.Take(10).Select(i => items.IndexOf(i) + 1)) + "，...";
+                        }
+                        str += $"物品序号：{itemsIndex}\r\n";
                         str += $"拥有数量：{objs.Count}（" + (first.IsEquipment ? $"可装备数量：{objs.Count(i => i.Character is null)}，" : "") +
                             (itemCanUsed.Contains(first.ItemType) ? $"可使用数量：{objs.Count(i => i.RemainUseTimes > 0)}，" : "") +
                             $"可出售数量：{objs.Count(i => i.IsSellable)}，可交易数量：{objs.Count(i => i.IsTradable)}）";
@@ -765,7 +770,7 @@ namespace Oshima.Core.Controllers
                 {
                     List<string> keys = [.. FunGameService.GetPage(itemCategory.Keys, showPage, 10)];
                     int itemCount = 0;
-                    list.Add($"======= {ItemSet.GetItemTypeName((ItemType)itemtype).Replace("物品", "")}物品 =======");
+                    list.Add($"======= {ItemSet.GetItemTypeName((ItemType)itemtype)} =======");
                     foreach (string key in keys)
                     {
                         itemCount++;
@@ -773,7 +778,12 @@ namespace Oshima.Core.Controllers
                         Item first = objs[0];
                         string str = $"{itemCount}. [{ItemSet.GetQualityTypeName(first.QualityType)}|{ItemSet.GetItemTypeName(first.ItemType)}] {first.Name}\r\n";
                         str += $"物品描述：{first.Description}\r\n";
-                        str += $"物品序号：{string.Join("，", objs.Select(i => items.IndexOf(i) + 1))}\r\n";
+                        string itemsIndex = string.Join("，", objs.Select(i => items.IndexOf(i) + 1));
+                        if (objs.Count > 10)
+                        {
+                            itemsIndex = string.Join("，", objs.Take(10).Select(i => items.IndexOf(i) + 1)) + "，...";
+                        }
+                        str += $"物品序号：{itemsIndex}\r\n";
                         str += $"拥有数量：{objs.Count}（" + (first.IsEquipment ? $"可装备数量：{objs.Count(i => i.Character is null)}，" : "") +
                             (itemCanUsed.Contains(first.ItemType) ? $"可使用数量：{objs.Count(i => i.RemainUseTimes > 0)}，" : "") +
                             $"可出售数量：{objs.Count(i => i.IsSellable)}，可交易数量：{objs.Count(i => i.IsTradable)}）";
@@ -1313,6 +1323,9 @@ namespace Oshima.Core.Controllers
                 if (pc.Count > 0)
                 {
                     user1 = FunGameService.GetUser(pc);
+                    user1.LastTime = DateTime.Now;
+                    pc.Add("user", user1);
+                    pc.SaveConfig();
                 }
                 else
                 {
@@ -1322,6 +1335,9 @@ namespace Oshima.Core.Controllers
                 if (pc2.Count > 0)
                 {
                     user2 = FunGameService.GetUser(pc2);
+                    user2.LastTime = DateTime.Now;
+                    pc2.Add("user", user2);
+                    pc2.SaveConfig();
                 }
                 else
                 {
@@ -1373,6 +1389,416 @@ namespace Oshima.Core.Controllers
             catch (Exception e)
             {
                 return [e.ToString()];
+            }
+        }
+
+        [HttpPost("useitem")]
+        public string UseItem([FromQuery] long? qq = null, [FromQuery] int? id = null, [FromBody] int[]? characters = null)
+        {
+            try
+            {
+                long userid = qq ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
+                int itemIndex = id ?? 0;
+                List<int> charactersIndex = characters?.ToList() ?? [];
+
+                PluginConfig pc = new("saved", userid.ToString());
+                pc.LoadConfig();
+
+                if (pc.Count > 0)
+                {
+                    User user = FunGameService.GetUser(pc);
+
+                    Character? character = null;
+                    Item? item = null;
+                    if (itemIndex > 0 && itemIndex <= user.Inventory.Items.Count)
+                    {
+                        item = user.Inventory.Items.ToList()[itemIndex - 1];
+                        if (itemCanUsed.Contains(item.ItemType))
+                        {
+                            if (item.RemainUseTimes <= 0)
+                            {
+                                return NetworkUtility.JsonSerialize("此物品剩余使用次数为0，无法使用！");
+                            }
+
+                            List<Character> targets = [];
+                            foreach (int characterIndex in charactersIndex)
+                            {
+                                if (characterIndex > 0 && characterIndex <= user.Inventory.Characters.Count)
+                                {
+                                    character = user.Inventory.Characters.ToList()[characterIndex - 1];
+                                    targets.Add(character);
+                                }
+                            }
+
+                            if (FunGameService.UseItem(item, user, [.. targets], out string msg))
+                            {
+                                user.LastTime = DateTime.Now;
+                                pc.Add("user", user);
+                                pc.SaveConfig();
+                            }
+                            return NetworkUtility.JsonSerialize(msg);
+                        }
+                        else
+                        {
+                            return NetworkUtility.JsonSerialize($"这个物品无法使用！");
+                        }
+                    }
+                    else
+                    {
+                        return NetworkUtility.JsonSerialize($"没有找到与这个序号相对应的物品！");
+                    }
+                }
+                else
+                {
+                    return NetworkUtility.JsonSerialize(noSaved);
+                }
+            }
+            catch (Exception e)
+            {
+                return NetworkUtility.JsonSerialize(e.ToString());
+            }
+        }
+        
+        [HttpPost("useitem2")]
+        public string UseItem2([FromQuery] long? qq = null, [FromQuery] string? name = null, [FromQuery] int? count = null, [FromBody] int[]? characters = null)
+        {
+            try
+            {
+                long userid = qq ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
+                string itemName = name ?? "";
+                int useCount = count ?? 0;
+                List<int> charactersIndex = characters?.ToList() ?? [];
+
+                PluginConfig pc = new("saved", userid.ToString());
+                pc.LoadConfig();
+
+                if (pc.Count > 0)
+                {
+                    User user = FunGameService.GetUser(pc);
+
+                    IEnumerable<Item> items = user.Inventory.Items.Where(i => i.Name == name);
+                    if (!items.Any())
+                    {
+                        return NetworkUtility.JsonSerialize($"库存中不存在名称为【{name}】的物品！");
+                    }
+
+                    if (items.Count() >= useCount)
+                    {
+                        items = items.Reverse().Take(useCount);
+                        List<string> msgs = [];
+                        int successCount = 0;
+
+                        List<Character> targets = [];
+                        Character? character = null;
+                        foreach (int characterIndex in charactersIndex)
+                        {
+                            if (characterIndex > 0 && characterIndex <= user.Inventory.Characters.Count)
+                            {
+                                character = user.Inventory.Characters.ToList()[characterIndex - 1];
+                                targets.Add(character);
+                            }
+                            else
+                            {
+                                msgs.Add($"库存中不存在序号为 {characterIndex} 的角色！");
+                            }
+                        }
+
+                        foreach (Item item in items)
+                        {
+                            if (itemCanUsed.Contains(item.ItemType))
+                            {
+                                if (item.RemainUseTimes <= 0)
+                                {
+                                    msgs.Add("此物品剩余使用次数为0，无法使用！");
+                                }
+
+                                if (FunGameService.UseItem(item, user, [.. targets], out string msg))
+                                {
+                                    successCount++;
+                                }
+                                msgs.Add(msg);
+                            }
+                            else
+                            {
+                                msgs.Add($"这个物品无法使用！");
+                            }
+                        }
+                        if (successCount > 0)
+                        {
+                            user.LastTime = DateTime.Now;
+                            pc.Add("user", user);
+                            pc.SaveConfig();
+                        }
+                        return NetworkUtility.JsonSerialize($"使用完毕！使用 {useCount} 件物品，成功 {successCount} 件！\r\n" + string.Join("\r\n", msgs));
+                    }
+                    else
+                    {
+                        return NetworkUtility.JsonSerialize("此物品的可使用数量小于你想要使用的数量！");
+                    }
+                }
+                else
+                {
+                    return NetworkUtility.JsonSerialize(noSaved);
+                }
+            }
+            catch (Exception e)
+            {
+                return NetworkUtility.JsonSerialize(e.ToString());
+            }
+        }
+
+        [HttpPost("characterlevelup")]
+        public string CharacterLevelUp([FromQuery] long? qq = null, [FromQuery] int? c = null, [FromQuery] int? count = null)
+        {
+            try
+            {
+                long userid = qq ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
+                int characterIndex = c ?? 0;
+                int upCount = count ?? 0;
+
+                PluginConfig pc = new("saved", userid.ToString());
+                pc.LoadConfig();
+
+                if (pc.Count > 0)
+                {
+                    User user = FunGameService.GetUser(pc);
+
+                    Character? character = null;
+                    if (characterIndex > 0 && characterIndex <= user.Inventory.Characters.Count)
+                    {
+                        character = user.Inventory.Characters.ToList()[characterIndex - 1];
+                    }
+                    else
+                    {
+                        return NetworkUtility.JsonSerialize($"没有找到与这个序号相对应的角色！");
+                    }
+
+                    if (character.Level == General.GameplayEquilibriumConstant.MaxLevel)
+                    {
+                        return NetworkUtility.JsonSerialize($"该角色等级已满，无需再升级！");
+                    }
+
+                    int originalLevel = character.Level;
+
+                    character.OnLevelUp(upCount);
+
+                    string msg = $"升级完成！角色 [ {character} ] 共提升 {character.Level - originalLevel} 级，当前等级：{character.Level} 级。";
+
+                    if (General.GameplayEquilibriumConstant.EXPUpperLimit.TryGetValue(character.Level, out double need))
+                    {
+                        if (character.EXP < need)
+                        {
+                            msg += $"\r\n角色 [ {character} ] 仍需 {need - character.EXP} 点经验值才能继续升级。";
+                        }
+                        else
+                        {
+                            msg += $"\r\n角色 [ {character} ] 目前突破进度：{character.LevelBreak + 1}/{General.GameplayEquilibriumConstant.LevelBreakList.Count}，需要进行【角色突破】才能继续升级。";
+                        }
+                    }
+
+                    user.LastTime = DateTime.Now;
+                    pc.Add("user", user);
+                    pc.SaveConfig();
+                    return NetworkUtility.JsonSerialize(msg);
+                }
+                else
+                {
+                    return NetworkUtility.JsonSerialize(noSaved);
+                }
+            }
+            catch (Exception e)
+            {
+                return NetworkUtility.JsonSerialize(e.ToString());
+            }
+        }
+
+        [HttpPost("getlevelbreakneedy")]
+        public string GetLevelBreakNeedy([FromQuery] long? qq = null, [FromQuery] int? id = null)
+        {
+            long userid = qq ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
+            int characterIndex = id ?? 0;
+
+            PluginConfig pc = new("saved", userid.ToString());
+            pc.LoadConfig();
+
+            if (pc.Count > 0)
+            {
+                User user = FunGameService.GetUser(pc);
+                Character? character;
+                if (characterIndex > 0 && characterIndex <= user.Inventory.Characters.Count)
+                {
+                    character = user.Inventory.Characters.ToList()[characterIndex - 1];
+                }
+                else
+                {
+                    return NetworkUtility.JsonSerialize($"没有找到与这个序号相对应的角色！");
+                }
+
+                if (character.LevelBreak + 1 == General.GameplayEquilibriumConstant.LevelBreakList.Count)
+                {
+                    return NetworkUtility.JsonSerialize($"该角色已完成全部的突破阶段，无需再突破！");
+                }
+
+                return NetworkUtility.JsonSerialize($"角色 [ {character} ] 目前突破进度：{character.LevelBreak + 1}/{General.GameplayEquilibriumConstant.LevelBreakList.Count}" +
+                    $"\r\n该角色下一个等级突破阶段在 {General.GameplayEquilibriumConstant.LevelBreakList.ToArray()[character.LevelBreak]} 级，所需材料：\r\n" + FunGameService.GetLevelBreakNeedy(character.LevelBreak + 1));
+            }
+            else
+            {
+                return NetworkUtility.JsonSerialize(noSaved);
+            }
+        }
+
+        [HttpPost("characterlevelbreak")]
+        public string CharacterLevelBreak([FromQuery] long? qq = null, [FromQuery] int? c = null)
+        {
+            try
+            {
+                long userid = qq ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
+                int characterIndex = c ?? 0;
+
+                PluginConfig pc = new("saved", userid.ToString());
+                pc.LoadConfig();
+
+                if (pc.Count > 0)
+                {
+                    User user = FunGameService.GetUser(pc);
+
+                    Character? character = null;
+                    if (characterIndex > 0 && characterIndex <= user.Inventory.Characters.Count)
+                    {
+                        character = user.Inventory.Characters.ToList()[characterIndex - 1];
+                    }
+                    else
+                    {
+                        return NetworkUtility.JsonSerialize($"没有找到与这个序号相对应的角色！");
+                    }
+
+                    if (character.LevelBreak + 1 == General.GameplayEquilibriumConstant.LevelBreakList.Count)
+                    {
+                        return NetworkUtility.JsonSerialize($"该角色已完成全部的突破阶段，无需再突破！");
+                    }
+
+                    int originalBreak = character.LevelBreak;
+
+                    if (FunGameService.LevelBreakNeedyList.TryGetValue(originalBreak, out Dictionary<string, int>? needy) && needy != null && needy.Count > 0)
+                    {
+                        foreach (string key in needy.Keys)
+                        {
+                            int needCount = needy[key];
+                            if (key == General.GameplayEquilibriumConstant.InGameMaterial)
+                            {
+                                if (user.Inventory.Credits >= needCount)
+                                {
+                                    user.Inventory.Credits -= needCount;
+                                }
+                                else
+                                {
+                                    return NetworkUtility.JsonSerialize($"你的{General.GameplayEquilibriumConstant.InGameCurrency}不足 {needCount} 呢，不满足突破条件！");
+                                }
+                            }
+                            if (needCount > 0)
+                            {
+                                IEnumerable<Item> items = user.Inventory.Items.Where(i => i.Name == key);
+                                if (items.Count() >= needCount)
+                                {
+                                    items = items.Reverse().Take(needCount);
+                                    foreach (Item item in items)
+                                    {
+                                        user.Inventory.Items.Remove(item);
+                                    }
+                                }
+                                else
+                                {
+                                    return NetworkUtility.JsonSerialize($"你的物品【{key}】数量不足 {needCount} 呢，不满足突破条件！");
+                                }
+                            }
+                        }
+                    }
+
+                    character.OnLevelBreak();
+
+                    if (originalBreak == character.LevelBreak)
+                    {
+                        return NetworkUtility.JsonSerialize($"突破失败！角色 [ {character} ] 目前突破进度：{character.LevelBreak + 1}/{General.GameplayEquilibriumConstant.LevelBreakList.Count}。" +
+                            $"\r\n该角色下一个等级突破阶段在 {General.GameplayEquilibriumConstant.LevelBreakList.ToArray()[character.LevelBreak]} 级，所需材料：\r\n" + FunGameService.GetLevelBreakNeedy(character.LevelBreak + 1));
+                    }
+                    else
+                    {
+                        user.LastTime = DateTime.Now;
+                        pc.Add("user", user);
+                        pc.SaveConfig();
+                        return NetworkUtility.JsonSerialize($"突破成功！角色 [ {character} ] 目前突破进度：{character.LevelBreak + 1}/{General.GameplayEquilibriumConstant.LevelBreakList.Count}。" +
+                            $"{(character.LevelBreak + 1 == General.GameplayEquilibriumConstant.LevelBreakList.Count ?
+                            "\r\n该角色已完成全部的突破阶段，恭喜！" :
+                            $"\r\n该角色下一个等级突破阶段在 {General.GameplayEquilibriumConstant.LevelBreakList.ToArray()[character.LevelBreak]} 级，所需材料：\r\n" + FunGameService.GetLevelBreakNeedy(character.LevelBreak + 1))}");
+                    }
+                }
+                else
+                {
+                    return NetworkUtility.JsonSerialize(noSaved);
+                }
+            }
+            catch (Exception e)
+            {
+                return NetworkUtility.JsonSerialize(e.ToString());
+            }
+        }
+
+        [HttpPost("createitem")]
+        public string CreateItem([FromQuery] long? qq = null, [FromQuery] string? name = null, [FromQuery] int? count = null, [FromQuery] long? target = null)
+        {
+            long userid = qq ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
+            string itemName = name ?? "";
+            int itemCount = count ?? 0;
+            long targetid = target ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
+
+            PluginConfig pc = new("saved", userid.ToString());
+            pc.LoadConfig();
+
+            if (pc.Count > 0)
+            {
+                User user = FunGameService.GetUser(pc);
+
+                string msg = "";
+                if (user.IsAdmin)
+                {
+                    if (FunGameService.AllItems.FirstOrDefault(i => i.Name == itemName) is Item item)
+                    {
+                        PluginConfig pc2 = new("saved", targetid.ToString());
+                        pc2.LoadConfig();
+                        if (pc2.Count > 0)
+                        {
+                            User user2 = FunGameService.GetUser(pc2);
+                            for (int i = 0; i < itemCount; i++)
+                            {
+                                Item newItem = item.Copy();
+                                newItem.User = user2;
+                                user2.Inventory.Items.Add(newItem);
+                            }
+                            pc2.Add("user", user2);
+                            pc2.SaveConfig();
+                            msg = $"已为 [ {user2} ] 生成 {itemCount} 个 [{ItemSet.GetQualityTypeName(item.QualityType)}|{ItemSet.GetItemTypeName(item.ItemType)}] {item.Name}";
+                        }
+                        else
+                        {
+                            return NetworkUtility.JsonSerialize($"目标 UID 不存在！");
+                        }
+                    }
+                    else
+                    {
+                        return NetworkUtility.JsonSerialize($"此物品不存在！");
+                    }
+                }
+                else
+                {
+                    return NetworkUtility.JsonSerialize($"你没有权限使用此指令！");
+                }
+
+                return NetworkUtility.JsonSerialize(msg);
+            }
+            else
+            {
+                return NetworkUtility.JsonSerialize(noSaved);
             }
         }
 
