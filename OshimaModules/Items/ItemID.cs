@@ -18,5 +18,7 @@
     public enum SpecialItemID : long
     {
         升华之印 = 18001,
+        流光之印 = 18002,
+        永恒之印 = 18003,
     }
 }

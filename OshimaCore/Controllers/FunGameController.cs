@@ -1484,7 +1484,7 @@ namespace Oshima.Core.Controllers
 
                     if (items.Count() >= useCount)
                     {
-                        items = items.Reverse().Take(useCount);
+                        items = items.TakeLast(useCount);
                         List<string> msgs = [];
                         int successCount = 0;
 
@@ -1529,7 +1529,7 @@ namespace Oshima.Core.Controllers
                             pc.Add("user", user);
                             pc.SaveConfig();
                         }
-                        return NetworkUtility.JsonSerialize($"使用完毕！使用 {useCount} 件物品，成功 {successCount} 件！\r\n" + string.Join("\r\n", msgs));
+                        return NetworkUtility.JsonSerialize($"使用完毕！使用 {useCount} 件物品，成功 {successCount} 件！\r\n" + string.Join("\r\n", msgs.Count > 30 ? msgs.Take(30) : msgs));
                     }
                     else
                     {
@@ -1584,7 +1584,7 @@ namespace Oshima.Core.Controllers
 
                     string msg = $"升级完成！角色 [ {character} ] 共提升 {character.Level - originalLevel} 级，当前等级：{character.Level} 级。";
 
-                    if (General.GameplayEquilibriumConstant.EXPUpperLimit.TryGetValue(character.Level, out double need))
+                    if (character.Level != General.GameplayEquilibriumConstant.MaxLevel && General.GameplayEquilibriumConstant.EXPUpperLimit.TryGetValue(character.Level, out double need))
                     {
                         if (character.EXP < need)
                         {
@@ -1594,6 +1594,10 @@ namespace Oshima.Core.Controllers
                         {
                             msg += $"\r\n角色 [ {character} ] 目前突破进度：{character.LevelBreak + 1}/{General.GameplayEquilibriumConstant.LevelBreakList.Count}，需要进行【角色突破】才能继续升级。";
                         }
+                    }
+                    else if (character.Level == General.GameplayEquilibriumConstant.MaxLevel)
+                    {
+                        msg += $"\r\n该角色已升级至满级，恭喜！";
                     }
 
                     user.LastTime = DateTime.Now;
@@ -1640,7 +1644,7 @@ namespace Oshima.Core.Controllers
                 }
 
                 return NetworkUtility.JsonSerialize($"角色 [ {character} ] 目前突破进度：{character.LevelBreak + 1}/{General.GameplayEquilibriumConstant.LevelBreakList.Count}" +
-                    $"\r\n该角色下一个等级突破阶段在 {General.GameplayEquilibriumConstant.LevelBreakList.ToArray()[character.LevelBreak]} 级，所需材料：\r\n" + FunGameService.GetLevelBreakNeedy(character.LevelBreak + 1));
+                    $"\r\n该角色下一个等级突破阶段在 {General.GameplayEquilibriumConstant.LevelBreakList.ToArray()[character.LevelBreak + 1]} 级，所需材料：\r\n" + FunGameService.GetLevelBreakNeedy(character.LevelBreak + 1));
             }
             else
             {
@@ -1703,7 +1707,7 @@ namespace Oshima.Core.Controllers
                                     IEnumerable<Item> items = user.Inventory.Items.Where(i => i.Name == key);
                                     if (items.Count() >= needCount)
                                     {
-                                        items = items.Reverse().Take(needCount);
+                                        items = items.TakeLast(needCount);
                                         foreach (Item item in items)
                                         {
                                             user.Inventory.Items.Remove(item);
@@ -1723,7 +1727,7 @@ namespace Oshima.Core.Controllers
                     if (originalBreak == character.LevelBreak)
                     {
                         return NetworkUtility.JsonSerialize($"突破失败！角色 [ {character} ] 目前突破进度：{character.LevelBreak + 1}/{General.GameplayEquilibriumConstant.LevelBreakList.Count}。" +
-                            $"\r\n该角色下一个等级突破阶段在 {General.GameplayEquilibriumConstant.LevelBreakList.ToArray()[character.LevelBreak]} 级，所需材料：\r\n" + FunGameService.GetLevelBreakNeedy(character.LevelBreak + 1));
+                            $"\r\n该角色下一个等级突破阶段在 {General.GameplayEquilibriumConstant.LevelBreakList.ToArray()[character.LevelBreak + 1]} 级，所需材料：\r\n" + FunGameService.GetLevelBreakNeedy(character.LevelBreak + 1));
                     }
                     else
                     {
@@ -1733,7 +1737,7 @@ namespace Oshima.Core.Controllers
                         return NetworkUtility.JsonSerialize($"突破成功！角色 [ {character} ] 目前突破进度：{character.LevelBreak + 1}/{General.GameplayEquilibriumConstant.LevelBreakList.Count}。" +
                             $"{(character.LevelBreak + 1 == General.GameplayEquilibriumConstant.LevelBreakList.Count ?
                             "\r\n该角色已完成全部的突破阶段，恭喜！" :
-                            $"\r\n该角色下一个等级突破阶段在 {General.GameplayEquilibriumConstant.LevelBreakList.ToArray()[character.LevelBreak]} 级，所需材料：\r\n" + FunGameService.GetLevelBreakNeedy(character.LevelBreak + 1))}");
+                            $"\r\n该角色下一个等级突破阶段在 {General.GameplayEquilibriumConstant.LevelBreakList.ToArray()[character.LevelBreak + 1]} 级，所需材料：\r\n" + FunGameService.GetLevelBreakNeedy(character.LevelBreak + 1))}");
                     }
                 }
                 else
@@ -1765,31 +1769,41 @@ namespace Oshima.Core.Controllers
                 string msg = "";
                 if (user.IsAdmin)
                 {
-                    if (FunGameService.AllItems.FirstOrDefault(i => i.Name == itemName) is Item item)
+                    PluginConfig pc2 = new("saved", targetid.ToString());
+                    pc2.LoadConfig();
+                    if (pc2.Count > 0)
                     {
-                        PluginConfig pc2 = new("saved", targetid.ToString());
-                        pc2.LoadConfig();
-                        if (pc2.Count > 0)
+                        User user2 = FunGameService.GetUser(pc2);
+                        if (itemName == General.GameplayEquilibriumConstant.InGameCurrency)
                         {
-                            User user2 = FunGameService.GetUser(pc2);
+                            user2.Inventory.Credits += itemCount;
+                            msg = $"已为 [ {user2} ] 生成 {itemCount} {General.GameplayEquilibriumConstant.InGameCurrency}";
+                        }
+                        else if (itemName == General.GameplayEquilibriumConstant.InGameMaterial)
+                        {
+                            user2.Inventory.Materials += itemCount;
+                            msg = $"已为 [ {user2} ] 生成 {itemCount} {General.GameplayEquilibriumConstant.InGameMaterial}";
+                        }
+                        else if (FunGameService.AllItems.FirstOrDefault(i => i.Name == itemName) is Item item)
+                        {
                             for (int i = 0; i < itemCount; i++)
                             {
                                 Item newItem = item.Copy();
                                 newItem.User = user2;
                                 user2.Inventory.Items.Add(newItem);
                             }
-                            pc2.Add("user", user2);
-                            pc2.SaveConfig();
                             msg = $"已为 [ {user2} ] 生成 {itemCount} 个 [{ItemSet.GetQualityTypeName(item.QualityType)}|{ItemSet.GetItemTypeName(item.ItemType)}] {item.Name}";
                         }
                         else
                         {
-                            return NetworkUtility.JsonSerialize($"目标 UID 不存在！");
+                            return NetworkUtility.JsonSerialize($"此物品不存在！");
                         }
+                        pc2.Add("user", user2);
+                        pc2.SaveConfig();
                     }
                     else
                     {
-                        return NetworkUtility.JsonSerialize($"此物品不存在！");
+                        return NetworkUtility.JsonSerialize($"目标 UID 不存在！");
                     }
                 }
                 else

@@ -15,12 +15,12 @@ namespace Oshima.FunGame.OshimaModules.Effects.OpenEffects
 
         public override void OnEffectGained(Character character)
         {
-            character.AccelerationCoefficient += 实际加成;
+            character.ExAccelerationCoefficient += 实际加成;
         }
 
         public override void OnEffectLost(Character character)
         {
-            character.AccelerationCoefficient -= 实际加成;
+            character.ExAccelerationCoefficient -= 实际加成;
         }
 
         public AccelerationCoefficient(Skill skill, Dictionary<string, object> args, Character? source = null) : base(skill, args)

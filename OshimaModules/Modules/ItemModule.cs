@@ -33,6 +33,8 @@ namespace Oshima.FunGame.OshimaModules
                     (long)ConsumableID.中经验书 => new 中经验书(),
                     (long)ConsumableID.大经验书 => new 大经验书(),
                     (long)SpecialItemID.升华之印 => new 升华之印(),
+                    (long)SpecialItemID.流光之印 => new 流光之印(),
+                    (long)SpecialItemID.永恒之印 => new 永恒之印(),
                     _ => null,
                 };
             };

@@ -38,35 +38,41 @@ namespace Oshima.Core.Utils
                         1, new()
                         {
                             { General.GameplayEquilibriumConstant.InGameMaterial, 400 },
-                            { nameof(升华之印), 40 }
+                            { nameof(升华之印), 20 }
                         }
                     },
                     {
                         2, new()
                         {
-                            { General.GameplayEquilibriumConstant.InGameMaterial, 1040 },
-                            { nameof(升华之印), 75 }
+                            { General.GameplayEquilibriumConstant.InGameMaterial, 960 },
+                            { nameof(升华之印), 30 },
+                            { nameof(流光之印), 10 }
                         }
                     },
                     {
                         3, new()
                         {
-                            { General.GameplayEquilibriumConstant.InGameMaterial, 2320 },
-                            { nameof(升华之印), 115 }
+                            { General.GameplayEquilibriumConstant.InGameMaterial, 1760 },
+                            { nameof(升华之印), 40 },
+                            { nameof(流光之印), 20 }
                         }
                     },
                     {
                         4, new()
                         {
-                            { General.GameplayEquilibriumConstant.InGameMaterial, 4880 },
-                            { nameof(升华之印), 160 }
+                            { General.GameplayEquilibriumConstant.InGameMaterial, 2800 },
+                            { nameof(升华之印), 50 },
+                            { nameof(流光之印), 30 },
+                            { nameof(永恒之印), 10 }
                         }
                     },
                     {
                         5, new()
                         {
-                            { General.GameplayEquilibriumConstant.InGameMaterial, 10000 },
-                            { nameof(升华之印), 210 }
+                            { General.GameplayEquilibriumConstant.InGameMaterial, 4080 },
+                            { nameof(升华之印), 60 },
+                            { nameof(流光之印), 40 },
+                            { nameof(永恒之印), 20 }
                         }
                     },
                 };
@@ -98,7 +104,7 @@ namespace Oshima.Core.Utils
             Equipment.AddRange([new 攻击之爪5(), new 攻击之爪15(), new 攻击之爪25(), new 攻击之爪35()]);
 
             Items.AddRange(exItems.Values.Where(i => (int)i.ItemType > 4));
-            Items.AddRange([new 小经验书(), new 中经验书(), new 大经验书(), new 升华之印()]);
+            Items.AddRange([new 小经验书(), new 中经验书(), new 大经验书(), new 升华之印(), new 流光之印(), new 永恒之印()]);
 
             AllItems.AddRange(Equipment);
             AllItems.AddRange(Items);
