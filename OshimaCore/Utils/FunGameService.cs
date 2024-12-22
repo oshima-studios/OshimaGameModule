@@ -506,56 +506,18 @@ namespace Oshima.Core.Utils
             user.Inventory.Characters.Clear();
             user.Inventory.Items.Clear();
 
-            foreach (Character inventoryCharacter in characters)
-            {
-                Character realCharacter = CharacterBuilder.Build(inventoryCharacter, false, AllItems, AllSkills);
-                realCharacter.User = user;
-                user.Inventory.Characters.Add(realCharacter);
-            }
-
             foreach (Item inventoryItem in items)
             {
                 Item realItem = inventoryItem.Copy(true, true, true, AllItems, AllSkills);
-                if (realItem.IsEquipment)
-                {
-                    IEnumerable<Character> has = user.Inventory.Characters.Where(character =>
-                    {
-                        if (realItem.ItemType == ItemType.MagicCardPack && character.EquipSlot.MagicCardPack != null && realItem.Guid == character.EquipSlot.MagicCardPack.Guid)
-                        {
-                            return true;
-                        }
-                        if (realItem.ItemType == ItemType.Weapon && character.EquipSlot.Weapon != null && realItem.Guid == character.EquipSlot.Weapon.Guid)
-                        {
-                            return true;
-                        }
-                        if (realItem.ItemType == ItemType.Armor && character.EquipSlot.Armor != null && realItem.Guid == character.EquipSlot.Armor.Guid)
-                        {
-                            return true;
-                        }
-                        if (realItem.ItemType == ItemType.Shoes && character.EquipSlot.Shoes != null && realItem.Guid == character.EquipSlot.Shoes.Guid)
-                        {
-                            return true;
-                        }
-                        if (realItem.ItemType == ItemType.Accessory)
-                        {
-                            if (character.EquipSlot.Accessory1 != null && realItem.Guid == character.EquipSlot.Accessory1.Guid)
-                            {
-                                return true;
-                            }
-                            else if (character.EquipSlot.Accessory2 != null && realItem.Guid == character.EquipSlot.Accessory2.Guid)
-                            {
-                                return true;
-                            }
-                        }
-                        return false;
-                    });
-                    if (has.Any() && has.First() is Character character)
-                    {
-                        realItem.Character = character;
-                    }
-                }
                 realItem.User = user;
                 user.Inventory.Items.Add(realItem);
+            }
+
+            foreach (Character inventoryCharacter in characters)
+            {
+                Character realCharacter = CharacterBuilder.Build(inventoryCharacter, false, true, user.Inventory, AllItems, AllSkills);
+                realCharacter.User = user;
+                user.Inventory.Characters.Add(realCharacter);
             }
 
             return user;
@@ -573,18 +535,19 @@ namespace Oshima.Core.Utils
             {
                 msg = $"消耗 {reduce} {General.GameplayEquilibriumConstant.InGameCurrency}，恭喜你抽到了：";
             }
-            int r = Random.Shared.Next(7);
+            int r = Random.Shared.Next(8);
             double q = Random.Shared.NextDouble() * 100;
             QualityType type = q switch
             {
-                <= 37.21 => QualityType.White,
-                <= 37.21 + 27.94 => QualityType.Green,
-                <= 37.21 + 27.94 + 16.68 => QualityType.Blue,
-                <= 37.21 + 27.94 + 16.68 + 9.79 => QualityType.Purple,
-                <= 37.21 + 27.94 + 16.68 + 9.79 + 5.05 => QualityType.Orange,
-                <= 37.21 + 27.94 + 16.68 + 9.79 + 5.05 + 2.73 => QualityType.Red,
-                _ => QualityType.Gold
+                <= 69.53 => QualityType.White,
+                > 69.53 and <= 69.53 + 15.35 => QualityType.Green,
+                > 69.53 + 15.35 and <= 69.53 + 15.35 + 9.48 => QualityType.Blue,
+                > 69.53 + 15.35 + 9.48 and <= 69.53 + 15.35 + 9.48 + 4.25 => QualityType.Purple,
+                > 69.53 + 15.35 + 9.48 + 4.25 and <= 69.53 + 15.35 + 9.48 + 4.25 + 1.33 => QualityType.Orange,
+                > 69.53 + 15.35 + 9.48 + 4.25 + 1.33 and <= 69.53 + 15.35 + 9.48 + 4.25 + 1.33 + 0.06 => QualityType.Red,
+                _ => QualityType.White
             };
+
             switch (r)
             {
                 case 1:
@@ -938,6 +901,56 @@ namespace Oshima.Core.Utils
                 return string.Join("，", needy.Select(kv => kv.Key + " * " + kv.Value));
             }
             return "";
+        }
+
+        public static string UseMagicCard(User user, Item magicCard, Item magicCardPack)
+        {
+            if (magicCard.QualityType != magicCardPack.QualityType)
+            {
+                return $"只能对相同品质的魔法卡包使用魔法卡！";
+            }
+            if (magicCard.Skills.Active != null)
+            {
+                string msg = "";
+                Skill magic = magicCard.Skills.Active;
+                if (magicCardPack.Skills.Magics.FirstOrDefault(m => m.GetIdName() == magic.GetIdName()) is Skill has && has.Level < 8)
+                {
+                    int original = has.Level;
+                    // 添加技能等级
+                    has.Level += magic.Level;
+                    // 补偿材料，1级10材料
+                    int diff = magic.Level - (has.Level - original);
+                    if (diff != 0)
+                    {
+                        user.Inventory.Materials += diff * 10;
+                        msg = $"由于魔法卡的技能等级数尚未用完，技能便已经升至满级，特此补偿 {diff * 10} {General.GameplayEquilibriumConstant.InGameMaterial}！\r\n";
+                    }
+                }
+                else
+                {
+                    if (magicCardPack.Skills.Magics.Count < 3)
+                    {
+                        // 添加技能
+                        magicCardPack.Skills.Magics.Add(magic);
+                        magic.Guid = magicCard.Guid;
+                        msg = $"此魔法卡的技能已经添加到未满三个魔法的卡包上。\r\n";
+                    }
+                    return $"魔法【{magic.Name}】在此魔法卡包中不存在或是已经升至满级！";
+                }
+                string containMagics = magicCardPack.Description.Split("增加角色属性")[0];
+                magicCardPack.Description = $"包含魔法：{string.Join("，", magicCardPack.Skills.Magics.Select(m => m.Name + (m.Level > 1 ? $" +{m.Level - 1}" : "")))}\r\n" + magicCardPack.Description.Replace(containMagics, "");
+                magicCard.RemainUseTimes--;
+                if (magicCard.RemainUseTimes < 0) magicCard.RemainUseTimes = 0;
+                if (magicCard.RemainUseTimes == 0)
+                {
+                    user.Inventory.Items.Remove(magicCard);
+                }
+                return $"目标魔法卡包的力量已经被此魔法卡显著地提升了！！！\r\n{msg}{magicCardPack.ToStringInventory(true)}";
+            }
+            else
+            {
+                return "此魔法卡不存在任何魔法！";
+            }
         }
     }
 }

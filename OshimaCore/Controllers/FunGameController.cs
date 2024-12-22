@@ -1429,7 +1429,7 @@ namespace Oshima.Core.Controllers
                                     targets.Add(character);
                                 }
                             }
-
+                            
                             if (FunGameService.UseItem(item, user, [.. targets], out string msg))
                             {
                                 user.LastTime = DateTime.Now;
@@ -1476,10 +1476,10 @@ namespace Oshima.Core.Controllers
                 {
                     User user = FunGameService.GetUser(pc);
 
-                    IEnumerable<Item> items = user.Inventory.Items.Where(i => i.Name == name);
+                    IEnumerable<Item> items = user.Inventory.Items.Where(i => i.Name == name && i.Character is null && i.ItemType != ItemType.MagicCard);
                     if (!items.Any())
                     {
-                        return NetworkUtility.JsonSerialize($"库存中不存在名称为【{name}】的物品！");
+                        return NetworkUtility.JsonSerialize($"库存中不存在名称为【{name}】的物品！如果是魔法卡，请用【使用魔法卡】指令。");
                     }
 
                     if (items.Count() >= useCount)
@@ -1534,6 +1534,109 @@ namespace Oshima.Core.Controllers
                     else
                     {
                         return NetworkUtility.JsonSerialize("此物品的可使用数量小于你想要使用的数量！");
+                    }
+                }
+                else
+                {
+                    return NetworkUtility.JsonSerialize(noSaved);
+                }
+            }
+            catch (Exception e)
+            {
+                return NetworkUtility.JsonSerialize(e.ToString());
+            }
+        }
+
+        [HttpPost("useitem3")]
+        public string UseItem3([FromQuery] long? qq = null, [FromQuery] int? id = null, [FromQuery] int? id2 = null, [FromQuery] bool? c = null)
+        {
+            try
+            {
+                long userid = qq ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
+                int itemIndex = id ?? 0;
+                int itemToIndex = id2 ?? 0;
+                bool isCharacter = c ?? false;
+
+                PluginConfig pc = new("saved", userid.ToString());
+                pc.LoadConfig();
+
+                if (pc.Count > 0)
+                {
+                    User user = FunGameService.GetUser(pc);
+
+                    Item? item = null;
+                    if (itemIndex > 0 && itemIndex <= user.Inventory.Items.Count)
+                    {
+                        item = user.Inventory.Items.ToList()[itemIndex - 1];
+                        if (item.ItemType == ItemType.MagicCard)
+                        {
+                            if (item.RemainUseTimes <= 0)
+                            {
+                                return NetworkUtility.JsonSerialize("此物品剩余使用次数为0，无法使用！");
+                            }
+
+                            string msg = "";
+                            Item? itemTo = null;
+                            if (isCharacter)
+                            {
+                                if (itemToIndex > 0 && itemToIndex <= user.Inventory.Characters.Count)
+                                {
+                                    Character character = user.Inventory.Characters.ToList()[itemToIndex - 1];
+                                    if (character.EquipSlot.MagicCardPack != null)
+                                    {
+                                        itemTo = user.Inventory.Items.FirstOrDefault(i => i.Guid == character.EquipSlot.MagicCardPack.Guid);
+                                        if (itemTo != null)
+                                        {
+                                            msg = FunGameService.UseMagicCard(user, item, itemTo);
+                                        }
+                                        else
+                                        {
+                                            return NetworkUtility.JsonSerialize($"库存中没有找到此角色对应的魔法卡包！");
+                                        }
+                                    }
+                                    else
+                                    {
+                                        return NetworkUtility.JsonSerialize($"这个角色没有装备魔法卡包，无法对其使用魔法卡！");
+                                    }
+                                }
+                                else
+                                {
+                                    return NetworkUtility.JsonSerialize($"没有找到与这个序号相对应的角色！");
+                                }
+                            }
+                            else
+                            {
+                                if (itemToIndex > 0 && itemToIndex <= user.Inventory.Items.Count)
+                                {
+                                    itemTo = user.Inventory.Items.ToList()[itemToIndex - 1];
+                                    if (itemTo != null && itemTo.ItemType == ItemType.MagicCardPack)
+                                    {
+                                        msg = FunGameService.UseMagicCard(user, item, itemTo);
+                                    }
+                                    else
+                                    {
+                                        return NetworkUtility.JsonSerialize($"与目标序号相对应的物品不是魔法卡包！");
+                                    }
+                                }
+                                else
+                                {
+                                    return NetworkUtility.JsonSerialize($"没有找到与目标序号相对应的物品！");
+                                }
+                            }
+
+                            user.LastTime = DateTime.Now;
+                            pc.Add("user", user);
+                            pc.SaveConfig();
+                            return NetworkUtility.JsonSerialize(msg);
+                        }
+                        else
+                        {
+                            return NetworkUtility.JsonSerialize($"这个物品不是魔法卡！");
+                        }
+                    }
+                    else
+                    {
+                        return NetworkUtility.JsonSerialize($"没有找到与目标序号相对应的物品！");
                     }
                 }
                 else
@@ -1784,6 +1887,45 @@ namespace Oshima.Core.Controllers
                             user2.Inventory.Materials += itemCount;
                             msg = $"已为 [ {user2} ] 生成 {itemCount} {General.GameplayEquilibriumConstant.InGameMaterial}";
                         }
+                        else if (itemName.Contains("魔法卡包"))
+                        {
+                            foreach (string type in ItemSet.QualityTypeNameArray)
+                            {
+                                if (itemName == $"{type}魔法卡包")
+                                {
+                                    int success = 0;
+                                    for (int i = 0; i < itemCount; i++)
+                                    {
+                                        Item? item = FunGameService.GenerateMagicCardPack(3, ItemSet.GetQualityTypeFromName(type));
+                                        if (item != null)
+                                        {
+                                            item.User = user2;
+                                            user2.Inventory.Items.Add(item);
+                                            success++;
+                                        }
+                                    }
+                                    msg = $"已为 [ {user2} ] 成功生成 {success} 个{type}魔法卡包";
+                                    break;
+                                }
+                            }
+                        }
+                        else if (itemName.Contains("魔法卡"))
+                        {
+                            foreach (string type in ItemSet.QualityTypeNameArray)
+                            {
+                                if (itemName == $"{type}魔法卡")
+                                {
+                                    for (int i = 0; i < itemCount; i++)
+                                    {
+                                        Item item = FunGameService.GenerateMagicCard(ItemSet.GetQualityTypeFromName(type));
+                                        item.User = user2;
+                                        user2.Inventory.Items.Add(item);
+                                    }
+                                    msg = $"已为 [ {user2} ] 生成 {itemCount} 张{type}魔法卡";
+                                    break;
+                                }
+                            }
+                        }
                         else if (FunGameService.AllItems.FirstOrDefault(i => i.Name == itemName) is Item item)
                         {
                             for (int i = 0; i < itemCount; i++)
@@ -1816,6 +1958,284 @@ namespace Oshima.Core.Controllers
             else
             {
                 return NetworkUtility.JsonSerialize(noSaved);
+            }
+        }
+
+        [HttpPost("decomposeitem")]
+        public string DecomposeItem([FromQuery] long? qq = null, [FromBody] int[]? items = null)
+        {
+            try
+            {
+                long userid = qq ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
+                int[] ids = items ?? [];
+
+                PluginConfig pc = new("saved", userid.ToString());
+                pc.LoadConfig();
+
+                if (pc.Count > 0)
+                {
+                    User user = FunGameService.GetUser(pc);
+
+                    List<string> msgs = [];
+                    int successCount = 0;
+                    double totalGained = 0;
+                    Dictionary<int, Item> dict = user.Inventory.Items.Select((item, index) => new { item, index })
+                        .Where(x => ids.Contains(x.index) && x.item.Character is null)
+                        .ToDictionary(x => x.index, x => x.item);
+
+                    foreach (int id in dict.Keys)
+                    {
+                        Item item = dict[id];
+
+                        if (user.Inventory.Items.Remove(item))
+                        {
+                            double gained = item.QualityType switch
+                            {
+                                QualityType.Gold => 80,
+                                QualityType.Red => 55,
+                                QualityType.Orange => 35,
+                                QualityType.Purple => 20,
+                                QualityType.Blue => 10,
+                                QualityType.Green => 4,
+                                _ => 1
+                            };
+                            totalGained += gained;
+                            successCount++;
+                        }
+                    }
+
+                    if (successCount > 0)
+                    {
+                        user.Inventory.Materials += totalGained;
+                        user.LastTime = DateTime.Now;
+                        pc.Add("user", user);
+                        pc.SaveConfig();
+                    }
+                    return NetworkUtility.JsonSerialize($"分解完毕！分解 {ids.Length} 件，成功 {successCount} 件，得到了 {totalGained} {General.GameplayEquilibriumConstant.InGameMaterial}！");
+                }
+                else
+                {
+                    return NetworkUtility.JsonSerialize(noSaved);
+                }
+            }
+            catch (Exception e)
+            {
+                return NetworkUtility.JsonSerialize(e.ToString());
+            }
+        }
+
+        [HttpPost("decomposeitem2")]
+        public string DecomposeItem2([FromQuery] long? qq = null, [FromQuery] string? name = null, [FromQuery] int? count = null)
+        {
+            try
+            {
+                long userid = qq ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
+                string itemName = name ?? "";
+                int useCount = count ?? 0;
+
+                PluginConfig pc = new("saved", userid.ToString());
+                pc.LoadConfig();
+
+                if (pc.Count > 0)
+                {
+                    User user = FunGameService.GetUser(pc);
+
+                    IEnumerable<Item> items = user.Inventory.Items.Where(i => i.Name == name && i.Character is null);
+                    if (!items.Any())
+                    {
+                        return NetworkUtility.JsonSerialize($"库存中不存在名称为【{name}】的物品！");
+                    }
+
+                    if (items.Count() >= useCount)
+                    {
+                        items = items.TakeLast(useCount);
+                        List<string> msgs = [];
+                        int successCount = 0;
+                        double totalGained = 0;
+
+                        foreach (Item item in items)
+                        {
+                            if (user.Inventory.Items.Remove(item))
+                            {
+                                double gained = item.QualityType switch
+                                {
+                                    QualityType.Gold => 80,
+                                    QualityType.Red => 55,
+                                    QualityType.Orange => 35,
+                                    QualityType.Purple => 20,
+                                    QualityType.Blue => 10,
+                                    QualityType.Green => 4,
+                                    _ => 1
+                                };
+                                totalGained += gained;
+                                successCount++;
+                            }
+                        }
+                        if (successCount > 0)
+                        {
+                            user.Inventory.Materials += totalGained;
+                            user.LastTime = DateTime.Now;
+                            pc.Add("user", user);
+                            pc.SaveConfig();
+                        }
+                        return NetworkUtility.JsonSerialize($"分解完毕！分解 {useCount} 件物品，成功 {successCount} 件，得到了 {totalGained} {General.GameplayEquilibriumConstant.InGameMaterial}！");
+                    }
+                    else
+                    {
+                        return NetworkUtility.JsonSerialize("此物品的可分解数量小于你想要分解的数量！");
+                    }
+                }
+                else
+                {
+                    return NetworkUtility.JsonSerialize(noSaved);
+                }
+            }
+            catch (Exception e)
+            {
+                return NetworkUtility.JsonSerialize(e.ToString());
+            }
+        }
+        
+        [HttpPost("decomposeitem3")]
+        public string DecomposeItem3([FromQuery] long? qq = null, [FromQuery] int? q = null)
+        {
+            try
+            {
+                long userid = qq ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
+                int qType = q ?? 0;
+
+                if (qType < 0 || qType > (int)QualityType.Gold)
+                {
+                    return NetworkUtility.JsonSerialize($"品质序号输入错误！");
+                }
+
+                PluginConfig pc = new("saved", userid.ToString());
+                pc.LoadConfig();
+
+                if (pc.Count > 0)
+                {
+                    User user = FunGameService.GetUser(pc);
+
+                    string qualityName = ItemSet.GetQualityTypeName((QualityType)qType);
+                    IEnumerable<Item> items = user.Inventory.Items.Where(i => (int)i.QualityType == qType && i.Character is null);
+                    if (!items.Any())
+                    {
+                        return NetworkUtility.JsonSerialize($"库存中{qualityName}物品数量为零！");
+                    }
+
+                    List<string> msgs = [];
+                    int successCount = 0;
+                    double gained = items.First().QualityType switch
+                    {
+                        QualityType.Gold => 80,
+                        QualityType.Red => 55,
+                        QualityType.Orange => 35,
+                        QualityType.Purple => 20,
+                        QualityType.Blue => 10,
+                        QualityType.Green => 4,
+                        _ => 1
+                    };
+
+                    foreach (Item item in items)
+                    {
+                        if (user.Inventory.Items.Remove(item))
+                        {
+                            successCount++;
+                        }
+                    }
+
+                    double totalGained = 0;
+                    if (successCount > 0)
+                    {
+                        totalGained = successCount * gained;
+                        user.Inventory.Materials += totalGained;
+                        user.LastTime = DateTime.Now;
+                        pc.Add("user", user);
+                        pc.SaveConfig();
+                    }
+                    return NetworkUtility.JsonSerialize($"分解完毕！成功分解 {successCount} 件{qualityName}物品，得到了 {totalGained} {General.GameplayEquilibriumConstant.InGameMaterial}！");
+                }
+                else
+                {
+                    return NetworkUtility.JsonSerialize(noSaved);
+                }
+            }
+            catch (Exception e)
+            {
+                return NetworkUtility.JsonSerialize(e.ToString());
+            }
+        }
+
+        [HttpPost("conflatemagiccardpack")]
+        public string ConflateMagicCardPack([FromQuery] long? qq = null, [FromBody] int[]? items = null)
+        {
+            try
+            {
+                long userid = qq ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
+                List<int> itemsIndex = items?.ToList() ?? [];
+
+                PluginConfig pc = new("saved", userid.ToString());
+                pc.LoadConfig();
+
+                if (pc.Count > 0)
+                {
+                    User user = FunGameService.GetUser(pc);
+
+                    Item? item = null;
+                    List<Item> mfks = [];
+                    foreach (int itemIndex in itemsIndex)
+                    {
+                        if (itemIndex > 0 && itemIndex <= user.Inventory.Items.Count)
+                        {
+                            item = user.Inventory.Items.ToList()[itemIndex - 1];
+                            if (item.ItemType == ItemType.MagicCard && item.RemainUseTimes > 0)
+                            {
+                                mfks.Add(item);
+                            }
+                            else
+                            {
+                                return NetworkUtility.JsonSerialize($"此物品不是魔法卡或者使用次数为0：{itemIndex}. {item.Name}");
+                            }
+                        }
+                        else
+                        {
+                            return NetworkUtility.JsonSerialize($"没有找到与这个序号相对应的物品：{itemIndex}");
+                        }
+                    }
+                    if (mfks.Count >= 3)
+                    {
+                        item = FunGameService.ConflateMagicCardPack([mfks[0], mfks[1], mfks[2]]);
+                        if (item != null)
+                        {
+                            item.User = user;
+                            FunGameService.SetSellAndTradeTime(item);
+                            user.Inventory.Items.Add(item);
+                            user.Inventory.Items.Remove(mfks[0]);
+                            user.Inventory.Items.Remove(mfks[1]);
+                            user.Inventory.Items.Remove(mfks[2]);
+                            user.LastTime = DateTime.Now;
+                            pc.Add("user", user);
+                            pc.SaveConfig();
+                            return NetworkUtility.JsonSerialize($"合成魔法卡包成功！获得魔法卡包：\r\n{item.ToStringInventory(true)}");
+                        }
+                        else
+                        {
+                            return NetworkUtility.JsonSerialize($"合成魔法卡包失败！");
+                        }
+                    }
+                    else
+                    {
+                        return NetworkUtility.JsonSerialize($"选用的魔法卡不足 3 张，请重新选择！");
+                    }
+                }
+                else
+                {
+                    return NetworkUtility.JsonSerialize(noSaved);
+                }
+            }
+            catch (Exception e)
+            {
+                return NetworkUtility.JsonSerialize(e.ToString());
             }
         }
 
