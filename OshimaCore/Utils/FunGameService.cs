@@ -78,6 +78,144 @@ namespace Oshima.Core.Utils
                 };
             }
         }
+        public static Dictionary<int, Dictionary<string, int>> SuperSkillLevelUpList
+        {
+            get
+            {
+                return new()
+                {
+                    {
+                        1, new()
+                        {
+                            { "角色等级", 1 },
+                            { General.GameplayEquilibriumConstant.InGameCurrency, 2000 },
+                            { General.GameplayEquilibriumConstant.InGameMaterial, 10 },
+                            { nameof(技能卷轴), 1 },
+                        }
+                    },
+                    {
+                        2, new()
+                        {
+                            { "角色等级", 12 },
+                            { General.GameplayEquilibriumConstant.InGameCurrency, 5000 },
+                            { General.GameplayEquilibriumConstant.InGameMaterial, 30 },
+                            { nameof(技能卷轴), 2 },
+                        }
+                    },
+                    {
+                        3, new()
+                        {
+                            { "角色等级", 24 },
+                            { General.GameplayEquilibriumConstant.InGameCurrency, 10000 },
+                            { General.GameplayEquilibriumConstant.InGameMaterial, 60 },
+                            { nameof(技能卷轴), 3 },
+                            { nameof(智慧之果), 1 },
+                        }
+                    },
+                    {
+                        4, new()
+                        {
+                            { "角色等级", 36 },
+                            { General.GameplayEquilibriumConstant.InGameCurrency, 18000 },
+                            { General.GameplayEquilibriumConstant.InGameMaterial, 100 },
+                            { nameof(技能卷轴), 4 },
+                            { nameof(智慧之果), 2 },
+                        }
+                    },
+                    {
+                        5, new()
+                        {
+                            { "角色等级", 48 },
+                            { General.GameplayEquilibriumConstant.InGameCurrency, 30000 },
+                            { General.GameplayEquilibriumConstant.InGameMaterial, 150 },
+                            { nameof(技能卷轴), 5 },
+                            { nameof(智慧之果), 3 },
+                            { nameof(奥术符文), 1 }
+                        }
+                    },
+                    {
+                        6, new()
+                        {
+                            { "角色等级", 60 },
+                            { General.GameplayEquilibriumConstant.InGameCurrency, 47000 },
+                            { General.GameplayEquilibriumConstant.InGameMaterial, 210 },
+                            { nameof(技能卷轴), 6 },
+                            { nameof(智慧之果), 4 },
+                            { nameof(奥术符文), 2 }
+                        }
+                    }
+                };
+            }
+        }
+        public static Dictionary<int, Dictionary<string, int>> SkillLevelUpList
+        {
+            get
+            {
+                return new()
+                {
+                    {
+                        1, new()
+                        {
+                            { "角色等级", 6 },
+                            { General.GameplayEquilibriumConstant.InGameCurrency, 2000 },
+                            { General.GameplayEquilibriumConstant.InGameMaterial, 10 },
+                            { nameof(技能卷轴), 1 },
+                        }
+                    },
+                    {
+                        2, new()
+                        {
+                            { "角色等级", 12 },
+                            { General.GameplayEquilibriumConstant.InGameCurrency, 5000 },
+                            { General.GameplayEquilibriumConstant.InGameMaterial, 30 },
+                            { nameof(技能卷轴), 2 },
+                        }
+                    },
+                    {
+                        3, new()
+                        {
+                            { "角色等级", 24 },
+                            { General.GameplayEquilibriumConstant.InGameCurrency, 10000 },
+                            { General.GameplayEquilibriumConstant.InGameMaterial, 60 },
+                            { nameof(技能卷轴), 3 },
+                            { nameof(智慧之果), 1 },
+                        }
+                    },
+                    {
+                        4, new()
+                        {
+                            { "角色等级", 36 },
+                            { General.GameplayEquilibriumConstant.InGameCurrency, 18000 },
+                            { General.GameplayEquilibriumConstant.InGameMaterial, 100 },
+                            { nameof(技能卷轴), 4 },
+                            { nameof(智慧之果), 2 },
+                        }
+                    },
+                    {
+                        5, new()
+                        {
+                            { "角色等级", 48 },
+                            { General.GameplayEquilibriumConstant.InGameCurrency, 30000 },
+                            { General.GameplayEquilibriumConstant.InGameMaterial, 150 },
+                            { nameof(技能卷轴), 5 },
+                            { nameof(智慧之果), 3 },
+                            { nameof(奥术符文), 1 }
+                        }
+                    },
+                    {
+                        6, new()
+                        {
+                            { "角色等级", 60 },
+                            { General.GameplayEquilibriumConstant.InGameCurrency, 47000 },
+                            { General.GameplayEquilibriumConstant.InGameMaterial, 210 },
+                            { nameof(技能卷轴), 6 },
+                            { nameof(智慧之果), 4 },
+                            { nameof(奥术符文), 2 }
+                        }
+                    }
+                };
+            }
+        }
 
         public static void InitFunGame()
         {
@@ -104,7 +242,7 @@ namespace Oshima.Core.Utils
             Equipment.AddRange([new 攻击之爪5(), new 攻击之爪15(), new 攻击之爪25(), new 攻击之爪35()]);
 
             Items.AddRange(exItems.Values.Where(i => (int)i.ItemType > 4));
-            Items.AddRange([new 小经验书(), new 中经验书(), new 大经验书(), new 升华之印(), new 流光之印(), new 永恒之印()]);
+            Items.AddRange([new 小经验书(), new 中经验书(), new 大经验书(), new 升华之印(), new 流光之印(), new 永恒之印(), new 技能卷轴(), new 智慧之果(), new 奥术符文()]);
 
             AllItems.AddRange(Equipment);
             AllItems.AddRange(Items);
@@ -503,8 +641,13 @@ namespace Oshima.Core.Utils
 
             List<Character> characters = new(user.Inventory.Characters);
             List<Item> items = new(user.Inventory.Items);
+            Character mc = user.Inventory.MainCharacter;
+            List<long> squad = [.. user.Inventory.Squad.Select(kv => kv.Id)];
+            Dictionary<long, DateTime> training = user.Inventory.Training.ToDictionary(kv => kv.Key, kv => kv.Value);
             user.Inventory.Characters.Clear();
             user.Inventory.Items.Clear();
+            user.Inventory.Squad.Clear();
+            user.Inventory.Training.Clear();
 
             foreach (Item inventoryItem in items)
             {
@@ -518,6 +661,27 @@ namespace Oshima.Core.Utils
                 Character realCharacter = CharacterBuilder.Build(inventoryCharacter, false, true, user.Inventory, AllItems, AllSkills);
                 realCharacter.User = user;
                 user.Inventory.Characters.Add(realCharacter);
+            }
+
+            if (user.Inventory.Characters.FirstOrDefault(c => c.Id == mc.Id) is Character newMC)
+            {
+                user.Inventory.MainCharacter = newMC;
+            }
+
+            foreach (long id in squad)
+            {
+                if (user.Inventory.Characters.FirstOrDefault(c => c.Id == id) is Character s)
+                {
+                    user.Inventory.Squad.Add(s);
+                }
+            }
+            
+            foreach (long cid in training.Keys)
+            {
+                if (user.Inventory.Characters.FirstOrDefault(c => c.Id == cid) is Character t)
+                {
+                    user.Inventory.Training[t.Id] = training[cid];
+                }
             }
 
             return user;
@@ -951,6 +1115,55 @@ namespace Oshima.Core.Utils
             {
                 return "此魔法卡不存在任何魔法！";
             }
+        }
+
+        public static string GetTrainingInfo(TimeSpan diff, bool isPre, out int totalExperience, out int smallBookCount, out int mediumBookCount, out int largeBookCount)
+        {
+            int totalMinutes = (int)diff.TotalMinutes;
+
+            // 每分钟经验
+            int experiencePerMinute = 1;
+
+            // 最大练级时间
+            int dailyTrainingMinutes = 1440;
+
+            // 计算总经验奖励
+            totalExperience = Math.Min(totalMinutes, dailyTrainingMinutes) * experiencePerMinute;
+
+            // 计算经验书奖励
+            smallBookCount = 0;
+            mediumBookCount = 0;
+            largeBookCount = 0;
+
+            // 计算总训练小时数
+            int trainingHours = totalMinutes / 60;
+
+            if (trainingHours >= 8)
+            {
+                smallBookCount = Math.Min(1, trainingHours);
+            }
+
+            if (trainingHours >= 16)
+            {
+                mediumBookCount = Math.Min(1, (trainingHours - 16) / 1);
+            }
+
+            if (trainingHours >= 24)
+            {
+                largeBookCount = Math.Min(1, (trainingHours - 24) / 1);
+            }
+
+            return $"练级时长：{totalMinutes} 分钟，{(isPre ? "预计可" : "")}获得：{totalExperience} 点经验值，{smallBookCount} 本小经验书，{mediumBookCount} 本中经验书，{largeBookCount} 本大经验书。" +
+                $"{(isPre ? "练级时间上限 1440 分钟（24小时），超时将不会再产生收益，请按时领取奖励！" : "")}";
+        }
+
+        public static string GetSkillLevelUpNeedy(int level)
+        {
+            if (SkillLevelUpList.TryGetValue(level, out Dictionary<string, int>? needy) && needy != null && needy.Count > 0)
+            {
+                return string.Join("，", needy.Select(kv => kv.Key + " * " + kv.Value));
+            }
+            return "";
         }
     }
 }

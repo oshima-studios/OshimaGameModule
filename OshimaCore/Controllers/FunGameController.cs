@@ -8,6 +8,7 @@ using Oshima.Core.Configs;
 using Oshima.Core.Models;
 using Oshima.Core.Utils;
 using Oshima.FunGame.OshimaModules.Characters;
+using Oshima.FunGame.OshimaModules.Items;
 
 namespace Oshima.Core.Controllers
 {
@@ -1346,18 +1347,7 @@ namespace Oshima.Core.Controllers
 
                 if (user1 != null && user2 != null)
                 {
-                    Character? character1 = user1.Inventory.Characters.FirstOrDefault(c => c.Id == user1.Id);
-                    if (character1 is null)
-                    {
-                        return [$"你似乎没有自建角色，请发送【生成自建角色】创建！"];
-                    }
-                    Character? character2 = user2.Inventory.Characters.FirstOrDefault(c => c.Id == user2.Id);
-                    if (character2 is null)
-                    {
-                        return [$"对方似乎还没有自建角色，请发送【生成自建角色】创建！"];
-                    }
-
-                    return FunGameActionQueue.StartGame([character1, character2], false, false, false, false, false, showAllRound);
+                    return FunGameActionQueue.StartGame([user1.Inventory.MainCharacter, user2.Inventory.MainCharacter], false, false, false, false, false, showAllRound);
                 }
                 else
                 {
@@ -2226,6 +2216,395 @@ namespace Oshima.Core.Controllers
                     else
                     {
                         return NetworkUtility.JsonSerialize($"选用的魔法卡不足 3 张，请重新选择！");
+                    }
+                }
+                else
+                {
+                    return NetworkUtility.JsonSerialize(noSaved);
+                }
+            }
+            catch (Exception e)
+            {
+                return NetworkUtility.JsonSerialize(e.ToString());
+            }
+        }
+
+        [HttpPost("setmain")]
+        public string SetMain([FromQuery] long? qq = null, [FromQuery] int? c = null)
+        {
+            try
+            {
+                long userid = qq ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
+                int characterIndex = c ?? 0;
+
+                PluginConfig pc = new("saved", userid.ToString());
+                pc.LoadConfig();
+
+                if (pc.Count > 0)
+                {
+                    User user = FunGameService.GetUser(pc);
+
+                    Character? character = null;
+                    if (characterIndex > 0 && characterIndex <= user.Inventory.Characters.Count)
+                    {
+                        character = user.Inventory.Characters.ToList()[characterIndex - 1];
+                    }
+                    else
+                    {
+                        return NetworkUtility.JsonSerialize($"没有找到与这个序号相对应的角色！");
+                    }
+
+                    user.Inventory.MainCharacter = character;
+                    user.LastTime = DateTime.Now;
+                    pc.Add("user", user);
+                    pc.SaveConfig();
+                    return NetworkUtility.JsonSerialize($"设置主战角色成功：{character}");
+                }
+                else
+                {
+                    return NetworkUtility.JsonSerialize(noSaved);
+                }
+            }
+            catch (Exception e)
+            {
+                return NetworkUtility.JsonSerialize(e.ToString());
+            }
+        }
+        
+        [HttpPost("starttraining")]
+        public string StartTraining([FromQuery] long? qq = null, [FromQuery] int? c = null)
+        {
+            try
+            {
+                long userid = qq ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
+                int characterIndex = c ?? 0;
+
+                PluginConfig pc = new("saved", userid.ToString());
+                pc.LoadConfig();
+
+                if (pc.Count > 0)
+                {
+                    User user = FunGameService.GetUser(pc);
+
+                    Character? character = null;
+                    if (characterIndex > 0 && characterIndex <= user.Inventory.Characters.Count)
+                    {
+                        character = user.Inventory.Characters.ToList()[characterIndex - 1];
+                    }
+                    else
+                    {
+                        return NetworkUtility.JsonSerialize($"没有找到与这个序号相对应的角色！");
+                    }
+
+                    if (user.Inventory.Training.Count > 0)
+                    {
+                        return NetworkUtility.JsonSerialize($"你已经有角色在练级中，请使用【练级结算】指令结束并获取奖励：{user.Inventory.Training.First()}！");
+                    }
+
+                    user.Inventory.Training[character.Id] = DateTime.Now;
+                    user.LastTime = DateTime.Now;
+                    pc.Add("user", user);
+                    pc.SaveConfig();
+                    return NetworkUtility.JsonSerialize($"角色 [{character}] 开始练级，请过一段时间后进行【练级结算】，时间越长奖励越丰盛！练级时间最长 1440 分钟（24小时），超时将无任何收益，请及时领取奖励。");
+                }
+                else
+                {
+                    return NetworkUtility.JsonSerialize(noSaved);
+                }
+            }
+            catch (Exception e)
+            {
+                return NetworkUtility.JsonSerialize(e.ToString());
+            }
+        }
+        
+        [HttpPost("stoptraining")]
+        public string StopTraining([FromQuery] long? qq = null)
+        {
+            try
+            {
+                long userid = qq ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
+
+                PluginConfig pc = new("saved", userid.ToString());
+                pc.LoadConfig();
+
+                if (pc.Count > 0)
+                {
+                    User user = FunGameService.GetUser(pc);
+
+                    if (user.Inventory.Training.Count == 0)
+                    {
+                        return NetworkUtility.JsonSerialize($"你目前没有角色在练级中，请使用【开启练级+角色序号】指令进行练级。");
+                    }
+
+                    long cid = user.Inventory.Training.Keys.First();
+                    DateTime time = user.Inventory.Training[cid];
+                    DateTime now = DateTime.Now;
+                    Character? character = user.Inventory.Characters.FirstOrDefault(c => c.Id == cid);
+                    if (character != null)
+                    {
+                        user.Inventory.Training.Remove(cid);
+
+                        TimeSpan diff = now - time;
+                        string msg = FunGameService.GetTrainingInfo(diff, false, out int totalExperience, out int smallBookCount, out int mediumBookCount, out int largeBookCount);
+
+                        if (totalExperience > 0)
+                        {
+                            character.EXP += totalExperience;
+                        }
+
+                        for (int i = 0; i < smallBookCount; i++)
+                        {
+                            Item item = new 小经验书(user);
+                            user.Inventory.Items.Add(item);
+                        }
+
+                        for (int i = 0; i < mediumBookCount; i++)
+                        {
+                            Item item = new 中经验书(user);
+                            user.Inventory.Items.Add(item);
+                        }
+
+                        for (int i = 0; i < largeBookCount; i++)
+                        {
+                            Item item = new 大经验书(user);
+                            user.Inventory.Items.Add(item);
+                        }
+
+                        user.LastTime = DateTime.Now;
+                        pc.Add("user", user);
+                        pc.SaveConfig();
+                        return NetworkUtility.JsonSerialize($"角色 [ {character} ] 练级结束，{msg}");
+                    }
+                    else
+                    {
+                        return NetworkUtility.JsonSerialize($"你目前没有角色在练级中，也可能是库存信息获取异常，请稍后再试。");
+                    }
+                }
+                else
+                {
+                    return NetworkUtility.JsonSerialize(noSaved);
+                }
+            }
+            catch (Exception e)
+            {
+                return NetworkUtility.JsonSerialize(e.ToString());
+            }
+        }
+        
+        [HttpPost("gettraininginfo")]
+        public string GetTrainingInfo([FromQuery] long? qq = null)
+        {
+            try
+            {
+                long userid = qq ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
+
+                PluginConfig pc = new("saved", userid.ToString());
+                pc.LoadConfig();
+
+                if (pc.Count > 0)
+                {
+                    User user = FunGameService.GetUser(pc);
+
+                    if (user.Inventory.Training.Count == 0)
+                    {
+                        return NetworkUtility.JsonSerialize($"你目前没有角色在练级中，请使用【开启练级+角色序号】指令进行练级。");
+                    }
+
+                    long cid = user.Inventory.Training.Keys.First();
+                    DateTime time = user.Inventory.Training[cid];
+                    DateTime now = DateTime.Now;
+                    Character? character = user.Inventory.Characters.FirstOrDefault(c => c.Id == cid);
+                    if (character != null)
+                    {
+                        TimeSpan diff = now - time;
+                        string msg = FunGameService.GetTrainingInfo(diff, true, out int totalExperience, out int smallBookCount, out int mediumBookCount, out int largeBookCount);
+
+                        return NetworkUtility.JsonSerialize($"角色 [ {character} ] 正在练级中，{msg}\r\n确认无误后请输入【练级结算】领取奖励！");
+                    }
+                    else
+                    {
+                        return NetworkUtility.JsonSerialize($"你目前没有角色在练级中，也可能是库存信息获取异常，请稍后再试。");
+                    }
+                }
+                else
+                {
+                    return NetworkUtility.JsonSerialize(noSaved);
+                }
+            }
+            catch (Exception e)
+            {
+                return NetworkUtility.JsonSerialize(e.ToString());
+            }
+        }
+
+        [HttpPost("getskilllevelupneedy")]
+        public string GetSkillLevelUpNeedy([FromQuery] long? qq = null, [FromQuery] int? c = null, [FromQuery] string? s = null)
+        {
+            long userid = qq ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
+            int characterIndex = c ?? 0;
+            string skillName = s ?? "";
+
+            PluginConfig pc = new("saved", userid.ToString());
+            pc.LoadConfig();
+
+            if (pc.Count > 0)
+            {
+                User user = FunGameService.GetUser(pc);
+                Character? character;
+                if (characterIndex > 0 && characterIndex <= user.Inventory.Characters.Count)
+                {
+                    character = user.Inventory.Characters.ToList()[characterIndex - 1];
+                }
+                else
+                {
+                    return NetworkUtility.JsonSerialize($"没有找到与这个序号相对应的角色！");
+                }
+
+                if (character.Skills.FirstOrDefault(s => s.Name == skillName) is Skill skill)
+                {
+                    if (skill.SkillType == SkillType.Skill || skill.SkillType == SkillType.SuperSkill)
+                    {
+                        if (skill.Level + 1 == General.GameplayEquilibriumConstant.MaxSkillLevel)
+                        {
+                            return NetworkUtility.JsonSerialize($"此技能【{skill.Name}】已经升至满级！");
+                        }
+
+                        return NetworkUtility.JsonSerialize($"角色 [ {character} ] 的【{skill.Name}】技能等级：{skill.Level}/{General.GameplayEquilibriumConstant.MaxSkillLevel}" +
+                            $"\r\n下一级所需升级材料：\r\n" + FunGameService.GetSkillLevelUpNeedy(skill.Level + 1));
+                    }
+                    return NetworkUtility.JsonSerialize($"此技能无法升级！");
+                }
+                else
+                {
+                    return NetworkUtility.JsonSerialize($"此角色没有【{skillName}】技能！");
+                }
+            }
+            else
+            {
+                return NetworkUtility.JsonSerialize(noSaved);
+            }
+        }
+
+        [HttpPost("skilllevelup")]
+        public string SkillLevelUp([FromQuery] long? qq = null, [FromQuery] int? c = null, [FromQuery] string? s = null)
+        {
+            try
+            {
+                long userid = qq ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
+                int characterIndex = c ?? 0;
+                string skillName = s ?? "";
+
+                PluginConfig pc = new("saved", userid.ToString());
+                pc.LoadConfig();
+
+                if (pc.Count > 0)
+                {
+                    User user = FunGameService.GetUser(pc);
+
+                    Character? character = null;
+                    if (characterIndex > 0 && characterIndex <= user.Inventory.Characters.Count)
+                    {
+                        character = user.Inventory.Characters.ToList()[characterIndex - 1];
+                    }
+                    else
+                    {
+                        return NetworkUtility.JsonSerialize($"没有找到与这个序号相对应的角色！");
+                    }
+
+                    if (character.Skills.FirstOrDefault(s => s.Name == skillName) is Skill skill)
+                    {
+                        string isStudy = skill.Level == 0 ? "学习" : "升级";
+
+                        if (skill.SkillType == SkillType.Skill || skill.SkillType == SkillType.SuperSkill)
+                        {
+                            if (skill.Level == General.GameplayEquilibriumConstant.MaxSkillLevel)
+                            {
+                                return NetworkUtility.JsonSerialize($"此技能【{skill.Name}】已经升至满级！");
+                            }
+
+                            if (FunGameService.SkillLevelUpList.TryGetValue(skill.Level + 1, out Dictionary<string, int>? needy) && needy != null && needy.Count > 0)
+                            {
+                                foreach (string key in needy.Keys)
+                                {
+                                    int needCount = needy[key];
+                                    if (key == "角色等级")
+                                    {
+                                        if (character.Level < needCount)
+                                        {
+                                            return NetworkUtility.JsonSerialize($"角色 [ {character} ] 等级不足 {needCount} 级，无法{isStudy}此技能！");
+                                        }
+                                    }
+                                    else if (key == General.GameplayEquilibriumConstant.InGameCurrency)
+                                    {
+                                        if (user.Inventory.Credits >= needCount)
+                                        {
+                                            user.Inventory.Credits -= needCount;
+                                        }
+                                        else
+                                        {
+                                            return NetworkUtility.JsonSerialize($"你的{General.GameplayEquilibriumConstant.InGameCurrency}不足 {needCount} 呢，不满足{isStudy}条件！");
+                                        }
+                                    }
+                                    else if (key == General.GameplayEquilibriumConstant.InGameMaterial)
+                                    {
+                                        if (user.Inventory.Materials >= needCount)
+                                        {
+                                            user.Inventory.Materials -= needCount;
+                                        }
+                                        else
+                                        {
+                                            return NetworkUtility.JsonSerialize($"你的{General.GameplayEquilibriumConstant.InGameMaterial}不足 {needCount} 呢，不满足{isStudy}条件！");
+                                        }
+                                    }
+                                    else
+                                    {
+                                        if (needCount > 0)
+                                        {
+                                            IEnumerable<Item> items = user.Inventory.Items.Where(i => i.Name == key);
+                                            if (items.Count() >= needCount)
+                                            {
+                                                items = items.TakeLast(needCount);
+                                                foreach (Item item in items)
+                                                {
+                                                    user.Inventory.Items.Remove(item);
+                                                }
+                                            }
+                                            else
+                                            {
+                                                return NetworkUtility.JsonSerialize($"你的物品【{key}】数量不足 {needCount} 呢，不满足{isStudy}条件！");
+                                            }
+                                        }
+                                    }
+                                }
+
+                                skill.Level += 1;
+
+                                user.LastTime = DateTime.Now;
+                                pc.Add("user", user);
+                                pc.SaveConfig();
+                                string msg = $"{isStudy}技能成功！本次消耗：{string.Join("，", needy.Select(kv => kv.Key + " * " + kv.Value))}，成功将【{skill.Name}】技能提升至 {skill.Level} 级！";
+
+                                if (skill.Level == General.GameplayEquilibriumConstant.MaxSkillLevel)
+                                {
+                                    msg += $"\r\n此技能已经升至满级，恭喜！";
+                                }
+                                else
+                                {
+                                    msg += $"\r\n下一级所需升级材料：\r\n" + FunGameService.GetSkillLevelUpNeedy(skill.Level + 1);
+                                }
+
+                                return NetworkUtility.JsonSerialize(msg);
+                            }
+
+                            return NetworkUtility.JsonSerialize($"{isStudy}技能失败！角色 [ {character} ] 的【{skill.Name}】技能当前等级：{skill.Level}/{General.GameplayEquilibriumConstant.MaxSkillLevel}" +
+                                $"\r\n下一级所需升级材料：\r\n" + FunGameService.GetSkillLevelUpNeedy(skill.Level + 1));
+                        }
+                        return NetworkUtility.JsonSerialize($"此技能无法{isStudy}！");
+                    }
+                    else
+                    {
+                        return NetworkUtility.JsonSerialize($"此角色没有【{skillName}】技能！");
                     }
                 }
                 else
