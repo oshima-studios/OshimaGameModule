@@ -1350,5 +1350,30 @@
         }
       ]
     }
+  },
+  "YukiのCalfSocks-圣诞限定": {
+    "Id": 14515,
+    "Name": "YukiのCalfSocks-圣诞限定",
+    "Description": "增加角色 50% 暴击伤害。",
+    "BackgroundStory": "小雪的圣诞限定小腿袜，结合了圣诞树的红绿色，还有铃铛和鹿角的装饰。",
+    "ItemType": 4,
+    "WeaponType": 0,
+    "QualityType": 3,
+    "Skills": {
+      "Active": null,
+      "Passives": [
+        {
+          "Id": 7315,
+          "Name": "YukiのCalfSocks-圣诞限定",
+          "SkillType": 3,
+          "Effects": [
+            {
+              "Id": 8015,
+              "excrd": 0.5
+            }
+          ]
+        }
+      ]
+    }
   }
 }

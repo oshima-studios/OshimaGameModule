@@ -78,7 +78,7 @@ namespace Oshima.Core.Utils
                 };
             }
         }
-        public static Dictionary<int, Dictionary<string, int>> SuperSkillLevelUpList
+        public static Dictionary<int, Dictionary<string, int>> SkillLevelUpList
         {
             get
             {
@@ -147,32 +147,32 @@ namespace Oshima.Core.Utils
                 };
             }
         }
-        public static Dictionary<int, Dictionary<string, int>> SkillLevelUpList
+        public static Dictionary<int, Dictionary<string, int>> NormalAttackLevelUpList
         {
             get
             {
                 return new()
                 {
                     {
-                        1, new()
+                        2, new()
                         {
-                            { "角色等级", 6 },
+                            { "角色等级", 8 },
                             { General.GameplayEquilibriumConstant.InGameCurrency, 2000 },
                             { General.GameplayEquilibriumConstant.InGameMaterial, 10 },
                             { nameof(技能卷轴), 1 },
                         }
                     },
                     {
-                        2, new()
+                        3, new()
                         {
-                            { "角色等级", 12 },
+                            { "角色等级", 16 },
                             { General.GameplayEquilibriumConstant.InGameCurrency, 5000 },
                             { General.GameplayEquilibriumConstant.InGameMaterial, 30 },
                             { nameof(技能卷轴), 2 },
                         }
                     },
                     {
-                        3, new()
+                        4, new()
                         {
                             { "角色等级", 24 },
                             { General.GameplayEquilibriumConstant.InGameCurrency, 10000 },
@@ -182,9 +182,9 @@ namespace Oshima.Core.Utils
                         }
                     },
                     {
-                        4, new()
+                        5, new()
                         {
-                            { "角色等级", 36 },
+                            { "角色等级", 32 },
                             { General.GameplayEquilibriumConstant.InGameCurrency, 18000 },
                             { General.GameplayEquilibriumConstant.InGameMaterial, 100 },
                             { nameof(技能卷轴), 4 },
@@ -192,9 +192,10 @@ namespace Oshima.Core.Utils
                         }
                     },
                     {
-                        5, new()
+                        6, new()
                         {
-                            { "角色等级", 48 },
+                            { "角色等级", 40 },
+                            { "角色突破进度", 4 },
                             { General.GameplayEquilibriumConstant.InGameCurrency, 30000 },
                             { General.GameplayEquilibriumConstant.InGameMaterial, 150 },
                             { nameof(技能卷轴), 5 },
@@ -203,14 +204,26 @@ namespace Oshima.Core.Utils
                         }
                     },
                     {
-                        6, new()
+                        7, new()
                         {
-                            { "角色等级", 60 },
+                            { "角色等级", 48 },
                             { General.GameplayEquilibriumConstant.InGameCurrency, 47000 },
                             { General.GameplayEquilibriumConstant.InGameMaterial, 210 },
                             { nameof(技能卷轴), 6 },
                             { nameof(智慧之果), 4 },
                             { nameof(奥术符文), 2 }
+                        }
+                    },
+                    {
+                        8, new()
+                        {
+                            { "角色等级", 56 },
+                            { General.GameplayEquilibriumConstant.InGameCurrency, 70000 },
+                            { General.GameplayEquilibriumConstant.InGameMaterial, 280 },
+                            { nameof(技能卷轴), 7 },
+                            { nameof(智慧之果), 5 },
+                            { nameof(奥术符文), 3 },
+                            { nameof(混沌之核), 1 }
                         }
                     }
                 };
@@ -242,7 +255,7 @@ namespace Oshima.Core.Utils
             Equipment.AddRange([new 攻击之爪5(), new 攻击之爪15(), new 攻击之爪25(), new 攻击之爪35()]);
 
             Items.AddRange(exItems.Values.Where(i => (int)i.ItemType > 4));
-            Items.AddRange([new 小经验书(), new 中经验书(), new 大经验书(), new 升华之印(), new 流光之印(), new 永恒之印(), new 技能卷轴(), new 智慧之果(), new 奥术符文()]);
+            Items.AddRange([new 小经验书(), new 中经验书(), new 大经验书(), new 升华之印(), new 流光之印(), new 永恒之印(), new 技能卷轴(), new 智慧之果(), new 奥术符文(), new 混沌之核()]);
 
             AllItems.AddRange(Equipment);
             AllItems.AddRange(Items);
@@ -1161,9 +1174,44 @@ namespace Oshima.Core.Utils
         {
             if (SkillLevelUpList.TryGetValue(level, out Dictionary<string, int>? needy) && needy != null && needy.Count > 0)
             {
-                return string.Join("，", needy.Select(kv => kv.Key + " * " + kv.Value));
+                return GetNeedyInfo(needy);
             }
             return "";
+        }
+
+        public static string GetNormalAttackLevelUpNeedy(int level)
+        {
+            if (NormalAttackLevelUpList.TryGetValue(level, out Dictionary<string, int>? needy) && needy != null && needy.Count > 0)
+            {
+                return GetNeedyInfo(needy);
+            }
+            return "";
+        }
+
+        public static string GetNeedyInfo(Dictionary<string, int> needy)
+        {
+            string str = "";
+            foreach (string key in needy.Keys)
+            {
+                int needCount = needy[key];
+                if (str != "")
+                {
+                    str += "，";
+                }
+                if (key == "角色等级")
+                {
+                    str += $"角色等级 {needCount} 级";
+                }
+                else if (key == "角色突破进度")
+                {
+                    str += $"角色突破进度 {needCount} 等阶";
+                }
+                else
+                {
+                    str += $"{key} * {needCount}";
+                }
+            }
+            return str;
         }
     }
 }

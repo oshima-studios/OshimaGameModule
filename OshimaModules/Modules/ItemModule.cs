@@ -38,6 +38,7 @@ namespace Oshima.FunGame.OshimaModules
                     (long)SpecialItemID.技能卷轴 => new 技能卷轴(),
                     (long)SpecialItemID.智慧之果 => new 智慧之果(),
                     (long)SpecialItemID.奥术符文 => new 奥术符文(),
+                    (long)SpecialItemID.混沌之核 => new 混沌之核(),
                     _ => null,
                 };
             };

@@ -266,7 +266,7 @@ namespace Oshima.Core.Controllers
         [HttpGet("iteminfo")]
         public string GetItemInfo([FromQuery] long? id = null)
         {
-            IEnumerable<Item> items = FunGameService.Equipment;
+            IEnumerable<Item> items = FunGameService.AllItems;
             if (id != null)
             {
                 List<string> msg = [];
@@ -2470,7 +2470,7 @@ namespace Oshima.Core.Controllers
                             return NetworkUtility.JsonSerialize($"此技能【{skill.Name}】已经升至满级！");
                         }
 
-                        return NetworkUtility.JsonSerialize($"角色 [ {character} ] 的【{skill.Name}】技能等级：{skill.Level}/{General.GameplayEquilibriumConstant.MaxSkillLevel}" +
+                        return NetworkUtility.JsonSerialize($"角色 [ {character} ] 的【{skill.Name}】技能等级：{skill.Level} / {General.GameplayEquilibriumConstant.MaxSkillLevel}" +
                             $"\r\n下一级所需升级材料：\r\n" + FunGameService.GetSkillLevelUpNeedy(skill.Level + 1));
                     }
                     return NetworkUtility.JsonSerialize($"此技能无法升级！");
@@ -2485,7 +2485,7 @@ namespace Oshima.Core.Controllers
                 return NetworkUtility.JsonSerialize(noSaved);
             }
         }
-
+        
         [HttpPost("skilllevelup")]
         public string SkillLevelUp([FromQuery] long? qq = null, [FromQuery] int? c = null, [FromQuery] string? s = null)
         {
@@ -2533,6 +2533,13 @@ namespace Oshima.Core.Controllers
                                         if (character.Level < needCount)
                                         {
                                             return NetworkUtility.JsonSerialize($"角色 [ {character} ] 等级不足 {needCount} 级，无法{isStudy}此技能！");
+                                        }
+                                    }
+                                    else if (key == "角色突破进度")
+                                    {
+                                        if (character.LevelBreak < needCount)
+                                        {
+                                            return NetworkUtility.JsonSerialize($"角色 [ {character} ] 等级突破进度不足 {needCount} 等阶，无法{isStudy}此技能！");
                                         }
                                     }
                                     else if (key == General.GameplayEquilibriumConstant.InGameCurrency)
@@ -2583,6 +2590,8 @@ namespace Oshima.Core.Controllers
                                 user.LastTime = DateTime.Now;
                                 pc.Add("user", user);
                                 pc.SaveConfig();
+                                needy.Remove("角色等级");
+                                needy.Remove("角色突破进度");
                                 string msg = $"{isStudy}技能成功！本次消耗：{string.Join("，", needy.Select(kv => kv.Key + " * " + kv.Value))}，成功将【{skill.Name}】技能提升至 {skill.Level} 级！";
 
                                 if (skill.Level == General.GameplayEquilibriumConstant.MaxSkillLevel)
@@ -2606,6 +2615,171 @@ namespace Oshima.Core.Controllers
                     {
                         return NetworkUtility.JsonSerialize($"此角色没有【{skillName}】技能！");
                     }
+                }
+                else
+                {
+                    return NetworkUtility.JsonSerialize(noSaved);
+                }
+            }
+            catch (Exception e)
+            {
+                return NetworkUtility.JsonSerialize(e.ToString());
+            }
+        }
+
+        [HttpPost("getnormalattacklevelupneedy")]
+        public string GetNormalAttackLevelUpNeedy([FromQuery] long? qq = null, [FromQuery] int? c = null)
+        {
+            long userid = qq ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
+            int characterIndex = c ?? 0;
+
+            PluginConfig pc = new("saved", userid.ToString());
+            pc.LoadConfig();
+
+            if (pc.Count > 0)
+            {
+                User user = FunGameService.GetUser(pc);
+                Character? character;
+                if (characterIndex > 0 && characterIndex <= user.Inventory.Characters.Count)
+                {
+                    character = user.Inventory.Characters.ToList()[characterIndex - 1];
+                }
+                else
+                {
+                    return NetworkUtility.JsonSerialize($"没有找到与这个序号相对应的角色！");
+                }
+
+                NormalAttack na = character.NormalAttack;
+
+                if (na.Level + 1 == General.GameplayEquilibriumConstant.MaxNormalAttackLevel)
+                {
+                    return NetworkUtility.JsonSerialize($"角色 [ {character} ] 的【{na.Name}】已经升至满级！");
+                }
+                return NetworkUtility.JsonSerialize($"角色 [ {character} ] 的【{na.Name}】等级：{na.Level} / {General.GameplayEquilibriumConstant.MaxNormalAttackLevel}" +
+                    $"\r\n下一级所需升级材料：\r\n" + FunGameService.GetNormalAttackLevelUpNeedy(na.Level + 1));
+            }
+            else
+            {
+                return NetworkUtility.JsonSerialize(noSaved);
+            }
+        }
+
+        [HttpPost("normalattacklevelup")]
+        public string NormalAttackLevelUp([FromQuery] long? qq = null, [FromQuery] int? c = null)
+        {
+            try
+            {
+                long userid = qq ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
+                int characterIndex = c ?? 0;
+
+                PluginConfig pc = new("saved", userid.ToString());
+                pc.LoadConfig();
+
+                if (pc.Count > 0)
+                {
+                    User user = FunGameService.GetUser(pc);
+
+                    Character? character = null;
+                    if (characterIndex > 0 && characterIndex <= user.Inventory.Characters.Count)
+                    {
+                        character = user.Inventory.Characters.ToList()[characterIndex - 1];
+                    }
+                    else
+                    {
+                        return NetworkUtility.JsonSerialize($"没有找到与这个序号相对应的角色！");
+                    }
+
+                    NormalAttack na = character.NormalAttack;
+                    if (na.Level == General.GameplayEquilibriumConstant.MaxNormalAttackLevel)
+                    {
+                        return NetworkUtility.JsonSerialize($"角色 [ {character} ] 的【{na.Name}】已经升至满级！");
+                    }
+
+                    if (FunGameService.NormalAttackLevelUpList.TryGetValue(na.Level + 1, out Dictionary<string, int>? needy) && needy != null && needy.Count > 0)
+                    {
+                        foreach (string key in needy.Keys)
+                        {
+                            int needCount = needy[key];
+                            if (key == "角色等级")
+                            {
+                                if (character.Level < needCount)
+                                {
+                                    return NetworkUtility.JsonSerialize($"角色 [ {character} ] 等级不足 {needCount} 级，无法升级此技能！");
+                                }
+                            }
+                            else if (key == "角色突破进度")
+                            {
+                                if (character.LevelBreak < needCount)
+                                {
+                                    return NetworkUtility.JsonSerialize($"角色 [ {character} ] 等级突破进度不足 {needCount} 等阶，无法升级此技能！");
+                                }
+                            }
+                            else if (key == General.GameplayEquilibriumConstant.InGameCurrency)
+                            {
+                                if (user.Inventory.Credits >= needCount)
+                                {
+                                    user.Inventory.Credits -= needCount;
+                                }
+                                else
+                                {
+                                    return NetworkUtility.JsonSerialize($"你的{General.GameplayEquilibriumConstant.InGameCurrency}不足 {needCount} 呢，不满足升级条件！");
+                                }
+                            }
+                            else if (key == General.GameplayEquilibriumConstant.InGameMaterial)
+                            {
+                                if (user.Inventory.Materials >= needCount)
+                                {
+                                    user.Inventory.Materials -= needCount;
+                                }
+                                else
+                                {
+                                    return NetworkUtility.JsonSerialize($"你的{General.GameplayEquilibriumConstant.InGameMaterial}不足 {needCount} 呢，不满足升级条件！");
+                                }
+                            }
+                            else
+                            {
+                                if (needCount > 0)
+                                {
+                                    IEnumerable<Item> items = user.Inventory.Items.Where(i => i.Name == key);
+                                    if (items.Count() >= needCount)
+                                    {
+                                        items = items.TakeLast(needCount);
+                                        foreach (Item item in items)
+                                        {
+                                            user.Inventory.Items.Remove(item);
+                                        }
+                                    }
+                                    else
+                                    {
+                                        return NetworkUtility.JsonSerialize($"你的物品【{key}】数量不足 {needCount} 呢，不满足升级条件！");
+                                    }
+                                }
+                            }
+                        }
+
+                        na.Level += 1;
+
+                        user.LastTime = DateTime.Now;
+                        pc.Add("user", user);
+                        pc.SaveConfig();
+                        needy.Remove("角色等级");
+                        needy.Remove("角色突破进度");
+                        string msg = $"角色 [ {character} ] 升级【{na.Name}】成功！本次消耗：{string.Join("，", needy.Select(kv => kv.Key + " * " + kv.Value))}，成功将【{na.Name}】提升至 {na.Level} 级！";
+
+                        if (na.Level == General.GameplayEquilibriumConstant.MaxNormalAttackLevel)
+                        {
+                            msg += $"\r\n{na.Name}已经升至满级，恭喜！";
+                        }
+                        else
+                        {
+                            msg += $"\r\n下一级所需升级材料：\r\n" + FunGameService.GetNormalAttackLevelUpNeedy(na.Level + 1);
+                        }
+
+                        return NetworkUtility.JsonSerialize(msg);
+                    }
+
+                    return NetworkUtility.JsonSerialize($"升级{na.Name}失败！角色 [ {character} ] 的【{na.Name}】当前等级：{na.Level}/{General.GameplayEquilibriumConstant.MaxNormalAttackLevel}" +
+                        $"\r\n下一级所需升级材料：\r\n" + FunGameService.GetSkillLevelUpNeedy(na.Level + 1));
                 }
                 else
                 {
