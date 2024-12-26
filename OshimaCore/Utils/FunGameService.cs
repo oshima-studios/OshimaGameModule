@@ -21,214 +21,7 @@ namespace Oshima.Core.Utils
         public static List<Item> AllItems { get; } = [];
         public static List<Skill> AllSkills { get; } = [];
         public static Dictionary<long, string> UserIdAndUsername { get; } = [];
-        public static Dictionary<int, Dictionary<string, int>> LevelBreakNeedyList
-        {
-            get
-            {
-                return new()
-                {
-                    {
-                        0, new()
-                        {
-                            { General.GameplayEquilibriumConstant.InGameMaterial, 80 },
-                            { nameof(升华之印), 10 }
-                        }
-                    },
-                    {
-                        1, new()
-                        {
-                            { General.GameplayEquilibriumConstant.InGameMaterial, 400 },
-                            { nameof(升华之印), 20 }
-                        }
-                    },
-                    {
-                        2, new()
-                        {
-                            { General.GameplayEquilibriumConstant.InGameMaterial, 960 },
-                            { nameof(升华之印), 30 },
-                            { nameof(流光之印), 10 }
-                        }
-                    },
-                    {
-                        3, new()
-                        {
-                            { General.GameplayEquilibriumConstant.InGameMaterial, 1760 },
-                            { nameof(升华之印), 40 },
-                            { nameof(流光之印), 20 }
-                        }
-                    },
-                    {
-                        4, new()
-                        {
-                            { General.GameplayEquilibriumConstant.InGameMaterial, 2800 },
-                            { nameof(升华之印), 50 },
-                            { nameof(流光之印), 30 },
-                            { nameof(永恒之印), 10 }
-                        }
-                    },
-                    {
-                        5, new()
-                        {
-                            { General.GameplayEquilibriumConstant.InGameMaterial, 4080 },
-                            { nameof(升华之印), 60 },
-                            { nameof(流光之印), 40 },
-                            { nameof(永恒之印), 20 }
-                        }
-                    },
-                };
-            }
-        }
-        public static Dictionary<int, Dictionary<string, int>> SkillLevelUpList
-        {
-            get
-            {
-                return new()
-                {
-                    {
-                        1, new()
-                        {
-                            { "角色等级", 1 },
-                            { General.GameplayEquilibriumConstant.InGameCurrency, 2000 },
-                            { General.GameplayEquilibriumConstant.InGameMaterial, 10 },
-                            { nameof(技能卷轴), 1 },
-                        }
-                    },
-                    {
-                        2, new()
-                        {
-                            { "角色等级", 12 },
-                            { General.GameplayEquilibriumConstant.InGameCurrency, 5000 },
-                            { General.GameplayEquilibriumConstant.InGameMaterial, 30 },
-                            { nameof(技能卷轴), 2 },
-                        }
-                    },
-                    {
-                        3, new()
-                        {
-                            { "角色等级", 24 },
-                            { General.GameplayEquilibriumConstant.InGameCurrency, 10000 },
-                            { General.GameplayEquilibriumConstant.InGameMaterial, 60 },
-                            { nameof(技能卷轴), 3 },
-                            { nameof(智慧之果), 1 },
-                        }
-                    },
-                    {
-                        4, new()
-                        {
-                            { "角色等级", 36 },
-                            { General.GameplayEquilibriumConstant.InGameCurrency, 18000 },
-                            { General.GameplayEquilibriumConstant.InGameMaterial, 100 },
-                            { nameof(技能卷轴), 4 },
-                            { nameof(智慧之果), 2 },
-                        }
-                    },
-                    {
-                        5, new()
-                        {
-                            { "角色等级", 48 },
-                            { General.GameplayEquilibriumConstant.InGameCurrency, 30000 },
-                            { General.GameplayEquilibriumConstant.InGameMaterial, 150 },
-                            { nameof(技能卷轴), 5 },
-                            { nameof(智慧之果), 3 },
-                            { nameof(奥术符文), 1 }
-                        }
-                    },
-                    {
-                        6, new()
-                        {
-                            { "角色等级", 60 },
-                            { General.GameplayEquilibriumConstant.InGameCurrency, 47000 },
-                            { General.GameplayEquilibriumConstant.InGameMaterial, 210 },
-                            { nameof(技能卷轴), 6 },
-                            { nameof(智慧之果), 4 },
-                            { nameof(奥术符文), 2 }
-                        }
-                    }
-                };
-            }
-        }
-        public static Dictionary<int, Dictionary<string, int>> NormalAttackLevelUpList
-        {
-            get
-            {
-                return new()
-                {
-                    {
-                        2, new()
-                        {
-                            { "角色等级", 8 },
-                            { General.GameplayEquilibriumConstant.InGameCurrency, 2000 },
-                            { General.GameplayEquilibriumConstant.InGameMaterial, 10 },
-                            { nameof(技能卷轴), 1 },
-                        }
-                    },
-                    {
-                        3, new()
-                        {
-                            { "角色等级", 16 },
-                            { General.GameplayEquilibriumConstant.InGameCurrency, 5000 },
-                            { General.GameplayEquilibriumConstant.InGameMaterial, 30 },
-                            { nameof(技能卷轴), 2 },
-                        }
-                    },
-                    {
-                        4, new()
-                        {
-                            { "角色等级", 24 },
-                            { General.GameplayEquilibriumConstant.InGameCurrency, 10000 },
-                            { General.GameplayEquilibriumConstant.InGameMaterial, 60 },
-                            { nameof(技能卷轴), 3 },
-                            { nameof(智慧之果), 1 },
-                        }
-                    },
-                    {
-                        5, new()
-                        {
-                            { "角色等级", 32 },
-                            { General.GameplayEquilibriumConstant.InGameCurrency, 18000 },
-                            { General.GameplayEquilibriumConstant.InGameMaterial, 100 },
-                            { nameof(技能卷轴), 4 },
-                            { nameof(智慧之果), 2 },
-                        }
-                    },
-                    {
-                        6, new()
-                        {
-                            { "角色等级", 40 },
-                            { "角色突破进度", 4 },
-                            { General.GameplayEquilibriumConstant.InGameCurrency, 30000 },
-                            { General.GameplayEquilibriumConstant.InGameMaterial, 150 },
-                            { nameof(技能卷轴), 5 },
-                            { nameof(智慧之果), 3 },
-                            { nameof(奥术符文), 1 }
-                        }
-                    },
-                    {
-                        7, new()
-                        {
-                            { "角色等级", 48 },
-                            { General.GameplayEquilibriumConstant.InGameCurrency, 47000 },
-                            { General.GameplayEquilibriumConstant.InGameMaterial, 210 },
-                            { nameof(技能卷轴), 6 },
-                            { nameof(智慧之果), 4 },
-                            { nameof(奥术符文), 2 }
-                        }
-                    },
-                    {
-                        8, new()
-                        {
-                            { "角色等级", 56 },
-                            { General.GameplayEquilibriumConstant.InGameCurrency, 70000 },
-                            { General.GameplayEquilibriumConstant.InGameMaterial, 280 },
-                            { nameof(技能卷轴), 7 },
-                            { nameof(智慧之果), 5 },
-                            { nameof(奥术符文), 3 },
-                            { nameof(混沌之核), 1 }
-                        }
-                    }
-                };
-            }
-        }
+        public static Dictionary<int, Character> Bosses { get; } = [];
 
         public static void InitFunGame()
         {
@@ -1212,6 +1005,304 @@ namespace Oshima.Core.Utils
                 }
             }
             return str;
+        }
+
+        public static void GenerateBoss()
+        {
+            if (Bosses.Count < 10)
+            {
+                int genCount = 10 - Bosses.Count;
+                for (int i = 0; i < genCount; i++)
+                {
+                    int nowIndex = Bosses.Count > 0 ? Bosses.Keys.Max() + 1 : 1;
+                    Character boss = new CustomCharacter(nowIndex, GenerateRandomChineseUserName(), "", "Boss");
+                    int cLevel, sLevel, mLevel, naLevel;
+                    switch (Random.Shared.Next(3))
+                    {
+                        case 0:
+                            cLevel = General.GameplayEquilibriumConstant.MaxLevel;
+                            sLevel = General.GameplayEquilibriumConstant.MaxSkillLevel;
+                            mLevel = General.GameplayEquilibriumConstant.MaxMagicLevel;
+                            naLevel = General.GameplayEquilibriumConstant.MaxNormalAttackLevel;
+                            break;
+                        case 1:
+                            cLevel = General.GameplayEquilibriumConstant.MaxLevel / 2;
+                            sLevel = General.GameplayEquilibriumConstant.MaxSkillLevel / 2;
+                            mLevel = General.GameplayEquilibriumConstant.MaxMagicLevel / 2;
+                            naLevel = General.GameplayEquilibriumConstant.MaxNormalAttackLevel / 2;
+                            break;
+                        case 2:
+                        default:
+                            cLevel = General.GameplayEquilibriumConstant.MaxLevel / 4;
+                            sLevel = General.GameplayEquilibriumConstant.MaxSkillLevel / 4;
+                            mLevel = General.GameplayEquilibriumConstant.MaxMagicLevel / 4;
+                            naLevel = General.GameplayEquilibriumConstant.MaxNormalAttackLevel / 4;
+                            break;
+                    }
+                    Item[] 武器 = Equipment.Where(i => i.Id.ToString().StartsWith("11") && (int)i.QualityType == 4).ToArray();
+                    Item[] 防具 = Equipment.Where(i => i.Id.ToString().StartsWith("12") && (int)i.QualityType == 1).ToArray();
+                    Item[] 鞋子 = Equipment.Where(i => i.Id.ToString().StartsWith("13") && (int)i.QualityType == 1).ToArray();
+                    Item[] 饰品 = Equipment.Where(i => i.Id.ToString().StartsWith("14") && (int)i.QualityType == 3).ToArray();
+                    Item? a = null, b = null, c = null, d = null;
+                    if (武器.Length > 0)
+                    {
+                        a = 武器[Random.Shared.Next(武器.Length)];
+                    }
+                    if (防具.Length > 0)
+                    {
+                        b = 防具[Random.Shared.Next(防具.Length)];
+                    }
+                    if (鞋子.Length > 0)
+                    {
+                        c = 鞋子[Random.Shared.Next(鞋子.Length)];
+                    }
+                    if (饰品.Length > 0)
+                    {
+                        d = 饰品[Random.Shared.Next(饰品.Length)];
+                    }
+                    List<Item> 这次发放的空投 = [];
+                    if (a != null) 这次发放的空投.Add(a);
+                    if (b != null) 这次发放的空投.Add(b);
+                    if (c != null) 这次发放的空投.Add(c);
+                    if (d != null) 这次发放的空投.Add(d);
+                    Item? 魔法卡包 = GenerateMagicCardPack(3, (QualityType)4);
+                    if (魔法卡包 != null)
+                    {
+                        foreach (Skill magic in 魔法卡包.Skills.Magics)
+                        {
+                            magic.Level = mLevel;
+                        }
+                        boss.Equip(魔法卡包);
+                    }
+                    foreach (Item item in 这次发放的空投)
+                    {
+                        Item realItem = item.Copy();
+                        boss.Equip(realItem);
+                    }
+                    boss.Level = cLevel;
+                    boss.NormalAttack.Level = naLevel;
+                    boss.NormalAttack.HardnessTime = 7;
+                    if (boss.CritRate < 65) boss.ExCritRate = 65 - boss.CritRate;
+                    if (boss.CritDMG < 200) boss.ExCritDMG = 200 - boss.CritDMG;
+                    if (boss.AccelerationCoefficient < 0.4) boss.ExAccelerationCoefficient = 0.4 - boss.AccelerationCoefficient;
+                    boss.ExATK2 += boss.PrimaryAttributeValue;
+                    boss.ExDEF2 += boss.PrimaryAttributeValue;
+                    boss.MDF.None += 0.25;
+                    boss.ExHPPercentage += 0.8;
+                    Bosses[nowIndex] = boss;
+                }
+            }
+        }
+
+        public static Dictionary<int, Dictionary<string, int>> LevelBreakNeedyList
+        {
+            get
+            {
+                return new()
+                {
+                    {
+                        0, new()
+                        {
+                            { General.GameplayEquilibriumConstant.InGameMaterial, 80 },
+                            { nameof(升华之印), 10 }
+                        }
+                    },
+                    {
+                        1, new()
+                        {
+                            { General.GameplayEquilibriumConstant.InGameMaterial, 400 },
+                            { nameof(升华之印), 20 }
+                        }
+                    },
+                    {
+                        2, new()
+                        {
+                            { General.GameplayEquilibriumConstant.InGameMaterial, 960 },
+                            { nameof(升华之印), 30 },
+                            { nameof(流光之印), 10 }
+                        }
+                    },
+                    {
+                        3, new()
+                        {
+                            { General.GameplayEquilibriumConstant.InGameMaterial, 1760 },
+                            { nameof(升华之印), 40 },
+                            { nameof(流光之印), 20 }
+                        }
+                    },
+                    {
+                        4, new()
+                        {
+                            { General.GameplayEquilibriumConstant.InGameMaterial, 2800 },
+                            { nameof(升华之印), 50 },
+                            { nameof(流光之印), 30 },
+                            { nameof(永恒之印), 10 }
+                        }
+                    },
+                    {
+                        5, new()
+                        {
+                            { General.GameplayEquilibriumConstant.InGameMaterial, 4080 },
+                            { nameof(升华之印), 60 },
+                            { nameof(流光之印), 40 },
+                            { nameof(永恒之印), 20 }
+                        }
+                    },
+                };
+            }
+        }
+
+        public static Dictionary<int, Dictionary<string, int>> SkillLevelUpList
+        {
+            get
+            {
+                return new()
+                {
+                    {
+                        1, new()
+                        {
+                            { "角色等级", 1 },
+                            { General.GameplayEquilibriumConstant.InGameCurrency, 2000 },
+                            { General.GameplayEquilibriumConstant.InGameMaterial, 10 },
+                            { nameof(技能卷轴), 1 },
+                        }
+                    },
+                    {
+                        2, new()
+                        {
+                            { "角色等级", 12 },
+                            { General.GameplayEquilibriumConstant.InGameCurrency, 5000 },
+                            { General.GameplayEquilibriumConstant.InGameMaterial, 30 },
+                            { nameof(技能卷轴), 2 },
+                        }
+                    },
+                    {
+                        3, new()
+                        {
+                            { "角色等级", 24 },
+                            { General.GameplayEquilibriumConstant.InGameCurrency, 10000 },
+                            { General.GameplayEquilibriumConstant.InGameMaterial, 60 },
+                            { nameof(技能卷轴), 3 },
+                            { nameof(智慧之果), 1 },
+                        }
+                    },
+                    {
+                        4, new()
+                        {
+                            { "角色等级", 36 },
+                            { General.GameplayEquilibriumConstant.InGameCurrency, 18000 },
+                            { General.GameplayEquilibriumConstant.InGameMaterial, 100 },
+                            { nameof(技能卷轴), 4 },
+                            { nameof(智慧之果), 2 },
+                        }
+                    },
+                    {
+                        5, new()
+                        {
+                            { "角色等级", 48 },
+                            { General.GameplayEquilibriumConstant.InGameCurrency, 30000 },
+                            { General.GameplayEquilibriumConstant.InGameMaterial, 150 },
+                            { nameof(技能卷轴), 5 },
+                            { nameof(智慧之果), 3 },
+                            { nameof(奥术符文), 1 }
+                        }
+                    },
+                    {
+                        6, new()
+                        {
+                            { "角色等级", 60 },
+                            { General.GameplayEquilibriumConstant.InGameCurrency, 47000 },
+                            { General.GameplayEquilibriumConstant.InGameMaterial, 210 },
+                            { nameof(技能卷轴), 6 },
+                            { nameof(智慧之果), 4 },
+                            { nameof(奥术符文), 2 }
+                        }
+                    }
+                };
+            }
+        }
+
+        public static Dictionary<int, Dictionary<string, int>> NormalAttackLevelUpList
+        {
+            get
+            {
+                return new()
+                {
+                    {
+                        2, new()
+                        {
+                            { "角色等级", 8 },
+                            { General.GameplayEquilibriumConstant.InGameCurrency, 2000 },
+                            { General.GameplayEquilibriumConstant.InGameMaterial, 10 },
+                            { nameof(技能卷轴), 1 },
+                        }
+                    },
+                    {
+                        3, new()
+                        {
+                            { "角色等级", 16 },
+                            { General.GameplayEquilibriumConstant.InGameCurrency, 5000 },
+                            { General.GameplayEquilibriumConstant.InGameMaterial, 30 },
+                            { nameof(技能卷轴), 2 },
+                        }
+                    },
+                    {
+                        4, new()
+                        {
+                            { "角色等级", 24 },
+                            { General.GameplayEquilibriumConstant.InGameCurrency, 10000 },
+                            { General.GameplayEquilibriumConstant.InGameMaterial, 60 },
+                            { nameof(技能卷轴), 3 },
+                            { nameof(智慧之果), 1 },
+                        }
+                    },
+                    {
+                        5, new()
+                        {
+                            { "角色等级", 32 },
+                            { General.GameplayEquilibriumConstant.InGameCurrency, 18000 },
+                            { General.GameplayEquilibriumConstant.InGameMaterial, 100 },
+                            { nameof(技能卷轴), 4 },
+                            { nameof(智慧之果), 2 },
+                        }
+                    },
+                    {
+                        6, new()
+                        {
+                            { "角色等级", 40 },
+                            { "角色突破进度", 4 },
+                            { General.GameplayEquilibriumConstant.InGameCurrency, 30000 },
+                            { General.GameplayEquilibriumConstant.InGameMaterial, 150 },
+                            { nameof(技能卷轴), 5 },
+                            { nameof(智慧之果), 3 },
+                            { nameof(奥术符文), 1 }
+                        }
+                    },
+                    {
+                        7, new()
+                        {
+                            { "角色等级", 48 },
+                            { General.GameplayEquilibriumConstant.InGameCurrency, 47000 },
+                            { General.GameplayEquilibriumConstant.InGameMaterial, 210 },
+                            { nameof(技能卷轴), 6 },
+                            { nameof(智慧之果), 4 },
+                            { nameof(奥术符文), 2 }
+                        }
+                    },
+                    {
+                        8, new()
+                        {
+                            { "角色等级", 56 },
+                            { General.GameplayEquilibriumConstant.InGameCurrency, 70000 },
+                            { General.GameplayEquilibriumConstant.InGameMaterial, 280 },
+                            { nameof(技能卷轴), 7 },
+                            { nameof(智慧之果), 5 },
+                            { nameof(奥术符文), 3 },
+                            { nameof(混沌之核), 1 }
+                        }
+                    }
+                };
+            }
         }
     }
 }

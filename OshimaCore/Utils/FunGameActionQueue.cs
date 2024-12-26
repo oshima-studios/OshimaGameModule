@@ -136,7 +136,9 @@ namespace Oshima.Core.Utils
                     int 发放的防具品质 = 0;
                     int 发放的鞋子品质 = 0;
                     int 发放的饰品品质 = 0;
+                    WriteLine($"社区送温暖了，现在随机发放空投！！");
                     空投(actionQueue, 发放的卡包品质, 发放的武器品质, 发放的防具品质, 发放的鞋子品质, 发放的饰品品质);
+                    WriteLine("");
                     if (isWeb) result.Add("=== 空投 ===\r\n" + Msg);
                     double 下一次空投 = isTeam ? 80 : 40;
                     if (发放的卡包品质 < 4)
@@ -352,7 +354,9 @@ namespace Oshima.Core.Utils
                         {
                             // 空投
                             Msg = "";
+                            WriteLine($"社区送温暖了，现在随机发放空投！！");
                             空投(actionQueue, 发放的卡包品质, 发放的武器品质, 发放的防具品质, 发放的鞋子品质, 发放的饰品品质);
+                            WriteLine("");
                             if (isWeb) result.Add("=== 空投 ===\r\n" + Msg);
                             下一次空投 = isTeam ? 100 : 40;
                             if (发放的卡包品质 < 4)
@@ -914,7 +918,6 @@ namespace Oshima.Core.Utils
 
         public static void 空投(ActionQueue queue, int mQuality, int wQuality, int aQuality, int sQuality, int acQuality)
         {
-            WriteLine($"社区送温暖了，现在随机发放空投！！");
             foreach (Character character in queue.Queue)
             {
                 Item[] 武器 = FunGameService.Equipment.Where(i => i.Id.ToString().StartsWith("11") && (int)i.QualityType == wQuality).ToArray();
@@ -960,7 +963,6 @@ namespace Oshima.Core.Utils
                     queue.Equip(character, realItem);
                 }
             }
-            WriteLine("");
         }
 
         public static Dictionary<EffectID, Dictionary<string, object>> RoundRewards

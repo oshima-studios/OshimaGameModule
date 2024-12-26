@@ -82,6 +82,11 @@ namespace Oshima.Core.WebAPI
                     Controller.WriteLine("读取 FunGame 存档缓存");
                 }
             }, true);
+            TaskScheduler.Shared.AddRecurringTask("刷新boss", TimeSpan.FromHours(1), () =>
+            {
+                FunGameService.GenerateBoss();
+                Controller.WriteLine("刷新boss");
+            }, true);
         }
     }
 }

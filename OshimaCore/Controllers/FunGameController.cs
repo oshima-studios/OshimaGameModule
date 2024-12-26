@@ -2792,6 +2792,83 @@ namespace Oshima.Core.Controllers
             }
         }
 
+        [HttpGet("getboss")]
+        public List<string> GetBoss([FromQuery] int? index = null)
+        {
+            List<string> bosses = [];
+            if (index != null)
+            {
+                if (FunGameService.Bosses.Values.FirstOrDefault(kv => kv.Id == index) is Character boss)
+                {
+                    bosses.Add(boss.GetInfo(false));
+                }
+                else
+                {
+                    bosses.Add($"找不到指定编号的 Boss！");
+                }
+            }
+            else if (FunGameService.Bosses.Count > 0)
+            {
+                bosses.Add($"Boss 列表：");
+                foreach (int i in FunGameService.Bosses.Keys)
+                {
+                    Character boss = FunGameService.Bosses[i];
+                    bosses.Add($"{i}. {boss.ToStringWithLevelWithOutUser()}");
+                }
+            }
+            else
+            {
+                bosses.Add($"现在没有任何 Boss，请等待刷新~");
+            }
+            return bosses;
+        }
+        
+        [HttpPost("fightboss")]
+        public List<string> FightBoss([FromQuery] long? qq = null, [FromQuery] int? index = null, [FromQuery] bool? all = null)
+        {
+            long userid = qq ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
+            int bossIndex = index ?? 0;
+            bool showAllRound = all ?? false;
+
+            PluginConfig pc = new("saved", userid.ToString());
+            pc.LoadConfig();
+
+            if (pc.Count > 0)
+            {
+                User user = FunGameService.GetUser(pc);
+
+                if (FunGameService.Bosses.Values.FirstOrDefault(kv => kv.Id == index) is Character boss)
+                {
+                    List<string> msgs = FunGameActionQueue.StartGame([user.Inventory.MainCharacter, boss], false, false, false, false, false, showAllRound);
+
+                    if (boss.HP <= 0)
+                    {
+                        FunGameService.Bosses.Remove(bossIndex);
+                        double gained = 8 * boss.Level;
+                        user.Inventory.Materials += gained;
+                        msgs.Add($"恭喜你击败了 Boss，获得 {gained} 材料奖励！");
+                    }
+                    else
+                    {
+                        msgs.Add($"挑战 Boss 失败，请稍后再来！");
+                    }
+                    user.LastTime = DateTime.Now;
+                    pc.Add("user", user);
+                    pc.SaveConfig();
+
+                    return msgs;
+                }
+                else
+                {
+                    return [$"找不到指定编号的 Boss！"];
+                }
+            }
+            else
+            {
+                return [noSaved];
+            }
+        }
+
         [HttpGet("reload")]
         public string Relaod([FromQuery] long? master = null)
         {
