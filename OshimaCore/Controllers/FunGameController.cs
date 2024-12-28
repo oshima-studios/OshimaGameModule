@@ -1130,18 +1130,29 @@ namespace Oshima.Core.Controllers
                 {
                     User user = FunGameService.GetUser(pc);
 
-                    if (cIndex > 0 && cIndex <= user.Inventory.Characters.Count)
+                    if (cIndex == 0)
                     {
-                        Character character = user.Inventory.Characters.ToList()[cIndex - 1];
                         if (isSimple)
                         {
-                            return NetworkUtility.JsonSerialize($"这是你库存中序号为 {cIndex} 的角色简略信息：\r\n{character.GetSimpleInfo(showEXP: true).Trim()}");
+                            return NetworkUtility.JsonSerialize($"这是你的主战角色简略信息：\r\n{user.Inventory.MainCharacter.GetSimpleInfo(showEXP: true).Trim()}");
                         }
-                        return NetworkUtility.JsonSerialize($"这是你库存中序号为 {cIndex} 的角色详细信息：\r\n{character.GetInfo().Trim()}");
+                        return NetworkUtility.JsonSerialize($"这是你的主战角色详细信息：\r\n{user.Inventory.MainCharacter.GetInfo().Trim()}");
                     }
                     else
                     {
-                        return NetworkUtility.JsonSerialize($"没有找到与这个序号相对应的角色！");
+                        if (cIndex > 0 && cIndex <= user.Inventory.Characters.Count)
+                        {
+                            Character character = user.Inventory.Characters.ToList()[cIndex - 1];
+                            if (isSimple)
+                            {
+                                return NetworkUtility.JsonSerialize($"这是你库存中序号为 {cIndex} 的角色简略信息：\r\n{character.GetSimpleInfo(showEXP: true).Trim()}");
+                            }
+                            return NetworkUtility.JsonSerialize($"这是你库存中序号为 {cIndex} 的角色详细信息：\r\n{character.GetInfo().Trim()}");
+                        }
+                        else
+                        {
+                            return NetworkUtility.JsonSerialize($"没有找到与这个序号相对应的角色！");
+                        }
                     }
                 }
                 else
@@ -1347,7 +1358,7 @@ namespace Oshima.Core.Controllers
 
                 if (user1 != null && user2 != null)
                 {
-                    return FunGameActionQueue.StartGame([user1.Inventory.MainCharacter, user2.Inventory.MainCharacter], false, false, false, false, false, showAllRound);
+                    return FunGameActionQueue.StartGame([user1.Inventory.MainCharacter, user2.Inventory.MainCharacter], false, false, false, false, showAllRound);
                 }
                 else
                 {
@@ -2839,17 +2850,190 @@ namespace Oshima.Core.Controllers
 
                 if (FunGameService.Bosses.Values.FirstOrDefault(kv => kv.Id == index) is Character boss)
                 {
-                    List<string> msgs = FunGameActionQueue.StartGame([user.Inventory.MainCharacter, boss], false, false, false, false, false, showAllRound);
+                    if (user.Inventory.MainCharacter.HP < user.Inventory.MainCharacter.MaxHP * 0.1)
+                    {
+                        return [$"主战角色重伤未愈，当前生命值低于 10%，请先等待生命值自动回复或设置其他主战角色！"];
+                    }
 
-                    if (boss.HP <= 0)
+                    Character boss2 = CharacterBuilder.Build(boss, false, true, null, FunGameService.AllItems, FunGameService.AllSkills, false);
+                    List<string> msgs = FunGameActionQueue.StartGame([user.Inventory.MainCharacter, boss2], false, false, false, false, showAllRound);
+
+                    if (boss2.HP <= 0)
                     {
                         FunGameService.Bosses.Remove(bossIndex);
-                        double gained = 8 * boss.Level;
+                        double gained = boss.Level;
                         user.Inventory.Materials += gained;
                         msgs.Add($"恭喜你击败了 Boss，获得 {gained} 材料奖励！");
                     }
                     else
                     {
+                        boss.HP = boss2.HP;
+                        boss.MP = boss2.MP;
+                        boss.EP = boss2.EP;
+                        msgs.Add($"挑战 Boss 失败，请稍后再来！");
+                    }
+                    user.LastTime = DateTime.Now;
+                    pc.Add("user", user);
+                    pc.SaveConfig();
+
+                    return msgs;
+                }
+                else
+                {
+                    return [$"找不到指定编号的 Boss！"];
+                }
+            }
+            else
+            {
+                return [noSaved];
+            }
+        }
+
+        [HttpPost("addsquad")]
+        public string AddSquad([FromQuery] long? qq = null, [FromQuery] int? c = null)
+        {
+            try
+            {
+                long userid = qq ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
+                int characterIndex = c ?? 0;
+
+                PluginConfig pc = new("saved", userid.ToString());
+                pc.LoadConfig();
+
+                if (pc.Count > 0)
+                {
+                    User user = FunGameService.GetUser(pc);
+
+                    Character? character = null;
+                    if (characterIndex > 0 && characterIndex <= user.Inventory.Characters.Count)
+                    {
+                        character = user.Inventory.Characters.ToList()[characterIndex - 1];
+                    }
+                    else
+                    {
+                        return NetworkUtility.JsonSerialize($"没有找到与这个序号相对应的角色！");
+                    }
+
+                    if (user.Inventory.Squad.Count >= 4)
+                    {
+                        return NetworkUtility.JsonSerialize($"小队人数已满 4 人，无法继续添加角色！当前小队角色如下：\r\n" +
+                            string.Join("\r\n", user.Inventory.Characters.Where(c => user.Inventory.Squad.Contains(c.Id))));
+                    }
+                    
+                    if (user.Inventory.Squad.Contains(character.Id))
+                    {
+                        return NetworkUtility.JsonSerialize($"此角色已经在小队中了！");
+                    }
+
+                    user.Inventory.Squad.Add(character.Id);
+                    user.LastTime = DateTime.Now;
+                    pc.Add("user", user);
+                    pc.SaveConfig();
+                    return NetworkUtility.JsonSerialize($"添加小队角色成功：{character}\r\n当前小队角色如下：\r\n" +
+                            string.Join("\r\n", user.Inventory.Characters.Where(c => user.Inventory.Squad.Contains(c.Id))));
+                }
+                else
+                {
+                    return NetworkUtility.JsonSerialize(noSaved);
+                }
+            }
+            catch (Exception e)
+            {
+                return NetworkUtility.JsonSerialize(e.ToString());
+            }
+        }
+        
+        [HttpPost("removesquad")]
+        public string RemoveSquad([FromQuery] long? qq = null, [FromQuery] int? c = null)
+        {
+            try
+            {
+                long userid = qq ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
+                int characterIndex = c ?? 0;
+
+                PluginConfig pc = new("saved", userid.ToString());
+                pc.LoadConfig();
+
+                if (pc.Count > 0)
+                {
+                    User user = FunGameService.GetUser(pc);
+
+                    Character? character = null;
+                    if (characterIndex > 0 && characterIndex <= user.Inventory.Characters.Count)
+                    {
+                        character = user.Inventory.Characters.ToList()[characterIndex - 1];
+                    }
+                    else
+                    {
+                        return NetworkUtility.JsonSerialize($"没有找到与这个序号相对应的角色！");
+                    }
+
+                    if (!user.Inventory.Squad.Contains(character.Id))
+                    {
+                        return NetworkUtility.JsonSerialize($"此角色不在小队中！");
+                    }
+
+                    user.Inventory.Squad.Remove(character.Id);
+                    user.LastTime = DateTime.Now;
+                    pc.Add("user", user);
+                    pc.SaveConfig();
+                    return NetworkUtility.JsonSerialize($"移除小队角色成功：{character}\r\n当前小队角色如下：\r\n" +
+                            string.Join("\r\n", user.Inventory.Characters.Where(c => user.Inventory.Squad.Contains(c.Id))));
+                }
+                else
+                {
+                    return NetworkUtility.JsonSerialize(noSaved);
+                }
+            }
+            catch (Exception e)
+            {
+                return NetworkUtility.JsonSerialize(e.ToString());
+            }
+        }
+
+        [HttpPost("fightbossteam")]
+        public List<string> FightBossTeam([FromQuery] long? qq = null, [FromQuery] int? index = null, [FromQuery] bool? all = null)
+        {
+            return [];
+
+            long userid = qq ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
+            int bossIndex = index ?? 0;
+            bool showAllRound = all ?? false;
+
+            PluginConfig pc = new("saved", userid.ToString());
+            pc.LoadConfig();
+
+            if (pc.Count > 0)
+            {
+                User user = FunGameService.GetUser(pc);
+
+                if (FunGameService.Bosses.Values.FirstOrDefault(kv => kv.Id == index) is Character boss)
+                {
+                    Character[] squad = [.. user.Inventory.Characters.Where(c => user.Inventory.Squad.Contains(c.Id))];
+
+                    if (squad.All(c => c.HP < c.MaxHP * 0.1))
+                    {
+                        return [$"小队角色均重伤未愈，当前生命值低于 10%，请先等待生命值自动回复或重组小队！",
+                            "当前小队角色如下：",
+                            string.Join("\r\n", user.Inventory.Characters.Where(c => user.Inventory.Squad.Contains(c.Id)))];
+                    }
+
+                    Character boss2 = CharacterBuilder.Build(boss, false, true, null, FunGameService.AllItems, FunGameService.AllSkills, false);
+                    //List<string> msgs = FunGameActionQueue.StartGameTeam;
+                    List<string> msgs = [];
+
+                    if (boss2.HP <= 0)
+                    {
+                        FunGameService.Bosses.Remove(bossIndex);
+                        double gained = boss.Level;
+                        user.Inventory.Materials += gained;
+                        msgs.Add($"恭喜你击败了 Boss，获得 {gained} 材料奖励！");
+                    }
+                    else
+                    {
+                        boss.HP = boss2.HP;
+                        boss.MP = boss2.MP;
+                        boss.EP = boss2.EP;
                         msgs.Add($"挑战 Boss 失败，请稍后再来！");
                     }
                     user.LastTime = DateTime.Now;

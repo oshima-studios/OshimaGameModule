@@ -166,6 +166,11 @@
         ExMaxMP2 = 8031,
 
         /// <summary>
+        /// 动态扩展特效
+        /// </summary>
+        DynamicsEffect = 8032,
+
+        /// <summary>
         /// 被动特效终点
         /// </summary>
         Passive_End = 8699,

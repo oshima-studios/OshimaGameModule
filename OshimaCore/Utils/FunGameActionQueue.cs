@@ -565,7 +565,7 @@ namespace Oshima.Core.Utils
             }
         }
 
-        public static List<string> StartGame(List<Character> characters, bool printout, bool isWeb = false, bool isTeam = false, bool deathMatchRoundDetail = false, bool showRoundEndDetail = false, bool showAllRound = false)
+        public static List<string> StartGame(List<Character> characters, bool printout, bool isWeb = false, bool deathMatchRoundDetail = false, bool showRoundEndDetail = false, bool showAllRound = false)
         {
             PrintOut = printout;
             IsWeb = isWeb;
@@ -580,12 +580,7 @@ namespace Oshima.Core.Utils
                 if (PrintOut) Console.WriteLine();
 
                 // 创建顺序表并排序
-                ActionQueue actionQueue = new(characters, isTeam, WriteLine);
-                if (isTeam)
-                {
-                    actionQueue.MaxRespawnTimes = -1;
-                    actionQueue.MaxScoreToWin = 30;
-                }
+                ActionQueue actionQueue = new(characters, false, WriteLine);
                 if (PrintOut) Console.WriteLine();
 
                 // 总游戏时长
@@ -594,47 +589,12 @@ namespace Oshima.Core.Utils
                 // 显示角色信息
                 if (PrintOut) characters.ForEach(c => Console.WriteLine(c.GetInfo()));
 
-                // 团队模式
-                if (isTeam)
-                {
-                    Msg = "=== 团队模式随机分组 ===\r\n\r\n";
-                    // 打乱角色列表
-                    List<Character> shuffledCharacters = [.. characters.OrderBy(c => Random.Shared.Next())];
-
-                    // 创建两个团队
-                    List<Character> group1 = [];
-                    List<Character> group2 = [];
-
-                    // 将角色交替分配到两个团队中
-                    for (int cid = 0; cid < shuffledCharacters.Count; cid++)
-                    {
-                        if (cid % 2 == 0)
-                        {
-                            group1.Add(shuffledCharacters[cid]);
-                        }
-                        else
-                        {
-                            group2.Add(shuffledCharacters[cid]);
-                        }
-                    }
-
-                    // 添加到团队字典
-                    actionQueue.AddTeam("队伍一", group1);
-                    actionQueue.AddTeam("队伍二", group2);
-
-                    foreach (string team in actionQueue.Teams.Keys)
-                    {
-                        WriteLine($"团队【{team}】的成员：\r\n{string.Join("\r\n", actionQueue.Teams[team].Members)}\r\n");
-                    }
-                    result.Add(Msg);
-                }
-
                 // 显示初始顺序表
                 actionQueue.DisplayQueue();
                 if (PrintOut) Console.WriteLine();
 
                 // 总回合数
-                int maxRound = isTeam ? 9999 : 999;
+                int maxRound = 999;
 
                 // 随机回合奖励
                 Dictionary<int, List<Skill>> roundRewards = GenerateRoundRewards(maxRound);
@@ -645,31 +605,23 @@ namespace Oshima.Core.Utils
                     Msg = "";
                     if (i == maxRound - 1)
                     {
-                        if (isTeam)
+                        WriteLine($"=== 终局审判 ===");
+                        Dictionary<Character, double> 他们的血量百分比 = [];
+                        foreach (Character c in characters)
                         {
-                            WriteLine("两队打到天昏地暗，流局了！！");
-                            break;
+                            他们的血量百分比.TryAdd(c, c.HP / c.MaxHP);
                         }
-                        else
+                        double max = 他们的血量百分比.Values.Max();
+                        Character winner = 他们的血量百分比.Keys.Where(c => 他们的血量百分比[c] == max).First();
+                        WriteLine("[ " + winner + " ] 成为了天选之人！！");
+                        foreach (Character c in characters.Where(c => c != winner && c.HP > 0))
                         {
-                            WriteLine($"=== 终局审判 ===");
-                            Dictionary<Character, double> 他们的血量百分比 = [];
-                            foreach (Character c in characters)
-                            {
-                                他们的血量百分比.TryAdd(c, c.HP / c.MaxHP);
-                            }
-                            double max = 他们的血量百分比.Values.Max();
-                            Character winner = 他们的血量百分比.Keys.Where(c => 他们的血量百分比[c] == max).First();
-                            WriteLine("[ " + winner + " ] 成为了天选之人！！");
-                            foreach (Character c in characters.Where(c => c != winner && c.HP > 0))
-                            {
-                                WriteLine("[ " + winner + " ] 对 [ " + c + " ] 造成了 99999999999 点真实伤害。");
-                                actionQueue.DeathCalculation(winner, c);
-                            }
-                            actionQueue.EndGameInfo(winner);
-                            result.Add(Msg);
-                            break;
+                            WriteLine("[ " + winner + " ] 对 [ " + c + " ] 造成了 99999999999 点真实伤害。");
+                            actionQueue.DeathCalculation(winner, c);
                         }
+                        actionQueue.EndGameInfo(winner);
+                        result.Add(Msg);
+                        break;
                     }
 
                     // 检查是否有角色可以行动
@@ -686,7 +638,7 @@ namespace Oshima.Core.Utils
                         }
 
                         WriteLine($"=== Round {i++} ===");
-                        WriteLine("现在是 [ " + characterToAct + (isTeam ? "（" + (actionQueue.GetTeam(characterToAct)?.Name ?? "") + "）" : "") + " ] 的回合！");
+                        WriteLine($"现在是 [ {characterToAct} ] 的回合！");
 
                         // 实际的回合奖励
                         List<Skill> realSkillRewards = [];
@@ -755,7 +707,7 @@ namespace Oshima.Core.Utils
                         roundMsg = Msg;
                         if (!deathMatchRoundDetail)
                         {
-                            roundMsg = actionQueue.LastRound.ToString().Trim() + $"\r\n{(isTeam ? $"比分：{string.Join(" / ", actionQueue.Teams.Values.Select(t => $"{t.Name}({t.Score})"))}，击杀来自{actionQueue.GetTeam(actionQueue.LastRound.Actor)}" : "")}";
+                            roundMsg = actionQueue.LastRound.ToString().Trim() + "\r\n";
                             if (showAllRound)
                             {
                                 foreach (Character character in actionQueue.Queue)
@@ -773,7 +725,7 @@ namespace Oshima.Core.Utils
 
                     if (roundMsg != "")
                     {
-                        if ((isTeam && deathMatchRoundDetail || !isTeam) && isWeb)
+                        if (isWeb)
                         {
                             roundMsg += "\r\n" + Msg;
                         }
@@ -789,7 +741,7 @@ namespace Oshima.Core.Utils
                 }
 
                 // 赛后统计
-                GetCharacterRating(actionQueue.CharacterStatistics, isTeam, actionQueue.EliminatedTeams);
+                GetCharacterRating(actionQueue.CharacterStatistics, false, actionQueue.EliminatedTeams);
 
                 // 统计技术得分，评选 MVP
                 Character? mvp = actionQueue.CharacterStatistics.OrderByDescending(d => d.Value.Rating).Select(d => d.Key).FirstOrDefault();
@@ -798,7 +750,7 @@ namespace Oshima.Core.Utils
                 {
                     CharacterStatistics stats = actionQueue.CharacterStatistics[mvp];
                     stats.MVPs++;
-                    mvpBuilder.AppendLine($"{(isTeam ? "[ " + actionQueue.GetTeamFromEliminated(mvp)?.Name + " ] " : "")}[ {mvp.ToStringWithLevel()} ]");
+                    mvpBuilder.AppendLine($"[ {mvp.ToStringWithLevel()} ]");
                     mvpBuilder.AppendLine($"技术得分：{stats.Rating:0.##} / 击杀数：{stats.Kills} / 助攻数：{stats.Assists}{(actionQueue.MaxRespawnTimes != 0 ? " / 死亡数：" + stats.Deaths : "")}");
                     mvpBuilder.AppendLine($"存活时长：{stats.LiveTime} / 存活回合数：{stats.LiveRound} / 行动回合数：{stats.ActionTurn}");
                     mvpBuilder.AppendLine($"总计伤害：{stats.TotalDamage} / 总计物理伤害：{stats.TotalPhysicalDamage} / 总计魔法伤害：{stats.TotalMagicDamage}");
@@ -810,49 +762,24 @@ namespace Oshima.Core.Utils
                 int count = 1;
                 Msg = $"=== 技术得分排行榜 TOP{top} ===\r\n";
 
-                if (isTeam)
+                foreach (Character character in actionQueue.CharacterStatistics.OrderByDescending(d => d.Value.Rating).Select(d => d.Key))
                 {
-                    foreach (Character character in actionQueue.CharacterStatistics.OrderByDescending(d => d.Value.Rating).Select(d => d.Key))
+                    StringBuilder builder = new();
+                    CharacterStatistics stats = actionQueue.CharacterStatistics[character];
+                    builder.AppendLine($"{count + ". "}[ {character.ToStringWithLevel()} ]");
+                    builder.AppendLine($"技术得分：{stats.Rating:0.##} / 击杀数：{stats.Kills} / 助攻数：{stats.Assists}{(actionQueue.MaxRespawnTimes != 0 ? " / 死亡数：" + stats.Deaths : "")}");
+                    builder.AppendLine($"存活时长：{stats.LiveTime} / 存活回合数：{stats.LiveRound} / 行动回合数：{stats.ActionTurn}");
+                    builder.AppendLine($"总计伤害：{stats.TotalDamage} / 总计物理伤害：{stats.TotalPhysicalDamage} / 总计魔法伤害：{stats.TotalMagicDamage}");
+                    builder.AppendLine($"总承受伤害：{stats.TotalTakenDamage} / 总承受物理伤害：{stats.TotalTakenPhysicalDamage} / 总承受魔法伤害：{stats.TotalTakenMagicDamage}");
+                    builder.AppendLine($"每秒伤害：{stats.DamagePerSecond} / 每回合伤害：{stats.DamagePerTurn}");
+                    builder.Append($"生命值：{character.HP:0.##}/{character.MaxHP:0.##} / 魔法值：{character.MP:0.##}/{character.MaxMP:0.##}");
+                    if (count++ <= top)
                     {
-                        StringBuilder builder = new();
-                        CharacterStatistics stats = actionQueue.CharacterStatistics[character];
-                        builder.AppendLine($"{(isWeb ? count + "." : ("[ " + actionQueue.GetTeamFromEliminated(character)?.Name + " ]" ?? ""))} [ {character.ToStringWithLevel()} ]");
-                        builder.AppendLine($"技术得分：{stats.Rating:0.##} / 击杀数：{stats.Kills} / 助攻数：{stats.Assists}{(actionQueue.MaxRespawnTimes != 0 ? " / 死亡数：" + stats.Deaths : "")}");
-                        builder.AppendLine($"存活时长：{stats.LiveTime} / 存活回合数：{stats.LiveRound} / 行动回合数：{stats.ActionTurn}");
-                        builder.AppendLine($"总计伤害：{stats.TotalDamage} / 总计物理伤害：{stats.TotalPhysicalDamage} / 总计魔法伤害：{stats.TotalMagicDamage}");
-                        builder.AppendLine($"总承受伤害：{stats.TotalTakenDamage} / 总承受物理伤害：{stats.TotalTakenPhysicalDamage} / 总承受魔法伤害：{stats.TotalTakenMagicDamage}");
-                        builder.Append($"每秒伤害：{stats.DamagePerSecond} / 每回合伤害：{stats.DamagePerTurn}");
-                        if (count++ <= top)
-                        {
-                            WriteLine(builder.ToString());
-                        }
-                        else
-                        {
-                            if (PrintOut) Console.WriteLine(builder.ToString());
-                        }
+                        WriteLine(builder.ToString());
                     }
-                }
-                else
-                {
-                    foreach (Character character in actionQueue.CharacterStatistics.OrderByDescending(d => d.Value.Rating).Select(d => d.Key))
+                    else
                     {
-                        StringBuilder builder = new();
-                        CharacterStatistics stats = actionQueue.CharacterStatistics[character];
-                        builder.AppendLine($"{count + ". "}[ {character.ToStringWithLevel()} ]");
-                        builder.AppendLine($"技术得分：{stats.Rating:0.##} / 击杀数：{stats.Kills} / 助攻数：{stats.Assists}{(actionQueue.MaxRespawnTimes != 0 ? " / 死亡数：" + stats.Deaths : "")}");
-                        builder.AppendLine($"存活时长：{stats.LiveTime} / 存活回合数：{stats.LiveRound} / 行动回合数：{stats.ActionTurn}");
-                        builder.AppendLine($"总计伤害：{stats.TotalDamage} / 总计物理伤害：{stats.TotalPhysicalDamage} / 总计魔法伤害：{stats.TotalMagicDamage}");
-                        builder.AppendLine($"总承受伤害：{stats.TotalTakenDamage} / 总承受物理伤害：{stats.TotalTakenPhysicalDamage} / 总承受魔法伤害：{stats.TotalTakenMagicDamage}");
-                        builder.AppendLine($"每秒伤害：{stats.DamagePerSecond} / 每回合伤害：{stats.DamagePerTurn}");
-                        builder.Append($"生命值：{character.HP:0.##}/{character.MaxHP:0.##} / 魔法值：{character.MP:0.##}/{character.MaxMP:0.##}");
-                        if (count++ <= top)
-                        {
-                            WriteLine(builder.ToString());
-                        }
-                        else
-                        {
-                            if (PrintOut) Console.WriteLine(builder.ToString());
-                        }
+                        if (PrintOut) Console.WriteLine(builder.ToString());
                     }
                 }
 
@@ -861,43 +788,10 @@ namespace Oshima.Core.Utils
                 // 显示每个角色的信息
                 if (isWeb)
                 {
-                    if (isTeam)
+                    for (i = actionQueue.Eliminated.Count - 1; i >= 0; i--)
                     {
-                        top = 1;
-                        for (i = actionQueue.EliminatedTeams.Count - 1; i >= 0; i--)
-                        {
-                            Team team = actionQueue.EliminatedTeams[i];
-                            string topTeam = "";
-                            if (top == 1)
-                            {
-                                topTeam = "冠军";
-                            }
-                            if (top == 2)
-                            {
-                                topTeam = "亚军";
-                            }
-                            if (top == 3)
-                            {
-                                topTeam = "季军";
-                            }
-                            if (top > 3)
-                            {
-                                topTeam = $"第 {top} 名";
-                            }
-                            foreach (Character character in team.Members)
-                            {
-                                result.Add($"== {topTeam}团队 [ {team.Name} ] ==\r\n== 角色：[ {character} ] ==\r\n{character.GetInfo()}");
-                            }
-                            top++;
-                        }
-                    }
-                    else
-                    {
-                        for (i = actionQueue.Eliminated.Count - 1; i >= 0; i--)
-                        {
-                            Character character = actionQueue.Eliminated[i];
-                            result.Add($"=== 角色 [ {character} ] ===\r\n{character.GetInfo()}");
-                        }
+                        Character character = actionQueue.Eliminated[i];
+                        result.Add($"=== 角色 [ {character} ] ===\r\n{character.GetInfo()}");
                     }
                 }
 

@@ -15,8 +15,8 @@ namespace Oshima.FunGame.OshimaModules.Characters
             InitialATK = 25;
             InitialHP = 85;
             InitialMP = 10;
-            InitialSTR = 35;
-            STRGrowth = 3.5;
+            InitialSTR = 30;
+            STRGrowth = 3;
             InitialAGI = 0;
             AGIGrowth = 0;
             InitialINT = 0;

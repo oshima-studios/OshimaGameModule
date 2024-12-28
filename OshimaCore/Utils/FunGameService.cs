@@ -1,6 +1,7 @@
 ﻿using System.Text;
 using Milimoe.FunGame.Core.Api.Utility;
 using Milimoe.FunGame.Core.Entity;
+using Milimoe.FunGame.Core.Interface.Entity;
 using Milimoe.FunGame.Core.Library.Constant;
 using Oshima.FunGame.OshimaModules;
 using Oshima.FunGame.OshimaModules.Characters;
@@ -448,7 +449,7 @@ namespace Oshima.Core.Utils
             List<Character> characters = new(user.Inventory.Characters);
             List<Item> items = new(user.Inventory.Items);
             Character mc = user.Inventory.MainCharacter;
-            List<long> squad = [.. user.Inventory.Squad.Select(kv => kv.Id)];
+            List<long> squad = [.. user.Inventory.Squad];
             Dictionary<long, DateTime> training = user.Inventory.Training.ToDictionary(kv => kv.Key, kv => kv.Value);
             user.Inventory.Characters.Clear();
             user.Inventory.Items.Clear();
@@ -464,7 +465,53 @@ namespace Oshima.Core.Utils
 
             foreach (Character inventoryCharacter in characters)
             {
-                Character realCharacter = CharacterBuilder.Build(inventoryCharacter, false, true, user.Inventory, AllItems, AllSkills);
+                Character realCharacter = CharacterBuilder.Build(inventoryCharacter, false, true, user.Inventory, AllItems, AllSkills, false);
+                // 自动回血
+                DateTime now = DateTime.Now;
+                int seconds = (int)(now - user.LastTime).TotalSeconds;
+                double recoveryHP = realCharacter.HR * seconds;
+                double recoveryMP = realCharacter.MR * seconds;
+                double recoveryEP = realCharacter.ER * seconds;
+                realCharacter.HP = inventoryCharacter.HP + recoveryHP;
+                realCharacter.MP = inventoryCharacter.MP + recoveryMP;
+                realCharacter.EP = inventoryCharacter.EP + recoveryEP;
+                // 减少所有技能的冷却时间
+                foreach (Skill skill in realCharacter.Skills)
+                {
+                    skill.CurrentCD -= seconds;
+                    if (skill.CurrentCD <= 0)
+                    {
+                        skill.CurrentCD = 0;
+                        skill.Enable = true;
+                    }
+                }
+                // 移除到时间的特效
+                List<Effect> effects = realCharacter.Effects.Where(e => e.Level > 0).ToList();
+                foreach (Effect effect in effects)
+                {
+                    if (effect.Level == 0)
+                    {
+                        realCharacter.Effects.Remove(effect);
+                        continue;
+                    }
+                    effect.OnTimeElapsed(realCharacter, seconds);
+                    // 自身被动不会考虑
+                    if (effect.EffectType == EffectType.None && effect.Skill.SkillType == SkillType.Passive)
+                    {
+                        continue;
+                    }
+
+                    if (effect.Durative)
+                    {
+                        effect.RemainDuration -= seconds;
+                        if (effect.RemainDuration <= 0)
+                        {
+                            effect.RemainDuration = 0;
+                            realCharacter.Effects.Remove(effect);
+                            effect.OnEffectLost(realCharacter);
+                        }
+                    }
+                }
                 realCharacter.User = user;
                 user.Inventory.Characters.Add(realCharacter);
             }
@@ -478,7 +525,7 @@ namespace Oshima.Core.Utils
             {
                 if (user.Inventory.Characters.FirstOrDefault(c => c.Id == id) is Character s)
                 {
-                    user.Inventory.Squad.Add(s);
+                    user.Inventory.Squad.Add(id);
                 }
             }
             
@@ -1012,83 +1059,121 @@ namespace Oshima.Core.Utils
             if (Bosses.Count < 10)
             {
                 int genCount = 10 - Bosses.Count;
+
                 for (int i = 0; i < genCount; i++)
                 {
                     int nowIndex = Bosses.Count > 0 ? Bosses.Keys.Max() + 1 : 1;
                     Character boss = new CustomCharacter(nowIndex, GenerateRandomChineseUserName(), "", "Boss");
-                    int cLevel, sLevel, mLevel, naLevel;
-                    switch (Random.Shared.Next(3))
+                    int cutRate = Random.Shared.Next(3) switch
                     {
-                        case 0:
-                            cLevel = General.GameplayEquilibriumConstant.MaxLevel;
-                            sLevel = General.GameplayEquilibriumConstant.MaxSkillLevel;
-                            mLevel = General.GameplayEquilibriumConstant.MaxMagicLevel;
-                            naLevel = General.GameplayEquilibriumConstant.MaxNormalAttackLevel;
-                            break;
-                        case 1:
-                            cLevel = General.GameplayEquilibriumConstant.MaxLevel / 2;
-                            sLevel = General.GameplayEquilibriumConstant.MaxSkillLevel / 2;
-                            mLevel = General.GameplayEquilibriumConstant.MaxMagicLevel / 2;
-                            naLevel = General.GameplayEquilibriumConstant.MaxNormalAttackLevel / 2;
-                            break;
-                        case 2:
-                        default:
-                            cLevel = General.GameplayEquilibriumConstant.MaxLevel / 4;
-                            sLevel = General.GameplayEquilibriumConstant.MaxSkillLevel / 4;
-                            mLevel = General.GameplayEquilibriumConstant.MaxMagicLevel / 4;
-                            naLevel = General.GameplayEquilibriumConstant.MaxNormalAttackLevel / 4;
-                            break;
+                        0 => 1,
+                        1 => 2,
+                        _ => 4,
+                    };
+                    int cLevel = General.GameplayEquilibriumConstant.MaxLevel / cutRate;
+                    int sLevel = General.GameplayEquilibriumConstant.MaxSkillLevel / cutRate;
+                    int mLevel = General.GameplayEquilibriumConstant.MaxMagicLevel / cutRate;
+                    int naLevel = General.GameplayEquilibriumConstant.MaxNormalAttackLevel / cutRate;
+                    boss.Level = cLevel;
+                    boss.NormalAttack.Level = naLevel;
+                    boss.NormalAttack.HardnessTime = 6;
+                    Item[] weapons = Equipment.Where(i => i.Id.ToString().StartsWith("11") && (int)i.QualityType == 4).ToArray();
+                    Item[] armors = Equipment.Where(i => i.Id.ToString().StartsWith("12") && (int)i.QualityType == 1).ToArray();
+                    Item[] shoes = Equipment.Where(i => i.Id.ToString().StartsWith("13") && (int)i.QualityType == 1).ToArray();
+                    Item[] accessory = Equipment.Where(i => i.Id.ToString().StartsWith("14") && (int)i.QualityType == 3).ToArray();
+                    Item? a = null, b = null, c = null, d = null, d2 = null;
+                    if (weapons.Length > 0)
+                    {
+                        a = weapons[Random.Shared.Next(weapons.Length)];
                     }
-                    Item[] 武器 = Equipment.Where(i => i.Id.ToString().StartsWith("11") && (int)i.QualityType == 4).ToArray();
-                    Item[] 防具 = Equipment.Where(i => i.Id.ToString().StartsWith("12") && (int)i.QualityType == 1).ToArray();
-                    Item[] 鞋子 = Equipment.Where(i => i.Id.ToString().StartsWith("13") && (int)i.QualityType == 1).ToArray();
-                    Item[] 饰品 = Equipment.Where(i => i.Id.ToString().StartsWith("14") && (int)i.QualityType == 3).ToArray();
-                    Item? a = null, b = null, c = null, d = null;
-                    if (武器.Length > 0)
+                    if (armors.Length > 0)
                     {
-                        a = 武器[Random.Shared.Next(武器.Length)];
+                        b = armors[Random.Shared.Next(armors.Length)];
                     }
-                    if (防具.Length > 0)
+                    if (shoes.Length > 0)
                     {
-                        b = 防具[Random.Shared.Next(防具.Length)];
+                        c = shoes[Random.Shared.Next(shoes.Length)];
                     }
-                    if (鞋子.Length > 0)
+                    if (accessory.Length > 0)
                     {
-                        c = 鞋子[Random.Shared.Next(鞋子.Length)];
+                        d = accessory[Random.Shared.Next(accessory.Length)];
                     }
-                    if (饰品.Length > 0)
+                    if (accessory.Length > 0)
                     {
-                        d = 饰品[Random.Shared.Next(饰品.Length)];
+                        d2 = accessory[Random.Shared.Next(accessory.Length)];
                     }
-                    List<Item> 这次发放的空投 = [];
-                    if (a != null) 这次发放的空投.Add(a);
-                    if (b != null) 这次发放的空投.Add(b);
-                    if (c != null) 这次发放的空投.Add(c);
-                    if (d != null) 这次发放的空投.Add(d);
-                    Item? 魔法卡包 = GenerateMagicCardPack(3, (QualityType)4);
-                    if (魔法卡包 != null)
+                    List<Item> dropItems = [];
+                    if (a != null) dropItems.Add(a);
+                    if (b != null) dropItems.Add(b);
+                    if (c != null) dropItems.Add(c);
+                    if (d != null) dropItems.Add(d);
+                    if (d2 != null) dropItems.Add(d2);
+                    Item? magicCardPack = GenerateMagicCardPack(5, (QualityType)4);
+                    if (magicCardPack != null)
                     {
-                        foreach (Skill magic in 魔法卡包.Skills.Magics)
+                        foreach (Skill magic in magicCardPack.Skills.Magics)
                         {
                             magic.Level = mLevel;
                         }
-                        boss.Equip(魔法卡包);
+                        boss.Equip(magicCardPack);
                     }
-                    foreach (Item item in 这次发放的空投)
+                    foreach (Item item in dropItems)
                     {
                         Item realItem = item.Copy();
                         boss.Equip(realItem);
                     }
-                    boss.Level = cLevel;
-                    boss.NormalAttack.Level = naLevel;
-                    boss.NormalAttack.HardnessTime = 7;
-                    if (boss.CritRate < 65) boss.ExCritRate = 65 - boss.CritRate;
-                    if (boss.CritDMG < 200) boss.ExCritDMG = 200 - boss.CritDMG;
-                    if (boss.AccelerationCoefficient < 0.4) boss.ExAccelerationCoefficient = 0.4 - boss.AccelerationCoefficient;
-                    boss.ExATK2 += boss.PrimaryAttributeValue;
-                    boss.ExDEF2 += boss.PrimaryAttributeValue;
-                    boss.MDF.None += 0.25;
-                    boss.ExHPPercentage += 0.8;
+                    Skill bossSkill = Factory.OpenFactory.GetInstance<Skill>(0, "BOSS专属被动", []);
+                    bossSkill.Level = 1;
+                    bossSkill.Character = boss;
+                    Effect effect = Factory.OpenFactory.GetInstance<Effect>((long)EffectID.DynamicsEffect, "", new()
+                    {
+                        { "skill", bossSkill },
+                        {
+                            "values",
+                            new Dictionary<string, object>()
+                            {
+                                { "exatk", 200 / cutRate },
+                                { "exdef", 200 / cutRate },
+                                { "exhp2", 1.5 },
+                                { "exmp2", 0.8 },
+                                { "exhr", 8 / cutRate },
+                                { "exmr", 4 / cutRate },
+                                { "excr", 0.35 },
+                                { "excrd", 0.9 },
+                                { "excdr", 0.25 },
+                                { "exacc", 0.25 }
+                            }
+                        }
+                    });
+                    effect.OnEffectGained(boss);
+                    bossSkill.Effects.Add(effect);
+                    boss.Skills.Add(bossSkill);
+                    effect = Factory.OpenFactory.GetInstance<Effect>((long)EffectID.ExMDF, "", new()
+                    {
+                        { "skill", bossSkill },
+                        {
+                            "values",
+                            new Dictionary<string, object>()
+                            {
+                                { "mdftype", 0 },
+                                { "mdfvalue", 0.15 }
+                            }
+                        }
+                    });
+                    effect.OnEffectGained(boss);
+                    bossSkill.Effects.Add(effect);
+                    boss.Skills.Add(bossSkill);
+                    Skill passive = Factory.OpenFactory.GetInstance<Skill>(Random.Shared.Next(4001, 4013), "", []);
+                    passive.Character = boss;
+                    passive.Level = 1;
+                    boss.Skills.Add(passive);
+                    Skill super = Factory.OpenFactory.GetInstance<Skill>(Random.Shared.Next(3001, 3013), "", []);
+                    super.Character = boss;
+                    super.Level = sLevel;
+                    boss.Skills.Add(super);
+                    
+                    boss.Recovery();
+
                     Bosses[nowIndex] = boss;
                 }
             }

@@ -90,7 +90,7 @@ namespace Oshima.FunGame.OshimaModules.Effects.OpenEffects
             Source = source;
             if (Values.Count > 0)
             {
-                string key = Values.Keys.FirstOrDefault(s => s.Equals("mdfType", StringComparison.CurrentCultureIgnoreCase)) ?? "";
+                string key = Values.Keys.FirstOrDefault(s => s.Equals("mdftype", StringComparison.CurrentCultureIgnoreCase)) ?? "";
                 if (key.Length > 0 && int.TryParse(Values[key].ToString(), out int mdfType))
                 {
                     if (Enum.IsDefined(typeof(MagicType), mdfType))

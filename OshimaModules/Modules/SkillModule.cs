@@ -113,6 +113,7 @@ namespace Oshima.FunGame.OshimaModules
                         EffectID.NormalAttackHardTimeReduce2 => new NormalAttackHardTimeReduce2(skill, dict),
                         EffectID.ExMaxHP2 => new ExMaxHP2(skill, dict),
                         EffectID.ExMaxMP2 => new ExMaxMP2(skill, dict),
+                        EffectID.DynamicsEffect => new DynamicsEffect(skill, dict),
                         EffectID.RecoverHP => new RecoverHP(skill, dict),
                         EffectID.RecoverMP => new RecoverMP(skill, dict),
                         EffectID.RecoverHP2 => new RecoverHP2(skill, dict),
