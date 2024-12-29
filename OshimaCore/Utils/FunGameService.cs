@@ -464,6 +464,23 @@ namespace Oshima.Core.Utils
 
             foreach (Character inventoryCharacter in characters)
             {
+                Character tempCharacter = Factory.OpenFactory.GetInstance<Character>(inventoryCharacter.Id, inventoryCharacter.Name, []);
+                if (tempCharacter.Id != 0)
+                {
+                    inventoryCharacter.InitialATK = tempCharacter.InitialATK;
+                    inventoryCharacter.InitialDEF = tempCharacter.InitialDEF;
+                    inventoryCharacter.InitialHP = tempCharacter.InitialHP;
+                    inventoryCharacter.InitialMP = tempCharacter.InitialMP;
+                    inventoryCharacter.InitialSTR = tempCharacter.InitialSTR;
+                    inventoryCharacter.STRGrowth = tempCharacter.STRGrowth;
+                    inventoryCharacter.InitialAGI = tempCharacter.InitialAGI;
+                    inventoryCharacter.AGIGrowth = tempCharacter.AGIGrowth;
+                    inventoryCharacter.InitialINT = tempCharacter.InitialINT;
+                    inventoryCharacter.INTGrowth = tempCharacter.INTGrowth;
+                    inventoryCharacter.InitialSPD = tempCharacter.InitialSPD;
+                    inventoryCharacter.InitialHR = tempCharacter.InitialHR;
+                    inventoryCharacter.InitialMR = tempCharacter.InitialMR;
+                }
                 Character realCharacter = CharacterBuilder.Build(inventoryCharacter, false, true, user.Inventory, AllItems, AllSkills, false);
                 // 自动回血
                 DateTime now = DateTime.Now;

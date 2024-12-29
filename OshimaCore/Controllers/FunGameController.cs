@@ -1524,6 +1524,100 @@ namespace Oshima.Core.Controllers
             }
         }
 
+        [HttpPost("fightcustomteam")]
+        public List<string> FightCustomTeam([FromQuery] long? qq = null, [FromQuery] long? eqq = null, [FromQuery] bool? all = null)
+        {
+            try
+            {
+                long userid = qq ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
+                long enemyid = eqq ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
+                bool showAllRound = all ?? false;
+
+                PluginConfig pc = new("saved", userid.ToString());
+                pc.LoadConfig();
+
+                PluginConfig pc2 = new("saved", enemyid.ToString());
+                pc2.LoadConfig();
+
+                User? user1 = null, user2 = null;
+
+                if (pc.Count > 0)
+                {
+                    user1 = FunGameService.GetUser(pc);
+
+                    if (user1.Inventory.Squad.Count == 0)
+                    {
+                        return [$"你尚未设置小队，请先设置1-4名角色！"];
+                    }
+
+                    user1.LastTime = DateTime.Now;
+                    pc.Add("user", user1);
+                    pc.SaveConfig();
+                }
+                else
+                {
+                    return [noSaved];
+                }
+
+                if (pc2.Count > 0)
+                {
+                    user2 = FunGameService.GetUser(pc2);
+
+                    if (user2.Inventory.Squad.Count == 0)
+                    {
+                        return [$"对方尚未设置小队，无法决斗。"];
+                    }
+
+                    user2.LastTime = DateTime.Now;
+                    pc2.Add("user", user2);
+                    pc2.SaveConfig();
+                }
+                else
+                {
+                    return [$"对方貌似还没有创建存档呢！"];
+                }
+
+                if (user1 != null && user2 != null)
+                {
+                    Character[] squad1 = [.. user1.Inventory.Characters.Where(c => user1.Inventory.Squad.Contains(c.Id)).Select(c => c.Copy())];
+                    Character[] squad2 = [.. user2.Inventory.Characters.Where(c => user2.Inventory.Squad.Contains(c.Id)).Select(c => c.Copy())];
+                    Team team1 = new($"{user1.Username}的小队", squad1);
+                    Team team2 = new($"{user2.Username}的小队", squad2);
+                    return FunGameActionQueue.NewAndStartTeamGame([team1, team2], 0, 0, false, false, false, false, showAllRound);
+                }
+                else
+                {
+                    return [$"决斗发起失败！"];
+                }
+            }
+            catch (Exception e)
+            {
+                return [e.ToString()];
+            }
+        }
+
+        [HttpPost("fightcustomteam2")]
+        public List<string> FightCustomTeam2([FromQuery] long? qq = null, [FromQuery] string? name = null, [FromQuery] bool? all = null)
+        {
+            try
+            {
+                if (name != null)
+                {
+                    long enemyid = FunGameService.UserIdAndUsername.Where(kv => kv.Value == name).Select(kv => kv.Key).FirstOrDefault();
+                    if (enemyid == 0)
+                    {
+                        return [$"找不到此名称对应的玩家！"];
+                    }
+                    return FightCustomTeam(qq, enemyid, all);
+                }
+                return [$"决斗发起失败！"];
+            }
+            catch (Exception e)
+            {
+                return [e.ToString()];
+            }
+        }
+
         [HttpPost("useitem")]
         public string UseItem([FromQuery] long? qq = null, [FromQuery] int? id = null, [FromBody] int[]? characters = null)
         {
