@@ -1,7 +1,6 @@
 ﻿using System.Text;
 using Milimoe.FunGame.Core.Api.Utility;
 using Milimoe.FunGame.Core.Entity;
-using Milimoe.FunGame.Core.Interface.Entity;
 using Milimoe.FunGame.Core.Library.Constant;
 using Oshima.FunGame.OshimaModules;
 using Oshima.FunGame.OshimaModules.Characters;
@@ -1111,6 +1110,7 @@ namespace Oshima.Core.Utils
                     Item? magicCardPack = GenerateMagicCardPack(5, (QualityType)4);
                     if (magicCardPack != null)
                     {
+                        magicCardPack.QualityType = QualityType.Red;
                         foreach (Skill magic in magicCardPack.Skills.Magics)
                         {
                             magic.Level = mLevel;
@@ -1387,6 +1387,170 @@ namespace Oshima.Core.Utils
                         }
                     }
                 };
+            }
+        }
+
+        public static Dictionary<EffectID, Dictionary<string, object>> RoundRewards
+        {
+            get
+            {
+                return new()
+                {
+                    {
+                        EffectID.ExATK,
+                        new()
+                        {
+                            { "exatk", Random.Shared.Next(40, 80) }
+                        }
+                    },
+                    {
+                        EffectID.ExCritRate,
+                        new()
+                        {
+                            { "excr", Math.Clamp(Random.Shared.NextDouble(), 0.25, 0.5) }
+                        }
+                    },
+                    {
+                        EffectID.ExCritDMG,
+                        new()
+                        {
+                            { "excrd", Math.Clamp(Random.Shared.NextDouble(), 0.5, 1) }
+                        }
+                    },
+                    {
+                        EffectID.ExATK2,
+                        new()
+                        {
+                            { "exatk", Math.Clamp(Random.Shared.NextDouble(), 0.15, 0.3) }
+                        }
+                    },
+                    {
+                        EffectID.RecoverHP,
+                        new()
+                        {
+                            { "hp", Random.Shared.Next(160, 640) }
+                        }
+                    },
+                    {
+                        EffectID.RecoverMP,
+                        new()
+                        {
+                            { "mp", Random.Shared.Next(140, 490) }
+                        }
+                    },
+                    {
+                        EffectID.RecoverHP2,
+                        new()
+                        {
+                            { "hp", Math.Clamp(Random.Shared.NextDouble(), 0.04, 0.08) }
+                        }
+                    },
+                    {
+                        EffectID.RecoverMP2,
+                        new()
+                        {
+                            { "mp", Math.Clamp(Random.Shared.NextDouble(), 0.09, 0.18) }
+                        }
+                    },
+                    {
+                        EffectID.GetEP,
+                        new()
+                        {
+                            { "ep", Random.Shared.Next(20, 40) }
+                        }
+                    }
+                };
+            }
+        }
+
+        public static Dictionary<int, List<Skill>> GenerateRoundRewards(int maxRound)
+        {
+            Dictionary<int, List<Skill>> roundRewards = [];
+
+            int currentRound = 1;
+            while (currentRound <= maxRound)
+            {
+                currentRound += Random.Shared.Next(1, 9);
+
+                if (currentRound <= maxRound)
+                {
+                    List<Skill> skills = [];
+
+                    // 添加回合奖励特效
+                    long effectID = (long)RoundRewards.Keys.ToArray()[Random.Shared.Next(RoundRewards.Count)];
+                    Dictionary<string, object> args = [];
+                    if (effectID > (long)EffectID.Active_Start)
+                    {
+                        args.Add("active", true);
+                        args.Add("self", true);
+                        args.Add("enemy", false);
+                    }
+
+                    skills.Add(Factory.OpenFactory.GetInstance<Skill>(effectID, "回合奖励", args));
+
+                    roundRewards[currentRound] = skills;
+                }
+            }
+
+            return roundRewards;
+        }
+
+        public static double CalculateRating(CharacterStatistics stats, Team? team = null)
+        {
+            // 基础得分
+            double baseScore = (stats.Kills + stats.Assists) / (stats.Kills + stats.Assists + stats.Deaths + 0.01);
+            if (team is null)
+            {
+                baseScore += stats.Kills * 0.1;
+                if (stats.Deaths == 0)
+                {
+                    baseScore += 0.5;
+                }
+            }
+            else
+            {
+                baseScore = baseScore * 0.6 + 0.4 * (stats.Kills / (stats.Kills + stats.Deaths + 0.01));
+            }
+
+            // 伤害贡献
+            double logDamageContribution = Math.Log(1 + (stats.TotalDamage / (stats.TotalTakenDamage + 1e-6)));
+
+            // 存活时间贡献
+            double liveTimeContribution = Math.Log(1 + (stats.LiveTime / (stats.TotalTakenDamage + 0.01) * 100));
+
+            // 团队模式参团率加成
+            double teamContribution = 0;
+            if (team != null)
+            {
+                teamContribution = (stats.Kills + stats.Assists) / (team.Score + 0.01);
+                if (team.IsWinner)
+                {
+                    teamContribution += 0.15;
+                }
+            }
+
+            // 权重设置
+            double k = stats.Deaths > 0 ? 0.2 : 0.075; // 伤害贡献权重
+            double l = stats.Deaths > 0 ? 0.2 : 0.05; // 存活时间权重
+            double t = stats.Deaths > 0 ? 0.2 : 0.075; // 参团率权重
+
+            // 计算最终评分
+            double rating = baseScore + k * logDamageContribution + l * liveTimeContribution + t * teamContribution;
+
+            // 确保评分在合理范围内
+            return Math.Max(0.01, rating);
+        }
+
+        public static void GetCharacterRating(Dictionary<Character, CharacterStatistics> statistics, bool isTeam, List<Team> teams)
+        {
+            foreach (Character character in statistics.Keys)
+            {
+                Team? team = null;
+                if (isTeam)
+                {
+                    team = teams.Where(t => t.IsOnThisTeam(character)).FirstOrDefault();
+                }
+                statistics[character].Rating = CalculateRating(statistics[character], team);
             }
         }
     }

@@ -3,9 +3,9 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Milimoe.FunGame.Core.Api.Transmittal;
 using Milimoe.FunGame.Core.Api.Utility;
-using Milimoe.FunGame.Core.Library.Constant;
 using Milimoe.FunGame.Core.Library.Exception;
 using Milimoe.FunGame.Core.Library.SQLScript.Common;
+using Oshima.Core.Configs;
 using Oshima.Core.Constant;
 using TaskScheduler = Milimoe.FunGame.Core.Api.Utility.TaskScheduler;
 
@@ -47,7 +47,7 @@ namespace Oshima.Core.Controllers
                 }
                 catch (Exception e)
                 {
-                    Statics.RunningPlugin.Controller?.Error(e);
+                    Statics.RunningPlugin.Controller.Error(e);
                     return NetworkUtility.JsonSerialize("无法调用此接口。原因：\r\n" + e.GetErrorInfo());
                 }
             }
@@ -58,6 +58,29 @@ namespace Oshima.Core.Controllers
         public string GetTaskScheduler(string name)
         {
             return NetworkUtility.JsonSerialize(TaskScheduler.Shared.GetRunTimeInfo(name));
+        }
+
+        [HttpGet("sendtest")]
+        public string SendTest(long key, string to)
+        {
+            if (Statics.RunningPlugin != null && key == GeneralSettings.Master)
+            {
+                try
+                {
+                    MailSender? sender = Statics.RunningPlugin.Controller.MailSender;
+                    if (sender != null && sender.Send(new(sender, "Test Mail", "Hello!", to)) == Milimoe.FunGame.Core.Library.Constant.MailSendResult.Success)
+                    {
+                        return NetworkUtility.JsonSerialize("发送成功。");
+                    }
+                    return NetworkUtility.JsonSerialize("发送失败。");
+                }
+                catch (Exception e)
+                {
+                    Statics.RunningPlugin.Controller.Error(e);
+                    return NetworkUtility.JsonSerialize("无法调用此接口。原因：\r\n" + e.GetErrorInfo());
+                }
+            }
+            return NetworkUtility.JsonSerialize("无法调用此接口。");
         }
     }
 }

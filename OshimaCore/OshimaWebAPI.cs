@@ -23,7 +23,7 @@ namespace Oshima.Core.WebAPI
         {
             if (input.StartsWith("fungametest"))
             {
-                FunGameActionQueue.StartSimulationGame(true, true);
+                FunGameSimulation.StartSimulationGame(true, true);
             }
             // OSM指令
             if (input.Length >= 4 && input[..4].Equals(".osm", StringComparison.CurrentCultureIgnoreCase))
@@ -46,7 +46,8 @@ namespace Oshima.Core.WebAPI
             SayNo.InitSayNo();
             Ignore.InitIgnore();
             FunGameService.InitFunGame();
-            FunGameActionQueue.InitFunGameActionQueue();
+            FunGameSimulation.InitFunGameSimulation();
+            WebAPIAuthenticator.WebAPICustomBearerTokenAuthenticator += CustomBearerTokenAuthenticator;
             TaskScheduler.Shared.AddTask("重置每日运势", new TimeSpan(0, 0, 0), () =>
             {
                 Controller.WriteLine("已重置所有人的今日运势");
@@ -87,6 +88,15 @@ namespace Oshima.Core.WebAPI
                 FunGameService.GenerateBoss();
                 Controller.WriteLine("刷新boss");
             }, true);
+        }
+
+        private string CustomBearerTokenAuthenticator(string token)
+        {
+            if (GeneralSettings.TokenList.Contains(token))
+            {
+                return "APIUser"; 
+            }
+            return "";
         }
     }
 }

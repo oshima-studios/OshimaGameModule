@@ -1,4 +1,5 @@
 using System.Text;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Milimoe.FunGame.Core.Api.Utility;
@@ -12,6 +13,7 @@ using Oshima.FunGame.OshimaModules.Items;
 
 namespace Oshima.Core.Controllers
 {
+    [Authorize(AuthenticationSchemes = "CustomBearer")]
     [ApiController]
     [Route("[controller]")]
     public class FunGameController(ILogger<FunGameController> logger) : ControllerBase
@@ -28,7 +30,7 @@ namespace Oshima.Core.Controllers
             bool web = isweb ?? true;
             bool team = isteam ?? false;
             bool all = showall ?? false;
-            return FunGameActionQueue.StartSimulationGame(false, web, team, all);
+            return FunGameSimulation.StartSimulationGame(false, web, team, all);
         }
 
         [HttpGet("stats")]
@@ -37,7 +39,7 @@ namespace Oshima.Core.Controllers
             if (id != null && id > 0 && id <= FunGameService.Characters.Count)
             {
                 Character character = FunGameService.Characters[Convert.ToInt32(id) - 1];
-                if (FunGameActionQueue.CharacterStatistics.TryGetValue(character, out CharacterStatistics? stats) && stats != null)
+                if (FunGameSimulation.CharacterStatistics.TryGetValue(character, out CharacterStatistics? stats) && stats != null)
                 {
                     StringBuilder builder = new();
 
@@ -67,14 +69,14 @@ namespace Oshima.Core.Controllers
                     builder.AppendLine($"总计前三数：{stats.Top3s}");
                     builder.AppendLine($"总计败场数：{stats.Loses}");
 
-                    List<string> names = [.. FunGameActionQueue.CharacterStatistics.OrderByDescending(kv => kv.Value.MVPs).Select(kv => kv.Key.GetName())];
+                    List<string> names = [.. FunGameSimulation.CharacterStatistics.OrderByDescending(kv => kv.Value.MVPs).Select(kv => kv.Key.GetName())];
                     builder.AppendLine($"MVP次数：{stats.MVPs}（#{names.IndexOf(character.GetName()) + 1}）");
 
-                    names = [.. FunGameActionQueue.CharacterStatistics.OrderByDescending(kv => kv.Value.Winrates).Select(kv => kv.Key.GetName())];
+                    names = [.. FunGameSimulation.CharacterStatistics.OrderByDescending(kv => kv.Value.Winrates).Select(kv => kv.Key.GetName())];
                     builder.AppendLine($"胜率：{stats.Winrates * 100:0.##}%（#{names.IndexOf(character.GetName()) + 1}）");
                     builder.AppendLine($"前三率：{stats.Top3rates * 100:0.##}%");
 
-                    names = [.. FunGameActionQueue.CharacterStatistics.OrderByDescending(kv => kv.Value.Rating).Select(kv => kv.Key.GetName())];
+                    names = [.. FunGameSimulation.CharacterStatistics.OrderByDescending(kv => kv.Value.Rating).Select(kv => kv.Key.GetName())];
                     builder.AppendLine($"技术得分：{stats.Rating:0.0#}（#{names.IndexOf(character.GetName()) + 1}）");
 
                     builder.AppendLine($"上次排名：{stats.LastRank} / 场均名次：{stats.AvgRank:0.##}");
@@ -91,7 +93,7 @@ namespace Oshima.Core.Controllers
             if (id != null && id > 0 && id <= FunGameService.Characters.Count)
             {
                 Character character = FunGameService.Characters[Convert.ToInt32(id) - 1];
-                if (FunGameActionQueue.TeamCharacterStatistics.TryGetValue(character, out CharacterStatistics? stats) && stats != null)
+                if (FunGameSimulation.TeamCharacterStatistics.TryGetValue(character, out CharacterStatistics? stats) && stats != null)
                 {
                     StringBuilder builder = new();
 
@@ -121,11 +123,11 @@ namespace Oshima.Core.Controllers
                     builder.AppendLine($"总计胜场数：{stats.Wins}");
                     builder.AppendLine($"总计败场数：{stats.Loses}");
 
-                    List<string> names = [.. FunGameActionQueue.TeamCharacterStatistics.OrderByDescending(kv => kv.Value.MVPs).Select(kv => kv.Key.GetName())];
+                    List<string> names = [.. FunGameSimulation.TeamCharacterStatistics.OrderByDescending(kv => kv.Value.MVPs).Select(kv => kv.Key.GetName())];
                     builder.AppendLine($"MVP次数：{stats.MVPs}（#{names.IndexOf(character.GetName()) + 1}）");
-                    names = [.. FunGameActionQueue.TeamCharacterStatistics.OrderByDescending(kv => kv.Value.Winrates).Select(kv => kv.Key.GetName())];
+                    names = [.. FunGameSimulation.TeamCharacterStatistics.OrderByDescending(kv => kv.Value.Winrates).Select(kv => kv.Key.GetName())];
                     builder.AppendLine($"胜率：{stats.Winrates * 100:0.##}%（#{names.IndexOf(character.GetName()) + 1}）");
-                    names = [.. FunGameActionQueue.TeamCharacterStatistics.OrderByDescending(kv => kv.Value.Rating).Select(kv => kv.Key.GetName())];
+                    names = [.. FunGameSimulation.TeamCharacterStatistics.OrderByDescending(kv => kv.Value.Rating).Select(kv => kv.Key.GetName())];
                     builder.AppendLine($"技术得分：{stats.Rating:0.0#}（#{names.IndexOf(character.GetName()) + 1}）");
 
                     return NetworkUtility.JsonSerialize(builder.ToString());
@@ -141,11 +143,11 @@ namespace Oshima.Core.Controllers
             if (team)
             {
                 List<string> strings = [];
-                IEnumerable<Character> ratings = FunGameActionQueue.TeamCharacterStatistics.OrderByDescending(kv => kv.Value.Winrates).Select(kv => kv.Key);
+                IEnumerable<Character> ratings = FunGameSimulation.TeamCharacterStatistics.OrderByDescending(kv => kv.Value.Winrates).Select(kv => kv.Key);
                 foreach (Character character in ratings)
                 {
                     StringBuilder builder = new();
-                    CharacterStatistics stats = FunGameActionQueue.TeamCharacterStatistics[character];
+                    CharacterStatistics stats = FunGameSimulation.TeamCharacterStatistics[character];
                     builder.AppendLine(character.ToString());
                     builder.AppendLine($"总计参赛数：{stats.Plays}");
                     builder.AppendLine($"总计冠军数：{stats.Wins}");
@@ -159,11 +161,11 @@ namespace Oshima.Core.Controllers
             else
             {
                 List<string> strings = [];
-                IEnumerable<Character> ratings = FunGameActionQueue.CharacterStatistics.OrderByDescending(kv => kv.Value.Winrates).Select(kv => kv.Key);
+                IEnumerable<Character> ratings = FunGameSimulation.CharacterStatistics.OrderByDescending(kv => kv.Value.Winrates).Select(kv => kv.Key);
                 foreach (Character character in ratings)
                 {
                     StringBuilder builder = new();
-                    CharacterStatistics stats = FunGameActionQueue.CharacterStatistics[character];
+                    CharacterStatistics stats = FunGameSimulation.CharacterStatistics[character];
                     builder.AppendLine(character.ToString());
                     builder.AppendLine($"总计参赛数：{stats.Plays}");
                     builder.AppendLine($"总计冠军数：{stats.Wins}");
@@ -185,11 +187,11 @@ namespace Oshima.Core.Controllers
             if (team)
             {
                 List<string> strings = [];
-                IEnumerable<Character> ratings = FunGameActionQueue.TeamCharacterStatistics.OrderByDescending(kv => kv.Value.Rating).Select(kv => kv.Key);
+                IEnumerable<Character> ratings = FunGameSimulation.TeamCharacterStatistics.OrderByDescending(kv => kv.Value.Rating).Select(kv => kv.Key);
                 foreach (Character character in ratings)
                 {
                     StringBuilder builder = new();
-                    CharacterStatistics stats = FunGameActionQueue.TeamCharacterStatistics[character];
+                    CharacterStatistics stats = FunGameSimulation.TeamCharacterStatistics[character];
                     builder.AppendLine(character.ToString());
                     builder.AppendLine($"总计参赛数：{stats.Plays}");
                     builder.AppendLine($"总计冠军数：{stats.Wins}");
@@ -203,11 +205,11 @@ namespace Oshima.Core.Controllers
             else
             {
                 List<string> strings = [];
-                IEnumerable<Character> ratings = FunGameActionQueue.CharacterStatistics.OrderByDescending(kv => kv.Value.Rating).Select(kv => kv.Key);
+                IEnumerable<Character> ratings = FunGameSimulation.CharacterStatistics.OrderByDescending(kv => kv.Value.Rating).Select(kv => kv.Key);
                 foreach (Character character in ratings)
                 {
                     StringBuilder builder = new();
-                    CharacterStatistics stats = FunGameActionQueue.CharacterStatistics[character];
+                    CharacterStatistics stats = FunGameSimulation.CharacterStatistics[character];
                     builder.AppendLine(character.ToString());
                     builder.AppendLine($"总计参赛数：{stats.Plays}");
                     builder.AppendLine($"总计冠军数：{stats.Wins}");
@@ -345,6 +347,49 @@ namespace Oshima.Core.Controllers
                 pc.Add("user", user);
                 pc.SaveConfig();
                 return NetworkUtility.JsonSerialize($"你的存档已还原成功。");
+            }
+            else
+            {
+                return NetworkUtility.JsonSerialize(noSaved);
+            }
+        }
+
+        [HttpPost("showsaved")]
+        public string ShowSaved([FromQuery] long? qq = null)
+        {
+            long userid = qq ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
+
+            PluginConfig pc = new("saved", userid.ToString());
+            pc.LoadConfig();
+
+            if (pc.Count > 0)
+            {
+                User user = FunGameService.GetUser(pc);
+
+                StringBuilder builder = new();
+                builder.AppendLine($"☆★☆ {user.Username}的存档信息 ☆★☆");
+                builder.AppendLine($"{General.GameplayEquilibriumConstant.InGameCurrency}：{user.Inventory.Credits:0.00}");
+                builder.AppendLine($"{General.GameplayEquilibriumConstant.InGameMaterial}：{user.Inventory.Materials:0.00}");
+                builder.AppendLine($"角色数量：{user.Inventory.Characters.Count}");
+                builder.AppendLine($"主战角色：{user.Inventory.MainCharacter.ToStringWithLevelWithOutUser()}");
+                Character[] squad = [.. user.Inventory.Characters.Where(c => user.Inventory.Squad.Contains(c.Id))];
+                Dictionary<Character, int> characters = user.Inventory.Characters
+                    .Select((character, index) => new { character, index })
+                    .ToDictionary(x => x.character, x => x.index + 1);
+                builder.AppendLine($"小队成员：{(squad.Length > 0 ? string.Join(" / ", squad.Select(c => $"[#{characters[c]}]{c.Name}({c.Level})")) : "空")}");
+                if (user.Inventory.Training.Count > 0)
+                {
+                    builder.AppendLine($"正在练级：{string.Join(" / ", user.Inventory.Characters.Where(c => user.Inventory.Training.ContainsKey(c.Id)).Select(c => c.ToStringWithLevelWithOutUser()))}");
+                }
+                builder.AppendLine($"物品数量：{user.Inventory.Items.Count}");
+                builder.AppendLine($"所属社团：无");
+                builder.AppendLine($"注册时间：{user.RegTime.ToString(General.GeneralDateTimeFormatChinese)}");
+                builder.AppendLine($"最后访问：{user.LastTime.ToString(General.GeneralDateTimeFormatChinese)}");
+
+                user.LastTime = DateTime.Now;
+                pc.Add("user", user);
+                pc.SaveConfig();
+                return NetworkUtility.JsonSerialize(builder.ToString().Trim());
             }
             else
             {
@@ -1165,6 +1210,92 @@ namespace Oshima.Core.Controllers
                 return NetworkUtility.JsonSerialize(e.ToString());
             }
         }
+        
+        [HttpPost("showcharacterskills")]
+        public string GetCharacterSkills([FromQuery] long? qq = null, [FromQuery] int? seq = null)
+        {
+            try
+            {
+                long userid = qq ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
+                int cIndex = seq ?? 0;
+
+                PluginConfig pc = new("saved", userid.ToString());
+                pc.LoadConfig();
+
+                if (pc.Count > 0)
+                {
+                    User user = FunGameService.GetUser(pc);
+
+                    if (cIndex == 0)
+                    {
+                        return NetworkUtility.JsonSerialize($"这是你的主战角色技能信息：\r\n{user.Inventory.MainCharacter.GetSkillInfo().Trim()}");
+                    }
+                    else
+                    {
+                        if (cIndex > 0 && cIndex <= user.Inventory.Characters.Count)
+                        {
+                            Character character = user.Inventory.Characters.ToList()[cIndex - 1];
+                            return NetworkUtility.JsonSerialize($"这是你库存中序号为 {cIndex} 的角色技能信息：\r\n{character.GetSkillInfo().Trim()}");
+                        }
+                        else
+                        {
+                            return NetworkUtility.JsonSerialize($"没有找到与这个序号相对应的角色！");
+                        }
+                    }
+                }
+                else
+                {
+                    return NetworkUtility.JsonSerialize(noSaved);
+                }
+            }
+            catch (Exception e)
+            {
+                return NetworkUtility.JsonSerialize(e.ToString());
+            }
+        }
+        
+        [HttpPost("showcharacteritems")]
+        public string GetCharacterItems([FromQuery] long? qq = null, [FromQuery] int? seq = null)
+        {
+            try
+            {
+                long userid = qq ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
+                int cIndex = seq ?? 0;
+
+                PluginConfig pc = new("saved", userid.ToString());
+                pc.LoadConfig();
+
+                if (pc.Count > 0)
+                {
+                    User user = FunGameService.GetUser(pc);
+
+                    if (cIndex == 0)
+                    {
+                        return NetworkUtility.JsonSerialize($"这是你的主战角色装备物品信息：\r\n{user.Inventory.MainCharacter.GetItemInfo(showEXP: true).Trim()}");
+                    }
+                    else
+                    {
+                        if (cIndex > 0 && cIndex <= user.Inventory.Characters.Count)
+                        {
+                            Character character = user.Inventory.Characters.ToList()[cIndex - 1];
+                            return NetworkUtility.JsonSerialize($"这是你库存中序号为 {cIndex} 的角色装备物品信息：\r\n{character.GetItemInfo(showEXP: true).Trim()}");
+                        }
+                        else
+                        {
+                            return NetworkUtility.JsonSerialize($"没有找到与这个序号相对应的角色！");
+                        }
+                    }
+                }
+                else
+                {
+                    return NetworkUtility.JsonSerialize(noSaved);
+                }
+            }
+            catch (Exception e)
+            {
+                return NetworkUtility.JsonSerialize(e.ToString());
+            }
+        }
 
         [HttpPost("showiteminfo")]
         public string GetItemInfoFromInventory([FromQuery] long? qq = null, [FromQuery] int? seq = null)
@@ -1358,7 +1489,7 @@ namespace Oshima.Core.Controllers
 
                 if (user1 != null && user2 != null)
                 {
-                    return FunGameActionQueue.StartGame([user1.Inventory.MainCharacter, user2.Inventory.MainCharacter], false, false, false, false, showAllRound);
+                    return FunGameActionQueue.NewAndStartGame([user1.Inventory.MainCharacter, user2.Inventory.MainCharacter], false, false, false, false, showAllRound);
                 }
                 else
                 {
@@ -2316,7 +2447,7 @@ namespace Oshima.Core.Controllers
                     user.LastTime = DateTime.Now;
                     pc.Add("user", user);
                     pc.SaveConfig();
-                    return NetworkUtility.JsonSerialize($"角色 [{character}] 开始练级，请过一段时间后进行【练级结算】，时间越长奖励越丰盛！练级时间最长 1440 分钟（24小时），超时将无任何收益，请及时领取奖励。");
+                    return NetworkUtility.JsonSerialize($"角色 [{character}] 开始练级，请过一段时间后进行【练级结算】，时间越长奖励越丰盛！练级时间上限 1440 分钟（24小时），超时将不会再产生收益，请按时领取奖励！");
                 }
                 else
                 {
@@ -2856,7 +2987,7 @@ namespace Oshima.Core.Controllers
                     }
 
                     Character boss2 = CharacterBuilder.Build(boss, false, true, null, FunGameService.AllItems, FunGameService.AllSkills, false);
-                    List<string> msgs = FunGameActionQueue.StartGame([user.Inventory.MainCharacter, boss2], false, false, false, false, showAllRound);
+                    List<string> msgs = FunGameActionQueue.NewAndStartGame([user.Inventory.MainCharacter, boss2], false, false, false, false, showAllRound);
 
                     if (boss2.HP <= 0)
                     {
@@ -2991,11 +3122,115 @@ namespace Oshima.Core.Controllers
             }
         }
 
+        [HttpPost("setsquad")]
+        public string SetSquad([FromQuery] long? qq = null, [FromBody] int[]? c = null)
+        {
+            try
+            {
+                long userid = qq ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
+                int[] characterIndexs = c ?? [];
+
+                PluginConfig pc = new("saved", userid.ToString());
+                pc.LoadConfig();
+
+                if (pc.Count > 0)
+                {
+                    User user = FunGameService.GetUser(pc);
+
+                    user.Inventory.Squad.Clear();
+                    foreach (int characterIndex in characterIndexs)
+                    {
+                        Character? character = null;
+                        if (characterIndex > 0 && characterIndex <= user.Inventory.Characters.Count)
+                        {
+                            character = user.Inventory.Characters.ToList()[characterIndex - 1];
+                        }
+                        else
+                        {
+                            return NetworkUtility.JsonSerialize($"设置失败：没有找到与序号 {characterIndex} 相对应的角色！");
+                        }
+                        user.Inventory.Squad.Add(character.Id);
+                    }
+
+                    user.LastTime = DateTime.Now;
+                    pc.Add("user", user);
+                    pc.SaveConfig();
+                    return NetworkUtility.JsonSerialize($"设置小队成员成功！当前小队角色如下：\r\n" +
+                            string.Join("\r\n", user.Inventory.Characters.Where(c => user.Inventory.Squad.Contains(c.Id))));
+                }
+                else
+                {
+                    return NetworkUtility.JsonSerialize(noSaved);
+                }
+            }
+            catch (Exception e)
+            {
+                return NetworkUtility.JsonSerialize(e.ToString());
+            }
+        }
+        
+        [HttpPost("clearsquad")]
+        public string ClearSquad([FromQuery] long? qq = null, [FromBody] int[]? c = null)
+        {
+            try
+            {
+                long userid = qq ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
+                int[] characterIndexs = c ?? [];
+
+                PluginConfig pc = new("saved", userid.ToString());
+                pc.LoadConfig();
+
+                if (pc.Count > 0)
+                {
+                    User user = FunGameService.GetUser(pc);
+
+                    user.Inventory.Squad.Clear();
+                    user.LastTime = DateTime.Now;
+                    pc.Add("user", user);
+                    pc.SaveConfig();
+                    return NetworkUtility.JsonSerialize($"清空小队成员成功！");
+                }
+                else
+                {
+                    return NetworkUtility.JsonSerialize(noSaved);
+                }
+            }
+            catch (Exception e)
+            {
+                return NetworkUtility.JsonSerialize(e.ToString());
+            }
+        }
+        
+        [HttpPost("showsquad")]
+        public string ShowSquad([FromQuery] long? qq = null)
+        {
+            try
+            {
+                long userid = qq ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
+
+                PluginConfig pc = new("saved", userid.ToString());
+                pc.LoadConfig();
+
+                if (pc.Count > 0)
+                {
+                    User user = FunGameService.GetUser(pc);
+                    return NetworkUtility.JsonSerialize($"你的当前小队角色如下：\r\n" +
+                            string.Join("\r\n", user.Inventory.Characters.Where(c => user.Inventory.Squad.Contains(c.Id))));
+                }
+                else
+                {
+                    return NetworkUtility.JsonSerialize(noSaved);
+                }
+            }
+            catch (Exception e)
+            {
+                return NetworkUtility.JsonSerialize(e.ToString());
+            }
+        }
+
         [HttpPost("fightbossteam")]
         public List<string> FightBossTeam([FromQuery] long? qq = null, [FromQuery] int? index = null, [FromQuery] bool? all = null)
         {
-            return [];
-
             long userid = qq ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
             int bossIndex = index ?? 0;
             bool showAllRound = all ?? false;
@@ -3013,14 +3248,15 @@ namespace Oshima.Core.Controllers
 
                     if (squad.All(c => c.HP < c.MaxHP * 0.1))
                     {
-                        return [$"小队角色均重伤未愈，当前生命值低于 10%，请先等待生命值自动回复或重组小队！",
-                            "当前小队角色如下：",
+                        return [$"小队角色均重伤未愈，当前生命值低于 10%，请先等待生命值自动回复或重组小队！\r\n" +
+                            "当前小队角色如下：\r\n" +
                             string.Join("\r\n", user.Inventory.Characters.Where(c => user.Inventory.Squad.Contains(c.Id)))];
                     }
 
                     Character boss2 = CharacterBuilder.Build(boss, false, true, null, FunGameService.AllItems, FunGameService.AllSkills, false);
-                    //List<string> msgs = FunGameActionQueue.StartGameTeam;
-                    List<string> msgs = [];
+                    Team team1 = new($"{user.Username}的小队", squad);
+                    Team team2 = new($"Boss", [boss2]);
+                    List<string> msgs = FunGameActionQueue.NewAndStartTeamGame([team1, team2], showAllRound: showAllRound);
 
                     if (boss2.HP <= 0)
                     {
@@ -3059,7 +3295,7 @@ namespace Oshima.Core.Controllers
             if (master != null && master == GeneralSettings.Master)
             {
                 FunGameService.Reload();
-                FunGameActionQueue.InitFunGameActionQueue();
+                FunGameSimulation.InitFunGameSimulation();
                 return NetworkUtility.JsonSerialize("FunGame已重新加载。");
             }
             return NetworkUtility.JsonSerialize("提供的参数不正确。");

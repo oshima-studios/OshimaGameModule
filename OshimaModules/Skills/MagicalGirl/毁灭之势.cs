@@ -50,8 +50,11 @@ namespace Oshima.FunGame.OshimaModules.Skills
 
         public override void OnTimeElapsed(Character character, double eapsed)
         {
-            累计伤害 += 伤害提升 * eapsed;
-            WriteLine($"[ {character} ] 的 [ {Name} ] 效果增加了，当前总提升：{累计伤害 * 100:0.##}%。");
+            if (GamingQueue != null)
+            {
+                累计伤害 += 伤害提升 * eapsed;
+                WriteLine($"[ {character} ] 的 [ {Name} ] 效果增加了，当前总提升：{累计伤害 * 100:0.##}%。");
+            }
         }
     }
 }

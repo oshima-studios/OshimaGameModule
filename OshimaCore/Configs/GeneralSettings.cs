@@ -16,6 +16,8 @@ namespace Oshima.Core.Configs
 
         public static int BlackFrozenTime { get; set; } = 150;
 
+        public static List<string> TokenList { get; set; } = [];
+
         public static PluginConfig Configs { get; set; } = new("rainbot", "config");
 
         public static void LoadSetting()
@@ -38,6 +40,10 @@ namespace Oshima.Core.Configs
             {
                 BlackFrozenTime = Convert.ToInt32((long)value);
             }
+            if (configs.TryGetValue("TokenList", out value) && value != null)
+            {
+                TokenList = (List<string>)value;
+            }
         }
 
         public static void SaveConfig()
@@ -46,6 +52,7 @@ namespace Oshima.Core.Configs
             Configs.Add("Master", Master);
             Configs.Add("BlackTimes", BlackTimes);
             Configs.Add("BlackFrozenTime", BlackFrozenTime);
+            Configs.Add("TokenList", TokenList);
             Configs.SaveConfig();
         }
     }
