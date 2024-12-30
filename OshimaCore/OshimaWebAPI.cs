@@ -83,6 +83,23 @@ namespace Oshima.Core.WebAPI
                     Controller.WriteLine("读取 FunGame 存档缓存");
                 }
             }, true);
+            TaskScheduler.Shared.AddTask("刷新每日任务", new TimeSpan(4, 0, 0), () =>
+            {
+                string directoryPath = $@"{AppDomain.CurrentDomain.BaseDirectory}configs/quests";
+                if (Directory.Exists(directoryPath))
+                {
+                    string[] filePaths = Directory.GetFiles(directoryPath);
+                    foreach (string filePath in filePaths)
+                    {
+                        string fileName = Path.GetFileNameWithoutExtension(filePath);
+                        PluginConfig pc = new("quests", fileName);
+                        pc.Clear();
+                        FunGameService.CheckQuestList(pc);
+                        pc.SaveConfig();
+                    }
+                    Controller.WriteLine("刷新每日任务");
+                }
+            });
             TaskScheduler.Shared.AddRecurringTask("刷新boss", TimeSpan.FromHours(1), () =>
             {
                 FunGameService.GenerateBoss();

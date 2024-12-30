@@ -3383,6 +3383,105 @@ namespace Oshima.Core.Controllers
             }
         }
 
+        [HttpPost("checkquestlist")]
+        public string CheckQuestList([FromQuery] long? qq = null)
+        {
+            long userid = qq ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
+
+            PluginConfig pc = new("saved", userid.ToString());
+            pc.LoadConfig();
+
+            if (pc.Count > 0)
+            {
+                User user = FunGameService.GetUser(pc);
+
+                PluginConfig pc2 = new("quests", userid.ToString());
+                pc2.LoadConfig();
+                string msg = FunGameService.CheckQuestList(pc2);
+                pc2.SaveConfig();
+
+                user.LastTime = DateTime.Now;
+                pc.Add("user", user);
+                pc.SaveConfig();
+
+                return NetworkUtility.JsonSerialize(msg);
+            }
+            else
+            {
+                return NetworkUtility.JsonSerialize(noSaved);
+            }
+        }
+        
+        [HttpPost("acceptquest")]
+        public string AcceptQuest([FromQuery] long? qq = null, [FromQuery] int? id = null)
+        {
+            long userid = qq ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
+            int questid = id ?? 0;
+
+            PluginConfig pc = new("saved", userid.ToString());
+            pc.LoadConfig();
+            
+            if (pc.Count > 0)
+            {
+                User user = FunGameService.GetUser(pc);
+
+                string msg = "";
+                PluginConfig pc2 = new("quests", userid.ToString());
+                pc2.LoadConfig();
+                if (pc2.Count > 0)
+                {
+                    List<Quest> quests = pc2.Get<List<Quest>>("list") ?? [];
+                    if (quests.Count > 0)
+                    {
+                        if (quests.FirstOrDefault(q => q.Status == 1) is Quest quest)
+                        {
+                            msg = $"你正在进行任务【{quest.Name}】，无法开始新任务！\r\n{quest}";
+                        }
+                        else if (quests.FirstOrDefault(q => q.Id == questid) is Quest quest2)
+                        {
+                            if (quest2.Status != 0)
+                            {
+                                msg = $"这个任务正在进行中，或已经完成，不能重复做任务！";
+                            }
+                            else
+                            {
+                                quest2.Status = 1;
+                                pc2.Add("list", quests);
+                                pc2.SaveConfig();
+                                msg = $"开始任务【{quest2.Name}】成功！\r\n任务信息如下：{quest2}\r\n预计完成时间：{DateTime.Now.AddMinutes(quest2.EstimatedMinutes).ToString(General.GeneralDateTimeFormatChinese)}";
+                                Milimoe.FunGame.Core.Api.Utility.TaskScheduler.Shared.AddTask($"{userid}-{quest2.Name}", TimeSpan.FromMinutes(quest2.EstimatedMinutes), () =>
+                                {
+                                    quest2.Status = 2;
+                                });
+                            }
+                        }
+                        else
+                        {
+                            msg = $"没有找到序号为 {questid} 的任务！";
+                        }
+                    }
+                    else
+                    {
+                        msg = "任务列表为空，请等待刷新！";
+                    }
+                }
+                else
+                {
+                    msg = "任务列表为空，请等待刷新！";
+                }
+
+                user.LastTime = DateTime.Now;
+                pc.Add("user", user);
+                pc.SaveConfig();
+
+                return NetworkUtility.JsonSerialize(msg);
+            }
+            else
+            {
+                return NetworkUtility.JsonSerialize(noSaved);
+            }
+        }
+
         [HttpGet("reload")]
         public string Relaod([FromQuery] long? master = null)
         {

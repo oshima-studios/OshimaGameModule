@@ -553,6 +553,42 @@ namespace Oshima.Core.Utils
                 }
             }
 
+            // 任务结算
+            PluginConfig pc2 = new("quests", user.Id.ToString());
+            pc2.LoadConfig();
+            if (pc2.Count > 0)
+            {
+                List<Quest> quests = pc2.Get<List<Quest>>("list") ?? [];
+                if (quests.Count > 0)
+                {
+                    IEnumerable<Quest> finishQuests = quests.Where(q => q.Status == 2);
+                    foreach (Quest quest in finishQuests)
+                    {
+                        quest.Status = 3;
+                        foreach (string name in quest.Awards.Keys)
+                        {
+                            if (name == General.GameplayEquilibriumConstant.InGameCurrency)
+                            {
+                                user.Inventory.Credits += quest.Awards[name];
+                            }
+                            else if (name == General.GameplayEquilibriumConstant.InGameMaterial)
+                            {
+                                user.Inventory.Credits += quest.Awards[name];
+                            }
+                            else if (AllItems.FirstOrDefault(i => i.Name == name) is Item item)
+                            {
+                                Item newItem = item.Copy();
+                                newItem.User = user;
+                                SetSellAndTradeTime(newItem);
+                                user.Inventory.Items.Add(newItem);
+                            }
+                        }
+                    }
+                    pc2.Add("list", quests);
+                    pc2.SaveConfig();
+                }
+            }
+
             return user;
         }
 
@@ -1480,6 +1516,176 @@ namespace Oshima.Core.Utils
             }
         }
 
+        public static Dictionary<string, string> QuestList
+        {
+            get
+            {
+                return new()
+                {
+                    {
+                        "丢失的共享单车之谜",
+                        "寻找被魔法传送走的共享单车。"
+                    },
+                    {
+                        "咖啡店的神秘顾客",
+                        "调查每天都点奇怪饮品的神秘顾客。"
+                    },
+                    {
+                        "地铁里的幽灵乘客",
+                        "找出在地铁里出没的半透明乘客。"
+                    },
+                    {
+                        "公园的精灵涂鸦",
+                        "清除公园里突然出现的精灵涂鸦。"
+                    },
+                    {
+                        "手机信号的干扰源",
+                        "找出干扰手机信号的魔法源头。"
+                    },
+                    {
+                        "外卖小哥的奇遇",
+                        "帮助外卖小哥找回被偷走的魔法外卖。"
+                    },
+                    {
+                        "广场舞的魔法节奏",
+                        "调查广场舞音乐中隐藏的魔法节奏。"
+                    },
+                    {
+                        "自动贩卖机的秘密",
+                        "找出自动贩卖机里突然出现的奇怪物品。"
+                    },
+                    {
+                        "便利店的异次元入口",
+                        "调查便利店里突然出现的异次元入口。"
+                    },
+                    {
+                        "街头艺人的魔法表演",
+                        "调查街头艺人表演中使用的魔法。"
+                    },
+                    {
+                        "午夜电台的幽灵来电",
+                        "调查午夜电台收到的奇怪来电。"
+                    },
+                    {
+                        "高楼大厦的秘密通道",
+                        "寻找隐藏在高楼大厦里的秘密通道。"
+                    },
+                    {
+                        "城市下水道的神秘生物",
+                        "调查城市下水道里出现的神秘生物。"
+                    },
+                    {
+                        "废弃工厂的魔法实验",
+                        "调查废弃工厂里进行的秘密魔法实验。"
+                    },
+                    {
+                        "博物馆的活化雕像",
+                        "调查博物馆里突然活化的雕像。"
+                    },
+                    {
+                        "公园的都市传说",
+                        "调查公园里流传的都市传说。"
+                    },
+                    {
+                        "闹鬼公寓的真相",
+                        "调查闹鬼公寓里的真相。"
+                    },
+                    {
+                        "地下酒吧的秘密交易",
+                        "调查地下酒吧里进行的秘密魔法交易。"
+                    },
+                    {
+                        "旧书店的魔法书籍",
+                        "寻找旧书店里隐藏的魔法书籍。"
+                    },
+                    {
+                        "涂鸦墙的预言",
+                        "解读涂鸦墙上出现的神秘预言。"
+                    },
+                    {
+                        "黑客的魔法入侵",
+                        "阻止黑客利用魔法入侵城市网络。"
+                    },
+                    {
+                        "高科技魔法装备的测试",
+                        "测试新型的高科技魔法装备。"
+                    },
+                    {
+                        "无人机的魔法改造",
+                        "改造无人机，使其拥有魔法能力。"
+                    },
+                    {
+                        "人工智能的觉醒",
+                        "调查人工智能觉醒的原因。"
+                    },
+                    {
+                        "虚拟现实的魔法世界",
+                        "探索虚拟现实中出现的魔法世界。"
+                    },
+                    {
+                        "智能家居的魔法故障",
+                        "修复智能家居的魔法故障。"
+                    },
+                    {
+                        "能量饮料的魔法副作用",
+                        "调查能量饮料的魔法副作用。"
+                    },
+                    {
+                        "社交媒体的魔法病毒",
+                        "清除社交媒体上出现的魔法病毒。"
+                    },
+                    {
+                        "共享汽车的魔法漂移",
+                        "调查共享汽车的魔法漂移现象。"
+                    },
+                    {
+                        "城市监控的魔法干扰",
+                        "修复城市监控的魔法干扰。"
+                    },
+                    {
+                        "寻找丢失的魔法宠物",
+                        "寻找在城市里走失的魔法宠物。"
+                    },
+                    {
+                        "参加魔法美食节",
+                        "参加城市举办的魔法美食节。"
+                    },
+                    {
+                        "解开城市谜题",
+                        "解开隐藏在城市各处的谜题。"
+                    },
+                    {
+                        "参加魔法cosplay大赛",
+                        "参加城市举办的魔法cosplay大赛。"
+                    },
+                    {
+                        "寻找隐藏的魔法商店",
+                        "寻找隐藏在城市里的魔法商店。"
+                    },
+                    {
+                        "制作魔法主题的街头艺术",
+                        "在城市里创作魔法主题的街头艺术。"
+                    },
+                    {
+                        "举办一场魔法快闪活动",
+                        "在城市里举办一场魔法快闪活动。"
+                    },
+                    {
+                        "寻找失落的魔法乐器",
+                        "寻找失落的魔法乐器，让城市充满音乐。"
+                    },
+                    {
+                        "参加魔法运动会",
+                        "参加城市举办的魔法运动会。"
+                    },
+                    {
+                        "拯救被困在魔法结界里的市民",
+                        "拯救被困在城市魔法结界里的市民。"
+                    }
+                };
+            }
+        }
+
         public static Dictionary<int, List<Skill>> GenerateRoundRewards(int maxRound)
         {
             Dictionary<int, List<Skill>> roundRewards = [];
@@ -1568,6 +1774,58 @@ namespace Oshima.Core.Utils
                     team = teams.Where(t => t.IsOnThisTeam(character)).FirstOrDefault();
                 }
                 statistics[character].Rating = CalculateRating(statistics[character], team);
+            }
+        }
+
+        public static string CheckQuestList(PluginConfig pc)
+        {
+            if (pc.Count == 0)
+            {
+                // 生成任务，任务名和奖励物品的数组
+                List<Quest> quests = [];
+                for (int i = 0; i < 6; i++)
+                {
+                    Dictionary<string, int> items = [];
+                    items[General.GameplayEquilibriumConstant.InGameCurrency] = 1500;
+                    items[General.GameplayEquilibriumConstant.InGameMaterial] = 5;
+                    int index = Random.Shared.Next(AllItems.Count);
+                    Item item = AllItems[index];
+                    items.Add(item.Name, 1);
+                    while (true)
+                    {
+                        int index2 = Random.Shared.Next(AllItems.Count);
+                        if (index2 != index)
+                        {
+                            Item item2 = AllItems[index2];
+                            items.Add(item2.Name, 1);
+                            break;
+                        }
+                    }
+                    string name = QuestList.Keys.OrderBy(o => Random.Shared.Next()).First();
+                    Quest quest = new()
+                    {
+                        Id = quests.Count > 0 ? quests.Max(q => q.Id) + 1 : 1,
+                        Name = name,
+                        Description = QuestList[name],
+                        EstimatedMinutes = Random.Shared.Next(10, 41),
+                        Awards = items
+                    };
+                    quests.Add(quest);
+                }
+                pc.Add("list", quests);
+                return string.Join("\r\n", quests);
+            }
+            else
+            {
+                List<Quest> quests = pc.Get<List<Quest>>("list") ?? [];
+                if (quests.Count > 0)
+                {
+                    return string.Join("\r\n", quests);
+                }
+                else
+                {
+                    return "任务列表为空，请等待刷新！";
+                }
             }
         }
     }
