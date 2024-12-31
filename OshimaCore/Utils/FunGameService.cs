@@ -1,4 +1,4 @@
-﻿using System.Text;
+using System.Text;
 using Milimoe.FunGame.Core.Api.Utility;
 using Milimoe.FunGame.Core.Entity;
 using Milimoe.FunGame.Core.Library.Constant;
@@ -554,39 +554,43 @@ namespace Oshima.Core.Utils
             }
 
             // 任务结算
-            PluginConfig pc2 = new("quests", user.Id.ToString());
-            pc2.LoadConfig();
-            if (pc2.Count > 0)
+            EntityModuleConfig<Quest> quests = new("quests", user.Id.ToString());
+            quests.LoadConfig();
+            if (quests.Count > 0)
             {
-                List<Quest> quests = pc2.Get<List<Quest>>("list") ?? [];
-                if (quests.Count > 0)
+                IEnumerable<Quest> workingQuests = quests.Values.Where(q => q.Status == 1);
+                foreach (Quest quest in workingQuests)
                 {
-                    IEnumerable<Quest> finishQuests = quests.Where(q => q.Status == 2);
-                    foreach (Quest quest in finishQuests)
+                    if (quest.StartTime.HasValue && quest.StartTime.Value.AddMinutes(quest.EstimatedMinutes) <= DateTime.Now)
                     {
-                        quest.Status = 3;
-                        foreach (string name in quest.Awards.Keys)
+                        quest.Status = 2;
+                    }
+                }
+                IEnumerable<Quest> finishQuests = quests.Values.Where(q => q.Status == 2);
+                foreach (Quest quest in finishQuests)
+                {
+                    quest.Status = 3;
+                    quest.SettleTime = DateTime.Now;
+                    foreach (string name in quest.Awards.Keys)
+                    {
+                        if (name == General.GameplayEquilibriumConstant.InGameCurrency)
                         {
-                            if (name == General.GameplayEquilibriumConstant.InGameCurrency)
-                            {
-                                user.Inventory.Credits += quest.Awards[name];
-                            }
-                            else if (name == General.GameplayEquilibriumConstant.InGameMaterial)
-                            {
-                                user.Inventory.Credits += quest.Awards[name];
-                            }
-                            else if (AllItems.FirstOrDefault(i => i.Name == name) is Item item)
-                            {
-                                Item newItem = item.Copy();
-                                newItem.User = user;
-                                SetSellAndTradeTime(newItem);
-                                user.Inventory.Items.Add(newItem);
-                            }
+                            user.Inventory.Credits += quest.Awards[name];
+                        }
+                        else if (name == General.GameplayEquilibriumConstant.InGameMaterial)
+                        {
+                            user.Inventory.Materials += quest.Awards[name];
+                        }
+                        else if (AllItems.FirstOrDefault(i => i.Name == name) is Item item)
+                        {
+                            Item newItem = item.Copy();
+                            newItem.User = user;
+                            SetSellAndTradeTime(newItem);
+                            user.Inventory.Items.Add(newItem);
                         }
                     }
-                    pc2.Add("list", quests);
-                    pc2.SaveConfig();
                 }
+                quests.SaveConfig();
             }
 
             return user;
@@ -1777,17 +1781,17 @@ namespace Oshima.Core.Utils
             }
         }
 
-        public static string CheckQuestList(PluginConfig pc)
+        public static string CheckQuestList(EntityModuleConfig<Quest> quests)
         {
-            if (pc.Count == 0)
+            if (quests.Count == 0)
             {
-                // 生成任务，任务名和奖励物品的数组
-                List<Quest> quests = [];
+                // 生成任务
                 for (int i = 0; i < 6; i++)
                 {
+                    int minutes = Random.Shared.Next(10, 41);
                     Dictionary<string, int> items = [];
-                    items[General.GameplayEquilibriumConstant.InGameCurrency] = 1500;
-                    items[General.GameplayEquilibriumConstant.InGameMaterial] = 5;
+                    items[General.GameplayEquilibriumConstant.InGameCurrency] = minutes * 50;
+                    items[General.GameplayEquilibriumConstant.InGameMaterial] = minutes / 10 * 2;
                     int index = Random.Shared.Next(AllItems.Count);
                     Item item = AllItems[index];
                     items.Add(item.Name, 1);
@@ -1804,20 +1808,18 @@ namespace Oshima.Core.Utils
                     string name = QuestList.Keys.OrderBy(o => Random.Shared.Next()).First();
                     Quest quest = new()
                     {
-                        Id = quests.Count > 0 ? quests.Max(q => q.Id) + 1 : 1,
+                        Id = quests.Count > 0 ? quests.Values.Max(q => q.Id) + 1 : 1,
                         Name = name,
                         Description = QuestList[name],
-                        EstimatedMinutes = Random.Shared.Next(10, 41),
+                        EstimatedMinutes = minutes,
                         Awards = items
                     };
-                    quests.Add(quest);
+                    quests.Add(quest.GetIdName(), quest);
                 }
-                pc.Add("list", quests);
                 return string.Join("\r\n", quests);
             }
             else
             {
-                List<Quest> quests = pc.Get<List<Quest>>("list") ?? [];
                 if (quests.Count > 0)
                 {
                     return string.Join("\r\n", quests);
