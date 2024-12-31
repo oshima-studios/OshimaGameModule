@@ -1,4 +1,4 @@
-﻿using Milimoe.FunGame.Core.Api.Utility;
+using Milimoe.FunGame.Core.Api.Utility;
 using Milimoe.FunGame.Core.Entity;
 using Milimoe.FunGame.Core.Library.Common.Addon;
 using Oshima.Core.Configs;
@@ -92,10 +92,10 @@ namespace Oshima.Core.WebAPI
                     foreach (string filePath in filePaths)
                     {
                         string fileName = Path.GetFileNameWithoutExtension(filePath);
-                        PluginConfig pc = new("quests", fileName);
-                        pc.Clear();
-                        FunGameService.CheckQuestList(pc);
-                        pc.SaveConfig();
+                        EntityModuleConfig<Quest> quests = new("quests", fileName);
+                        quests.Clear();
+                        FunGameService.CheckQuestList(quests);
+                        quests.SaveConfig();
                     }
                     Controller.WriteLine("刷新每日任务");
                 }
