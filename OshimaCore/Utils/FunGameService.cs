@@ -680,8 +680,8 @@ namespace Oshima.Core.Utils
         {
             string msg = "签到成功！本次签到获得：";
             int currency = Random.Shared.Next(1000, 3000);
-            msg += $"{currency} 金币和";
-            int material = Random.Shared.Next(1000, 3000);
+            msg += $"{currency} 金币和 ";
+            int material = Random.Shared.Next(5, 15);
             msg += $"{material} 材料！额外获得：";
             user.Inventory.Credits += currency;
             user.Inventory.Materials += material;

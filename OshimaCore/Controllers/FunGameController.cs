@@ -3518,7 +3518,11 @@ namespace Oshima.Core.Controllers
             if (pc.Count > 0)
             {
                 User user = FunGameService.GetUser(pc);
-                bool sign = pc.Get<bool>("signed");
+                bool sign = false;
+                if (pc.TryGetValue("signed", out object? value) && value is bool temp && temp)
+                {
+                    sign = true;
+                }
 
                 if (sign)
                 {
