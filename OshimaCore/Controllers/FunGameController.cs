@@ -21,7 +21,7 @@ namespace Oshima.Core.Controllers
         private readonly ILogger<FunGameController> _logger = logger;
         private const int drawCardReduce = 2000;
         private const int drawCardReduce_Material = 10;
-        private const string noSaved = "Äã»¹Ã»ÓĞ´´½¨´æµµ£¡Çë·¢ËÍ¡¾´´½¨´æµµ¡¿´´½¨¡£";
+        private const string noSaved = "ä½ è¿˜æ²¡æœ‰åˆ›å»ºå­˜æ¡£ï¼è¯·å‘é€ã€åˆ›å»ºå­˜æ¡£ã€‘åˆ›å»ºã€‚";
         private readonly ItemType[] itemCanUsed = [ItemType.Consumable, ItemType.MagicCard, ItemType.SpecialItem, ItemType.GiftBox, ItemType.Others];
 
         [HttpGet("test")]
@@ -44,42 +44,42 @@ namespace Oshima.Core.Controllers
                     StringBuilder builder = new();
 
                     builder.AppendLine(character.ToString());
-                    builder.AppendLine($"×Ü¼ÆÔì³ÉÉËº¦£º{stats.TotalDamage:0.##} / ³¡¾ù£º{stats.AvgDamage:0.##}");
-                    builder.AppendLine($"×Ü¼ÆÔì³ÉÎïÀíÉËº¦£º{stats.TotalPhysicalDamage:0.##} / ³¡¾ù£º{stats.AvgPhysicalDamage:0.##}");
-                    builder.AppendLine($"×Ü¼ÆÔì³ÉÄ§·¨ÉËº¦£º{stats.TotalMagicDamage:0.##} / ³¡¾ù£º{stats.AvgMagicDamage:0.##}");
-                    builder.AppendLine($"×Ü¼ÆÔì³ÉÕæÊµÉËº¦£º{stats.TotalRealDamage:0.##} / ³¡¾ù£º{stats.AvgRealDamage:0.##}");
-                    builder.AppendLine($"×Ü¼Æ³ĞÊÜÉËº¦£º{stats.TotalTakenDamage:0.##} / ³¡¾ù£º{stats.AvgTakenDamage:0.##}");
-                    builder.AppendLine($"×Ü¼Æ³ĞÊÜÎïÀíÉËº¦£º{stats.TotalTakenPhysicalDamage:0.##} / ³¡¾ù£º{stats.AvgTakenPhysicalDamage:0.##}");
-                    builder.AppendLine($"×Ü¼Æ³ĞÊÜÄ§·¨ÉËº¦£º{stats.TotalTakenMagicDamage:0.##} / ³¡¾ù£º{stats.AvgTakenMagicDamage:0.##}");
-                    builder.AppendLine($"×Ü¼Æ³ĞÊÜÕæÊµÉËº¦£º{stats.TotalTakenRealDamage:0.##} / ³¡¾ù£º{stats.AvgTakenRealDamage:0.##}");
-                    builder.AppendLine($"×Ü¼Æ´æ»î»ØºÏÊı£º{stats.LiveRound} / ³¡¾ù£º{stats.AvgLiveRound}");
-                    builder.AppendLine($"×Ü¼ÆĞĞ¶¯»ØºÏÊı£º{stats.ActionTurn} / ³¡¾ù£º{stats.AvgActionTurn}");
-                    builder.AppendLine($"×Ü¼Æ´æ»îÊ±³¤£º{stats.LiveTime:0.##} / ³¡¾ù£º{stats.AvgLiveTime:0.##}");
-                    builder.AppendLine($"×Ü¼Æ×¬È¡½ğÇ®£º{stats.TotalEarnedMoney} / ³¡¾ù£º{stats.AvgEarnedMoney}");
-                    builder.AppendLine($"Ã¿»ØºÏÉËº¦£º{stats.DamagePerRound:0.##}");
-                    builder.AppendLine($"Ã¿ĞĞ¶¯»ØºÏÉËº¦£º{stats.DamagePerTurn:0.##}");
-                    builder.AppendLine($"Ã¿ÃëÉËº¦£º{stats.DamagePerSecond:0.##}");
-                    builder.AppendLine($"×Ü¼Æ»÷É±Êı£º{stats.Kills}" + (stats.Plays != 0 ? $" / ³¡¾ù£º{(double)stats.Kills / stats.Plays:0.##}" : ""));
-                    builder.AppendLine($"×Ü¼ÆËÀÍöÊı£º{stats.Deaths}" + (stats.Plays != 0 ? $" / ³¡¾ù£º{(double)stats.Deaths / stats.Plays:0.##}" : ""));
-                    builder.AppendLine($"×Ü¼ÆÖú¹¥Êı£º{stats.Assists}" + (stats.Plays != 0 ? $" / ³¡¾ù£º{(double)stats.Assists / stats.Plays:0.##}" : ""));
-                    builder.AppendLine($"×Ü¼ÆÊ×É±Êı£º{stats.FirstKills}" + (stats.Plays != 0 ? $" / Ê×É±ÂÊ£º{(double)stats.FirstKills / stats.Plays * 100:0.##}%" : ""));
-                    builder.AppendLine($"×Ü¼ÆÊ×ËÀÊı£º{stats.FirstDeaths}" + (stats.Plays != 0 ? $" / Ê×ËÀÂÊ£º{(double)stats.FirstDeaths / stats.Plays * 100:0.##}%" : ""));
-                    builder.AppendLine($"×Ü¼Æ²ÎÈüÊı£º{stats.Plays}");
-                    builder.AppendLine($"×Ü¼Æ¹Ú¾üÊı£º{stats.Wins}");
-                    builder.AppendLine($"×Ü¼ÆÇ°ÈıÊı£º{stats.Top3s}");
-                    builder.AppendLine($"×Ü¼Æ°Ü³¡Êı£º{stats.Loses}");
+                    builder.AppendLine($"æ€»è®¡é€ æˆä¼¤å®³ï¼š{stats.TotalDamage:0.##} / åœºå‡ï¼š{stats.AvgDamage:0.##}");
+                    builder.AppendLine($"æ€»è®¡é€ æˆç‰©ç†ä¼¤å®³ï¼š{stats.TotalPhysicalDamage:0.##} / åœºå‡ï¼š{stats.AvgPhysicalDamage:0.##}");
+                    builder.AppendLine($"æ€»è®¡é€ æˆé­”æ³•ä¼¤å®³ï¼š{stats.TotalMagicDamage:0.##} / åœºå‡ï¼š{stats.AvgMagicDamage:0.##}");
+                    builder.AppendLine($"æ€»è®¡é€ æˆçœŸå®ä¼¤å®³ï¼š{stats.TotalRealDamage:0.##} / åœºå‡ï¼š{stats.AvgRealDamage:0.##}");
+                    builder.AppendLine($"æ€»è®¡æ‰¿å—ä¼¤å®³ï¼š{stats.TotalTakenDamage:0.##} / åœºå‡ï¼š{stats.AvgTakenDamage:0.##}");
+                    builder.AppendLine($"æ€»è®¡æ‰¿å—ç‰©ç†ä¼¤å®³ï¼š{stats.TotalTakenPhysicalDamage:0.##} / åœºå‡ï¼š{stats.AvgTakenPhysicalDamage:0.##}");
+                    builder.AppendLine($"æ€»è®¡æ‰¿å—é­”æ³•ä¼¤å®³ï¼š{stats.TotalTakenMagicDamage:0.##} / åœºå‡ï¼š{stats.AvgTakenMagicDamage:0.##}");
+                    builder.AppendLine($"æ€»è®¡æ‰¿å—çœŸå®ä¼¤å®³ï¼š{stats.TotalTakenRealDamage:0.##} / åœºå‡ï¼š{stats.AvgTakenRealDamage:0.##}");
+                    builder.AppendLine($"æ€»è®¡å­˜æ´»å›åˆæ•°ï¼š{stats.LiveRound} / åœºå‡ï¼š{stats.AvgLiveRound}");
+                    builder.AppendLine($"æ€»è®¡è¡ŒåŠ¨å›åˆæ•°ï¼š{stats.ActionTurn} / åœºå‡ï¼š{stats.AvgActionTurn}");
+                    builder.AppendLine($"æ€»è®¡å­˜æ´»æ—¶é•¿ï¼š{stats.LiveTime:0.##} / åœºå‡ï¼š{stats.AvgLiveTime:0.##}");
+                    builder.AppendLine($"æ€»è®¡èµšå–é‡‘é’±ï¼š{stats.TotalEarnedMoney} / åœºå‡ï¼š{stats.AvgEarnedMoney}");
+                    builder.AppendLine($"æ¯å›åˆä¼¤å®³ï¼š{stats.DamagePerRound:0.##}");
+                    builder.AppendLine($"æ¯è¡ŒåŠ¨å›åˆä¼¤å®³ï¼š{stats.DamagePerTurn:0.##}");
+                    builder.AppendLine($"æ¯ç§’ä¼¤å®³ï¼š{stats.DamagePerSecond:0.##}");
+                    builder.AppendLine($"æ€»è®¡å‡»æ€æ•°ï¼š{stats.Kills}" + (stats.Plays != 0 ? $" / åœºå‡ï¼š{(double)stats.Kills / stats.Plays:0.##}" : ""));
+                    builder.AppendLine($"æ€»è®¡æ­»äº¡æ•°ï¼š{stats.Deaths}" + (stats.Plays != 0 ? $" / åœºå‡ï¼š{(double)stats.Deaths / stats.Plays:0.##}" : ""));
+                    builder.AppendLine($"æ€»è®¡åŠ©æ”»æ•°ï¼š{stats.Assists}" + (stats.Plays != 0 ? $" / åœºå‡ï¼š{(double)stats.Assists / stats.Plays:0.##}" : ""));
+                    builder.AppendLine($"æ€»è®¡é¦–æ€æ•°ï¼š{stats.FirstKills}" + (stats.Plays != 0 ? $" / é¦–æ€ç‡ï¼š{(double)stats.FirstKills / stats.Plays * 100:0.##}%" : ""));
+                    builder.AppendLine($"æ€»è®¡é¦–æ­»æ•°ï¼š{stats.FirstDeaths}" + (stats.Plays != 0 ? $" / é¦–æ­»ç‡ï¼š{(double)stats.FirstDeaths / stats.Plays * 100:0.##}%" : ""));
+                    builder.AppendLine($"æ€»è®¡å‚èµ›æ•°ï¼š{stats.Plays}");
+                    builder.AppendLine($"æ€»è®¡å† å†›æ•°ï¼š{stats.Wins}");
+                    builder.AppendLine($"æ€»è®¡å‰ä¸‰æ•°ï¼š{stats.Top3s}");
+                    builder.AppendLine($"æ€»è®¡è´¥åœºæ•°ï¼š{stats.Loses}");
 
                     List<string> names = [.. FunGameSimulation.CharacterStatistics.OrderByDescending(kv => kv.Value.MVPs).Select(kv => kv.Key.GetName())];
-                    builder.AppendLine($"MVP´ÎÊı£º{stats.MVPs}£¨#{names.IndexOf(character.GetName()) + 1}£©");
+                    builder.AppendLine($"MVPæ¬¡æ•°ï¼š{stats.MVPs}ï¼ˆ#{names.IndexOf(character.GetName()) + 1}ï¼‰");
 
                     names = [.. FunGameSimulation.CharacterStatistics.OrderByDescending(kv => kv.Value.Winrates).Select(kv => kv.Key.GetName())];
-                    builder.AppendLine($"Ê¤ÂÊ£º{stats.Winrates * 100:0.##}%£¨#{names.IndexOf(character.GetName()) + 1}£©");
-                    builder.AppendLine($"Ç°ÈıÂÊ£º{stats.Top3rates * 100:0.##}%");
+                    builder.AppendLine($"èƒœç‡ï¼š{stats.Winrates * 100:0.##}%ï¼ˆ#{names.IndexOf(character.GetName()) + 1}ï¼‰");
+                    builder.AppendLine($"å‰ä¸‰ç‡ï¼š{stats.Top3rates * 100:0.##}%");
 
                     names = [.. FunGameSimulation.CharacterStatistics.OrderByDescending(kv => kv.Value.Rating).Select(kv => kv.Key.GetName())];
-                    builder.AppendLine($"¼¼ÊõµÃ·Ö£º{stats.Rating:0.0#}£¨#{names.IndexOf(character.GetName()) + 1}£©");
+                    builder.AppendLine($"æŠ€æœ¯å¾—åˆ†ï¼š{stats.Rating:0.0#}ï¼ˆ#{names.IndexOf(character.GetName()) + 1}ï¼‰");
 
-                    builder.AppendLine($"ÉÏ´ÎÅÅÃû£º{stats.LastRank} / ³¡¾ùÃû´Î£º{stats.AvgRank:0.##}");
+                    builder.AppendLine($"ä¸Šæ¬¡æ’åï¼š{stats.LastRank} / åœºå‡åæ¬¡ï¼š{stats.AvgRank:0.##}");
 
                     return NetworkUtility.JsonSerialize(builder.ToString());
                 }
@@ -98,37 +98,37 @@ namespace Oshima.Core.Controllers
                     StringBuilder builder = new();
 
                     builder.AppendLine(character.ToString());
-                    builder.AppendLine($"×Ü¼ÆÔì³ÉÉËº¦£º{stats.TotalDamage:0.##} / ³¡¾ù£º{stats.AvgDamage:0.##}");
-                    builder.AppendLine($"×Ü¼ÆÔì³ÉÎïÀíÉËº¦£º{stats.TotalPhysicalDamage:0.##} / ³¡¾ù£º{stats.AvgPhysicalDamage:0.##}");
-                    builder.AppendLine($"×Ü¼ÆÔì³ÉÄ§·¨ÉËº¦£º{stats.TotalMagicDamage:0.##} / ³¡¾ù£º{stats.AvgMagicDamage:0.##}");
-                    builder.AppendLine($"×Ü¼ÆÔì³ÉÕæÊµÉËº¦£º{stats.TotalRealDamage:0.##} / ³¡¾ù£º{stats.AvgRealDamage:0.##}");
-                    builder.AppendLine($"×Ü¼Æ³ĞÊÜÉËº¦£º{stats.TotalTakenDamage:0.##} / ³¡¾ù£º{stats.AvgTakenDamage:0.##}");
-                    builder.AppendLine($"×Ü¼Æ³ĞÊÜÎïÀíÉËº¦£º{stats.TotalTakenPhysicalDamage:0.##} / ³¡¾ù£º{stats.AvgTakenPhysicalDamage:0.##}");
-                    builder.AppendLine($"×Ü¼Æ³ĞÊÜÄ§·¨ÉËº¦£º{stats.TotalTakenMagicDamage:0.##} / ³¡¾ù£º{stats.AvgTakenMagicDamage:0.##}");
-                    builder.AppendLine($"×Ü¼Æ³ĞÊÜÕæÊµÉËº¦£º{stats.TotalTakenRealDamage:0.##} / ³¡¾ù£º{stats.AvgTakenRealDamage:0.##}");
-                    builder.AppendLine($"×Ü¼Æ´æ»î»ØºÏÊı£º{stats.LiveRound} / ³¡¾ù£º{stats.AvgLiveRound}");
-                    builder.AppendLine($"×Ü¼ÆĞĞ¶¯»ØºÏÊı£º{stats.ActionTurn} / ³¡¾ù£º{stats.AvgActionTurn}");
-                    builder.AppendLine($"×Ü¼Æ´æ»îÊ±³¤£º{stats.LiveTime:0.##} / ³¡¾ù£º{stats.AvgLiveTime:0.##}");
-                    builder.AppendLine($"×Ü¼Æ×¬È¡½ğÇ®£º{stats.TotalEarnedMoney} / ³¡¾ù£º{stats.AvgEarnedMoney}");
-                    builder.AppendLine($"Ã¿»ØºÏÉËº¦£º{stats.DamagePerRound:0.##}");
-                    builder.AppendLine($"Ã¿ĞĞ¶¯»ØºÏÉËº¦£º{stats.DamagePerTurn:0.##}");
-                    builder.AppendLine($"Ã¿ÃëÉËº¦£º{stats.DamagePerSecond:0.##}");
-                    builder.AppendLine($"×Ü¼Æ»÷É±Êı£º{stats.Kills}" + (stats.Plays != 0 ? $" / ³¡¾ù£º{(double)stats.Kills / stats.Plays:0.##}" : ""));
-                    builder.AppendLine($"×Ü¼ÆËÀÍöÊı£º{stats.Deaths}" + (stats.Plays != 0 ? $" / ³¡¾ù£º{(double)stats.Deaths / stats.Plays:0.##}" : ""));
-                    builder.AppendLine($"»÷É±ËÀÍö±È£º{(stats.Deaths == 0 ? stats.Kills : ((double)stats.Kills / stats.Deaths)):0.##}");
-                    builder.AppendLine($"×Ü¼ÆÖú¹¥Êı£º{stats.Assists}" + (stats.Plays != 0 ? $" / ³¡¾ù£º{(double)stats.Assists / stats.Plays:0.##}" : ""));
-                    builder.AppendLine($"×Ü¼ÆÊ×É±Êı£º{stats.FirstKills}" + (stats.Plays != 0 ? $" / Ê×É±ÂÊ£º{(double)stats.FirstKills / stats.Plays * 100:0.##}%" : ""));
-                    builder.AppendLine($"×Ü¼ÆÊ×ËÀÊı£º{stats.FirstDeaths}" + (stats.Plays != 0 ? $" / Ê×ËÀÂÊ£º{(double)stats.FirstDeaths / stats.Plays * 100:0.##}%" : ""));
-                    builder.AppendLine($"×Ü¼Æ²ÎÈüÊı£º{stats.Plays}");
-                    builder.AppendLine($"×Ü¼ÆÊ¤³¡Êı£º{stats.Wins}");
-                    builder.AppendLine($"×Ü¼Æ°Ü³¡Êı£º{stats.Loses}");
+                    builder.AppendLine($"æ€»è®¡é€ æˆä¼¤å®³ï¼š{stats.TotalDamage:0.##} / åœºå‡ï¼š{stats.AvgDamage:0.##}");
+                    builder.AppendLine($"æ€»è®¡é€ æˆç‰©ç†ä¼¤å®³ï¼š{stats.TotalPhysicalDamage:0.##} / åœºå‡ï¼š{stats.AvgPhysicalDamage:0.##}");
+                    builder.AppendLine($"æ€»è®¡é€ æˆé­”æ³•ä¼¤å®³ï¼š{stats.TotalMagicDamage:0.##} / åœºå‡ï¼š{stats.AvgMagicDamage:0.##}");
+                    builder.AppendLine($"æ€»è®¡é€ æˆçœŸå®ä¼¤å®³ï¼š{stats.TotalRealDamage:0.##} / åœºå‡ï¼š{stats.AvgRealDamage:0.##}");
+                    builder.AppendLine($"æ€»è®¡æ‰¿å—ä¼¤å®³ï¼š{stats.TotalTakenDamage:0.##} / åœºå‡ï¼š{stats.AvgTakenDamage:0.##}");
+                    builder.AppendLine($"æ€»è®¡æ‰¿å—ç‰©ç†ä¼¤å®³ï¼š{stats.TotalTakenPhysicalDamage:0.##} / åœºå‡ï¼š{stats.AvgTakenPhysicalDamage:0.##}");
+                    builder.AppendLine($"æ€»è®¡æ‰¿å—é­”æ³•ä¼¤å®³ï¼š{stats.TotalTakenMagicDamage:0.##} / åœºå‡ï¼š{stats.AvgTakenMagicDamage:0.##}");
+                    builder.AppendLine($"æ€»è®¡æ‰¿å—çœŸå®ä¼¤å®³ï¼š{stats.TotalTakenRealDamage:0.##} / åœºå‡ï¼š{stats.AvgTakenRealDamage:0.##}");
+                    builder.AppendLine($"æ€»è®¡å­˜æ´»å›åˆæ•°ï¼š{stats.LiveRound} / åœºå‡ï¼š{stats.AvgLiveRound}");
+                    builder.AppendLine($"æ€»è®¡è¡ŒåŠ¨å›åˆæ•°ï¼š{stats.ActionTurn} / åœºå‡ï¼š{stats.AvgActionTurn}");
+                    builder.AppendLine($"æ€»è®¡å­˜æ´»æ—¶é•¿ï¼š{stats.LiveTime:0.##} / åœºå‡ï¼š{stats.AvgLiveTime:0.##}");
+                    builder.AppendLine($"æ€»è®¡èµšå–é‡‘é’±ï¼š{stats.TotalEarnedMoney} / åœºå‡ï¼š{stats.AvgEarnedMoney}");
+                    builder.AppendLine($"æ¯å›åˆä¼¤å®³ï¼š{stats.DamagePerRound:0.##}");
+                    builder.AppendLine($"æ¯è¡ŒåŠ¨å›åˆä¼¤å®³ï¼š{stats.DamagePerTurn:0.##}");
+                    builder.AppendLine($"æ¯ç§’ä¼¤å®³ï¼š{stats.DamagePerSecond:0.##}");
+                    builder.AppendLine($"æ€»è®¡å‡»æ€æ•°ï¼š{stats.Kills}" + (stats.Plays != 0 ? $" / åœºå‡ï¼š{(double)stats.Kills / stats.Plays:0.##}" : ""));
+                    builder.AppendLine($"æ€»è®¡æ­»äº¡æ•°ï¼š{stats.Deaths}" + (stats.Plays != 0 ? $" / åœºå‡ï¼š{(double)stats.Deaths / stats.Plays:0.##}" : ""));
+                    builder.AppendLine($"å‡»æ€æ­»äº¡æ¯”ï¼š{(stats.Deaths == 0 ? stats.Kills : ((double)stats.Kills / stats.Deaths)):0.##}");
+                    builder.AppendLine($"æ€»è®¡åŠ©æ”»æ•°ï¼š{stats.Assists}" + (stats.Plays != 0 ? $" / åœºå‡ï¼š{(double)stats.Assists / stats.Plays:0.##}" : ""));
+                    builder.AppendLine($"æ€»è®¡é¦–æ€æ•°ï¼š{stats.FirstKills}" + (stats.Plays != 0 ? $" / é¦–æ€ç‡ï¼š{(double)stats.FirstKills / stats.Plays * 100:0.##}%" : ""));
+                    builder.AppendLine($"æ€»è®¡é¦–æ­»æ•°ï¼š{stats.FirstDeaths}" + (stats.Plays != 0 ? $" / é¦–æ­»ç‡ï¼š{(double)stats.FirstDeaths / stats.Plays * 100:0.##}%" : ""));
+                    builder.AppendLine($"æ€»è®¡å‚èµ›æ•°ï¼š{stats.Plays}");
+                    builder.AppendLine($"æ€»è®¡èƒœåœºæ•°ï¼š{stats.Wins}");
+                    builder.AppendLine($"æ€»è®¡è´¥åœºæ•°ï¼š{stats.Loses}");
 
                     List<string> names = [.. FunGameSimulation.TeamCharacterStatistics.OrderByDescending(kv => kv.Value.MVPs).Select(kv => kv.Key.GetName())];
-                    builder.AppendLine($"MVP´ÎÊı£º{stats.MVPs}£¨#{names.IndexOf(character.GetName()) + 1}£©");
+                    builder.AppendLine($"MVPæ¬¡æ•°ï¼š{stats.MVPs}ï¼ˆ#{names.IndexOf(character.GetName()) + 1}ï¼‰");
                     names = [.. FunGameSimulation.TeamCharacterStatistics.OrderByDescending(kv => kv.Value.Winrates).Select(kv => kv.Key.GetName())];
-                    builder.AppendLine($"Ê¤ÂÊ£º{stats.Winrates * 100:0.##}%£¨#{names.IndexOf(character.GetName()) + 1}£©");
+                    builder.AppendLine($"èƒœç‡ï¼š{stats.Winrates * 100:0.##}%ï¼ˆ#{names.IndexOf(character.GetName()) + 1}ï¼‰");
                     names = [.. FunGameSimulation.TeamCharacterStatistics.OrderByDescending(kv => kv.Value.Rating).Select(kv => kv.Key.GetName())];
-                    builder.AppendLine($"¼¼ÊõµÃ·Ö£º{stats.Rating:0.0#}£¨#{names.IndexOf(character.GetName()) + 1}£©");
+                    builder.AppendLine($"æŠ€æœ¯å¾—åˆ†ï¼š{stats.Rating:0.0#}ï¼ˆ#{names.IndexOf(character.GetName()) + 1}ï¼‰");
 
                     return NetworkUtility.JsonSerialize(builder.ToString());
                 }
@@ -149,11 +149,11 @@ namespace Oshima.Core.Controllers
                     StringBuilder builder = new();
                     CharacterStatistics stats = FunGameSimulation.TeamCharacterStatistics[character];
                     builder.AppendLine(character.ToString());
-                    builder.AppendLine($"×Ü¼Æ²ÎÈüÊı£º{stats.Plays}");
-                    builder.AppendLine($"×Ü¼Æ¹Ú¾üÊı£º{stats.Wins}");
-                    builder.AppendLine($"Ê¤ÂÊ£º{stats.Winrates * 100:0.##}%");
-                    builder.AppendLine($"¼¼ÊõµÃ·Ö£º{stats.Rating:0.0#}");
-                    builder.AppendLine($"MVP´ÎÊı£º{stats.MVPs}");
+                    builder.AppendLine($"æ€»è®¡å‚èµ›æ•°ï¼š{stats.Plays}");
+                    builder.AppendLine($"æ€»è®¡å† å†›æ•°ï¼š{stats.Wins}");
+                    builder.AppendLine($"èƒœç‡ï¼š{stats.Winrates * 100:0.##}%");
+                    builder.AppendLine($"æŠ€æœ¯å¾—åˆ†ï¼š{stats.Rating:0.0#}");
+                    builder.AppendLine($"MVPæ¬¡æ•°ï¼š{stats.MVPs}");
                     strings.Add(builder.ToString());
                 }
                 return NetworkUtility.JsonSerialize(strings);
@@ -167,13 +167,13 @@ namespace Oshima.Core.Controllers
                     StringBuilder builder = new();
                     CharacterStatistics stats = FunGameSimulation.CharacterStatistics[character];
                     builder.AppendLine(character.ToString());
-                    builder.AppendLine($"×Ü¼Æ²ÎÈüÊı£º{stats.Plays}");
-                    builder.AppendLine($"×Ü¼Æ¹Ú¾üÊı£º{stats.Wins}");
-                    builder.AppendLine($"Ê¤ÂÊ£º{stats.Winrates * 100:0.##}%");
-                    builder.AppendLine($"Ç°ÈıÂÊ£º{stats.Top3rates * 100:0.##}%");
-                    builder.AppendLine($"¼¼ÊõµÃ·Ö£º{stats.Rating:0.0#}");
-                    builder.AppendLine($"ÉÏ´ÎÅÅÃû£º{stats.LastRank} / ³¡¾ùÃû´Î£º{stats.AvgRank:0.##}");
-                    builder.AppendLine($"MVP´ÎÊı£º{stats.MVPs}");
+                    builder.AppendLine($"æ€»è®¡å‚èµ›æ•°ï¼š{stats.Plays}");
+                    builder.AppendLine($"æ€»è®¡å† å†›æ•°ï¼š{stats.Wins}");
+                    builder.AppendLine($"èƒœç‡ï¼š{stats.Winrates * 100:0.##}%");
+                    builder.AppendLine($"å‰ä¸‰ç‡ï¼š{stats.Top3rates * 100:0.##}%");
+                    builder.AppendLine($"æŠ€æœ¯å¾—åˆ†ï¼š{stats.Rating:0.0#}");
+                    builder.AppendLine($"ä¸Šæ¬¡æ’åï¼š{stats.LastRank} / åœºå‡åæ¬¡ï¼š{stats.AvgRank:0.##}");
+                    builder.AppendLine($"MVPæ¬¡æ•°ï¼š{stats.MVPs}");
                     strings.Add(builder.ToString());
                 }
                 return NetworkUtility.JsonSerialize(strings);
@@ -193,11 +193,11 @@ namespace Oshima.Core.Controllers
                     StringBuilder builder = new();
                     CharacterStatistics stats = FunGameSimulation.TeamCharacterStatistics[character];
                     builder.AppendLine(character.ToString());
-                    builder.AppendLine($"×Ü¼Æ²ÎÈüÊı£º{stats.Plays}");
-                    builder.AppendLine($"×Ü¼Æ¹Ú¾üÊı£º{stats.Wins}");
-                    builder.AppendLine($"Ê¤ÂÊ£º{stats.Winrates * 100:0.##}%");
-                    builder.AppendLine($"¼¼ÊõµÃ·Ö£º{stats.Rating:0.0#}");
-                    builder.AppendLine($"MVP´ÎÊı£º{stats.MVPs}");
+                    builder.AppendLine($"æ€»è®¡å‚èµ›æ•°ï¼š{stats.Plays}");
+                    builder.AppendLine($"æ€»è®¡å† å†›æ•°ï¼š{stats.Wins}");
+                    builder.AppendLine($"èƒœç‡ï¼š{stats.Winrates * 100:0.##}%");
+                    builder.AppendLine($"æŠ€æœ¯å¾—åˆ†ï¼š{stats.Rating:0.0#}");
+                    builder.AppendLine($"MVPæ¬¡æ•°ï¼š{stats.MVPs}");
                     strings.Add(builder.ToString());
                 }
                 return NetworkUtility.JsonSerialize(strings);
@@ -211,13 +211,13 @@ namespace Oshima.Core.Controllers
                     StringBuilder builder = new();
                     CharacterStatistics stats = FunGameSimulation.CharacterStatistics[character];
                     builder.AppendLine(character.ToString());
-                    builder.AppendLine($"×Ü¼Æ²ÎÈüÊı£º{stats.Plays}");
-                    builder.AppendLine($"×Ü¼Æ¹Ú¾üÊı£º{stats.Wins}");
-                    builder.AppendLine($"Ê¤ÂÊ£º{stats.Winrates * 100:0.##}%");
-                    builder.AppendLine($"Ç°ÈıÂÊ£º{stats.Top3rates * 100:0.##}%");
-                    builder.AppendLine($"¼¼ÊõµÃ·Ö£º{stats.Rating:0.0#}");
-                    builder.AppendLine($"ÉÏ´ÎÅÅÃû£º{stats.LastRank} / ³¡¾ùÃû´Î£º{stats.AvgRank:0.##}");
-                    builder.AppendLine($"MVP´ÎÊı£º{stats.MVPs}");
+                    builder.AppendLine($"æ€»è®¡å‚èµ›æ•°ï¼š{stats.Plays}");
+                    builder.AppendLine($"æ€»è®¡å† å†›æ•°ï¼š{stats.Wins}");
+                    builder.AppendLine($"èƒœç‡ï¼š{stats.Winrates * 100:0.##}%");
+                    builder.AppendLine($"å‰ä¸‰ç‡ï¼š{stats.Top3rates * 100:0.##}%");
+                    builder.AppendLine($"æŠ€æœ¯å¾—åˆ†ï¼š{stats.Rating:0.0#}");
+                    builder.AppendLine($"ä¸Šæ¬¡æ’åï¼š{stats.LastRank} / åœºå‡åæ¬¡ï¼š{stats.AvgRank:0.##}");
+                    builder.AppendLine($"MVPæ¬¡æ•°ï¼š{stats.MVPs}");
                     strings.Add(builder.ToString());
                 }
                 return NetworkUtility.JsonSerialize(strings);
@@ -251,7 +251,7 @@ namespace Oshima.Core.Controllers
                 if (s != null)
                 {
                     s.Character = c;
-                    msg.Add($"¼¼ÄÜÕ¹Ê¾µÄÊôĞÔ»ùÓÚÑİÊ¾½ÇÉ«£º[ {c} ]");
+                    msg.Add($"æŠ€èƒ½å±•ç¤ºçš„å±æ€§åŸºäºæ¼”ç¤ºè§’è‰²ï¼š[ {c} ]");
                     msg.Add(c.ToStringWithLevel() + "\r\n" + s.ToString());
                     s.Level++; ;
                     msg.Add(c.ToStringWithLevel() + "\r\n" + s.ToString());
@@ -319,11 +319,11 @@ namespace Oshima.Core.Controllers
                 FunGameService.UserIdAndUsername[userid] = username;
                 pc.Add("user", user);
                 pc.SaveConfig();
-                return NetworkUtility.JsonSerialize($"´´½¨´æµµ³É¹¦£¡ÄãµÄÓÃ»§ÃûÊÇ¡¾{username}¡¿¡£");
+                return NetworkUtility.JsonSerialize($"åˆ›å»ºå­˜æ¡£æˆåŠŸï¼ä½ çš„ç”¨æˆ·åæ˜¯ã€{username}ã€‘ã€‚");
             }
             else
             {
-                return NetworkUtility.JsonSerialize("ÄãÒÑ¾­´´½¨¹ı´æµµ£¡");
+                return NetworkUtility.JsonSerialize("ä½ å·²ç»åˆ›å»ºè¿‡å­˜æ¡£ï¼");
             }
         }
         
@@ -346,7 +346,7 @@ namespace Oshima.Core.Controllers
                 user.LastTime = DateTime.Now;
                 pc.Add("user", user);
                 pc.SaveConfig();
-                return NetworkUtility.JsonSerialize($"ÄãµÄ´æµµÒÑ»¹Ô­³É¹¦¡£");
+                return NetworkUtility.JsonSerialize($"ä½ çš„å­˜æ¡£å·²è¿˜åŸæˆåŠŸã€‚");
             }
             else
             {
@@ -367,24 +367,24 @@ namespace Oshima.Core.Controllers
                 User user = FunGameService.GetUser(pc);
 
                 StringBuilder builder = new();
-                builder.AppendLine($"¡î¡ï¡î {user.Username}µÄ´æµµĞÅÏ¢ ¡î¡ï¡î");
-                builder.AppendLine($"{General.GameplayEquilibriumConstant.InGameCurrency}£º{user.Inventory.Credits:0.00}");
-                builder.AppendLine($"{General.GameplayEquilibriumConstant.InGameMaterial}£º{user.Inventory.Materials:0.00}");
-                builder.AppendLine($"½ÇÉ«ÊıÁ¿£º{user.Inventory.Characters.Count}");
-                builder.AppendLine($"Ö÷Õ½½ÇÉ«£º{user.Inventory.MainCharacter.ToStringWithLevelWithOutUser()}");
+                builder.AppendLine($"â˜†â˜…â˜† {user.Username}çš„å­˜æ¡£ä¿¡æ¯ â˜†â˜…â˜†");
+                builder.AppendLine($"{General.GameplayEquilibriumConstant.InGameCurrency}ï¼š{user.Inventory.Credits:0.00}");
+                builder.AppendLine($"{General.GameplayEquilibriumConstant.InGameMaterial}ï¼š{user.Inventory.Materials:0.00}");
+                builder.AppendLine($"è§’è‰²æ•°é‡ï¼š{user.Inventory.Characters.Count}");
+                builder.AppendLine($"ä¸»æˆ˜è§’è‰²ï¼š{user.Inventory.MainCharacter.ToStringWithLevelWithOutUser()}");
                 Character[] squad = [.. user.Inventory.Characters.Where(c => user.Inventory.Squad.Contains(c.Id))];
                 Dictionary<Character, int> characters = user.Inventory.Characters
                     .Select((character, index) => new { character, index })
                     .ToDictionary(x => x.character, x => x.index + 1);
-                builder.AppendLine($"Ğ¡¶Ó³ÉÔ±£º{(squad.Length > 0 ? string.Join(" / ", squad.Select(c => $"[#{characters[c]}]{c.Name}({c.Level})")) : "¿Õ")}");
+                builder.AppendLine($"å°é˜Ÿæˆå‘˜ï¼š{(squad.Length > 0 ? string.Join(" / ", squad.Select(c => $"[#{characters[c]}]{c.Name}({c.Level})")) : "ç©º")}");
                 if (user.Inventory.Training.Count > 0)
                 {
-                    builder.AppendLine($"ÕıÔÚÁ·¼¶£º{string.Join(" / ", user.Inventory.Characters.Where(c => user.Inventory.Training.ContainsKey(c.Id)).Select(c => c.ToStringWithLevelWithOutUser()))}");
+                    builder.AppendLine($"æ­£åœ¨ç»ƒçº§ï¼š{string.Join(" / ", user.Inventory.Characters.Where(c => user.Inventory.Training.ContainsKey(c.Id)).Select(c => c.ToStringWithLevelWithOutUser()))}");
                 }
-                builder.AppendLine($"ÎïÆ·ÊıÁ¿£º{user.Inventory.Items.Count}");
-                builder.AppendLine($"ËùÊôÉçÍÅ£ºÎŞ");
-                builder.AppendLine($"×¢²áÊ±¼ä£º{user.RegTime.ToString(General.GeneralDateTimeFormatChinese)}");
-                builder.AppendLine($"×îºó·ÃÎÊ£º{user.LastTime.ToString(General.GeneralDateTimeFormatChinese)}");
+                builder.AppendLine($"ç‰©å“æ•°é‡ï¼š{user.Inventory.Items.Count}");
+                builder.AppendLine($"æ‰€å±ç¤¾å›¢ï¼šæ— ");
+                builder.AppendLine($"æ³¨å†Œæ—¶é—´ï¼š{user.RegTime.ToString(General.GeneralDateTimeFormatChinese)}");
+                builder.AppendLine($"æœ€åè®¿é—®ï¼š{user.LastTime.ToString(General.GeneralDateTimeFormatChinese)}");
 
                 user.LastTime = DateTime.Now;
                 pc.Add("user", user);
@@ -416,7 +416,7 @@ namespace Oshima.Core.Controllers
                 }
                 else
                 {
-                    return NetworkUtility.JsonSerialize($"ÄãµÄ{General.GameplayEquilibriumConstant.InGameCurrency}²»×ã {reduce} ÄØ£¬ÎŞ·¨¸ÄÃû£¡");
+                    return NetworkUtility.JsonSerialize($"ä½ çš„{General.GameplayEquilibriumConstant.InGameCurrency}ä¸è¶³ {reduce} å‘¢ï¼Œæ— æ³•æ”¹åï¼");
                 }
 
                 user.Username = FunGameService.GenerateRandomChineseUserName();
@@ -424,15 +424,15 @@ namespace Oshima.Core.Controllers
                 {
                     character.Name = user.Username;
                 }
-                if (user.Inventory.Name.EndsWith("µÄ¿â´æ"))
+                if (user.Inventory.Name.EndsWith("çš„åº“å­˜"))
                 {
-                    user.Inventory.Name = user.Username + "µÄ¿â´æ";
+                    user.Inventory.Name = user.Username + "çš„åº“å­˜";
                 }
                 FunGameService.UserIdAndUsername[user.Id] = user.Username;
                 user.LastTime = DateTime.Now;
                 pc.Add("user", user);
                 pc.SaveConfig();
-                return NetworkUtility.JsonSerialize($"ÏûºÄ {reduce} {General.GameplayEquilibriumConstant.InGameCurrency}£¬ÄãµÄĞÂÃû×ÖÊÇ¡¾{user.Username}¡¿");
+                return NetworkUtility.JsonSerialize($"æ¶ˆè€— {reduce} {General.GameplayEquilibriumConstant.InGameCurrency}ï¼Œä½ çš„æ–°åå­—æ˜¯ã€{user.Username}ã€‘");
             }
             else
             {
@@ -482,15 +482,15 @@ namespace Oshima.Core.Controllers
                             pc.SaveConfig();
                             emc.Clear();
                             emc.SaveConfig();
-                            return NetworkUtility.JsonSerialize($"ÄãÒÑÍê³ÉÖØËæÊôĞÔÈ·ÈÏ£¬ĞÂµÄ×Ô½¨½ÇÉ«ÊôĞÔÈçÏÂ£º\r\n" +
-                                $"ºËĞÄÊôĞÔ£º{CharacterSet.GetPrimaryAttributeName(oldPA)} => {CharacterSet.GetPrimaryAttributeName(character.PrimaryAttribute)}\r\n" +
-                                $"³õÊ¼Á¦Á¿£º{oldSTR}£¨+{oldSTRG}/Lv£©=> {character.InitialSTR}£¨+{character.STRGrowth}/Lv£©\r\n" +
-                                $"³õÊ¼Ãô½İ£º{oldAGI}£¨+{oldAGIG}/Lv£©=> {character.InitialAGI}£¨+{character.AGIGrowth}/Lv£©\r\n" +
-                                $"³õÊ¼ÖÇÁ¦£º{oldINT}£¨+{oldINTG}/Lv£©=> {character.InitialINT}£¨+{character.INTGrowth}/Lv£©");
+                            return NetworkUtility.JsonSerialize($"ä½ å·²å®Œæˆé‡éšå±æ€§ç¡®è®¤ï¼Œæ–°çš„è‡ªå»ºè§’è‰²å±æ€§å¦‚ä¸‹ï¼š\r\n" +
+                                $"æ ¸å¿ƒå±æ€§ï¼š{CharacterSet.GetPrimaryAttributeName(oldPA)} => {CharacterSet.GetPrimaryAttributeName(character.PrimaryAttribute)}\r\n" +
+                                $"åˆå§‹åŠ›é‡ï¼š{oldSTR}ï¼ˆ+{oldSTRG}/Lvï¼‰=> {character.InitialSTR}ï¼ˆ+{character.STRGrowth}/Lvï¼‰\r\n" +
+                                $"åˆå§‹æ•æ·ï¼š{oldAGI}ï¼ˆ+{oldAGIG}/Lvï¼‰=> {character.InitialAGI}ï¼ˆ+{character.AGIGrowth}/Lvï¼‰\r\n" +
+                                $"åˆå§‹æ™ºåŠ›ï¼š{oldINT}ï¼ˆ+{oldINTG}/Lvï¼‰=> {character.InitialINT}ï¼ˆ+{character.INTGrowth}/Lvï¼‰");
                         }
                         else
                         {
-                            return NetworkUtility.JsonSerialize($"Äã»¹Ã»ÓĞ»ñÈ¡¹ıÖØËæÊôĞÔÔ¤ÀÀ£¡");
+                            return NetworkUtility.JsonSerialize($"ä½ è¿˜æ²¡æœ‰è·å–è¿‡é‡éšå±æ€§é¢„è§ˆï¼");
                         }
                     }
                     else
@@ -504,7 +504,7 @@ namespace Oshima.Core.Controllers
                             }
                             else
                             {
-                                return NetworkUtility.JsonSerialize($"ÄãµÄ{General.GameplayEquilibriumConstant.InGameMaterial}²»×ã {reduce} ÄØ£¬ÎŞ·¨ÖØËæ×Ô½¨½ÇÉ«ÊôĞÔ£¡");
+                                return NetworkUtility.JsonSerialize($"ä½ çš„{General.GameplayEquilibriumConstant.InGameMaterial}ä¸è¶³ {reduce} å‘¢ï¼Œæ— æ³•é‡éšè‡ªå»ºè§’è‰²å±æ€§ï¼");
                             }
                             newCustom = new CustomCharacter(user.Id, "");
                             user.LastTime = DateTime.Now;
@@ -512,31 +512,31 @@ namespace Oshima.Core.Controllers
                             pc.SaveConfig();
                             emc.Add("newCustom", newCustom);
                             emc.SaveConfig();
-                            return NetworkUtility.JsonSerialize($"ÏûºÄ {reduce} {General.GameplayEquilibriumConstant.InGameMaterial}£¬»ñÈ¡µ½ÖØËæÊôĞÔÔ¤ÀÀÈçÏÂ£º\r\n" +
-                                $"ºËĞÄÊôĞÔ£º{CharacterSet.GetPrimaryAttributeName(oldPA)} => {CharacterSet.GetPrimaryAttributeName(newCustom.PrimaryAttribute)}\r\n" +
-                                $"³õÊ¼Á¦Á¿£º{oldSTR}£¨+{oldSTRG}/Lv£©=> {newCustom.InitialSTR}£¨+{newCustom.STRGrowth}/Lv£©\r\n" +
-                                $"³õÊ¼Ãô½İ£º{oldAGI}£¨+{oldAGIG}/Lv£©=> {newCustom.InitialAGI}£¨+{newCustom.AGIGrowth}/Lv£©\r\n" +
-                                $"³õÊ¼ÖÇÁ¦£º{oldINT}£¨+{oldINTG}/Lv£©=> {newCustom.InitialINT}£¨+{newCustom.INTGrowth}/Lv£©\r\n" +
-                                $"Çë·¢ËÍ¡¾È·ÈÏ½ÇÉ«ÖØËæ¡¿À´È·ÈÏ¸üĞÂ£¬»òÕß·¢ËÍ¡¾È¡Ïû½ÇÉ«ÖØËæ¡¿À´È¡Ïû²Ù×÷¡£");
+                            return NetworkUtility.JsonSerialize($"æ¶ˆè€— {reduce} {General.GameplayEquilibriumConstant.InGameMaterial}ï¼Œè·å–åˆ°é‡éšå±æ€§é¢„è§ˆå¦‚ä¸‹ï¼š\r\n" +
+                                $"æ ¸å¿ƒå±æ€§ï¼š{CharacterSet.GetPrimaryAttributeName(oldPA)} => {CharacterSet.GetPrimaryAttributeName(newCustom.PrimaryAttribute)}\r\n" +
+                                $"åˆå§‹åŠ›é‡ï¼š{oldSTR}ï¼ˆ+{oldSTRG}/Lvï¼‰=> {newCustom.InitialSTR}ï¼ˆ+{newCustom.STRGrowth}/Lvï¼‰\r\n" +
+                                $"åˆå§‹æ•æ·ï¼š{oldAGI}ï¼ˆ+{oldAGIG}/Lvï¼‰=> {newCustom.InitialAGI}ï¼ˆ+{newCustom.AGIGrowth}/Lvï¼‰\r\n" +
+                                $"åˆå§‹æ™ºåŠ›ï¼š{oldINT}ï¼ˆ+{oldINTG}/Lvï¼‰=> {newCustom.InitialINT}ï¼ˆ+{newCustom.INTGrowth}/Lvï¼‰\r\n" +
+                                $"è¯·å‘é€ã€ç¡®è®¤è§’è‰²é‡éšã€‘æ¥ç¡®è®¤æ›´æ–°ï¼Œæˆ–è€…å‘é€ã€å–æ¶ˆè§’è‰²é‡éšã€‘æ¥å–æ¶ˆæ“ä½œã€‚");
                         }
                         else if (newCustom.Id == user.Id)
                         {
-                            return NetworkUtility.JsonSerialize($"ÄãÒÑ¾­ÓĞÒ»¸ö´ıÈ·ÈÏµÄÖØËæÊôĞÔÈçÏÂ£º\r\n" +
-                                $"ºËĞÄÊôĞÔ£º{CharacterSet.GetPrimaryAttributeName(oldPA)} => {CharacterSet.GetPrimaryAttributeName(newCustom.PrimaryAttribute)}\r\n" +
-                                $"³õÊ¼Á¦Á¿£º{oldSTR}£¨+{oldSTRG}/Lv£©=> {newCustom.InitialSTR}£¨+{newCustom.STRGrowth}/Lv£©\r\n" +
-                                $"³õÊ¼Ãô½İ£º{oldAGI}£¨+{oldAGIG}/Lv£©=> {newCustom.InitialAGI}£¨+{newCustom.AGIGrowth}/Lv£©\r\n" +
-                                $"³õÊ¼ÖÇÁ¦£º{oldINT}£¨+{oldINTG}/Lv£©=> {newCustom.InitialINT}£¨+{newCustom.INTGrowth}/Lv£©\r\n"+
-                                $"Çë·¢ËÍ¡¾È·ÈÏ½ÇÉ«ÖØËæ¡¿À´È·ÈÏ¸üĞÂ£¬»òÕß·¢ËÍ¡¾È¡Ïû½ÇÉ«ÖØËæ¡¿À´È¡Ïû²Ù×÷¡£");
+                            return NetworkUtility.JsonSerialize($"ä½ å·²ç»æœ‰ä¸€ä¸ªå¾…ç¡®è®¤çš„é‡éšå±æ€§å¦‚ä¸‹ï¼š\r\n" +
+                                $"æ ¸å¿ƒå±æ€§ï¼š{CharacterSet.GetPrimaryAttributeName(oldPA)} => {CharacterSet.GetPrimaryAttributeName(newCustom.PrimaryAttribute)}\r\n" +
+                                $"åˆå§‹åŠ›é‡ï¼š{oldSTR}ï¼ˆ+{oldSTRG}/Lvï¼‰=> {newCustom.InitialSTR}ï¼ˆ+{newCustom.STRGrowth}/Lvï¼‰\r\n" +
+                                $"åˆå§‹æ•æ·ï¼š{oldAGI}ï¼ˆ+{oldAGIG}/Lvï¼‰=> {newCustom.InitialAGI}ï¼ˆ+{newCustom.AGIGrowth}/Lvï¼‰\r\n" +
+                                $"åˆå§‹æ™ºåŠ›ï¼š{oldINT}ï¼ˆ+{oldINTG}/Lvï¼‰=> {newCustom.InitialINT}ï¼ˆ+{newCustom.INTGrowth}/Lvï¼‰\r\n"+
+                                $"è¯·å‘é€ã€ç¡®è®¤è§’è‰²é‡éšã€‘æ¥ç¡®è®¤æ›´æ–°ï¼Œæˆ–è€…å‘é€ã€å–æ¶ˆè§’è‰²é‡éšã€‘æ¥å–æ¶ˆæ“ä½œã€‚");
                         }
                         else
                         {
-                            return NetworkUtility.JsonSerialize($"ÖØËæ×Ô½¨½ÇÉ«ÊôĞÔÊ§°Ü£¡");
+                            return NetworkUtility.JsonSerialize($"é‡éšè‡ªå»ºè§’è‰²å±æ€§å¤±è´¥ï¼");
                         }
                     }
                 }
                 else
                 {
-                    return NetworkUtility.JsonSerialize($"ÄãËÆºõÃ»ÓĞ×Ô½¨½ÇÉ«£¬Çë·¢ËÍ¡¾Éú³É×Ô½¨½ÇÉ«¡¿´´½¨£¡");
+                    return NetworkUtility.JsonSerialize($"ä½ ä¼¼ä¹æ²¡æœ‰è‡ªå»ºè§’è‰²ï¼Œè¯·å‘é€ã€ç”Ÿæˆè‡ªå»ºè§’è‰²ã€‘åˆ›å»ºï¼");
                 }
             }
             else
@@ -561,11 +561,11 @@ namespace Oshima.Core.Controllers
                 {
                     emc.Clear();
                     emc.SaveConfig();
-                    return NetworkUtility.JsonSerialize($"ÒÑÈ¡Ïû½ÇÉ«ÖØËæ¡£");
+                    return NetworkUtility.JsonSerialize($"å·²å–æ¶ˆè§’è‰²é‡éšã€‚");
                 }
                 else
                 {
-                    return NetworkUtility.JsonSerialize($"ÄãÄ¿Ç°Ã»ÓĞ´ıÈ·ÈÏµÄ½ÇÉ«ÖØËæ¡£");
+                    return NetworkUtility.JsonSerialize($"ä½ ç›®å‰æ²¡æœ‰å¾…ç¡®è®¤çš„è§’è‰²é‡éšã€‚");
                 }
             }
             else
@@ -608,9 +608,9 @@ namespace Oshima.Core.Controllers
             if (pc.Count > 0)
             {
                 User user = FunGameService.GetUser(pc);
-                list.Add($"¡î¡ï¡î {user.Inventory.Name} ¡î¡ï¡î");
-                list.Add($"{General.GameplayEquilibriumConstant.InGameCurrency}£º{user.Inventory.Credits:0.00}");
-                list.Add($"{General.GameplayEquilibriumConstant.InGameMaterial}£º{user.Inventory.Materials:0.00}");
+                list.Add($"â˜†â˜…â˜† {user.Inventory.Name} â˜†â˜…â˜†");
+                list.Add($"{General.GameplayEquilibriumConstant.InGameCurrency}ï¼š{user.Inventory.Credits:0.00}");
+                list.Add($"{General.GameplayEquilibriumConstant.InGameMaterial}ï¼š{user.Inventory.Materials:0.00}");
                 List<Character> characters = [.. user.Inventory.Characters];
                 List<Item> items = [.. user.Inventory.Items];
                 int total = characters.Count + items.Count;
@@ -638,7 +638,7 @@ namespace Oshima.Core.Controllers
                             if (showCharacter)
                             {
                                 showCharacter = false;
-                                list.Add("======= ½ÇÉ« =======");
+                                list.Add("======= è§’è‰² =======");
                             }
                             str = $"{prevSequence + characterCount}. {character.ToStringWithLevelWithOutUser()}";
                         }
@@ -648,7 +648,7 @@ namespace Oshima.Core.Controllers
                             if (showItem)
                             {
                                 showItem = false;
-                                list.Add("======= ÎïÆ· =======");
+                                list.Add("======= ç‰©å“ =======");
                             }
                             str = $"{index - (characterCount > 0 ? prevSequence + characterCount : characters.Count)}. [{ItemSet.GetQualityTypeName(item.QualityType)}|{ItemSet.GetItemTypeName(item.ItemType)}] {item.Name}\r\n";
                             str += $"{item.ToStringInventory(false).Trim()}";
@@ -656,11 +656,11 @@ namespace Oshima.Core.Controllers
                         list.Add(str);
                     }
 
-                    list.Add($"Ò³Êı£º{showPage} / {maxPage}");
+                    list.Add($"é¡µæ•°ï¼š{showPage} / {maxPage}");
                 }
                 else
                 {
-                    list.Add($"Ã»ÓĞÕâÃ´¶àÒ³£¡µ±Ç°×ÜÒ³ÊıÎª {maxPage}£¬µ«ÄãÇëÇóµÄÊÇµÚ {showPage} Ò³¡£");
+                    list.Add($"æ²¡æœ‰è¿™ä¹ˆå¤šé¡µï¼å½“å‰æ€»é¡µæ•°ä¸º {maxPage}ï¼Œä½†ä½ è¯·æ±‚çš„æ˜¯ç¬¬ {showPage} é¡µã€‚");
                 }
             }
             else
@@ -684,9 +684,9 @@ namespace Oshima.Core.Controllers
             if (pc.Count > 0)
             {
                 User user = FunGameService.GetUser(pc);
-                list.Add($"¡î¡ï¡î {user.Inventory.Name} ¡î¡ï¡î");
-                list.Add($"{General.GameplayEquilibriumConstant.InGameCurrency}£º{user.Inventory.Credits:0.00}");
-                list.Add($"{General.GameplayEquilibriumConstant.InGameMaterial}£º{user.Inventory.Materials:0.00}");
+                list.Add($"â˜†â˜…â˜† {user.Inventory.Name} â˜†â˜…â˜†");
+                list.Add($"{General.GameplayEquilibriumConstant.InGameCurrency}ï¼š{user.Inventory.Credits:0.00}");
+                list.Add($"{General.GameplayEquilibriumConstant.InGameMaterial}ï¼š{user.Inventory.Materials:0.00}");
                 List<Item> items = [.. user.Inventory.Items];
 
                 Dictionary<string, List<Item>> itemCategory = [];
@@ -731,30 +731,30 @@ namespace Oshima.Core.Controllers
                 {
                     List<string> keys = [.. FunGameService.GetPage(itemCategory.Keys, showPage, 10)];
                     int itemCount = 0;
-                    list.Add("======= ÎïÆ· =======");
+                    list.Add("======= ç‰©å“ =======");
                     foreach (string key in keys)
                     {
                         itemCount++;
                         List<Item> objs = itemCategory[key];
                         Item first = objs[0];
                         string str = $"{itemCount}. [{ItemSet.GetQualityTypeName(first.QualityType)}|{ItemSet.GetItemTypeName(first.ItemType)}] {first.Name}\r\n";
-                        str += $"ÎïÆ·ÃèÊö£º{first.Description}\r\n";
-                        string itemsIndex = string.Join("£¬", objs.Select(i => items.IndexOf(i) + 1));
+                        str += $"ç‰©å“æè¿°ï¼š{first.Description}\r\n";
+                        string itemsIndex = string.Join("ï¼Œ", objs.Select(i => items.IndexOf(i) + 1));
                         if (objs.Count > 10)
                         {
-                            itemsIndex = string.Join("£¬", objs.Take(10).Select(i => items.IndexOf(i) + 1)) + "£¬...";
+                            itemsIndex = string.Join("ï¼Œ", objs.Take(10).Select(i => items.IndexOf(i) + 1)) + "ï¼Œ...";
                         }
-                        str += $"ÎïÆ·ĞòºÅ£º{itemsIndex}\r\n";
-                        str += $"ÓµÓĞÊıÁ¿£º{objs.Count}£¨" + (first.IsEquipment ? $"¿É×°±¸ÊıÁ¿£º{objs.Count(i => i.Character is null)}£¬" : "") +
-                            (itemCanUsed.Contains(first.ItemType) ? $"¿ÉÊ¹ÓÃÊıÁ¿£º{objs.Count(i => i.RemainUseTimes > 0)}£¬" : "") +
-                            $"¿É³öÊÛÊıÁ¿£º{objs.Count(i => i.IsSellable)}£¬¿É½»Ò×ÊıÁ¿£º{objs.Count(i => i.IsTradable)}£©";
+                        str += $"ç‰©å“åºå·ï¼š{itemsIndex}\r\n";
+                        str += $"æ‹¥æœ‰æ•°é‡ï¼š{objs.Count}ï¼ˆ" + (first.IsEquipment ? $"å¯è£…å¤‡æ•°é‡ï¼š{objs.Count(i => i.Character is null)}ï¼Œ" : "") +
+                            (itemCanUsed.Contains(first.ItemType) ? $"å¯ä½¿ç”¨æ•°é‡ï¼š{objs.Count(i => i.RemainUseTimes > 0)}ï¼Œ" : "") +
+                            $"å¯å‡ºå”®æ•°é‡ï¼š{objs.Count(i => i.IsSellable)}ï¼Œå¯äº¤æ˜“æ•°é‡ï¼š{objs.Count(i => i.IsTradable)}ï¼‰";
                         list.Add(str);
                     }
-                    list.Add($"Ò³Êı£º{showPage} / {maxPage}");
+                    list.Add($"é¡µæ•°ï¼š{showPage} / {maxPage}");
                 }
                 else
                 {
-                    list.Add($"Ã»ÓĞÕâÃ´¶àÒ³£¡µ±Ç°×ÜÒ³ÊıÎª {maxPage}£¬µ«ÄãÇëÇóµÄÊÇµÚ {showPage} Ò³¡£");
+                    list.Add($"æ²¡æœ‰è¿™ä¹ˆå¤šé¡µï¼å½“å‰æ€»é¡µæ•°ä¸º {maxPage}ï¼Œä½†ä½ è¯·æ±‚çš„æ˜¯ç¬¬ {showPage} é¡µã€‚");
                 }
             }
             else
@@ -780,13 +780,13 @@ namespace Oshima.Core.Controllers
             {
                 if (type == -1)
                 {
-                    return ["Ã»ÓĞÖ¸¶¨ÎïÆ·µÄÀàĞÍ£¬ÇëÊ¹ÓÃÍ¨ÓÃ²éÑ¯·½·¨£¡"];
+                    return ["æ²¡æœ‰æŒ‡å®šç‰©å“çš„ç±»å‹ï¼Œè¯·ä½¿ç”¨é€šç”¨æŸ¥è¯¢æ–¹æ³•ï¼"];
                 }
 
                 User user = FunGameService.GetUser(pc);
-                list.Add($"¡î¡ï¡î {user.Inventory.Name} ¡î¡ï¡î");
-                list.Add($"{General.GameplayEquilibriumConstant.InGameCurrency}£º{user.Inventory.Credits:0.00}");
-                list.Add($"{General.GameplayEquilibriumConstant.InGameMaterial}£º{user.Inventory.Materials:0.00}");
+                list.Add($"â˜†â˜…â˜† {user.Inventory.Name} â˜†â˜…â˜†");
+                list.Add($"{General.GameplayEquilibriumConstant.InGameCurrency}ï¼š{user.Inventory.Credits:0.00}");
+                list.Add($"{General.GameplayEquilibriumConstant.InGameMaterial}ï¼š{user.Inventory.Materials:0.00}");
                 List<Item> items = [.. user.Inventory.Items];
 
                 Dictionary<string, List<Item>> itemCategory = [];
@@ -798,10 +798,10 @@ namespace Oshima.Core.Controllers
                     }
                 }
 
-                // °´Æ·ÖÊµ¹Ğò¡¢ÊıÁ¿µ¹ĞòÅÅĞò
+                // æŒ‰å“è´¨å€’åºã€æ•°é‡å€’åºæ’åº
                 itemCategory = itemCategory.OrderByDescending(kv => kv.Value.FirstOrDefault()?.QualityType ?? 0).ThenByDescending(kv => kv.Value.Count).ToDictionary();
 
-                // ÒÆ³ıËùÓĞ·ÇÖ¸¶¨ÀàĞÍµÄÎïÆ·
+                // ç§»é™¤æ‰€æœ‰éæŒ‡å®šç±»å‹çš„ç‰©å“
                 foreach (List<Item> listTemp in itemCategory.Values)
                 {
                     if (listTemp.First() is Item item && (int)item.ItemType != itemtype)
@@ -823,23 +823,23 @@ namespace Oshima.Core.Controllers
                         List<Item> objs = itemCategory[key];
                         Item first = objs[0];
                         string str = $"{itemCount}. [{ItemSet.GetQualityTypeName(first.QualityType)}|{ItemSet.GetItemTypeName(first.ItemType)}] {first.Name}\r\n";
-                        str += $"ÎïÆ·ÃèÊö£º{first.Description}\r\n";
-                        string itemsIndex = string.Join("£¬", objs.Select(i => items.IndexOf(i) + 1));
+                        str += $"ç‰©å“æè¿°ï¼š{first.Description}\r\n";
+                        string itemsIndex = string.Join("ï¼Œ", objs.Select(i => items.IndexOf(i) + 1));
                         if (objs.Count > 10)
                         {
-                            itemsIndex = string.Join("£¬", objs.Take(10).Select(i => items.IndexOf(i) + 1)) + "£¬...";
+                            itemsIndex = string.Join("ï¼Œ", objs.Take(10).Select(i => items.IndexOf(i) + 1)) + "ï¼Œ...";
                         }
-                        str += $"ÎïÆ·ĞòºÅ£º{itemsIndex}\r\n";
-                        str += $"ÓµÓĞÊıÁ¿£º{objs.Count}£¨" + (first.IsEquipment ? $"¿É×°±¸ÊıÁ¿£º{objs.Count(i => i.Character is null)}£¬" : "") +
-                            (itemCanUsed.Contains(first.ItemType) ? $"¿ÉÊ¹ÓÃÊıÁ¿£º{objs.Count(i => i.RemainUseTimes > 0)}£¬" : "") +
-                            $"¿É³öÊÛÊıÁ¿£º{objs.Count(i => i.IsSellable)}£¬¿É½»Ò×ÊıÁ¿£º{objs.Count(i => i.IsTradable)}£©";
+                        str += $"ç‰©å“åºå·ï¼š{itemsIndex}\r\n";
+                        str += $"æ‹¥æœ‰æ•°é‡ï¼š{objs.Count}ï¼ˆ" + (first.IsEquipment ? $"å¯è£…å¤‡æ•°é‡ï¼š{objs.Count(i => i.Character is null)}ï¼Œ" : "") +
+                            (itemCanUsed.Contains(first.ItemType) ? $"å¯ä½¿ç”¨æ•°é‡ï¼š{objs.Count(i => i.RemainUseTimes > 0)}ï¼Œ" : "") +
+                            $"å¯å‡ºå”®æ•°é‡ï¼š{objs.Count(i => i.IsSellable)}ï¼Œå¯äº¤æ˜“æ•°é‡ï¼š{objs.Count(i => i.IsTradable)}ï¼‰";
                         list.Add(str);
                     }
-                    list.Add($"Ò³Êı£º{showPage} / {maxPage}");
+                    list.Add($"é¡µæ•°ï¼š{showPage} / {maxPage}");
                 }
                 else
                 {
-                    list.Add($"Ã»ÓĞÕâÃ´¶àÒ³£¡µ±Ç°×ÜÒ³ÊıÎª {maxPage}£¬µ«ÄãÇëÇóµÄÊÇµÚ {showPage} Ò³¡£");
+                    list.Add($"æ²¡æœ‰è¿™ä¹ˆå¤šé¡µï¼å½“å‰æ€»é¡µæ•°ä¸º {maxPage}ï¼Œä½†ä½ è¯·æ±‚çš„æ˜¯ç¬¬ {showPage} é¡µã€‚");
                 }
             }
             else
@@ -863,9 +863,9 @@ namespace Oshima.Core.Controllers
             if (pc.Count > 0)
             {
                 User user = FunGameService.GetUser(pc);
-                list.Add($"¡î¡ï¡î {user.Inventory.Name} ¡î¡ï¡î");
-                list.Add($"{General.GameplayEquilibriumConstant.InGameCurrency}£º{user.Inventory.Credits:0.00}");
-                list.Add($"{General.GameplayEquilibriumConstant.InGameMaterial}£º{user.Inventory.Materials:0.00}");
+                list.Add($"â˜†â˜…â˜† {user.Inventory.Name} â˜†â˜…â˜†");
+                list.Add($"{General.GameplayEquilibriumConstant.InGameCurrency}ï¼š{user.Inventory.Credits:0.00}");
+                list.Add($"{General.GameplayEquilibriumConstant.InGameMaterial}ï¼š{user.Inventory.Materials:0.00}");
                 List<Character> characters = [.. user.Inventory.Characters];
                 int total = characters.Count;
                 int maxPage = (int)Math.Ceiling((double)total / 6);
@@ -890,18 +890,18 @@ namespace Oshima.Core.Controllers
                             if (showCharacter)
                             {
                                 showCharacter = false;
-                                list.Add("======= ½ÇÉ« =======");
+                                list.Add("======= è§’è‰² =======");
                             }
                             str = $"{prevSequence + characterCount}. {character.ToStringWithLevelWithOutUser()}";
                         }
                         list.Add(str);
                     }
 
-                    list.Add($"Ò³Êı£º{showPage} / {maxPage}");
+                    list.Add($"é¡µæ•°ï¼š{showPage} / {maxPage}");
                 }
                 else
                 {
-                    list.Add($"Ã»ÓĞÕâÃ´¶àÒ³£¡µ±Ç°×ÜÒ³ÊıÎª {maxPage}£¬µ«ÄãÇëÇóµÄÊÇµÚ {showPage} Ò³¡£");
+                    list.Add($"æ²¡æœ‰è¿™ä¹ˆå¤šé¡µï¼å½“å‰æ€»é¡µæ•°ä¸º {maxPage}ï¼Œä½†ä½ è¯·æ±‚çš„æ˜¯ç¬¬ {showPage} é¡µã€‚");
                 }
             }
             else
@@ -924,7 +924,7 @@ namespace Oshima.Core.Controllers
                 User user = FunGameService.GetUser(pc);
                 if (user.Inventory.Characters.Any(c => c.Id == user.Id))
                 {
-                    return NetworkUtility.JsonSerialize($"ÄãÒÑ¾­ÓµÓĞÒ»¸ö×Ô½¨½ÇÉ«¡¾{user.Username}¡¿£¬ÎŞ·¨ÔÙ´´½¨£¡");
+                    return NetworkUtility.JsonSerialize($"ä½ å·²ç»æ‹¥æœ‰ä¸€ä¸ªè‡ªå»ºè§’è‰²ã€{user.Username}ã€‘ï¼Œæ— æ³•å†åˆ›å»ºï¼");
                 }
                 else
                 {
@@ -932,7 +932,7 @@ namespace Oshima.Core.Controllers
                     user.LastTime = DateTime.Now;
                     pc.Add("user", user);
                     pc.SaveConfig();
-                    return NetworkUtility.JsonSerialize($"¹§Ï²Äã³É¹¦´´½¨ÁËÒ»¸ö×Ô½¨½ÇÉ«¡¾{user.Username}¡¿£¬Çë²é¿´ÄãµÄ½ÇÉ«¿â´æ£¡");
+                    return NetworkUtility.JsonSerialize($"æ­å–œä½ æˆåŠŸåˆ›å»ºäº†ä¸€ä¸ªè‡ªå»ºè§’è‰²ã€{user.Username}ã€‘ï¼Œè¯·æŸ¥çœ‹ä½ çš„è§’è‰²åº“å­˜ï¼");
                 }
             }
             else
@@ -960,7 +960,7 @@ namespace Oshima.Core.Controllers
                 }
                 else
                 {
-                    return NetworkUtility.JsonSerialize($"ÄãµÄ{General.GameplayEquilibriumConstant.InGameCurrency}²»×ã {reduce} ÄØ£¬ÎŞ·¨³é¿¨£¡");
+                    return NetworkUtility.JsonSerialize($"ä½ çš„{General.GameplayEquilibriumConstant.InGameCurrency}ä¸è¶³ {reduce} å‘¢ï¼Œæ— æ³•æŠ½å¡ï¼");
                 }
 
                 double dice = Random.Shared.NextDouble();
@@ -975,7 +975,7 @@ namespace Oshima.Core.Controllers
                 else
                 {
                     pc.SaveConfig();
-                    return NetworkUtility.JsonSerialize($"ÏûºÄ {reduce} {General.GameplayEquilibriumConstant.InGameCurrency}£¬ÄãÊ²Ã´Ò²Ã»³éÖĞ¡­¡­");
+                    return NetworkUtility.JsonSerialize($"æ¶ˆè€— {reduce} {General.GameplayEquilibriumConstant.InGameCurrency}ï¼Œä½ ä»€ä¹ˆä¹Ÿæ²¡æŠ½ä¸­â€¦â€¦");
                 }
             }
             else
@@ -1003,10 +1003,10 @@ namespace Oshima.Core.Controllers
                 }
                 else
                 {
-                    return [$"ÄãµÄ{General.GameplayEquilibriumConstant.InGameCurrency}²»×ã {reduce} ÄØ£¬ÎŞ·¨Ê®Á¬³é¿¨£¡"];
+                    return [$"ä½ çš„{General.GameplayEquilibriumConstant.InGameCurrency}ä¸è¶³ {reduce} å‘¢ï¼Œæ— æ³•åè¿æŠ½å¡ï¼"];
                 }
 
-                List<string> result = [$"ÏûºÄ {reduce} {General.GameplayEquilibriumConstant.InGameCurrency}£¬¹§Ï²Äã³éµ½ÁË£º"];
+                List<string> result = [$"æ¶ˆè€— {reduce} {General.GameplayEquilibriumConstant.InGameCurrency}ï¼Œæ­å–œä½ æŠ½åˆ°äº†ï¼š"];
                 int count = 0;
                 for (int i = 0; i < 10; i++)
                 {
@@ -1019,7 +1019,7 @@ namespace Oshima.Core.Controllers
                 }
                 if (result.Count == 1)
                 {
-                    result[0] = $"ÏûºÄ {reduce} {General.GameplayEquilibriumConstant.InGameCurrency}£¬ÄãÊ²Ã´Ò²Ã»³éÖĞ¡­¡­";
+                    result[0] = $"æ¶ˆè€— {reduce} {General.GameplayEquilibriumConstant.InGameCurrency}ï¼Œä½ ä»€ä¹ˆä¹Ÿæ²¡æŠ½ä¸­â€¦â€¦";
                 }
                 user.LastTime = DateTime.Now;
                 pc.Add("user", user);
@@ -1051,7 +1051,7 @@ namespace Oshima.Core.Controllers
                 }
                 else
                 {
-                    return NetworkUtility.JsonSerialize($"ÄãµÄ{General.GameplayEquilibriumConstant.InGameMaterial}²»×ã {reduce} ÄØ£¬ÎŞ·¨³é¿¨£¡");
+                    return NetworkUtility.JsonSerialize($"ä½ çš„{General.GameplayEquilibriumConstant.InGameMaterial}ä¸è¶³ {reduce} å‘¢ï¼Œæ— æ³•æŠ½å¡ï¼");
                 }
 
                 double dice = Random.Shared.NextDouble();
@@ -1066,7 +1066,7 @@ namespace Oshima.Core.Controllers
                 else
                 {
                     pc.SaveConfig();
-                    return NetworkUtility.JsonSerialize($"ÏûºÄ {reduce} {General.GameplayEquilibriumConstant.InGameMaterial}£¬ÄãÊ²Ã´Ò²Ã»³éÖĞ¡­¡­");
+                    return NetworkUtility.JsonSerialize($"æ¶ˆè€— {reduce} {General.GameplayEquilibriumConstant.InGameMaterial}ï¼Œä½ ä»€ä¹ˆä¹Ÿæ²¡æŠ½ä¸­â€¦â€¦");
                 }
             }
             else
@@ -1094,10 +1094,10 @@ namespace Oshima.Core.Controllers
                 }
                 else
                 {
-                    return [$"ÄãµÄ{General.GameplayEquilibriumConstant.InGameMaterial}²»×ã {reduce} ÄØ£¬ÎŞ·¨Ê®Á¬³é¿¨£¡"];
+                    return [$"ä½ çš„{General.GameplayEquilibriumConstant.InGameMaterial}ä¸è¶³ {reduce} å‘¢ï¼Œæ— æ³•åè¿æŠ½å¡ï¼"];
                 }
 
-                List<string> result = [$"ÏûºÄ {reduce} {General.GameplayEquilibriumConstant.InGameMaterial}£¬¹§Ï²Äã³éµ½ÁË£º"];
+                List<string> result = [$"æ¶ˆè€— {reduce} {General.GameplayEquilibriumConstant.InGameMaterial}ï¼Œæ­å–œä½ æŠ½åˆ°äº†ï¼š"];
                 int count = 0;
                 for (int i = 0; i < 10; i++)
                 {
@@ -1110,7 +1110,7 @@ namespace Oshima.Core.Controllers
                 }
                 if (result.Count == 1)
                 {
-                    result[0] = $"ÏûºÄ {reduce} {General.GameplayEquilibriumConstant.InGameMaterial}£¬ÄãÊ²Ã´Ò²Ã»³éÖĞ¡­¡­";
+                    result[0] = $"æ¶ˆè€— {reduce} {General.GameplayEquilibriumConstant.InGameMaterial}ï¼Œä½ ä»€ä¹ˆä¹Ÿæ²¡æŠ½ä¸­â€¦â€¦";
                 }
                 user.LastTime = DateTime.Now;
                 pc.Add("user", user);
@@ -1146,11 +1146,11 @@ namespace Oshima.Core.Controllers
                     user.LastTime = DateTime.Now;
                     pc.Add("user", user);
                     pc.SaveConfig();
-                    return NetworkUtility.JsonSerialize($"¶Ò»»³É¹¦£¡ÄãÏûºÄÁË {reduce} {General.GameplayEquilibriumConstant.InGameMaterial}£¬Ôö¼ÓÁË {reward} {General.GameplayEquilibriumConstant.InGameCurrency}£¡");
+                    return NetworkUtility.JsonSerialize($"å…‘æ¢æˆåŠŸï¼ä½ æ¶ˆè€—äº† {reduce} {General.GameplayEquilibriumConstant.InGameMaterial}ï¼Œå¢åŠ äº† {reward} {General.GameplayEquilibriumConstant.InGameCurrency}ï¼");
                 }
                 else
                 {
-                    return NetworkUtility.JsonSerialize($"ÄãµÄ{General.GameplayEquilibriumConstant.InGameMaterial}²»×ã {reduce}£¬×îµÍÏûºÄ 10 {General.GameplayEquilibriumConstant.InGameMaterial}¶Ò»» 2000 {General.GameplayEquilibriumConstant.InGameCurrency}£¡");
+                    return NetworkUtility.JsonSerialize($"ä½ çš„{General.GameplayEquilibriumConstant.InGameMaterial}ä¸è¶³ {reduce}ï¼Œæœ€ä½æ¶ˆè€— 10 {General.GameplayEquilibriumConstant.InGameMaterial}å…‘æ¢ 2000 {General.GameplayEquilibriumConstant.InGameCurrency}ï¼");
                 }
             }
             else
@@ -1179,9 +1179,9 @@ namespace Oshima.Core.Controllers
                     {
                         if (isSimple)
                         {
-                            return NetworkUtility.JsonSerialize($"ÕâÊÇÄãµÄÖ÷Õ½½ÇÉ«¼òÂÔĞÅÏ¢£º\r\n{user.Inventory.MainCharacter.GetSimpleInfo(showEXP: true).Trim()}");
+                            return NetworkUtility.JsonSerialize($"è¿™æ˜¯ä½ çš„ä¸»æˆ˜è§’è‰²ç®€ç•¥ä¿¡æ¯ï¼š\r\n{user.Inventory.MainCharacter.GetSimpleInfo(showEXP: true).Trim()}");
                         }
-                        return NetworkUtility.JsonSerialize($"ÕâÊÇÄãµÄÖ÷Õ½½ÇÉ«ÏêÏ¸ĞÅÏ¢£º\r\n{user.Inventory.MainCharacter.GetInfo().Trim()}");
+                        return NetworkUtility.JsonSerialize($"è¿™æ˜¯ä½ çš„ä¸»æˆ˜è§’è‰²è¯¦ç»†ä¿¡æ¯ï¼š\r\n{user.Inventory.MainCharacter.GetInfo().Trim()}");
                     }
                     else
                     {
@@ -1190,13 +1190,13 @@ namespace Oshima.Core.Controllers
                             Character character = user.Inventory.Characters.ToList()[cIndex - 1];
                             if (isSimple)
                             {
-                                return NetworkUtility.JsonSerialize($"ÕâÊÇÄã¿â´æÖĞĞòºÅÎª {cIndex} µÄ½ÇÉ«¼òÂÔĞÅÏ¢£º\r\n{character.GetSimpleInfo(showEXP: true).Trim()}");
+                                return NetworkUtility.JsonSerialize($"è¿™æ˜¯ä½ åº“å­˜ä¸­åºå·ä¸º {cIndex} çš„è§’è‰²ç®€ç•¥ä¿¡æ¯ï¼š\r\n{character.GetSimpleInfo(showEXP: true).Trim()}");
                             }
-                            return NetworkUtility.JsonSerialize($"ÕâÊÇÄã¿â´æÖĞĞòºÅÎª {cIndex} µÄ½ÇÉ«ÏêÏ¸ĞÅÏ¢£º\r\n{character.GetInfo().Trim()}");
+                            return NetworkUtility.JsonSerialize($"è¿™æ˜¯ä½ åº“å­˜ä¸­åºå·ä¸º {cIndex} çš„è§’è‰²è¯¦ç»†ä¿¡æ¯ï¼š\r\n{character.GetInfo().Trim()}");
                         }
                         else
                         {
-                            return NetworkUtility.JsonSerialize($"Ã»ÓĞÕÒµ½ÓëÕâ¸öĞòºÅÏà¶ÔÓ¦µÄ½ÇÉ«£¡");
+                            return NetworkUtility.JsonSerialize($"æ²¡æœ‰æ‰¾åˆ°ä¸è¿™ä¸ªåºå·ç›¸å¯¹åº”çš„è§’è‰²ï¼");
                         }
                     }
                 }
@@ -1228,18 +1228,18 @@ namespace Oshima.Core.Controllers
 
                     if (cIndex == 0)
                     {
-                        return NetworkUtility.JsonSerialize($"ÕâÊÇÄãµÄÖ÷Õ½½ÇÉ«¼¼ÄÜĞÅÏ¢£º\r\n{user.Inventory.MainCharacter.GetSkillInfo().Trim()}");
+                        return NetworkUtility.JsonSerialize($"è¿™æ˜¯ä½ çš„ä¸»æˆ˜è§’è‰²æŠ€èƒ½ä¿¡æ¯ï¼š\r\n{user.Inventory.MainCharacter.GetSkillInfo().Trim()}");
                     }
                     else
                     {
                         if (cIndex > 0 && cIndex <= user.Inventory.Characters.Count)
                         {
                             Character character = user.Inventory.Characters.ToList()[cIndex - 1];
-                            return NetworkUtility.JsonSerialize($"ÕâÊÇÄã¿â´æÖĞĞòºÅÎª {cIndex} µÄ½ÇÉ«¼¼ÄÜĞÅÏ¢£º\r\n{character.GetSkillInfo().Trim()}");
+                            return NetworkUtility.JsonSerialize($"è¿™æ˜¯ä½ åº“å­˜ä¸­åºå·ä¸º {cIndex} çš„è§’è‰²æŠ€èƒ½ä¿¡æ¯ï¼š\r\n{character.GetSkillInfo().Trim()}");
                         }
                         else
                         {
-                            return NetworkUtility.JsonSerialize($"Ã»ÓĞÕÒµ½ÓëÕâ¸öĞòºÅÏà¶ÔÓ¦µÄ½ÇÉ«£¡");
+                            return NetworkUtility.JsonSerialize($"æ²¡æœ‰æ‰¾åˆ°ä¸è¿™ä¸ªåºå·ç›¸å¯¹åº”çš„è§’è‰²ï¼");
                         }
                     }
                 }
@@ -1271,18 +1271,18 @@ namespace Oshima.Core.Controllers
 
                     if (cIndex == 0)
                     {
-                        return NetworkUtility.JsonSerialize($"ÕâÊÇÄãµÄÖ÷Õ½½ÇÉ«×°±¸ÎïÆ·ĞÅÏ¢£º\r\n{user.Inventory.MainCharacter.GetItemInfo(showEXP: true).Trim()}");
+                        return NetworkUtility.JsonSerialize($"è¿™æ˜¯ä½ çš„ä¸»æˆ˜è§’è‰²è£…å¤‡ç‰©å“ä¿¡æ¯ï¼š\r\n{user.Inventory.MainCharacter.GetItemInfo(showEXP: true).Trim()}");
                     }
                     else
                     {
                         if (cIndex > 0 && cIndex <= user.Inventory.Characters.Count)
                         {
                             Character character = user.Inventory.Characters.ToList()[cIndex - 1];
-                            return NetworkUtility.JsonSerialize($"ÕâÊÇÄã¿â´æÖĞĞòºÅÎª {cIndex} µÄ½ÇÉ«×°±¸ÎïÆ·ĞÅÏ¢£º\r\n{character.GetItemInfo(showEXP: true).Trim()}");
+                            return NetworkUtility.JsonSerialize($"è¿™æ˜¯ä½ åº“å­˜ä¸­åºå·ä¸º {cIndex} çš„è§’è‰²è£…å¤‡ç‰©å“ä¿¡æ¯ï¼š\r\n{character.GetItemInfo(showEXP: true).Trim()}");
                         }
                         else
                         {
-                            return NetworkUtility.JsonSerialize($"Ã»ÓĞÕÒµ½ÓëÕâ¸öĞòºÅÏà¶ÔÓ¦µÄ½ÇÉ«£¡");
+                            return NetworkUtility.JsonSerialize($"æ²¡æœ‰æ‰¾åˆ°ä¸è¿™ä¸ªåºå·ç›¸å¯¹åº”çš„è§’è‰²ï¼");
                         }
                     }
                 }
@@ -1315,11 +1315,11 @@ namespace Oshima.Core.Controllers
                     if (itemIndex > 0 && itemIndex <= user.Inventory.Items.Count)
                     {
                         Item item = user.Inventory.Items.ToList()[itemIndex - 1];
-                        return NetworkUtility.JsonSerialize($"ÕâÊÇÄã¿â´æÖĞĞòºÅÎª {itemIndex} µÄÎïÆ·ÏêÏ¸ĞÅÏ¢£º\r\n{item.ToStringInventory(true).Trim()}");
+                        return NetworkUtility.JsonSerialize($"è¿™æ˜¯ä½ åº“å­˜ä¸­åºå·ä¸º {itemIndex} çš„ç‰©å“è¯¦ç»†ä¿¡æ¯ï¼š\r\n{item.ToStringInventory(true).Trim()}");
                     }
                     else
                     {
-                        return NetworkUtility.JsonSerialize($"Ã»ÓĞÕÒµ½ÓëÕâ¸öĞòºÅÏà¶ÔÓ¦µÄÎïÆ·£¡");
+                        return NetworkUtility.JsonSerialize($"æ²¡æœ‰æ‰¾åˆ°ä¸è¿™ä¸ªåºå·ç›¸å¯¹åº”çš„ç‰©å“ï¼");
                     }
                 }
                 else
@@ -1357,35 +1357,35 @@ namespace Oshima.Core.Controllers
                     }
                     else
                     {
-                        return NetworkUtility.JsonSerialize($"Ã»ÓĞÕÒµ½ÓëÕâ¸öĞòºÅÏà¶ÔÓ¦µÄ½ÇÉ«£¡");
+                        return NetworkUtility.JsonSerialize($"æ²¡æœ‰æ‰¾åˆ°ä¸è¿™ä¸ªåºå·ç›¸å¯¹åº”çš„è§’è‰²ï¼");
                     }
                     if (itemIndex > 0 && itemIndex <= user.Inventory.Items.Count)
                     {
                         item = user.Inventory.Items.ToList()[itemIndex - 1];
                         if ((int)item.ItemType < (int)ItemType.MagicCardPack || (int)item.ItemType > (int)ItemType.Accessory)
                         {
-                            return NetworkUtility.JsonSerialize($"Õâ¸öÎïÆ·ÎŞ·¨±»×°±¸£¡");
+                            return NetworkUtility.JsonSerialize($"è¿™ä¸ªç‰©å“æ— æ³•è¢«è£…å¤‡ï¼");
                         }
                         else if (item.Character != null)
                         {
-                            return NetworkUtility.JsonSerialize($"Õâ¸öÎïÆ·ÎŞ·¨±»×°±¸£¡[ {item.Character.ToStringWithLevelWithOutUser()} ] ÒÑ×°±¸´ËÎïÆ·¡£");
+                            return NetworkUtility.JsonSerialize($"è¿™ä¸ªç‰©å“æ— æ³•è¢«è£…å¤‡ï¼[ {item.Character.ToStringWithLevelWithOutUser()} ] å·²è£…å¤‡æ­¤ç‰©å“ã€‚");
                         }
                     }
                     else
                     {
-                        return NetworkUtility.JsonSerialize($"Ã»ÓĞÕÒµ½ÓëÕâ¸öĞòºÅÏà¶ÔÓ¦µÄÎïÆ·£¡");
+                        return NetworkUtility.JsonSerialize($"æ²¡æœ‰æ‰¾åˆ°ä¸è¿™ä¸ªåºå·ç›¸å¯¹åº”çš„ç‰©å“ï¼");
                     }
                     if (character != null && item != null && character.Equip(item))
                     {
                         user.LastTime = DateTime.Now;
                         pc.Add("user", user);
                         pc.SaveConfig();
-                        return NetworkUtility.JsonSerialize($"×°±¸{ItemSet.GetQualityTypeName(item.QualityType)}{ItemSet.GetItemTypeName(item.ItemType)}¡¾{item.Name}¡¿³É¹¦£¡" +
-                            $"£¨{ItemSet.GetEquipSlotTypeName(item.EquipSlotType)}À¸Î»£©\r\nÎïÆ·ÃèÊö£º{item.Description}");
+                        return NetworkUtility.JsonSerialize($"è£…å¤‡{ItemSet.GetQualityTypeName(item.QualityType)}{ItemSet.GetItemTypeName(item.ItemType)}ã€{item.Name}ã€‘æˆåŠŸï¼" +
+                            $"ï¼ˆ{ItemSet.GetEquipSlotTypeName(item.EquipSlotType)}æ ä½ï¼‰\r\nç‰©å“æè¿°ï¼š{item.Description}");
                     }
                     else
                     {
-                        return NetworkUtility.JsonSerialize($"×°±¸Ê§°Ü£¡¿ÉÄÜÊÇ½ÇÉ«¡¢ÎïÆ·²»´æÔÚ»òÕßÆäËûÔ­Òò¡£");
+                        return NetworkUtility.JsonSerialize($"è£…å¤‡å¤±è´¥ï¼å¯èƒ½æ˜¯è§’è‰²ã€ç‰©å“ä¸å­˜åœ¨æˆ–è€…å…¶ä»–åŸå› ã€‚");
                     }
                 }
                 else
@@ -1426,13 +1426,13 @@ namespace Oshima.Core.Controllers
                             user.LastTime = DateTime.Now;
                             pc.Add("user", user);
                             pc.SaveConfig();
-                            return NetworkUtility.JsonSerialize($"È¡Ïû×°±¸{ItemSet.GetQualityTypeName(item.QualityType)}{ItemSet.GetItemTypeName(item.ItemType)}¡¾{item.Name}¡¿³É¹¦£¡£¨{ItemSet.GetEquipSlotTypeName(type)}À¸Î»£©");
+                            return NetworkUtility.JsonSerialize($"å–æ¶ˆè£…å¤‡{ItemSet.GetQualityTypeName(item.QualityType)}{ItemSet.GetItemTypeName(item.ItemType)}ã€{item.Name}ã€‘æˆåŠŸï¼ï¼ˆ{ItemSet.GetEquipSlotTypeName(type)}æ ä½ï¼‰");
                         }
-                        else return NetworkUtility.JsonSerialize($"È¡Ïû×°±¸Ê§°Ü£¡½ÇÉ«²¢Ã»ÓĞ×°±¸{ItemSet.GetEquipSlotTypeName(type)}£¬»òÕß¿â´æÖĞ²»´æÔÚ´ËÎïÆ·£¡");
+                        else return NetworkUtility.JsonSerialize($"å–æ¶ˆè£…å¤‡å¤±è´¥ï¼è§’è‰²å¹¶æ²¡æœ‰è£…å¤‡{ItemSet.GetEquipSlotTypeName(type)}ï¼Œæˆ–è€…åº“å­˜ä¸­ä¸å­˜åœ¨æ­¤ç‰©å“ï¼");
                     }
                     else
                     {
-                        return NetworkUtility.JsonSerialize($"Ã»ÓĞÕÒµ½ÓëÕâ¸öĞòºÅÏà¶ÔÓ¦µÄ½ÇÉ«£¡");
+                        return NetworkUtility.JsonSerialize($"æ²¡æœ‰æ‰¾åˆ°ä¸è¿™ä¸ªåºå·ç›¸å¯¹åº”çš„è§’è‰²ï¼");
                     }
                 }
                 else
@@ -1484,7 +1484,7 @@ namespace Oshima.Core.Controllers
                 }
                 else
                 {
-                    return [$"¶Ô·½Ã²ËÆ»¹Ã»ÓĞ´´½¨´æµµÄØ£¡"];
+                    return [$"å¯¹æ–¹è²Œä¼¼è¿˜æ²¡æœ‰åˆ›å»ºå­˜æ¡£å‘¢ï¼"];
                 }
 
                 if (user1 != null && user2 != null)
@@ -1493,7 +1493,7 @@ namespace Oshima.Core.Controllers
                 }
                 else
                 {
-                    return [$"¾ö¶··¢ÆğÊ§°Ü£¡"];
+                    return [$"å†³æ–—å‘èµ·å¤±è´¥ï¼"];
                 }
             }
             catch (Exception e)
@@ -1512,11 +1512,11 @@ namespace Oshima.Core.Controllers
                     long enemyid = FunGameService.UserIdAndUsername.Where(kv => kv.Value == name).Select(kv => kv.Key).FirstOrDefault();
                     if (enemyid == 0)
                     {
-                        return [$"ÕÒ²»µ½´ËÃû³Æ¶ÔÓ¦µÄÍæ¼Ò£¡"];
+                        return [$"æ‰¾ä¸åˆ°æ­¤åç§°å¯¹åº”çš„ç©å®¶ï¼"];
                     }
                     return FightCustom(qq, enemyid, all);
                 }
-                return [$"¾ö¶··¢ÆğÊ§°Ü£¡"];
+                return [$"å†³æ–—å‘èµ·å¤±è´¥ï¼"];
             }
             catch (Exception e)
             {
@@ -1547,7 +1547,7 @@ namespace Oshima.Core.Controllers
 
                     if (user1.Inventory.Squad.Count == 0)
                     {
-                        return [$"ÄãÉĞÎ´ÉèÖÃĞ¡¶Ó£¬ÇëÏÈÉèÖÃ1-4Ãû½ÇÉ«£¡"];
+                        return [$"ä½ å°šæœªè®¾ç½®å°é˜Ÿï¼Œè¯·å…ˆè®¾ç½®1-4åè§’è‰²ï¼"];
                     }
 
                     user1.LastTime = DateTime.Now;
@@ -1565,7 +1565,7 @@ namespace Oshima.Core.Controllers
 
                     if (user2.Inventory.Squad.Count == 0)
                     {
-                        return [$"¶Ô·½ÉĞÎ´ÉèÖÃĞ¡¶Ó£¬ÎŞ·¨¾ö¶·¡£"];
+                        return [$"å¯¹æ–¹å°šæœªè®¾ç½®å°é˜Ÿï¼Œæ— æ³•å†³æ–—ã€‚"];
                     }
 
                     user2.LastTime = DateTime.Now;
@@ -1574,20 +1574,20 @@ namespace Oshima.Core.Controllers
                 }
                 else
                 {
-                    return [$"¶Ô·½Ã²ËÆ»¹Ã»ÓĞ´´½¨´æµµÄØ£¡"];
+                    return [$"å¯¹æ–¹è²Œä¼¼è¿˜æ²¡æœ‰åˆ›å»ºå­˜æ¡£å‘¢ï¼"];
                 }
 
                 if (user1 != null && user2 != null)
                 {
                     Character[] squad1 = [.. user1.Inventory.Characters.Where(c => user1.Inventory.Squad.Contains(c.Id)).Select(c => c.Copy())];
                     Character[] squad2 = [.. user2.Inventory.Characters.Where(c => user2.Inventory.Squad.Contains(c.Id)).Select(c => c.Copy())];
-                    Team team1 = new($"{user1.Username}µÄĞ¡¶Ó", squad1);
-                    Team team2 = new($"{user2.Username}µÄĞ¡¶Ó", squad2);
+                    Team team1 = new($"{user1.Username}çš„å°é˜Ÿ", squad1);
+                    Team team2 = new($"{user2.Username}çš„å°é˜Ÿ", squad2);
                     return FunGameActionQueue.NewAndStartTeamGame([team1, team2], 0, 0, false, false, false, false, showAllRound);
                 }
                 else
                 {
-                    return [$"¾ö¶··¢ÆğÊ§°Ü£¡"];
+                    return [$"å†³æ–—å‘èµ·å¤±è´¥ï¼"];
                 }
             }
             catch (Exception e)
@@ -1606,11 +1606,11 @@ namespace Oshima.Core.Controllers
                     long enemyid = FunGameService.UserIdAndUsername.Where(kv => kv.Value == name).Select(kv => kv.Key).FirstOrDefault();
                     if (enemyid == 0)
                     {
-                        return [$"ÕÒ²»µ½´ËÃû³Æ¶ÔÓ¦µÄÍæ¼Ò£¡"];
+                        return [$"æ‰¾ä¸åˆ°æ­¤åç§°å¯¹åº”çš„ç©å®¶ï¼"];
                     }
                     return FightCustomTeam(qq, enemyid, all);
                 }
-                return [$"¾ö¶··¢ÆğÊ§°Ü£¡"];
+                return [$"å†³æ–—å‘èµ·å¤±è´¥ï¼"];
             }
             catch (Exception e)
             {
@@ -1643,7 +1643,7 @@ namespace Oshima.Core.Controllers
                         {
                             if (item.RemainUseTimes <= 0)
                             {
-                                return NetworkUtility.JsonSerialize("´ËÎïÆ·Ê£ÓàÊ¹ÓÃ´ÎÊıÎª0£¬ÎŞ·¨Ê¹ÓÃ£¡");
+                                return NetworkUtility.JsonSerialize("æ­¤ç‰©å“å‰©ä½™ä½¿ç”¨æ¬¡æ•°ä¸º0ï¼Œæ— æ³•ä½¿ç”¨ï¼");
                             }
 
                             List<Character> targets = [];
@@ -1666,12 +1666,12 @@ namespace Oshima.Core.Controllers
                         }
                         else
                         {
-                            return NetworkUtility.JsonSerialize($"Õâ¸öÎïÆ·ÎŞ·¨Ê¹ÓÃ£¡");
+                            return NetworkUtility.JsonSerialize($"è¿™ä¸ªç‰©å“æ— æ³•ä½¿ç”¨ï¼");
                         }
                     }
                     else
                     {
-                        return NetworkUtility.JsonSerialize($"Ã»ÓĞÕÒµ½ÓëÕâ¸öĞòºÅÏà¶ÔÓ¦µÄÎïÆ·£¡");
+                        return NetworkUtility.JsonSerialize($"æ²¡æœ‰æ‰¾åˆ°ä¸è¿™ä¸ªåºå·ç›¸å¯¹åº”çš„ç‰©å“ï¼");
                     }
                 }
                 else
@@ -1705,7 +1705,7 @@ namespace Oshima.Core.Controllers
                     IEnumerable<Item> items = user.Inventory.Items.Where(i => i.Name == name && i.Character is null && i.ItemType != ItemType.MagicCard);
                     if (!items.Any())
                     {
-                        return NetworkUtility.JsonSerialize($"¿â´æÖĞ²»´æÔÚÃû³ÆÎª¡¾{name}¡¿µÄÎïÆ·£¡Èç¹ûÊÇÄ§·¨¿¨£¬ÇëÓÃ¡¾Ê¹ÓÃÄ§·¨¿¨¡¿Ö¸Áî¡£");
+                        return NetworkUtility.JsonSerialize($"åº“å­˜ä¸­ä¸å­˜åœ¨åç§°ä¸ºã€{name}ã€‘çš„ç‰©å“ï¼å¦‚æœæ˜¯é­”æ³•å¡ï¼Œè¯·ç”¨ã€ä½¿ç”¨é­”æ³•å¡ã€‘æŒ‡ä»¤ã€‚");
                     }
 
                     if (items.Count() >= useCount)
@@ -1725,7 +1725,7 @@ namespace Oshima.Core.Controllers
                             }
                             else
                             {
-                                msgs.Add($"¿â´æÖĞ²»´æÔÚĞòºÅÎª {characterIndex} µÄ½ÇÉ«£¡");
+                                msgs.Add($"åº“å­˜ä¸­ä¸å­˜åœ¨åºå·ä¸º {characterIndex} çš„è§’è‰²ï¼");
                             }
                         }
 
@@ -1735,7 +1735,7 @@ namespace Oshima.Core.Controllers
                             {
                                 if (item.RemainUseTimes <= 0)
                                 {
-                                    msgs.Add("´ËÎïÆ·Ê£ÓàÊ¹ÓÃ´ÎÊıÎª0£¬ÎŞ·¨Ê¹ÓÃ£¡");
+                                    msgs.Add("æ­¤ç‰©å“å‰©ä½™ä½¿ç”¨æ¬¡æ•°ä¸º0ï¼Œæ— æ³•ä½¿ç”¨ï¼");
                                 }
 
                                 if (FunGameService.UseItem(item, user, [.. targets], out string msg))
@@ -1746,7 +1746,7 @@ namespace Oshima.Core.Controllers
                             }
                             else
                             {
-                                msgs.Add($"Õâ¸öÎïÆ·ÎŞ·¨Ê¹ÓÃ£¡");
+                                msgs.Add($"è¿™ä¸ªç‰©å“æ— æ³•ä½¿ç”¨ï¼");
                             }
                         }
                         if (successCount > 0)
@@ -1755,11 +1755,11 @@ namespace Oshima.Core.Controllers
                             pc.Add("user", user);
                             pc.SaveConfig();
                         }
-                        return NetworkUtility.JsonSerialize($"Ê¹ÓÃÍê±Ï£¡Ê¹ÓÃ {useCount} ¼şÎïÆ·£¬³É¹¦ {successCount} ¼ş£¡\r\n" + string.Join("\r\n", msgs.Count > 30 ? msgs.Take(30) : msgs));
+                        return NetworkUtility.JsonSerialize($"ä½¿ç”¨å®Œæ¯•ï¼ä½¿ç”¨ {useCount} ä»¶ç‰©å“ï¼ŒæˆåŠŸ {successCount} ä»¶ï¼\r\n" + string.Join("\r\n", msgs.Count > 30 ? msgs.Take(30) : msgs));
                     }
                     else
                     {
-                        return NetworkUtility.JsonSerialize("´ËÎïÆ·µÄ¿ÉÊ¹ÓÃÊıÁ¿Ğ¡ÓÚÄãÏëÒªÊ¹ÓÃµÄÊıÁ¿£¡");
+                        return NetworkUtility.JsonSerialize("æ­¤ç‰©å“çš„å¯ä½¿ç”¨æ•°é‡å°äºä½ æƒ³è¦ä½¿ç”¨çš„æ•°é‡ï¼");
                     }
                 }
                 else
@@ -1798,7 +1798,7 @@ namespace Oshima.Core.Controllers
                         {
                             if (item.RemainUseTimes <= 0)
                             {
-                                return NetworkUtility.JsonSerialize("´ËÎïÆ·Ê£ÓàÊ¹ÓÃ´ÎÊıÎª0£¬ÎŞ·¨Ê¹ÓÃ£¡");
+                                return NetworkUtility.JsonSerialize("æ­¤ç‰©å“å‰©ä½™ä½¿ç”¨æ¬¡æ•°ä¸º0ï¼Œæ— æ³•ä½¿ç”¨ï¼");
                             }
 
                             string msg = "";
@@ -1817,17 +1817,17 @@ namespace Oshima.Core.Controllers
                                         }
                                         else
                                         {
-                                            return NetworkUtility.JsonSerialize($"¿â´æÖĞÃ»ÓĞÕÒµ½´Ë½ÇÉ«¶ÔÓ¦µÄÄ§·¨¿¨°ü£¡");
+                                            return NetworkUtility.JsonSerialize($"åº“å­˜ä¸­æ²¡æœ‰æ‰¾åˆ°æ­¤è§’è‰²å¯¹åº”çš„é­”æ³•å¡åŒ…ï¼");
                                         }
                                     }
                                     else
                                     {
-                                        return NetworkUtility.JsonSerialize($"Õâ¸ö½ÇÉ«Ã»ÓĞ×°±¸Ä§·¨¿¨°ü£¬ÎŞ·¨¶ÔÆäÊ¹ÓÃÄ§·¨¿¨£¡");
+                                        return NetworkUtility.JsonSerialize($"è¿™ä¸ªè§’è‰²æ²¡æœ‰è£…å¤‡é­”æ³•å¡åŒ…ï¼Œæ— æ³•å¯¹å…¶ä½¿ç”¨é­”æ³•å¡ï¼");
                                     }
                                 }
                                 else
                                 {
-                                    return NetworkUtility.JsonSerialize($"Ã»ÓĞÕÒµ½ÓëÕâ¸öĞòºÅÏà¶ÔÓ¦µÄ½ÇÉ«£¡");
+                                    return NetworkUtility.JsonSerialize($"æ²¡æœ‰æ‰¾åˆ°ä¸è¿™ä¸ªåºå·ç›¸å¯¹åº”çš„è§’è‰²ï¼");
                                 }
                             }
                             else
@@ -1841,12 +1841,12 @@ namespace Oshima.Core.Controllers
                                     }
                                     else
                                     {
-                                        return NetworkUtility.JsonSerialize($"ÓëÄ¿±êĞòºÅÏà¶ÔÓ¦µÄÎïÆ·²»ÊÇÄ§·¨¿¨°ü£¡");
+                                        return NetworkUtility.JsonSerialize($"ä¸ç›®æ ‡åºå·ç›¸å¯¹åº”çš„ç‰©å“ä¸æ˜¯é­”æ³•å¡åŒ…ï¼");
                                     }
                                 }
                                 else
                                 {
-                                    return NetworkUtility.JsonSerialize($"Ã»ÓĞÕÒµ½ÓëÄ¿±êĞòºÅÏà¶ÔÓ¦µÄÎïÆ·£¡");
+                                    return NetworkUtility.JsonSerialize($"æ²¡æœ‰æ‰¾åˆ°ä¸ç›®æ ‡åºå·ç›¸å¯¹åº”çš„ç‰©å“ï¼");
                                 }
                             }
 
@@ -1857,12 +1857,12 @@ namespace Oshima.Core.Controllers
                         }
                         else
                         {
-                            return NetworkUtility.JsonSerialize($"Õâ¸öÎïÆ·²»ÊÇÄ§·¨¿¨£¡");
+                            return NetworkUtility.JsonSerialize($"è¿™ä¸ªç‰©å“ä¸æ˜¯é­”æ³•å¡ï¼");
                         }
                     }
                     else
                     {
-                        return NetworkUtility.JsonSerialize($"Ã»ÓĞÕÒµ½ÓëÄ¿±êĞòºÅÏà¶ÔÓ¦µÄÎïÆ·£¡");
+                        return NetworkUtility.JsonSerialize($"æ²¡æœ‰æ‰¾åˆ°ä¸ç›®æ ‡åºå·ç›¸å¯¹åº”çš„ç‰©å“ï¼");
                     }
                 }
                 else
@@ -1899,34 +1899,34 @@ namespace Oshima.Core.Controllers
                     }
                     else
                     {
-                        return NetworkUtility.JsonSerialize($"Ã»ÓĞÕÒµ½ÓëÕâ¸öĞòºÅÏà¶ÔÓ¦µÄ½ÇÉ«£¡");
+                        return NetworkUtility.JsonSerialize($"æ²¡æœ‰æ‰¾åˆ°ä¸è¿™ä¸ªåºå·ç›¸å¯¹åº”çš„è§’è‰²ï¼");
                     }
 
                     if (character.Level == General.GameplayEquilibriumConstant.MaxLevel)
                     {
-                        return NetworkUtility.JsonSerialize($"¸Ã½ÇÉ«µÈ¼¶ÒÑÂú£¬ÎŞĞèÔÙÉı¼¶£¡");
+                        return NetworkUtility.JsonSerialize($"è¯¥è§’è‰²ç­‰çº§å·²æ»¡ï¼Œæ— éœ€å†å‡çº§ï¼");
                     }
 
                     int originalLevel = character.Level;
 
                     character.OnLevelUp(upCount);
 
-                    string msg = $"Éı¼¶Íê³É£¡½ÇÉ« [ {character} ] ¹²ÌáÉı {character.Level - originalLevel} ¼¶£¬µ±Ç°µÈ¼¶£º{character.Level} ¼¶¡£";
+                    string msg = $"å‡çº§å®Œæˆï¼è§’è‰² [ {character} ] å…±æå‡ {character.Level - originalLevel} çº§ï¼Œå½“å‰ç­‰çº§ï¼š{character.Level} çº§ã€‚";
 
                     if (character.Level != General.GameplayEquilibriumConstant.MaxLevel && General.GameplayEquilibriumConstant.EXPUpperLimit.TryGetValue(character.Level, out double need))
                     {
                         if (character.EXP < need)
                         {
-                            msg += $"\r\n½ÇÉ« [ {character} ] ÈÔĞè {need - character.EXP} µã¾­ÑéÖµ²ÅÄÜ¼ÌĞøÉı¼¶¡£";
+                            msg += $"\r\nè§’è‰² [ {character} ] ä»éœ€ {need - character.EXP} ç‚¹ç»éªŒå€¼æ‰èƒ½ç»§ç»­å‡çº§ã€‚";
                         }
                         else
                         {
-                            msg += $"\r\n½ÇÉ« [ {character} ] Ä¿Ç°Í»ÆÆ½ø¶È£º{character.LevelBreak + 1}/{General.GameplayEquilibriumConstant.LevelBreakList.Count}£¬ĞèÒª½øĞĞ¡¾½ÇÉ«Í»ÆÆ¡¿²ÅÄÜ¼ÌĞøÉı¼¶¡£";
+                            msg += $"\r\nè§’è‰² [ {character} ] ç›®å‰çªç ´è¿›åº¦ï¼š{character.LevelBreak + 1}/{General.GameplayEquilibriumConstant.LevelBreakList.Count}ï¼Œéœ€è¦è¿›è¡Œã€è§’è‰²çªç ´ã€‘æ‰èƒ½ç»§ç»­å‡çº§ã€‚";
                         }
                     }
                     else if (character.Level == General.GameplayEquilibriumConstant.MaxLevel)
                     {
-                        msg += $"\r\n¸Ã½ÇÉ«ÒÑÉı¼¶ÖÁÂú¼¶£¬¹§Ï²£¡";
+                        msg += $"\r\nè¯¥è§’è‰²å·²å‡çº§è‡³æ»¡çº§ï¼Œæ­å–œï¼";
                     }
 
                     user.LastTime = DateTime.Now;
@@ -1964,16 +1964,16 @@ namespace Oshima.Core.Controllers
                 }
                 else
                 {
-                    return NetworkUtility.JsonSerialize($"Ã»ÓĞÕÒµ½ÓëÕâ¸öĞòºÅÏà¶ÔÓ¦µÄ½ÇÉ«£¡");
+                    return NetworkUtility.JsonSerialize($"æ²¡æœ‰æ‰¾åˆ°ä¸è¿™ä¸ªåºå·ç›¸å¯¹åº”çš„è§’è‰²ï¼");
                 }
 
                 if (character.LevelBreak + 1 == General.GameplayEquilibriumConstant.LevelBreakList.Count)
                 {
-                    return NetworkUtility.JsonSerialize($"¸Ã½ÇÉ«ÒÑÍê³ÉÈ«²¿µÄÍ»ÆÆ½×¶Î£¬ÎŞĞèÔÙÍ»ÆÆ£¡");
+                    return NetworkUtility.JsonSerialize($"è¯¥è§’è‰²å·²å®Œæˆå…¨éƒ¨çš„çªç ´é˜¶æ®µï¼Œæ— éœ€å†çªç ´ï¼");
                 }
 
-                return NetworkUtility.JsonSerialize($"½ÇÉ« [ {character} ] Ä¿Ç°Í»ÆÆ½ø¶È£º{character.LevelBreak + 1}/{General.GameplayEquilibriumConstant.LevelBreakList.Count}" +
-                    $"\r\n¸Ã½ÇÉ«ÏÂÒ»¸öµÈ¼¶Í»ÆÆ½×¶ÎÔÚ {General.GameplayEquilibriumConstant.LevelBreakList.ToArray()[character.LevelBreak + 1]} ¼¶£¬ËùĞè²ÄÁÏ£º\r\n" + FunGameService.GetLevelBreakNeedy(character.LevelBreak + 1));
+                return NetworkUtility.JsonSerialize($"è§’è‰² [ {character} ] ç›®å‰çªç ´è¿›åº¦ï¼š{character.LevelBreak + 1}/{General.GameplayEquilibriumConstant.LevelBreakList.Count}" +
+                    $"\r\nè¯¥è§’è‰²ä¸‹ä¸€ä¸ªç­‰çº§çªç ´é˜¶æ®µåœ¨ {General.GameplayEquilibriumConstant.LevelBreakList.ToArray()[character.LevelBreak + 1]} çº§ï¼Œæ‰€éœ€ææ–™ï¼š\r\n" + FunGameService.GetLevelBreakNeedy(character.LevelBreak + 1));
             }
             else
             {
@@ -2003,12 +2003,12 @@ namespace Oshima.Core.Controllers
                     }
                     else
                     {
-                        return NetworkUtility.JsonSerialize($"Ã»ÓĞÕÒµ½ÓëÕâ¸öĞòºÅÏà¶ÔÓ¦µÄ½ÇÉ«£¡");
+                        return NetworkUtility.JsonSerialize($"æ²¡æœ‰æ‰¾åˆ°ä¸è¿™ä¸ªåºå·ç›¸å¯¹åº”çš„è§’è‰²ï¼");
                     }
 
                     if (character.LevelBreak + 1 == General.GameplayEquilibriumConstant.LevelBreakList.Count)
                     {
-                        return NetworkUtility.JsonSerialize($"¸Ã½ÇÉ«ÒÑÍê³ÉÈ«²¿µÄÍ»ÆÆ½×¶Î£¬ÎŞĞèÔÙÍ»ÆÆ£¡");
+                        return NetworkUtility.JsonSerialize($"è¯¥è§’è‰²å·²å®Œæˆå…¨éƒ¨çš„çªç ´é˜¶æ®µï¼Œæ— éœ€å†çªç ´ï¼");
                     }
 
                     int originalBreak = character.LevelBreak;
@@ -2026,7 +2026,7 @@ namespace Oshima.Core.Controllers
                                 }
                                 else
                                 {
-                                    return NetworkUtility.JsonSerialize($"ÄãµÄ{General.GameplayEquilibriumConstant.InGameMaterial}²»×ã {needCount} ÄØ£¬²»Âú×ãÍ»ÆÆÌõ¼ş£¡");
+                                    return NetworkUtility.JsonSerialize($"ä½ çš„{General.GameplayEquilibriumConstant.InGameMaterial}ä¸è¶³ {needCount} å‘¢ï¼Œä¸æ»¡è¶³çªç ´æ¡ä»¶ï¼");
                                 }
                             }
                             else
@@ -2044,7 +2044,7 @@ namespace Oshima.Core.Controllers
                                     }
                                     else
                                     {
-                                        return NetworkUtility.JsonSerialize($"ÄãµÄÎïÆ·¡¾{key}¡¿ÊıÁ¿²»×ã {needCount} ÄØ£¬²»Âú×ãÍ»ÆÆÌõ¼ş£¡");
+                                        return NetworkUtility.JsonSerialize($"ä½ çš„ç‰©å“ã€{key}ã€‘æ•°é‡ä¸è¶³ {needCount} å‘¢ï¼Œä¸æ»¡è¶³çªç ´æ¡ä»¶ï¼");
                                     }
                                 }
                             }
@@ -2055,18 +2055,18 @@ namespace Oshima.Core.Controllers
 
                     if (originalBreak == character.LevelBreak)
                     {
-                        return NetworkUtility.JsonSerialize($"Í»ÆÆÊ§°Ü£¡½ÇÉ« [ {character} ] Ä¿Ç°Í»ÆÆ½ø¶È£º{character.LevelBreak + 1}/{General.GameplayEquilibriumConstant.LevelBreakList.Count}¡£" +
-                            $"\r\n¸Ã½ÇÉ«ÏÂÒ»¸öµÈ¼¶Í»ÆÆ½×¶ÎÔÚ {General.GameplayEquilibriumConstant.LevelBreakList.ToArray()[character.LevelBreak + 1]} ¼¶£¬ËùĞè²ÄÁÏ£º\r\n" + FunGameService.GetLevelBreakNeedy(character.LevelBreak + 1));
+                        return NetworkUtility.JsonSerialize($"çªç ´å¤±è´¥ï¼è§’è‰² [ {character} ] ç›®å‰çªç ´è¿›åº¦ï¼š{character.LevelBreak + 1}/{General.GameplayEquilibriumConstant.LevelBreakList.Count}ã€‚" +
+                            $"\r\nè¯¥è§’è‰²ä¸‹ä¸€ä¸ªç­‰çº§çªç ´é˜¶æ®µåœ¨ {General.GameplayEquilibriumConstant.LevelBreakList.ToArray()[character.LevelBreak + 1]} çº§ï¼Œæ‰€éœ€ææ–™ï¼š\r\n" + FunGameService.GetLevelBreakNeedy(character.LevelBreak + 1));
                     }
                     else
                     {
                         user.LastTime = DateTime.Now;
                         pc.Add("user", user);
                         pc.SaveConfig();
-                        return NetworkUtility.JsonSerialize($"Í»ÆÆ³É¹¦£¡½ÇÉ« [ {character} ] Ä¿Ç°Í»ÆÆ½ø¶È£º{character.LevelBreak + 1}/{General.GameplayEquilibriumConstant.LevelBreakList.Count}¡£" +
+                        return NetworkUtility.JsonSerialize($"çªç ´æˆåŠŸï¼è§’è‰² [ {character} ] ç›®å‰çªç ´è¿›åº¦ï¼š{character.LevelBreak + 1}/{General.GameplayEquilibriumConstant.LevelBreakList.Count}ã€‚" +
                             $"{(character.LevelBreak + 1 == General.GameplayEquilibriumConstant.LevelBreakList.Count ?
-                            "\r\n¸Ã½ÇÉ«ÒÑÍê³ÉÈ«²¿µÄÍ»ÆÆ½×¶Î£¬¹§Ï²£¡" :
-                            $"\r\n¸Ã½ÇÉ«ÏÂÒ»¸öµÈ¼¶Í»ÆÆ½×¶ÎÔÚ {General.GameplayEquilibriumConstant.LevelBreakList.ToArray()[character.LevelBreak + 1]} ¼¶£¬ËùĞè²ÄÁÏ£º\r\n" + FunGameService.GetLevelBreakNeedy(character.LevelBreak + 1))}");
+                            "\r\nè¯¥è§’è‰²å·²å®Œæˆå…¨éƒ¨çš„çªç ´é˜¶æ®µï¼Œæ­å–œï¼" :
+                            $"\r\nè¯¥è§’è‰²ä¸‹ä¸€ä¸ªç­‰çº§çªç ´é˜¶æ®µåœ¨ {General.GameplayEquilibriumConstant.LevelBreakList.ToArray()[character.LevelBreak + 1]} çº§ï¼Œæ‰€éœ€ææ–™ï¼š\r\n" + FunGameService.GetLevelBreakNeedy(character.LevelBreak + 1))}");
                     }
                 }
                 else
@@ -2106,18 +2106,18 @@ namespace Oshima.Core.Controllers
                         if (itemName == General.GameplayEquilibriumConstant.InGameCurrency)
                         {
                             user2.Inventory.Credits += itemCount;
-                            msg = $"ÒÑÎª [ {user2} ] Éú³É {itemCount} {General.GameplayEquilibriumConstant.InGameCurrency}";
+                            msg = $"å·²ä¸º [ {user2} ] ç”Ÿæˆ {itemCount} {General.GameplayEquilibriumConstant.InGameCurrency}";
                         }
                         else if (itemName == General.GameplayEquilibriumConstant.InGameMaterial)
                         {
                             user2.Inventory.Materials += itemCount;
-                            msg = $"ÒÑÎª [ {user2} ] Éú³É {itemCount} {General.GameplayEquilibriumConstant.InGameMaterial}";
+                            msg = $"å·²ä¸º [ {user2} ] ç”Ÿæˆ {itemCount} {General.GameplayEquilibriumConstant.InGameMaterial}";
                         }
-                        else if (itemName.Contains("Ä§·¨¿¨°ü"))
+                        else if (itemName.Contains("é­”æ³•å¡åŒ…"))
                         {
                             foreach (string type in ItemSet.QualityTypeNameArray)
                             {
-                                if (itemName == $"{type}Ä§·¨¿¨°ü")
+                                if (itemName == $"{type}é­”æ³•å¡åŒ…")
                                 {
                                     int success = 0;
                                     for (int i = 0; i < itemCount; i++)
@@ -2130,16 +2130,16 @@ namespace Oshima.Core.Controllers
                                             success++;
                                         }
                                     }
-                                    msg = $"ÒÑÎª [ {user2} ] ³É¹¦Éú³É {success} ¸ö{type}Ä§·¨¿¨°ü";
+                                    msg = $"å·²ä¸º [ {user2} ] æˆåŠŸç”Ÿæˆ {success} ä¸ª{type}é­”æ³•å¡åŒ…";
                                     break;
                                 }
                             }
                         }
-                        else if (itemName.Contains("Ä§·¨¿¨"))
+                        else if (itemName.Contains("é­”æ³•å¡"))
                         {
                             foreach (string type in ItemSet.QualityTypeNameArray)
                             {
-                                if (itemName == $"{type}Ä§·¨¿¨")
+                                if (itemName == $"{type}é­”æ³•å¡")
                                 {
                                     for (int i = 0; i < itemCount; i++)
                                     {
@@ -2147,7 +2147,7 @@ namespace Oshima.Core.Controllers
                                         item.User = user2;
                                         user2.Inventory.Items.Add(item);
                                     }
-                                    msg = $"ÒÑÎª [ {user2} ] Éú³É {itemCount} ÕÅ{type}Ä§·¨¿¨";
+                                    msg = $"å·²ä¸º [ {user2} ] ç”Ÿæˆ {itemCount} å¼ {type}é­”æ³•å¡";
                                     break;
                                 }
                             }
@@ -2160,23 +2160,23 @@ namespace Oshima.Core.Controllers
                                 newItem.User = user2;
                                 user2.Inventory.Items.Add(newItem);
                             }
-                            msg = $"ÒÑÎª [ {user2} ] Éú³É {itemCount} ¸ö [{ItemSet.GetQualityTypeName(item.QualityType)}|{ItemSet.GetItemTypeName(item.ItemType)}] {item.Name}";
+                            msg = $"å·²ä¸º [ {user2} ] ç”Ÿæˆ {itemCount} ä¸ª [{ItemSet.GetQualityTypeName(item.QualityType)}|{ItemSet.GetItemTypeName(item.ItemType)}] {item.Name}";
                         }
                         else
                         {
-                            return NetworkUtility.JsonSerialize($"´ËÎïÆ·²»´æÔÚ£¡");
+                            return NetworkUtility.JsonSerialize($"æ­¤ç‰©å“ä¸å­˜åœ¨ï¼");
                         }
                         pc2.Add("user", user2);
                         pc2.SaveConfig();
                     }
                     else
                     {
-                        return NetworkUtility.JsonSerialize($"Ä¿±ê UID ²»´æÔÚ£¡");
+                        return NetworkUtility.JsonSerialize($"ç›®æ ‡ UID ä¸å­˜åœ¨ï¼");
                     }
                 }
                 else
                 {
-                    return NetworkUtility.JsonSerialize($"ÄãÃ»ÓĞÈ¨ÏŞÊ¹ÓÃ´ËÖ¸Áî£¡");
+                    return NetworkUtility.JsonSerialize($"ä½ æ²¡æœ‰æƒé™ä½¿ç”¨æ­¤æŒ‡ä»¤ï¼");
                 }
 
                 return NetworkUtility.JsonSerialize(msg);
@@ -2237,7 +2237,7 @@ namespace Oshima.Core.Controllers
                         pc.Add("user", user);
                         pc.SaveConfig();
                     }
-                    return NetworkUtility.JsonSerialize($"·Ö½âÍê±Ï£¡·Ö½â {ids.Length} ¼ş£¬³É¹¦ {successCount} ¼ş£¬µÃµ½ÁË {totalGained} {General.GameplayEquilibriumConstant.InGameMaterial}£¡");
+                    return NetworkUtility.JsonSerialize($"åˆ†è§£å®Œæ¯•ï¼åˆ†è§£ {ids.Length} ä»¶ï¼ŒæˆåŠŸ {successCount} ä»¶ï¼Œå¾—åˆ°äº† {totalGained} {General.GameplayEquilibriumConstant.InGameMaterial}ï¼");
                 }
                 else
                 {
@@ -2269,7 +2269,7 @@ namespace Oshima.Core.Controllers
                     IEnumerable<Item> items = user.Inventory.Items.Where(i => i.Name == name && i.Character is null);
                     if (!items.Any())
                     {
-                        return NetworkUtility.JsonSerialize($"¿â´æÖĞ²»´æÔÚÃû³ÆÎª¡¾{name}¡¿µÄÎïÆ·£¡");
+                        return NetworkUtility.JsonSerialize($"åº“å­˜ä¸­ä¸å­˜åœ¨åç§°ä¸ºã€{name}ã€‘çš„ç‰©å“ï¼");
                     }
 
                     if (items.Count() >= useCount)
@@ -2304,11 +2304,11 @@ namespace Oshima.Core.Controllers
                             pc.Add("user", user);
                             pc.SaveConfig();
                         }
-                        return NetworkUtility.JsonSerialize($"·Ö½âÍê±Ï£¡·Ö½â {useCount} ¼şÎïÆ·£¬³É¹¦ {successCount} ¼ş£¬µÃµ½ÁË {totalGained} {General.GameplayEquilibriumConstant.InGameMaterial}£¡");
+                        return NetworkUtility.JsonSerialize($"åˆ†è§£å®Œæ¯•ï¼åˆ†è§£ {useCount} ä»¶ç‰©å“ï¼ŒæˆåŠŸ {successCount} ä»¶ï¼Œå¾—åˆ°äº† {totalGained} {General.GameplayEquilibriumConstant.InGameMaterial}ï¼");
                     }
                     else
                     {
-                        return NetworkUtility.JsonSerialize("´ËÎïÆ·µÄ¿É·Ö½âÊıÁ¿Ğ¡ÓÚÄãÏëÒª·Ö½âµÄÊıÁ¿£¡");
+                        return NetworkUtility.JsonSerialize("æ­¤ç‰©å“çš„å¯åˆ†è§£æ•°é‡å°äºä½ æƒ³è¦åˆ†è§£çš„æ•°é‡ï¼");
                     }
                 }
                 else
@@ -2332,7 +2332,7 @@ namespace Oshima.Core.Controllers
 
                 if (qType < 0 || qType > (int)QualityType.Gold)
                 {
-                    return NetworkUtility.JsonSerialize($"Æ·ÖÊĞòºÅÊäÈë´íÎó£¡");
+                    return NetworkUtility.JsonSerialize($"å“è´¨åºå·è¾“å…¥é”™è¯¯ï¼");
                 }
 
                 PluginConfig pc = new("saved", userid.ToString());
@@ -2346,7 +2346,7 @@ namespace Oshima.Core.Controllers
                     IEnumerable<Item> items = user.Inventory.Items.Where(i => (int)i.QualityType == qType && i.Character is null);
                     if (!items.Any())
                     {
-                        return NetworkUtility.JsonSerialize($"¿â´æÖĞ{qualityName}ÎïÆ·ÊıÁ¿ÎªÁã£¡");
+                        return NetworkUtility.JsonSerialize($"åº“å­˜ä¸­{qualityName}ç‰©å“æ•°é‡ä¸ºé›¶ï¼");
                     }
 
                     List<string> msgs = [];
@@ -2379,7 +2379,7 @@ namespace Oshima.Core.Controllers
                         pc.Add("user", user);
                         pc.SaveConfig();
                     }
-                    return NetworkUtility.JsonSerialize($"·Ö½âÍê±Ï£¡³É¹¦·Ö½â {successCount} ¼ş{qualityName}ÎïÆ·£¬µÃµ½ÁË {totalGained} {General.GameplayEquilibriumConstant.InGameMaterial}£¡");
+                    return NetworkUtility.JsonSerialize($"åˆ†è§£å®Œæ¯•ï¼æˆåŠŸåˆ†è§£ {successCount} ä»¶{qualityName}ç‰©å“ï¼Œå¾—åˆ°äº† {totalGained} {General.GameplayEquilibriumConstant.InGameMaterial}ï¼");
                 }
                 else
                 {
@@ -2420,12 +2420,12 @@ namespace Oshima.Core.Controllers
                             }
                             else
                             {
-                                return NetworkUtility.JsonSerialize($"´ËÎïÆ·²»ÊÇÄ§·¨¿¨»òÕßÊ¹ÓÃ´ÎÊıÎª0£º{itemIndex}. {item.Name}");
+                                return NetworkUtility.JsonSerialize($"æ­¤ç‰©å“ä¸æ˜¯é­”æ³•å¡æˆ–è€…ä½¿ç”¨æ¬¡æ•°ä¸º0ï¼š{itemIndex}. {item.Name}");
                             }
                         }
                         else
                         {
-                            return NetworkUtility.JsonSerialize($"Ã»ÓĞÕÒµ½ÓëÕâ¸öĞòºÅÏà¶ÔÓ¦µÄÎïÆ·£º{itemIndex}");
+                            return NetworkUtility.JsonSerialize($"æ²¡æœ‰æ‰¾åˆ°ä¸è¿™ä¸ªåºå·ç›¸å¯¹åº”çš„ç‰©å“ï¼š{itemIndex}");
                         }
                     }
                     if (mfks.Count >= 3)
@@ -2442,16 +2442,16 @@ namespace Oshima.Core.Controllers
                             user.LastTime = DateTime.Now;
                             pc.Add("user", user);
                             pc.SaveConfig();
-                            return NetworkUtility.JsonSerialize($"ºÏ³ÉÄ§·¨¿¨°ü³É¹¦£¡»ñµÃÄ§·¨¿¨°ü£º\r\n{item.ToStringInventory(true)}");
+                            return NetworkUtility.JsonSerialize($"åˆæˆé­”æ³•å¡åŒ…æˆåŠŸï¼è·å¾—é­”æ³•å¡åŒ…ï¼š\r\n{item.ToStringInventory(true)}");
                         }
                         else
                         {
-                            return NetworkUtility.JsonSerialize($"ºÏ³ÉÄ§·¨¿¨°üÊ§°Ü£¡");
+                            return NetworkUtility.JsonSerialize($"åˆæˆé­”æ³•å¡åŒ…å¤±è´¥ï¼");
                         }
                     }
                     else
                     {
-                        return NetworkUtility.JsonSerialize($"Ñ¡ÓÃµÄÄ§·¨¿¨²»×ã 3 ÕÅ£¬ÇëÖØĞÂÑ¡Ôñ£¡");
+                        return NetworkUtility.JsonSerialize($"é€‰ç”¨çš„é­”æ³•å¡ä¸è¶³ 3 å¼ ï¼Œè¯·é‡æ–°é€‰æ‹©ï¼");
                     }
                 }
                 else
@@ -2487,14 +2487,14 @@ namespace Oshima.Core.Controllers
                     }
                     else
                     {
-                        return NetworkUtility.JsonSerialize($"Ã»ÓĞÕÒµ½ÓëÕâ¸öĞòºÅÏà¶ÔÓ¦µÄ½ÇÉ«£¡");
+                        return NetworkUtility.JsonSerialize($"æ²¡æœ‰æ‰¾åˆ°ä¸è¿™ä¸ªåºå·ç›¸å¯¹åº”çš„è§’è‰²ï¼");
                     }
 
                     user.Inventory.MainCharacter = character;
                     user.LastTime = DateTime.Now;
                     pc.Add("user", user);
                     pc.SaveConfig();
-                    return NetworkUtility.JsonSerialize($"ÉèÖÃÖ÷Õ½½ÇÉ«³É¹¦£º{character}");
+                    return NetworkUtility.JsonSerialize($"è®¾ç½®ä¸»æˆ˜è§’è‰²æˆåŠŸï¼š{character}");
                 }
                 else
                 {
@@ -2529,19 +2529,19 @@ namespace Oshima.Core.Controllers
                     }
                     else
                     {
-                        return NetworkUtility.JsonSerialize($"Ã»ÓĞÕÒµ½ÓëÕâ¸öĞòºÅÏà¶ÔÓ¦µÄ½ÇÉ«£¡");
+                        return NetworkUtility.JsonSerialize($"æ²¡æœ‰æ‰¾åˆ°ä¸è¿™ä¸ªåºå·ç›¸å¯¹åº”çš„è§’è‰²ï¼");
                     }
 
                     if (user.Inventory.Training.Count > 0)
                     {
-                        return NetworkUtility.JsonSerialize($"ÄãÒÑ¾­ÓĞ½ÇÉ«ÔÚÁ·¼¶ÖĞ£¬ÇëÊ¹ÓÃ¡¾Á·¼¶½áËã¡¿Ö¸Áî½áÊø²¢»ñÈ¡½±Àø£º{user.Inventory.Training.First()}£¡");
+                        return NetworkUtility.JsonSerialize($"ä½ å·²ç»æœ‰è§’è‰²åœ¨ç»ƒçº§ä¸­ï¼Œè¯·ä½¿ç”¨ã€ç»ƒçº§ç»“ç®—ã€‘æŒ‡ä»¤ç»“æŸå¹¶è·å–å¥–åŠ±ï¼š{user.Inventory.Training.First()}ï¼");
                     }
 
                     user.Inventory.Training[character.Id] = DateTime.Now;
                     user.LastTime = DateTime.Now;
                     pc.Add("user", user);
                     pc.SaveConfig();
-                    return NetworkUtility.JsonSerialize($"½ÇÉ« [{character}] ¿ªÊ¼Á·¼¶£¬Çë¹ıÒ»¶ÎÊ±¼äºó½øĞĞ¡¾Á·¼¶½áËã¡¿£¬Ê±¼äÔ½³¤½±ÀøÔ½·áÊ¢£¡Á·¼¶Ê±¼äÉÏÏŞ 1440 ·ÖÖÓ£¨24Ğ¡Ê±£©£¬³¬Ê±½«²»»áÔÙ²úÉúÊÕÒæ£¬Çë°´Ê±ÁìÈ¡½±Àø£¡");
+                    return NetworkUtility.JsonSerialize($"è§’è‰² [{character}] å¼€å§‹ç»ƒçº§ï¼Œè¯·è¿‡ä¸€æ®µæ—¶é—´åè¿›è¡Œã€ç»ƒçº§ç»“ç®—ã€‘ï¼Œæ—¶é—´è¶Šé•¿å¥–åŠ±è¶Šä¸°ç››ï¼ç»ƒçº§æ—¶é—´ä¸Šé™ 1440 åˆ†é’Ÿï¼ˆ24å°æ—¶ï¼‰ï¼Œè¶…æ—¶å°†ä¸ä¼šå†äº§ç”Ÿæ”¶ç›Šï¼Œè¯·æŒ‰æ—¶é¢†å–å¥–åŠ±ï¼");
                 }
                 else
                 {
@@ -2570,7 +2570,7 @@ namespace Oshima.Core.Controllers
 
                     if (user.Inventory.Training.Count == 0)
                     {
-                        return NetworkUtility.JsonSerialize($"ÄãÄ¿Ç°Ã»ÓĞ½ÇÉ«ÔÚÁ·¼¶ÖĞ£¬ÇëÊ¹ÓÃ¡¾¿ªÆôÁ·¼¶+½ÇÉ«ĞòºÅ¡¿Ö¸Áî½øĞĞÁ·¼¶¡£");
+                        return NetworkUtility.JsonSerialize($"ä½ ç›®å‰æ²¡æœ‰è§’è‰²åœ¨ç»ƒçº§ä¸­ï¼Œè¯·ä½¿ç”¨ã€å¼€å¯ç»ƒçº§+è§’è‰²åºå·ã€‘æŒ‡ä»¤è¿›è¡Œç»ƒçº§ã€‚");
                     }
 
                     long cid = user.Inventory.Training.Keys.First();
@@ -2591,30 +2591,30 @@ namespace Oshima.Core.Controllers
 
                         for (int i = 0; i < smallBookCount; i++)
                         {
-                            Item item = new Ğ¡¾­ÑéÊé(user);
+                            Item item = new å°ç»éªŒä¹¦(user);
                             user.Inventory.Items.Add(item);
                         }
 
                         for (int i = 0; i < mediumBookCount; i++)
                         {
-                            Item item = new ÖĞ¾­ÑéÊé(user);
+                            Item item = new ä¸­ç»éªŒä¹¦(user);
                             user.Inventory.Items.Add(item);
                         }
 
                         for (int i = 0; i < largeBookCount; i++)
                         {
-                            Item item = new ´ó¾­ÑéÊé(user);
+                            Item item = new å¤§ç»éªŒä¹¦(user);
                             user.Inventory.Items.Add(item);
                         }
 
                         user.LastTime = DateTime.Now;
                         pc.Add("user", user);
                         pc.SaveConfig();
-                        return NetworkUtility.JsonSerialize($"½ÇÉ« [ {character} ] Á·¼¶½áÊø£¬{msg}");
+                        return NetworkUtility.JsonSerialize($"è§’è‰² [ {character} ] ç»ƒçº§ç»“æŸï¼Œ{msg}");
                     }
                     else
                     {
-                        return NetworkUtility.JsonSerialize($"ÄãÄ¿Ç°Ã»ÓĞ½ÇÉ«ÔÚÁ·¼¶ÖĞ£¬Ò²¿ÉÄÜÊÇ¿â´æĞÅÏ¢»ñÈ¡Òì³££¬ÇëÉÔºóÔÙÊÔ¡£");
+                        return NetworkUtility.JsonSerialize($"ä½ ç›®å‰æ²¡æœ‰è§’è‰²åœ¨ç»ƒçº§ä¸­ï¼Œä¹Ÿå¯èƒ½æ˜¯åº“å­˜ä¿¡æ¯è·å–å¼‚å¸¸ï¼Œè¯·ç¨åå†è¯•ã€‚");
                     }
                 }
                 else
@@ -2644,7 +2644,7 @@ namespace Oshima.Core.Controllers
 
                     if (user.Inventory.Training.Count == 0)
                     {
-                        return NetworkUtility.JsonSerialize($"ÄãÄ¿Ç°Ã»ÓĞ½ÇÉ«ÔÚÁ·¼¶ÖĞ£¬ÇëÊ¹ÓÃ¡¾¿ªÆôÁ·¼¶+½ÇÉ«ĞòºÅ¡¿Ö¸Áî½øĞĞÁ·¼¶¡£");
+                        return NetworkUtility.JsonSerialize($"ä½ ç›®å‰æ²¡æœ‰è§’è‰²åœ¨ç»ƒçº§ä¸­ï¼Œè¯·ä½¿ç”¨ã€å¼€å¯ç»ƒçº§+è§’è‰²åºå·ã€‘æŒ‡ä»¤è¿›è¡Œç»ƒçº§ã€‚");
                     }
 
                     long cid = user.Inventory.Training.Keys.First();
@@ -2656,11 +2656,11 @@ namespace Oshima.Core.Controllers
                         TimeSpan diff = now - time;
                         string msg = FunGameService.GetTrainingInfo(diff, true, out int totalExperience, out int smallBookCount, out int mediumBookCount, out int largeBookCount);
 
-                        return NetworkUtility.JsonSerialize($"½ÇÉ« [ {character} ] ÕıÔÚÁ·¼¶ÖĞ£¬{msg}\r\nÈ·ÈÏÎŞÎóºóÇëÊäÈë¡¾Á·¼¶½áËã¡¿ÁìÈ¡½±Àø£¡");
+                        return NetworkUtility.JsonSerialize($"è§’è‰² [ {character} ] æ­£åœ¨ç»ƒçº§ä¸­ï¼Œ{msg}\r\nç¡®è®¤æ— è¯¯åè¯·è¾“å…¥ã€ç»ƒçº§ç»“ç®—ã€‘é¢†å–å¥–åŠ±ï¼");
                     }
                     else
                     {
-                        return NetworkUtility.JsonSerialize($"ÄãÄ¿Ç°Ã»ÓĞ½ÇÉ«ÔÚÁ·¼¶ÖĞ£¬Ò²¿ÉÄÜÊÇ¿â´æĞÅÏ¢»ñÈ¡Òì³££¬ÇëÉÔºóÔÙÊÔ¡£");
+                        return NetworkUtility.JsonSerialize($"ä½ ç›®å‰æ²¡æœ‰è§’è‰²åœ¨ç»ƒçº§ä¸­ï¼Œä¹Ÿå¯èƒ½æ˜¯åº“å­˜ä¿¡æ¯è·å–å¼‚å¸¸ï¼Œè¯·ç¨åå†è¯•ã€‚");
                     }
                 }
                 else
@@ -2694,7 +2694,7 @@ namespace Oshima.Core.Controllers
                 }
                 else
                 {
-                    return NetworkUtility.JsonSerialize($"Ã»ÓĞÕÒµ½ÓëÕâ¸öĞòºÅÏà¶ÔÓ¦µÄ½ÇÉ«£¡");
+                    return NetworkUtility.JsonSerialize($"æ²¡æœ‰æ‰¾åˆ°ä¸è¿™ä¸ªåºå·ç›¸å¯¹åº”çš„è§’è‰²ï¼");
                 }
 
                 if (character.Skills.FirstOrDefault(s => s.Name == skillName) is Skill skill)
@@ -2703,17 +2703,17 @@ namespace Oshima.Core.Controllers
                     {
                         if (skill.Level + 1 == General.GameplayEquilibriumConstant.MaxSkillLevel)
                         {
-                            return NetworkUtility.JsonSerialize($"´Ë¼¼ÄÜ¡¾{skill.Name}¡¿ÒÑ¾­ÉıÖÁÂú¼¶£¡");
+                            return NetworkUtility.JsonSerialize($"æ­¤æŠ€èƒ½ã€{skill.Name}ã€‘å·²ç»å‡è‡³æ»¡çº§ï¼");
                         }
 
-                        return NetworkUtility.JsonSerialize($"½ÇÉ« [ {character} ] µÄ¡¾{skill.Name}¡¿¼¼ÄÜµÈ¼¶£º{skill.Level} / {General.GameplayEquilibriumConstant.MaxSkillLevel}" +
-                            $"\r\nÏÂÒ»¼¶ËùĞèÉı¼¶²ÄÁÏ£º\r\n" + FunGameService.GetSkillLevelUpNeedy(skill.Level + 1));
+                        return NetworkUtility.JsonSerialize($"è§’è‰² [ {character} ] çš„ã€{skill.Name}ã€‘æŠ€èƒ½ç­‰çº§ï¼š{skill.Level} / {General.GameplayEquilibriumConstant.MaxSkillLevel}" +
+                            $"\r\nä¸‹ä¸€çº§æ‰€éœ€å‡çº§ææ–™ï¼š\r\n" + FunGameService.GetSkillLevelUpNeedy(skill.Level + 1));
                     }
-                    return NetworkUtility.JsonSerialize($"´Ë¼¼ÄÜÎŞ·¨Éı¼¶£¡");
+                    return NetworkUtility.JsonSerialize($"æ­¤æŠ€èƒ½æ— æ³•å‡çº§ï¼");
                 }
                 else
                 {
-                    return NetworkUtility.JsonSerialize($"´Ë½ÇÉ«Ã»ÓĞ¡¾{skillName}¡¿¼¼ÄÜ£¡");
+                    return NetworkUtility.JsonSerialize($"æ­¤è§’è‰²æ²¡æœ‰ã€{skillName}ã€‘æŠ€èƒ½ï¼");
                 }
             }
             else
@@ -2745,18 +2745,18 @@ namespace Oshima.Core.Controllers
                     }
                     else
                     {
-                        return NetworkUtility.JsonSerialize($"Ã»ÓĞÕÒµ½ÓëÕâ¸öĞòºÅÏà¶ÔÓ¦µÄ½ÇÉ«£¡");
+                        return NetworkUtility.JsonSerialize($"æ²¡æœ‰æ‰¾åˆ°ä¸è¿™ä¸ªåºå·ç›¸å¯¹åº”çš„è§’è‰²ï¼");
                     }
 
                     if (character.Skills.FirstOrDefault(s => s.Name == skillName) is Skill skill)
                     {
-                        string isStudy = skill.Level == 0 ? "Ñ§Ï°" : "Éı¼¶";
+                        string isStudy = skill.Level == 0 ? "å­¦ä¹ " : "å‡çº§";
 
                         if (skill.SkillType == SkillType.Skill || skill.SkillType == SkillType.SuperSkill)
                         {
                             if (skill.Level == General.GameplayEquilibriumConstant.MaxSkillLevel)
                             {
-                                return NetworkUtility.JsonSerialize($"´Ë¼¼ÄÜ¡¾{skill.Name}¡¿ÒÑ¾­ÉıÖÁÂú¼¶£¡");
+                                return NetworkUtility.JsonSerialize($"æ­¤æŠ€èƒ½ã€{skill.Name}ã€‘å·²ç»å‡è‡³æ»¡çº§ï¼");
                             }
 
                             if (FunGameService.SkillLevelUpList.TryGetValue(skill.Level + 1, out Dictionary<string, int>? needy) && needy != null && needy.Count > 0)
@@ -2764,18 +2764,18 @@ namespace Oshima.Core.Controllers
                                 foreach (string key in needy.Keys)
                                 {
                                     int needCount = needy[key];
-                                    if (key == "½ÇÉ«µÈ¼¶")
+                                    if (key == "è§’è‰²ç­‰çº§")
                                     {
                                         if (character.Level < needCount)
                                         {
-                                            return NetworkUtility.JsonSerialize($"½ÇÉ« [ {character} ] µÈ¼¶²»×ã {needCount} ¼¶£¬ÎŞ·¨{isStudy}´Ë¼¼ÄÜ£¡");
+                                            return NetworkUtility.JsonSerialize($"è§’è‰² [ {character} ] ç­‰çº§ä¸è¶³ {needCount} çº§ï¼Œæ— æ³•{isStudy}æ­¤æŠ€èƒ½ï¼");
                                         }
                                     }
-                                    else if (key == "½ÇÉ«Í»ÆÆ½ø¶È")
+                                    else if (key == "è§’è‰²çªç ´è¿›åº¦")
                                     {
                                         if (character.LevelBreak < needCount)
                                         {
-                                            return NetworkUtility.JsonSerialize($"½ÇÉ« [ {character} ] µÈ¼¶Í»ÆÆ½ø¶È²»×ã {needCount} µÈ½×£¬ÎŞ·¨{isStudy}´Ë¼¼ÄÜ£¡");
+                                            return NetworkUtility.JsonSerialize($"è§’è‰² [ {character} ] ç­‰çº§çªç ´è¿›åº¦ä¸è¶³ {needCount} ç­‰é˜¶ï¼Œæ— æ³•{isStudy}æ­¤æŠ€èƒ½ï¼");
                                         }
                                     }
                                     else if (key == General.GameplayEquilibriumConstant.InGameCurrency)
@@ -2786,7 +2786,7 @@ namespace Oshima.Core.Controllers
                                         }
                                         else
                                         {
-                                            return NetworkUtility.JsonSerialize($"ÄãµÄ{General.GameplayEquilibriumConstant.InGameCurrency}²»×ã {needCount} ÄØ£¬²»Âú×ã{isStudy}Ìõ¼ş£¡");
+                                            return NetworkUtility.JsonSerialize($"ä½ çš„{General.GameplayEquilibriumConstant.InGameCurrency}ä¸è¶³ {needCount} å‘¢ï¼Œä¸æ»¡è¶³{isStudy}æ¡ä»¶ï¼");
                                         }
                                     }
                                     else if (key == General.GameplayEquilibriumConstant.InGameMaterial)
@@ -2797,7 +2797,7 @@ namespace Oshima.Core.Controllers
                                         }
                                         else
                                         {
-                                            return NetworkUtility.JsonSerialize($"ÄãµÄ{General.GameplayEquilibriumConstant.InGameMaterial}²»×ã {needCount} ÄØ£¬²»Âú×ã{isStudy}Ìõ¼ş£¡");
+                                            return NetworkUtility.JsonSerialize($"ä½ çš„{General.GameplayEquilibriumConstant.InGameMaterial}ä¸è¶³ {needCount} å‘¢ï¼Œä¸æ»¡è¶³{isStudy}æ¡ä»¶ï¼");
                                         }
                                     }
                                     else
@@ -2815,7 +2815,7 @@ namespace Oshima.Core.Controllers
                                             }
                                             else
                                             {
-                                                return NetworkUtility.JsonSerialize($"ÄãµÄÎïÆ·¡¾{key}¡¿ÊıÁ¿²»×ã {needCount} ÄØ£¬²»Âú×ã{isStudy}Ìõ¼ş£¡");
+                                                return NetworkUtility.JsonSerialize($"ä½ çš„ç‰©å“ã€{key}ã€‘æ•°é‡ä¸è¶³ {needCount} å‘¢ï¼Œä¸æ»¡è¶³{isStudy}æ¡ä»¶ï¼");
                                             }
                                         }
                                     }
@@ -2826,30 +2826,30 @@ namespace Oshima.Core.Controllers
                                 user.LastTime = DateTime.Now;
                                 pc.Add("user", user);
                                 pc.SaveConfig();
-                                needy.Remove("½ÇÉ«µÈ¼¶");
-                                needy.Remove("½ÇÉ«Í»ÆÆ½ø¶È");
-                                string msg = $"{isStudy}¼¼ÄÜ³É¹¦£¡±¾´ÎÏûºÄ£º{string.Join("£¬", needy.Select(kv => kv.Key + " * " + kv.Value))}£¬³É¹¦½«¡¾{skill.Name}¡¿¼¼ÄÜÌáÉıÖÁ {skill.Level} ¼¶£¡";
+                                needy.Remove("è§’è‰²ç­‰çº§");
+                                needy.Remove("è§’è‰²çªç ´è¿›åº¦");
+                                string msg = $"{isStudy}æŠ€èƒ½æˆåŠŸï¼æœ¬æ¬¡æ¶ˆè€—ï¼š{string.Join("ï¼Œ", needy.Select(kv => kv.Key + " * " + kv.Value))}ï¼ŒæˆåŠŸå°†ã€{skill.Name}ã€‘æŠ€èƒ½æå‡è‡³ {skill.Level} çº§ï¼";
 
                                 if (skill.Level == General.GameplayEquilibriumConstant.MaxSkillLevel)
                                 {
-                                    msg += $"\r\n´Ë¼¼ÄÜÒÑ¾­ÉıÖÁÂú¼¶£¬¹§Ï²£¡";
+                                    msg += $"\r\næ­¤æŠ€èƒ½å·²ç»å‡è‡³æ»¡çº§ï¼Œæ­å–œï¼";
                                 }
                                 else
                                 {
-                                    msg += $"\r\nÏÂÒ»¼¶ËùĞèÉı¼¶²ÄÁÏ£º\r\n" + FunGameService.GetSkillLevelUpNeedy(skill.Level + 1);
+                                    msg += $"\r\nä¸‹ä¸€çº§æ‰€éœ€å‡çº§ææ–™ï¼š\r\n" + FunGameService.GetSkillLevelUpNeedy(skill.Level + 1);
                                 }
 
                                 return NetworkUtility.JsonSerialize(msg);
                             }
 
-                            return NetworkUtility.JsonSerialize($"{isStudy}¼¼ÄÜÊ§°Ü£¡½ÇÉ« [ {character} ] µÄ¡¾{skill.Name}¡¿¼¼ÄÜµ±Ç°µÈ¼¶£º{skill.Level}/{General.GameplayEquilibriumConstant.MaxSkillLevel}" +
-                                $"\r\nÏÂÒ»¼¶ËùĞèÉı¼¶²ÄÁÏ£º\r\n" + FunGameService.GetSkillLevelUpNeedy(skill.Level + 1));
+                            return NetworkUtility.JsonSerialize($"{isStudy}æŠ€èƒ½å¤±è´¥ï¼è§’è‰² [ {character} ] çš„ã€{skill.Name}ã€‘æŠ€èƒ½å½“å‰ç­‰çº§ï¼š{skill.Level}/{General.GameplayEquilibriumConstant.MaxSkillLevel}" +
+                                $"\r\nä¸‹ä¸€çº§æ‰€éœ€å‡çº§ææ–™ï¼š\r\n" + FunGameService.GetSkillLevelUpNeedy(skill.Level + 1));
                         }
-                        return NetworkUtility.JsonSerialize($"´Ë¼¼ÄÜÎŞ·¨{isStudy}£¡");
+                        return NetworkUtility.JsonSerialize($"æ­¤æŠ€èƒ½æ— æ³•{isStudy}ï¼");
                     }
                     else
                     {
-                        return NetworkUtility.JsonSerialize($"´Ë½ÇÉ«Ã»ÓĞ¡¾{skillName}¡¿¼¼ÄÜ£¡");
+                        return NetworkUtility.JsonSerialize($"æ­¤è§’è‰²æ²¡æœ‰ã€{skillName}ã€‘æŠ€èƒ½ï¼");
                     }
                 }
                 else
@@ -2882,17 +2882,17 @@ namespace Oshima.Core.Controllers
                 }
                 else
                 {
-                    return NetworkUtility.JsonSerialize($"Ã»ÓĞÕÒµ½ÓëÕâ¸öĞòºÅÏà¶ÔÓ¦µÄ½ÇÉ«£¡");
+                    return NetworkUtility.JsonSerialize($"æ²¡æœ‰æ‰¾åˆ°ä¸è¿™ä¸ªåºå·ç›¸å¯¹åº”çš„è§’è‰²ï¼");
                 }
 
                 NormalAttack na = character.NormalAttack;
 
                 if (na.Level + 1 == General.GameplayEquilibriumConstant.MaxNormalAttackLevel)
                 {
-                    return NetworkUtility.JsonSerialize($"½ÇÉ« [ {character} ] µÄ¡¾{na.Name}¡¿ÒÑ¾­ÉıÖÁÂú¼¶£¡");
+                    return NetworkUtility.JsonSerialize($"è§’è‰² [ {character} ] çš„ã€{na.Name}ã€‘å·²ç»å‡è‡³æ»¡çº§ï¼");
                 }
-                return NetworkUtility.JsonSerialize($"½ÇÉ« [ {character} ] µÄ¡¾{na.Name}¡¿µÈ¼¶£º{na.Level} / {General.GameplayEquilibriumConstant.MaxNormalAttackLevel}" +
-                    $"\r\nÏÂÒ»¼¶ËùĞèÉı¼¶²ÄÁÏ£º\r\n" + FunGameService.GetNormalAttackLevelUpNeedy(na.Level + 1));
+                return NetworkUtility.JsonSerialize($"è§’è‰² [ {character} ] çš„ã€{na.Name}ã€‘ç­‰çº§ï¼š{na.Level} / {General.GameplayEquilibriumConstant.MaxNormalAttackLevel}" +
+                    $"\r\nä¸‹ä¸€çº§æ‰€éœ€å‡çº§ææ–™ï¼š\r\n" + FunGameService.GetNormalAttackLevelUpNeedy(na.Level + 1));
             }
             else
             {
@@ -2922,13 +2922,13 @@ namespace Oshima.Core.Controllers
                     }
                     else
                     {
-                        return NetworkUtility.JsonSerialize($"Ã»ÓĞÕÒµ½ÓëÕâ¸öĞòºÅÏà¶ÔÓ¦µÄ½ÇÉ«£¡");
+                        return NetworkUtility.JsonSerialize($"æ²¡æœ‰æ‰¾åˆ°ä¸è¿™ä¸ªåºå·ç›¸å¯¹åº”çš„è§’è‰²ï¼");
                     }
 
                     NormalAttack na = character.NormalAttack;
                     if (na.Level == General.GameplayEquilibriumConstant.MaxNormalAttackLevel)
                     {
-                        return NetworkUtility.JsonSerialize($"½ÇÉ« [ {character} ] µÄ¡¾{na.Name}¡¿ÒÑ¾­ÉıÖÁÂú¼¶£¡");
+                        return NetworkUtility.JsonSerialize($"è§’è‰² [ {character} ] çš„ã€{na.Name}ã€‘å·²ç»å‡è‡³æ»¡çº§ï¼");
                     }
 
                     if (FunGameService.NormalAttackLevelUpList.TryGetValue(na.Level + 1, out Dictionary<string, int>? needy) && needy != null && needy.Count > 0)
@@ -2936,18 +2936,18 @@ namespace Oshima.Core.Controllers
                         foreach (string key in needy.Keys)
                         {
                             int needCount = needy[key];
-                            if (key == "½ÇÉ«µÈ¼¶")
+                            if (key == "è§’è‰²ç­‰çº§")
                             {
                                 if (character.Level < needCount)
                                 {
-                                    return NetworkUtility.JsonSerialize($"½ÇÉ« [ {character} ] µÈ¼¶²»×ã {needCount} ¼¶£¬ÎŞ·¨Éı¼¶´Ë¼¼ÄÜ£¡");
+                                    return NetworkUtility.JsonSerialize($"è§’è‰² [ {character} ] ç­‰çº§ä¸è¶³ {needCount} çº§ï¼Œæ— æ³•å‡çº§æ­¤æŠ€èƒ½ï¼");
                                 }
                             }
-                            else if (key == "½ÇÉ«Í»ÆÆ½ø¶È")
+                            else if (key == "è§’è‰²çªç ´è¿›åº¦")
                             {
                                 if (character.LevelBreak < needCount)
                                 {
-                                    return NetworkUtility.JsonSerialize($"½ÇÉ« [ {character} ] µÈ¼¶Í»ÆÆ½ø¶È²»×ã {needCount} µÈ½×£¬ÎŞ·¨Éı¼¶´Ë¼¼ÄÜ£¡");
+                                    return NetworkUtility.JsonSerialize($"è§’è‰² [ {character} ] ç­‰çº§çªç ´è¿›åº¦ä¸è¶³ {needCount} ç­‰é˜¶ï¼Œæ— æ³•å‡çº§æ­¤æŠ€èƒ½ï¼");
                                 }
                             }
                             else if (key == General.GameplayEquilibriumConstant.InGameCurrency)
@@ -2958,7 +2958,7 @@ namespace Oshima.Core.Controllers
                                 }
                                 else
                                 {
-                                    return NetworkUtility.JsonSerialize($"ÄãµÄ{General.GameplayEquilibriumConstant.InGameCurrency}²»×ã {needCount} ÄØ£¬²»Âú×ãÉı¼¶Ìõ¼ş£¡");
+                                    return NetworkUtility.JsonSerialize($"ä½ çš„{General.GameplayEquilibriumConstant.InGameCurrency}ä¸è¶³ {needCount} å‘¢ï¼Œä¸æ»¡è¶³å‡çº§æ¡ä»¶ï¼");
                                 }
                             }
                             else if (key == General.GameplayEquilibriumConstant.InGameMaterial)
@@ -2969,7 +2969,7 @@ namespace Oshima.Core.Controllers
                                 }
                                 else
                                 {
-                                    return NetworkUtility.JsonSerialize($"ÄãµÄ{General.GameplayEquilibriumConstant.InGameMaterial}²»×ã {needCount} ÄØ£¬²»Âú×ãÉı¼¶Ìõ¼ş£¡");
+                                    return NetworkUtility.JsonSerialize($"ä½ çš„{General.GameplayEquilibriumConstant.InGameMaterial}ä¸è¶³ {needCount} å‘¢ï¼Œä¸æ»¡è¶³å‡çº§æ¡ä»¶ï¼");
                                 }
                             }
                             else
@@ -2987,7 +2987,7 @@ namespace Oshima.Core.Controllers
                                     }
                                     else
                                     {
-                                        return NetworkUtility.JsonSerialize($"ÄãµÄÎïÆ·¡¾{key}¡¿ÊıÁ¿²»×ã {needCount} ÄØ£¬²»Âú×ãÉı¼¶Ìõ¼ş£¡");
+                                        return NetworkUtility.JsonSerialize($"ä½ çš„ç‰©å“ã€{key}ã€‘æ•°é‡ä¸è¶³ {needCount} å‘¢ï¼Œä¸æ»¡è¶³å‡çº§æ¡ä»¶ï¼");
                                     }
                                 }
                             }
@@ -2998,24 +2998,24 @@ namespace Oshima.Core.Controllers
                         user.LastTime = DateTime.Now;
                         pc.Add("user", user);
                         pc.SaveConfig();
-                        needy.Remove("½ÇÉ«µÈ¼¶");
-                        needy.Remove("½ÇÉ«Í»ÆÆ½ø¶È");
-                        string msg = $"½ÇÉ« [ {character} ] Éı¼¶¡¾{na.Name}¡¿³É¹¦£¡±¾´ÎÏûºÄ£º{string.Join("£¬", needy.Select(kv => kv.Key + " * " + kv.Value))}£¬³É¹¦½«¡¾{na.Name}¡¿ÌáÉıÖÁ {na.Level} ¼¶£¡";
+                        needy.Remove("è§’è‰²ç­‰çº§");
+                        needy.Remove("è§’è‰²çªç ´è¿›åº¦");
+                        string msg = $"è§’è‰² [ {character} ] å‡çº§ã€{na.Name}ã€‘æˆåŠŸï¼æœ¬æ¬¡æ¶ˆè€—ï¼š{string.Join("ï¼Œ", needy.Select(kv => kv.Key + " * " + kv.Value))}ï¼ŒæˆåŠŸå°†ã€{na.Name}ã€‘æå‡è‡³ {na.Level} çº§ï¼";
 
                         if (na.Level == General.GameplayEquilibriumConstant.MaxNormalAttackLevel)
                         {
-                            msg += $"\r\n{na.Name}ÒÑ¾­ÉıÖÁÂú¼¶£¬¹§Ï²£¡";
+                            msg += $"\r\n{na.Name}å·²ç»å‡è‡³æ»¡çº§ï¼Œæ­å–œï¼";
                         }
                         else
                         {
-                            msg += $"\r\nÏÂÒ»¼¶ËùĞèÉı¼¶²ÄÁÏ£º\r\n" + FunGameService.GetNormalAttackLevelUpNeedy(na.Level + 1);
+                            msg += $"\r\nä¸‹ä¸€çº§æ‰€éœ€å‡çº§ææ–™ï¼š\r\n" + FunGameService.GetNormalAttackLevelUpNeedy(na.Level + 1);
                         }
 
                         return NetworkUtility.JsonSerialize(msg);
                     }
 
-                    return NetworkUtility.JsonSerialize($"Éı¼¶{na.Name}Ê§°Ü£¡½ÇÉ« [ {character} ] µÄ¡¾{na.Name}¡¿µ±Ç°µÈ¼¶£º{na.Level}/{General.GameplayEquilibriumConstant.MaxNormalAttackLevel}" +
-                        $"\r\nÏÂÒ»¼¶ËùĞèÉı¼¶²ÄÁÏ£º\r\n" + FunGameService.GetSkillLevelUpNeedy(na.Level + 1));
+                    return NetworkUtility.JsonSerialize($"å‡çº§{na.Name}å¤±è´¥ï¼è§’è‰² [ {character} ] çš„ã€{na.Name}ã€‘å½“å‰ç­‰çº§ï¼š{na.Level}/{General.GameplayEquilibriumConstant.MaxNormalAttackLevel}" +
+                        $"\r\nä¸‹ä¸€çº§æ‰€éœ€å‡çº§ææ–™ï¼š\r\n" + FunGameService.GetSkillLevelUpNeedy(na.Level + 1));
                 }
                 else
                 {
@@ -3040,12 +3040,12 @@ namespace Oshima.Core.Controllers
                 }
                 else
                 {
-                    bosses.Add($"ÕÒ²»µ½Ö¸¶¨±àºÅµÄ Boss£¡");
+                    bosses.Add($"æ‰¾ä¸åˆ°æŒ‡å®šç¼–å·çš„ Bossï¼");
                 }
             }
             else if (FunGameService.Bosses.Count > 0)
             {
-                bosses.Add($"Boss ÁĞ±í£º");
+                bosses.Add($"Boss åˆ—è¡¨ï¼š");
                 foreach (int i in FunGameService.Bosses.Keys)
                 {
                     Character boss = FunGameService.Bosses[i];
@@ -3054,7 +3054,7 @@ namespace Oshima.Core.Controllers
             }
             else
             {
-                bosses.Add($"ÏÖÔÚÃ»ÓĞÈÎºÎ Boss£¬ÇëµÈ´ıË¢ĞÂ~");
+                bosses.Add($"ç°åœ¨æ²¡æœ‰ä»»ä½• Bossï¼Œè¯·ç­‰å¾…åˆ·æ–°~");
             }
             return bosses;
         }
@@ -3077,7 +3077,7 @@ namespace Oshima.Core.Controllers
                 {
                     if (user.Inventory.MainCharacter.HP < user.Inventory.MainCharacter.MaxHP * 0.1)
                     {
-                        return [$"Ö÷Õ½½ÇÉ«ÖØÉËÎ´Óú£¬µ±Ç°ÉúÃüÖµµÍÓÚ 10%£¬ÇëÏÈµÈ´ıÉúÃüÖµ×Ô¶¯»Ø¸´»òÉèÖÃÆäËûÖ÷Õ½½ÇÉ«£¡"];
+                        return [$"ä¸»æˆ˜è§’è‰²é‡ä¼¤æœªæ„ˆï¼Œå½“å‰ç”Ÿå‘½å€¼ä½äº 10%ï¼Œè¯·å…ˆç­‰å¾…ç”Ÿå‘½å€¼è‡ªåŠ¨å›å¤æˆ–è®¾ç½®å…¶ä»–ä¸»æˆ˜è§’è‰²ï¼"];
                     }
 
                     Character boss2 = CharacterBuilder.Build(boss, false, true, null, FunGameService.AllItems, FunGameService.AllSkills, false);
@@ -3088,14 +3088,14 @@ namespace Oshima.Core.Controllers
                         FunGameService.Bosses.Remove(bossIndex);
                         double gained = boss.Level;
                         user.Inventory.Materials += gained;
-                        msgs.Add($"¹§Ï²Äã»÷°ÜÁË Boss£¬»ñµÃ {gained} ²ÄÁÏ½±Àø£¡");
+                        msgs.Add($"æ­å–œä½ å‡»è´¥äº† Bossï¼Œè·å¾— {gained} ææ–™å¥–åŠ±ï¼");
                     }
                     else
                     {
                         boss.HP = boss2.HP;
                         boss.MP = boss2.MP;
                         boss.EP = boss2.EP;
-                        msgs.Add($"ÌôÕ½ Boss Ê§°Ü£¬ÇëÉÔºóÔÙÀ´£¡");
+                        msgs.Add($"æŒ‘æˆ˜ Boss å¤±è´¥ï¼Œè¯·ç¨åå†æ¥ï¼");
                     }
                     user.LastTime = DateTime.Now;
                     pc.Add("user", user);
@@ -3105,7 +3105,7 @@ namespace Oshima.Core.Controllers
                 }
                 else
                 {
-                    return [$"ÕÒ²»µ½Ö¸¶¨±àºÅµÄ Boss£¡"];
+                    return [$"æ‰¾ä¸åˆ°æŒ‡å®šç¼–å·çš„ Bossï¼"];
                 }
             }
             else
@@ -3136,25 +3136,25 @@ namespace Oshima.Core.Controllers
                     }
                     else
                     {
-                        return NetworkUtility.JsonSerialize($"Ã»ÓĞÕÒµ½ÓëÕâ¸öĞòºÅÏà¶ÔÓ¦µÄ½ÇÉ«£¡");
+                        return NetworkUtility.JsonSerialize($"æ²¡æœ‰æ‰¾åˆ°ä¸è¿™ä¸ªåºå·ç›¸å¯¹åº”çš„è§’è‰²ï¼");
                     }
 
                     if (user.Inventory.Squad.Count >= 4)
                     {
-                        return NetworkUtility.JsonSerialize($"Ğ¡¶ÓÈËÊıÒÑÂú 4 ÈË£¬ÎŞ·¨¼ÌĞøÌí¼Ó½ÇÉ«£¡µ±Ç°Ğ¡¶Ó½ÇÉ«ÈçÏÂ£º\r\n" +
+                        return NetworkUtility.JsonSerialize($"å°é˜Ÿäººæ•°å·²æ»¡ 4 äººï¼Œæ— æ³•ç»§ç»­æ·»åŠ è§’è‰²ï¼å½“å‰å°é˜Ÿè§’è‰²å¦‚ä¸‹ï¼š\r\n" +
                             string.Join("\r\n", user.Inventory.Characters.Where(c => user.Inventory.Squad.Contains(c.Id))));
                     }
                     
                     if (user.Inventory.Squad.Contains(character.Id))
                     {
-                        return NetworkUtility.JsonSerialize($"´Ë½ÇÉ«ÒÑ¾­ÔÚĞ¡¶ÓÖĞÁË£¡");
+                        return NetworkUtility.JsonSerialize($"æ­¤è§’è‰²å·²ç»åœ¨å°é˜Ÿä¸­äº†ï¼");
                     }
 
                     user.Inventory.Squad.Add(character.Id);
                     user.LastTime = DateTime.Now;
                     pc.Add("user", user);
                     pc.SaveConfig();
-                    return NetworkUtility.JsonSerialize($"Ìí¼ÓĞ¡¶Ó½ÇÉ«³É¹¦£º{character}\r\nµ±Ç°Ğ¡¶Ó½ÇÉ«ÈçÏÂ£º\r\n" +
+                    return NetworkUtility.JsonSerialize($"æ·»åŠ å°é˜Ÿè§’è‰²æˆåŠŸï¼š{character}\r\nå½“å‰å°é˜Ÿè§’è‰²å¦‚ä¸‹ï¼š\r\n" +
                             string.Join("\r\n", user.Inventory.Characters.Where(c => user.Inventory.Squad.Contains(c.Id))));
                 }
                 else
@@ -3190,19 +3190,19 @@ namespace Oshima.Core.Controllers
                     }
                     else
                     {
-                        return NetworkUtility.JsonSerialize($"Ã»ÓĞÕÒµ½ÓëÕâ¸öĞòºÅÏà¶ÔÓ¦µÄ½ÇÉ«£¡");
+                        return NetworkUtility.JsonSerialize($"æ²¡æœ‰æ‰¾åˆ°ä¸è¿™ä¸ªåºå·ç›¸å¯¹åº”çš„è§’è‰²ï¼");
                     }
 
                     if (!user.Inventory.Squad.Contains(character.Id))
                     {
-                        return NetworkUtility.JsonSerialize($"´Ë½ÇÉ«²»ÔÚĞ¡¶ÓÖĞ£¡");
+                        return NetworkUtility.JsonSerialize($"æ­¤è§’è‰²ä¸åœ¨å°é˜Ÿä¸­ï¼");
                     }
 
                     user.Inventory.Squad.Remove(character.Id);
                     user.LastTime = DateTime.Now;
                     pc.Add("user", user);
                     pc.SaveConfig();
-                    return NetworkUtility.JsonSerialize($"ÒÆ³ıĞ¡¶Ó½ÇÉ«³É¹¦£º{character}\r\nµ±Ç°Ğ¡¶Ó½ÇÉ«ÈçÏÂ£º\r\n" +
+                    return NetworkUtility.JsonSerialize($"ç§»é™¤å°é˜Ÿè§’è‰²æˆåŠŸï¼š{character}\r\nå½“å‰å°é˜Ÿè§’è‰²å¦‚ä¸‹ï¼š\r\n" +
                             string.Join("\r\n", user.Inventory.Characters.Where(c => user.Inventory.Squad.Contains(c.Id))));
                 }
                 else
@@ -3241,7 +3241,7 @@ namespace Oshima.Core.Controllers
                         }
                         else
                         {
-                            return NetworkUtility.JsonSerialize($"ÉèÖÃÊ§°Ü£ºÃ»ÓĞÕÒµ½ÓëĞòºÅ {characterIndex} Ïà¶ÔÓ¦µÄ½ÇÉ«£¡");
+                            return NetworkUtility.JsonSerialize($"è®¾ç½®å¤±è´¥ï¼šæ²¡æœ‰æ‰¾åˆ°ä¸åºå· {characterIndex} ç›¸å¯¹åº”çš„è§’è‰²ï¼");
                         }
                         user.Inventory.Squad.Add(character.Id);
                     }
@@ -3249,7 +3249,7 @@ namespace Oshima.Core.Controllers
                     user.LastTime = DateTime.Now;
                     pc.Add("user", user);
                     pc.SaveConfig();
-                    return NetworkUtility.JsonSerialize($"ÉèÖÃĞ¡¶Ó³ÉÔ±³É¹¦£¡µ±Ç°Ğ¡¶Ó½ÇÉ«ÈçÏÂ£º\r\n" +
+                    return NetworkUtility.JsonSerialize($"è®¾ç½®å°é˜Ÿæˆå‘˜æˆåŠŸï¼å½“å‰å°é˜Ÿè§’è‰²å¦‚ä¸‹ï¼š\r\n" +
                             string.Join("\r\n", user.Inventory.Characters.Where(c => user.Inventory.Squad.Contains(c.Id))));
                 }
                 else
@@ -3282,7 +3282,7 @@ namespace Oshima.Core.Controllers
                     user.LastTime = DateTime.Now;
                     pc.Add("user", user);
                     pc.SaveConfig();
-                    return NetworkUtility.JsonSerialize($"Çå¿ÕĞ¡¶Ó³ÉÔ±³É¹¦£¡");
+                    return NetworkUtility.JsonSerialize($"æ¸…ç©ºå°é˜Ÿæˆå‘˜æˆåŠŸï¼");
                 }
                 else
                 {
@@ -3308,7 +3308,7 @@ namespace Oshima.Core.Controllers
                 if (pc.Count > 0)
                 {
                     User user = FunGameService.GetUser(pc);
-                    return NetworkUtility.JsonSerialize($"ÄãµÄµ±Ç°Ğ¡¶Ó½ÇÉ«ÈçÏÂ£º\r\n" +
+                    return NetworkUtility.JsonSerialize($"ä½ çš„å½“å‰å°é˜Ÿè§’è‰²å¦‚ä¸‹ï¼š\r\n" +
                             string.Join("\r\n", user.Inventory.Characters.Where(c => user.Inventory.Squad.Contains(c.Id))));
                 }
                 else
@@ -3342,13 +3342,13 @@ namespace Oshima.Core.Controllers
 
                     if (squad.All(c => c.HP < c.MaxHP * 0.1))
                     {
-                        return [$"Ğ¡¶Ó½ÇÉ«¾ùÖØÉËÎ´Óú£¬µ±Ç°ÉúÃüÖµµÍÓÚ 10%£¬ÇëÏÈµÈ´ıÉúÃüÖµ×Ô¶¯»Ø¸´»òÖØ×éĞ¡¶Ó£¡\r\n" +
-                            "µ±Ç°Ğ¡¶Ó½ÇÉ«ÈçÏÂ£º\r\n" +
+                        return [$"å°é˜Ÿè§’è‰²å‡é‡ä¼¤æœªæ„ˆï¼Œå½“å‰ç”Ÿå‘½å€¼ä½äº 10%ï¼Œè¯·å…ˆç­‰å¾…ç”Ÿå‘½å€¼è‡ªåŠ¨å›å¤æˆ–é‡ç»„å°é˜Ÿï¼\r\n" +
+                            "å½“å‰å°é˜Ÿè§’è‰²å¦‚ä¸‹ï¼š\r\n" +
                             string.Join("\r\n", user.Inventory.Characters.Where(c => user.Inventory.Squad.Contains(c.Id)))];
                     }
 
                     Character boss2 = CharacterBuilder.Build(boss, false, true, null, FunGameService.AllItems, FunGameService.AllSkills, false);
-                    Team team1 = new($"{user.Username}µÄĞ¡¶Ó", squad);
+                    Team team1 = new($"{user.Username}çš„å°é˜Ÿ", squad);
                     Team team2 = new($"Boss", [boss2]);
                     List<string> msgs = FunGameActionQueue.NewAndStartTeamGame([team1, team2], showAllRound: showAllRound);
 
@@ -3357,14 +3357,14 @@ namespace Oshima.Core.Controllers
                         FunGameService.Bosses.Remove(bossIndex);
                         double gained = boss.Level;
                         user.Inventory.Materials += gained;
-                        msgs.Add($"¹§Ï²Äã»÷°ÜÁË Boss£¬»ñµÃ {gained} ²ÄÁÏ½±Àø£¡");
+                        msgs.Add($"æ­å–œä½ å‡»è´¥äº† Bossï¼Œè·å¾— {gained} ææ–™å¥–åŠ±ï¼");
                     }
                     else
                     {
                         boss.HP = boss2.HP;
                         boss.MP = boss2.MP;
                         boss.EP = boss2.EP;
-                        msgs.Add($"ÌôÕ½ Boss Ê§°Ü£¬ÇëÉÔºóÔÙÀ´£¡");
+                        msgs.Add($"æŒ‘æˆ˜ Boss å¤±è´¥ï¼Œè¯·ç¨åå†æ¥ï¼");
                     }
                     user.LastTime = DateTime.Now;
                     pc.Add("user", user);
@@ -3374,7 +3374,7 @@ namespace Oshima.Core.Controllers
                 }
                 else
                 {
-                    return [$"ÕÒ²»µ½Ö¸¶¨±àºÅµÄ Boss£¡"];
+                    return [$"æ‰¾ä¸åˆ°æŒ‡å®šç¼–å·çš„ Bossï¼"];
                 }
             }
             else
@@ -3395,10 +3395,10 @@ namespace Oshima.Core.Controllers
             {
                 User user = FunGameService.GetUser(pc);
 
-                PluginConfig pc2 = new("quests", userid.ToString());
-                pc2.LoadConfig();
-                string msg = FunGameService.CheckQuestList(pc2);
-                pc2.SaveConfig();
+                EntityModuleConfig<Quest> quests = new("quests", userid.ToString());
+                quests.LoadConfig();
+                string msg = FunGameService.CheckQuestList(quests);
+                quests.SaveConfig();
 
                 user.LastTime = DateTime.Now;
                 pc.Add("user", user);
@@ -3426,48 +3426,36 @@ namespace Oshima.Core.Controllers
                 User user = FunGameService.GetUser(pc);
 
                 string msg = "";
-                PluginConfig pc2 = new("quests", userid.ToString());
-                pc2.LoadConfig();
-                if (pc2.Count > 0)
+                EntityModuleConfig<Quest> quests = new("quests", userid.ToString());
+                quests.LoadConfig();
+                if (quests.Count > 0)
                 {
-                    List<Quest> quests = pc2.Get<List<Quest>>("list") ?? [];
-                    if (quests.Count > 0)
+                    if (quests.Values.FirstOrDefault(q => q.Status == 1) is Quest quest)
                     {
-                        if (quests.FirstOrDefault(q => q.Status == 1) is Quest quest)
+                        msg = $"ä½ æ­£åœ¨è¿›è¡Œä»»åŠ¡ã€{quest.Name}ã€‘ï¼Œæ— æ³•å¼€å§‹æ–°ä»»åŠ¡ï¼\r\n{quest}";
+                    }
+                    else if (quests.Values.FirstOrDefault(q => q.Id == questid) is Quest quest2)
+                    {
+                        if (quest2.Status != 0)
                         {
-                            msg = $"ÄãÕıÔÚ½øĞĞÈÎÎñ¡¾{quest.Name}¡¿£¬ÎŞ·¨¿ªÊ¼ĞÂÈÎÎñ£¡\r\n{quest}";
-                        }
-                        else if (quests.FirstOrDefault(q => q.Id == questid) is Quest quest2)
-                        {
-                            if (quest2.Status != 0)
-                            {
-                                msg = $"Õâ¸öÈÎÎñÕıÔÚ½øĞĞÖĞ£¬»òÒÑ¾­Íê³É£¬²»ÄÜÖØ¸´×öÈÎÎñ£¡";
-                            }
-                            else
-                            {
-                                quest2.Status = 1;
-                                pc2.Add("list", quests);
-                                pc2.SaveConfig();
-                                msg = $"¿ªÊ¼ÈÎÎñ¡¾{quest2.Name}¡¿³É¹¦£¡\r\nÈÎÎñĞÅÏ¢ÈçÏÂ£º{quest2}\r\nÔ¤¼ÆÍê³ÉÊ±¼ä£º{DateTime.Now.AddMinutes(quest2.EstimatedMinutes).ToString(General.GeneralDateTimeFormatChinese)}";
-                                Milimoe.FunGame.Core.Api.Utility.TaskScheduler.Shared.AddTask($"{userid}-{quest2.Name}", TimeSpan.FromMinutes(quest2.EstimatedMinutes), () =>
-                                {
-                                    quest2.Status = 2;
-                                });
-                            }
+                            msg = $"è¿™ä¸ªä»»åŠ¡æ­£åœ¨è¿›è¡Œä¸­ï¼Œæˆ–å·²ç»å®Œæˆï¼Œä¸èƒ½é‡å¤åšä»»åŠ¡ï¼";
                         }
                         else
                         {
-                            msg = $"Ã»ÓĞÕÒµ½ĞòºÅÎª {questid} µÄÈÎÎñ£¡";
+                            quest2.StartTime = DateTime.Now;
+                            quest2.Status = 1;
+                            quests.SaveConfig();
+                            msg = $"å¼€å§‹ä»»åŠ¡ã€{quest2.Name}ã€‘æˆåŠŸï¼\r\nä»»åŠ¡ä¿¡æ¯å¦‚ä¸‹ï¼š{quest2}\r\né¢„è®¡å®Œæˆæ—¶é—´ï¼š{DateTime.Now.AddMinutes(quest2.EstimatedMinutes).ToString(General.GeneralDateTimeFormatChinese)}";
                         }
                     }
                     else
                     {
-                        msg = "ÈÎÎñÁĞ±íÎª¿Õ£¬ÇëµÈ´ıË¢ĞÂ£¡";
+                        msg = $"æ²¡æœ‰æ‰¾åˆ°åºå·ä¸º {questid} çš„ä»»åŠ¡ï¼";
                     }
                 }
                 else
                 {
-                    msg = "ÈÎÎñÁĞ±íÎª¿Õ£¬ÇëµÈ´ıË¢ĞÂ£¡";
+                    msg = "ä»»åŠ¡åˆ—è¡¨ä¸ºç©ºï¼Œè¯·ç­‰å¾…åˆ·æ–°ï¼";
                 }
 
                 user.LastTime = DateTime.Now;
@@ -3489,9 +3477,9 @@ namespace Oshima.Core.Controllers
             {
                 FunGameService.Reload();
                 FunGameSimulation.InitFunGameSimulation();
-                return NetworkUtility.JsonSerialize("FunGameÒÑÖØĞÂ¼ÓÔØ¡£");
+                return NetworkUtility.JsonSerialize("FunGameå·²é‡æ–°åŠ è½½ã€‚");
             }
-            return NetworkUtility.JsonSerialize("Ìá¹©µÄ²ÎÊı²»ÕıÈ·¡£");
+            return NetworkUtility.JsonSerialize("æä¾›çš„å‚æ•°ä¸æ­£ç¡®ã€‚");
         }
 
         [HttpPost("post")]
@@ -3503,7 +3491,7 @@ namespace Oshima.Core.Controllers
         [HttpPost("bind")]
         public string Post([FromBody] BindQQ b)
         {
-            return NetworkUtility.JsonSerialize("°ó¶¨Ê§°Ü£¬ÇëÉÔºóÔÙÊÔ¡£");
+            return NetworkUtility.JsonSerialize("ç»‘å®šå¤±è´¥ï¼Œè¯·ç¨åå†è¯•ã€‚");
         }
     }
 }
