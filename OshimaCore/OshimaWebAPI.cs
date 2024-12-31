@@ -99,6 +99,21 @@ namespace Oshima.Core.WebAPI
                     }
                     Controller.WriteLine("刷新每日任务");
                 }
+                // 刷新签到
+                directoryPath = $@"{AppDomain.CurrentDomain.BaseDirectory}configs/saved";
+                if (Directory.Exists(directoryPath))
+                {
+                    string[] filePaths = Directory.GetFiles(directoryPath);
+                    foreach (string filePath in filePaths)
+                    {
+                        string fileName = Path.GetFileNameWithoutExtension(filePath);
+                        PluginConfig pc = new("saved", fileName);
+                        pc.LoadConfig();
+                        pc.Add("signed", false);
+                        pc.SaveConfig();
+                    }
+                    Controller.WriteLine("刷新签到");
+                }
             });
             TaskScheduler.Shared.AddRecurringTask("刷新boss", TimeSpan.FromHours(1), () =>
             {

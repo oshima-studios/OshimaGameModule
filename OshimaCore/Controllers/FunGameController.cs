@@ -3412,6 +3412,43 @@ namespace Oshima.Core.Controllers
             }
         }
         
+        [HttpPost("checkworkingquest")]
+        public string CheckWorkingQuest([FromQuery] long? qq = null)
+        {
+            long userid = qq ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
+
+            PluginConfig pc = new("saved", userid.ToString());
+            pc.LoadConfig();
+
+            if (pc.Count > 0)
+            {
+                User user = FunGameService.GetUser(pc);
+
+                EntityModuleConfig<Quest> quests = new("quests", userid.ToString());
+                quests.LoadConfig();
+                string msg = "";
+                IEnumerable<Quest> working = quests.Values.Where(q => q.Status == QuestState.InProgress);
+                if (working.Any())
+                {
+                    msg = "你正在进行中的任务详情如下：\r\n" + string.Join("\r\n", working);
+                }
+                else
+                {
+                    msg = "你当前没有正在进行中的任务！";
+                }
+
+                user.LastTime = DateTime.Now;
+                pc.Add("user", user);
+                pc.SaveConfig();
+
+                return NetworkUtility.JsonSerialize(msg);
+            }
+            else
+            {
+                return NetworkUtility.JsonSerialize(noSaved);
+            }
+        }
+        
         [HttpPost("acceptquest")]
         public string AcceptQuest([FromQuery] long? qq = null, [FromQuery] int? id = null)
         {
@@ -3430,7 +3467,7 @@ namespace Oshima.Core.Controllers
                 quests.LoadConfig();
                 if (quests.Count > 0)
                 {
-                    if (quests.Values.FirstOrDefault(q => q.Status == 1) is Quest quest)
+                    if (quests.Values.FirstOrDefault(q => q.Status == QuestState.InProgress) is Quest quest)
                     {
                         msg = $"你正在进行任务【{quest.Name}】，无法开始新任务！\r\n{quest}";
                     }
@@ -3443,9 +3480,9 @@ namespace Oshima.Core.Controllers
                         else
                         {
                             quest2.StartTime = DateTime.Now;
-                            quest2.Status = 1;
+                            quest2.Status = QuestState.InProgress;
                             quests.SaveConfig();
-                            msg = $"开始任务【{quest2.Name}】成功！\r\n任务信息如下：{quest2}\r\n预计完成时间：{DateTime.Now.AddMinutes(quest2.EstimatedMinutes).ToString(General.GeneralDateTimeFormatChinese)}";
+                            msg = $"开始任务【{quest2.Name}】成功！任务信息如下：\r\n{quest2}\r\n预计完成时间：{DateTime.Now.AddMinutes(quest2.EstimatedMinutes).ToString(General.GeneralDateTimeFormatChinese)}";
                         }
                     }
                     else
@@ -3462,6 +3499,37 @@ namespace Oshima.Core.Controllers
                 pc.Add("user", user);
                 pc.SaveConfig();
 
+                return NetworkUtility.JsonSerialize(msg);
+            }
+            else
+            {
+                return NetworkUtility.JsonSerialize(noSaved);
+            }
+        }
+
+        [HttpPost("signin")]
+        public string SignIn([FromQuery] long? qq = null)
+        {
+            long userid = qq ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
+
+            PluginConfig pc = new("saved", userid.ToString());
+            pc.LoadConfig();
+
+            if (pc.Count > 0)
+            {
+                User user = FunGameService.GetUser(pc);
+                bool sign = pc.Get<bool>("signed");
+
+                if (sign)
+                {
+                    return NetworkUtility.JsonSerialize("你今天已经签过到了哦！");
+                }
+
+                string msg = FunGameService.GetSignInResult(user);
+                user.LastTime = DateTime.Now;
+                pc.Add("user", user);
+                pc.Add("signed", true);
+                pc.SaveConfig();
                 return NetworkUtility.JsonSerialize(msg);
             }
             else

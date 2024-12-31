@@ -556,41 +556,12 @@ namespace Oshima.Core.Utils
             // 任务结算
             EntityModuleConfig<Quest> quests = new("quests", user.Id.ToString());
             quests.LoadConfig();
-            if (quests.Count > 0)
+            if (quests.Count > 0 && SettleQuest(user, quests))
             {
-                IEnumerable<Quest> workingQuests = quests.Values.Where(q => q.Status == 1);
-                foreach (Quest quest in workingQuests)
-                {
-                    if (quest.StartTime.HasValue && quest.StartTime.Value.AddMinutes(quest.EstimatedMinutes) <= DateTime.Now)
-                    {
-                        quest.Status = 2;
-                    }
-                }
-                IEnumerable<Quest> finishQuests = quests.Values.Where(q => q.Status == 2);
-                foreach (Quest quest in finishQuests)
-                {
-                    quest.Status = 3;
-                    quest.SettleTime = DateTime.Now;
-                    foreach (string name in quest.Awards.Keys)
-                    {
-                        if (name == General.GameplayEquilibriumConstant.InGameCurrency)
-                        {
-                            user.Inventory.Credits += quest.Awards[name];
-                        }
-                        else if (name == General.GameplayEquilibriumConstant.InGameMaterial)
-                        {
-                            user.Inventory.Materials += quest.Awards[name];
-                        }
-                        else if (AllItems.FirstOrDefault(i => i.Name == name) is Item item)
-                        {
-                            Item newItem = item.Copy();
-                            newItem.User = user;
-                            SetSellAndTradeTime(newItem);
-                            user.Inventory.Items.Add(newItem);
-                        }
-                    }
-                }
                 quests.SaveConfig();
+                user.LastTime = DateTime.Now;
+                pc.Add("user", user);
+                pc.SaveConfig();
             }
 
             return user;
@@ -702,6 +673,89 @@ namespace Oshima.Core.Utils
                     break;
             }
             if (isMulti) msg = $"{multiCount}. \r\n{msg}";
+            return msg;
+        }
+
+        public static string GetSignInResult(User user)
+        {
+            string msg = "签到成功！本次签到获得：";
+            int currency = Random.Shared.Next(1000, 3000);
+            msg += $"{currency} 金币和";
+            int material = Random.Shared.Next(1000, 3000);
+            msg += $"{material} 材料！额外获得：";
+            user.Inventory.Credits += currency;
+            user.Inventory.Materials += material;
+            int r = Random.Shared.Next(6);
+            double q = Random.Shared.NextDouble() * 100;
+            QualityType type = q switch
+            {
+                <= 69.53 => QualityType.White,
+                > 69.53 and <= 69.53 + 15.35 => QualityType.Green,
+                > 69.53 + 15.35 and <= 69.53 + 15.35 + 9.48 => QualityType.Blue,
+                > 69.53 + 15.35 + 9.48 and <= 69.53 + 15.35 + 9.48 + 4.25 => QualityType.Purple,
+                > 69.53 + 15.35 + 9.48 + 4.25 and <= 69.53 + 15.35 + 9.48 + 4.25 + 1.33 => QualityType.Orange,
+                > 69.53 + 15.35 + 9.48 + 4.25 + 1.33 and <= 69.53 + 15.35 + 9.48 + 4.25 + 1.33 + 0.06 => QualityType.Red,
+                _ => QualityType.White
+            };
+
+            switch (r)
+            {
+                case 1:
+                    if ((int)type > (int)QualityType.Orange) type = QualityType.Orange;
+                    Item[] 武器 = Equipment.Where(i => i.Id.ToString().StartsWith("11") && i.QualityType == type).ToArray();
+                    Item a = 武器[Random.Shared.Next(武器.Length)].Copy();
+                    SetSellAndTradeTime(a);
+                    user.Inventory.Items.Add(a);
+                    msg += ItemSet.GetQualityTypeName(a.QualityType) + ItemSet.GetItemTypeName(a.ItemType) + "【" + a.Name + "】！\r\n" + a.Description;
+                    break;
+
+                case 2:
+                    if ((int)type > (int)QualityType.Green) type = QualityType.Green;
+                    Item[] 防具 = Equipment.Where(i => i.Id.ToString().StartsWith("12") && i.QualityType == type).ToArray();
+                    Item b = 防具[Random.Shared.Next(防具.Length)].Copy();
+                    SetSellAndTradeTime(b);
+                    user.Inventory.Items.Add(b);
+                    msg += ItemSet.GetQualityTypeName(b.QualityType) + ItemSet.GetItemTypeName(b.ItemType) + "【" + b.Name + "】！\r\n" + b.Description;
+                    break;
+
+                case 3:
+                    if ((int)type > (int)QualityType.Green) type = QualityType.Green;
+                    Item[] 鞋子 = Equipment.Where(i => i.Id.ToString().StartsWith("13") && i.QualityType == type).ToArray();
+                    Item c = 鞋子[Random.Shared.Next(鞋子.Length)].Copy();
+                    SetSellAndTradeTime(c);
+                    user.Inventory.Items.Add(c);
+                    msg += ItemSet.GetQualityTypeName(c.QualityType) + ItemSet.GetItemTypeName(c.ItemType) + "【" + c.Name + "】！\r\n" + c.Description;
+                    break;
+
+                case 4:
+                    if ((int)type > (int)QualityType.Purple) type = QualityType.Purple;
+                    Item[] 饰品 = Equipment.Where(i => i.Id.ToString().StartsWith("14") && i.QualityType == type).ToArray();
+                    Item d = 饰品[Random.Shared.Next(饰品.Length)].Copy();
+                    SetSellAndTradeTime(d);
+                    user.Inventory.Items.Add(d);
+                    msg += ItemSet.GetQualityTypeName(d.QualityType) + ItemSet.GetItemTypeName(d.ItemType) + "【" + d.Name + "】！\r\n" + d.Description;
+                    break;
+
+                case 5:
+                    if ((int)type > (int)QualityType.Orange) type = QualityType.Orange;
+                    Item mfk = GenerateMagicCard(type);
+                    SetSellAndTradeTime(mfk);
+                    user.Inventory.Items.Add(mfk);
+                    msg += ItemSet.GetQualityTypeName(mfk.QualityType) + ItemSet.GetItemTypeName(mfk.ItemType) + "【" + mfk.Name + "】！\r\n" + mfk.Description;
+                    break;
+
+                case 0:
+                default:
+                    if ((int)type > (int)QualityType.Orange) type = QualityType.Orange;
+                    Item? mfkb = GenerateMagicCardPack(3, type);
+                    if (mfkb != null)
+                    {
+                        SetSellAndTradeTime(mfkb);
+                        user.Inventory.Items.Add(mfkb);
+                        msg += ItemSet.GetQualityTypeName(mfkb.QualityType) + ItemSet.GetItemTypeName(mfkb.ItemType) + "【" + mfkb.Name + "】！\r\n" + mfkb.Description;
+                    }
+                    break;
+            }
             return msg;
         }
 
@@ -1790,8 +1844,8 @@ namespace Oshima.Core.Utils
                 {
                     int minutes = Random.Shared.Next(10, 41);
                     Dictionary<string, int> items = [];
-                    items[General.GameplayEquilibriumConstant.InGameCurrency] = minutes * 50;
-                    items[General.GameplayEquilibriumConstant.InGameMaterial] = minutes / 10 * 2;
+                    items[General.GameplayEquilibriumConstant.InGameCurrency] = minutes * 20;
+                    items[General.GameplayEquilibriumConstant.InGameMaterial] = minutes / 8 * 1;
                     int index = Random.Shared.Next(AllItems.Count);
                     Item item = AllItems[index];
                     items.Add(item.Name, 1);
@@ -1816,19 +1870,59 @@ namespace Oshima.Core.Utils
                     };
                     quests.Add(quest.GetIdName(), quest);
                 }
-                return string.Join("\r\n", quests);
+                return "☆--- 今日任务列表 ---☆\r\n" + string.Join("\r\n", quests.Values.Select(q => q.ToString())) + "\r\n温馨提示：请务必在次日 4:00 前完成任务结算，未结算的任务都会被取消！";
             }
             else
             {
                 if (quests.Count > 0)
                 {
-                    return string.Join("\r\n", quests);
+                    return "☆--- 今日任务列表 ---☆\r\n" + string.Join("\r\n", quests.Values.Select(q => q.ToString())) + "\r\n温馨提示：请务必在次日 4:00 前完成任务结算，未结算的任务都会被取消！";
                 }
                 else
                 {
                     return "任务列表为空，请等待刷新！";
                 }
             }
+        }
+
+        public static bool SettleQuest(User user, EntityModuleConfig<Quest> quests)
+        {
+            bool result = false;
+            IEnumerable<Quest> workingQuests = quests.Values.Where(q => q.Status == QuestState.InProgress);
+            foreach (Quest quest in workingQuests)
+            {
+                if (quest.StartTime.HasValue && quest.StartTime.Value.AddMinutes(quest.EstimatedMinutes) <= DateTime.Now)
+                {
+                    quest.Status = QuestState.Completed;
+                    result = true;
+                }
+            }
+            IEnumerable<Quest> finishQuests = quests.Values.Where(q => q.Status == QuestState.Completed);
+            foreach (Quest quest in finishQuests)
+            {
+                quest.Status = QuestState.Settled;
+                quest.SettleTime = DateTime.Now;
+                foreach (string name in quest.Awards.Keys)
+                {
+                    if (name == General.GameplayEquilibriumConstant.InGameCurrency)
+                    {
+                        user.Inventory.Credits += quest.Awards[name];
+                    }
+                    else if (name == General.GameplayEquilibriumConstant.InGameMaterial)
+                    {
+                        user.Inventory.Materials += quest.Awards[name];
+                    }
+                    else if (AllItems.FirstOrDefault(i => i.Name == name) is Item item)
+                    {
+                        Item newItem = item.Copy();
+                        newItem.User = user;
+                        SetSellAndTradeTime(newItem);
+                        user.Inventory.Items.Add(newItem);
+                    }
+                }
+                result = true;
+            }
+            return result;
         }
     }
 }
