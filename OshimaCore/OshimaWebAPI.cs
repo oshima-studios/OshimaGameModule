@@ -63,7 +63,7 @@ namespace Oshima.Core.WebAPI
                 Controller.WriteLine("重置物品交易冷却时间");
                 _ = FunGameService.AllowSellAndTrade();
             });
-            TaskScheduler.Shared.AddRecurringTask("刷新存档缓存", TimeSpan.FromSeconds(20), () =>
+            TaskScheduler.Shared.AddRecurringTask("刷新存档缓存", TimeSpan.FromMinutes(1), () =>
             {
                 string directoryPath = $@"{AppDomain.CurrentDomain.BaseDirectory}configs/saved";
                 if (Directory.Exists(directoryPath))
@@ -77,7 +77,18 @@ namespace Oshima.Core.WebAPI
                         if (pc.Count > 0)
                         {
                             User user = FunGameService.GetUser(pc);
+                            // 将用户名存入缓存
                             FunGameService.UserIdAndUsername[user.Id] = user.Username;
+                            // 任务结算
+                            EntityModuleConfig<Quest> quests = new("quests", user.Id.ToString());
+                            quests.LoadConfig();
+                            if (quests.Count > 0 && FunGameService.SettleQuest(user, quests))
+                            {
+                                quests.SaveConfig();
+                                user.LastTime = DateTime.Now;
+                                pc.Add("user", user);
+                                pc.SaveConfig();
+                            }
                         }
                     }
                     Controller.WriteLine("读取 FunGame 存档缓存");

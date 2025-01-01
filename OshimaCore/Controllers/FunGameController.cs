@@ -18,11 +18,12 @@ namespace Oshima.Core.Controllers
     [Route("[controller]")]
     public class FunGameController(ILogger<FunGameController> logger) : ControllerBase
     {
+        public static ItemType[] ItemCanUsed => [ItemType.Consumable, ItemType.MagicCard, ItemType.SpecialItem, ItemType.GiftBox, ItemType.Others];
+
         private readonly ILogger<FunGameController> _logger = logger;
         private const int drawCardReduce = 2000;
         private const int drawCardReduce_Material = 10;
         private const string noSaved = "你还没有创建存档！请发送【创建存档】创建。";
-        private readonly ItemType[] itemCanUsed = [ItemType.Consumable, ItemType.MagicCard, ItemType.SpecialItem, ItemType.GiftBox, ItemType.Others];
 
         [HttpGet("test")]
         public List<string> GetTest([FromQuery] bool? isweb = null, [FromQuery] bool? isteam = null, [FromQuery] bool? showall = null)
@@ -273,6 +274,25 @@ namespace Oshima.Core.Controllers
             {
                 List<string> msg = [];
                 Item? i = items.Where(i => i.Id == id).FirstOrDefault()?.Copy();
+                if (i != null)
+                {
+                    i.SetLevel(1);
+                    msg.Add(i.ToString(false, true));
+                }
+
+                return NetworkUtility.JsonSerialize(string.Join("\r\n\r\n", msg));
+            }
+            return NetworkUtility.JsonSerialize("");
+        }
+        
+        [HttpGet("iteminfoname")]
+        public string GetItemInfo_Name([FromQuery] string? name = null)
+        {
+            IEnumerable<Item> items = FunGameService.AllItems;
+            if (name != null)
+            {
+                List<string> msg = [];
+                Item? i = items.Where(i => i.Name == name).FirstOrDefault()?.Copy();
                 if (i != null)
                 {
                     i.SetLevel(1);
@@ -746,7 +766,7 @@ namespace Oshima.Core.Controllers
                         }
                         str += $"物品序号：{itemsIndex}\r\n";
                         str += $"拥有数量：{objs.Count}（" + (first.IsEquipment ? $"可装备数量：{objs.Count(i => i.Character is null)}，" : "") +
-                            (itemCanUsed.Contains(first.ItemType) ? $"可使用数量：{objs.Count(i => i.RemainUseTimes > 0)}，" : "") +
+                            (ItemCanUsed.Contains(first.ItemType) ? $"可使用数量：{objs.Count(i => i.RemainUseTimes > 0)}，" : "") +
                             $"可出售数量：{objs.Count(i => i.IsSellable)}，可交易数量：{objs.Count(i => i.IsTradable)}）";
                         list.Add(str);
                     }
@@ -831,7 +851,7 @@ namespace Oshima.Core.Controllers
                         }
                         str += $"物品序号：{itemsIndex}\r\n";
                         str += $"拥有数量：{objs.Count}（" + (first.IsEquipment ? $"可装备数量：{objs.Count(i => i.Character is null)}，" : "") +
-                            (itemCanUsed.Contains(first.ItemType) ? $"可使用数量：{objs.Count(i => i.RemainUseTimes > 0)}，" : "") +
+                            (ItemCanUsed.Contains(first.ItemType) ? $"可使用数量：{objs.Count(i => i.RemainUseTimes > 0)}，" : "") +
                             $"可出售数量：{objs.Count(i => i.IsSellable)}，可交易数量：{objs.Count(i => i.IsTradable)}）";
                         list.Add(str);
                     }
@@ -1639,7 +1659,7 @@ namespace Oshima.Core.Controllers
                     if (itemIndex > 0 && itemIndex <= user.Inventory.Items.Count)
                     {
                         item = user.Inventory.Items.ToList()[itemIndex - 1];
-                        if (itemCanUsed.Contains(item.ItemType))
+                        if (ItemCanUsed.Contains(item.ItemType))
                         {
                             if (item.RemainUseTimes <= 0)
                             {
@@ -1656,7 +1676,7 @@ namespace Oshima.Core.Controllers
                                 }
                             }
                             
-                            if (FunGameService.UseItem(item, user, [.. targets], out string msg))
+                            if (FunGameService.UseItem(item, user, targets, out string msg))
                             {
                                 user.LastTime = DateTime.Now;
                                 pc.Add("user", user);
@@ -1712,7 +1732,6 @@ namespace Oshima.Core.Controllers
                     {
                         items = items.TakeLast(useCount);
                         List<string> msgs = [];
-                        int successCount = 0;
 
                         List<Character> targets = [];
                         Character? character = null;
@@ -1729,33 +1748,14 @@ namespace Oshima.Core.Controllers
                             }
                         }
 
-                        foreach (Item item in items)
-                        {
-                            if (itemCanUsed.Contains(item.ItemType))
-                            {
-                                if (item.RemainUseTimes <= 0)
-                                {
-                                    msgs.Add("此物品剩余使用次数为0，无法使用！");
-                                }
-
-                                if (FunGameService.UseItem(item, user, [.. targets], out string msg))
-                                {
-                                    successCount++;
-                                }
-                                msgs.Add(msg);
-                            }
-                            else
-                            {
-                                msgs.Add($"这个物品无法使用！");
-                            }
-                        }
-                        if (successCount > 0)
+                        // 一个失败全部失败
+                        if (FunGameService.UseItems(items, user, targets, msgs))
                         {
                             user.LastTime = DateTime.Now;
                             pc.Add("user", user);
                             pc.SaveConfig();
                         }
-                        return NetworkUtility.JsonSerialize($"使用完毕！使用 {useCount} 件物品，成功 {successCount} 件！\r\n" + string.Join("\r\n", msgs.Count > 30 ? msgs.Take(30) : msgs));
+                        return NetworkUtility.JsonSerialize($"成功使用 {useCount} 件物品！\r\n" + string.Join("\r\n", msgs.Count > 30 ? msgs.Take(30) : msgs));
                     }
                     else
                     {
@@ -3498,6 +3498,72 @@ namespace Oshima.Core.Controllers
                 user.LastTime = DateTime.Now;
                 pc.Add("user", user);
                 pc.SaveConfig();
+
+                return NetworkUtility.JsonSerialize(msg);
+            }
+            else
+            {
+                return NetworkUtility.JsonSerialize(noSaved);
+            }
+        }
+
+        [HttpPost("settlequest")]
+        public string SettleQuest([FromQuery] long? qq = null)
+        {
+            long userid = qq ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
+
+            PluginConfig pc = new("saved", userid.ToString());
+            pc.LoadConfig();
+
+            if (pc.Count > 0)
+            {
+                User user = FunGameService.GetUser(pc);
+
+                EntityModuleConfig<Quest> quests = new("quests", userid.ToString());
+                quests.LoadConfig();
+                if (quests.Count > 0 && FunGameService.SettleQuest(user, quests))
+                {
+                    quests.SaveConfig();
+                    user.LastTime = DateTime.Now;
+                    pc.Add("user", user);
+                    pc.SaveConfig();
+                }
+
+                return NetworkUtility.JsonSerialize("任务结算已完成，请查看你的任务列表！");
+            }
+            else
+            {
+                return NetworkUtility.JsonSerialize(noSaved);
+            }
+        }
+        
+        [HttpPost("showmaincharacterorsquadstatus")]
+        public string ShowMainCharacterOrSquadStatus([FromQuery] long? qq = null, [FromQuery] bool? squad = null)
+        {
+            long userid = qq ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
+            bool showSquad = squad ?? false; 
+
+            PluginConfig pc = new("saved", userid.ToString());
+            pc.LoadConfig();
+
+            if (pc.Count > 0)
+            {
+                User user = FunGameService.GetUser(pc);
+                string msg = "";
+
+                if (showSquad)
+                {
+                    Character[] characters = [.. user.Inventory.Characters.Where(c => user.Inventory.Squad.Contains(c.Id))];
+                    foreach (Character character in characters)
+                    {
+                        if (msg != "") msg += "\r\n";
+                        msg += character.GetSimpleInfo(true, false, false, true);
+                    }
+                }
+                else
+                {
+                    msg = user.Inventory.MainCharacter.GetSimpleInfo(true, false, false, true);
+                }
 
                 return NetworkUtility.JsonSerialize(msg);
             }

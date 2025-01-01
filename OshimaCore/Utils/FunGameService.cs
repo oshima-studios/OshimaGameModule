@@ -2,6 +2,7 @@ using System.Text;
 using Milimoe.FunGame.Core.Api.Utility;
 using Milimoe.FunGame.Core.Entity;
 using Milimoe.FunGame.Core.Library.Constant;
+using Oshima.Core.Controllers;
 using Oshima.FunGame.OshimaModules;
 using Oshima.FunGame.OshimaModules.Characters;
 using Oshima.FunGame.OshimaModules.Effects.OpenEffects;
@@ -553,17 +554,6 @@ namespace Oshima.Core.Utils
                 }
             }
 
-            // 任务结算
-            EntityModuleConfig<Quest> quests = new("quests", user.Id.ToString());
-            quests.LoadConfig();
-            if (quests.Count > 0 && SettleQuest(user, quests))
-            {
-                quests.SaveConfig();
-                user.LastTime = DateTime.Now;
-                pc.Add("user", user);
-                pc.SaveConfig();
-            }
-
             return user;
         }
 
@@ -1005,12 +995,12 @@ namespace Oshima.Core.Utils
             }
         }
 
-        public static bool UseItem(Item item, User user, Character[] targets, out string msg)
+        public static bool UseItem(Item item, User user, IEnumerable<Character> targets, out string msg)
         {
             msg = "";
             Dictionary<string, object> args = new()
             {
-                { "targets", targets }
+                { "targets", targets.ToArray() }
             };
             bool result = item.UseItem(args);
             string key = args.Keys.FirstOrDefault(s => s.Equals("msg", StringComparison.CurrentCultureIgnoreCase)) ?? "";
@@ -1018,7 +1008,77 @@ namespace Oshima.Core.Utils
             {
                 msg = str;
             }
+            if (msg.Trim() == "" && !result)
+            {
+                result = UseItemCustom(item, user, targets, out msg);
+            }
             return result;
+        }
+        
+        public static bool UseItems(IEnumerable<Item> items, User user, IEnumerable<Character> targets, List<string> msgs)
+        {
+            Dictionary<string, object> args = new()
+            {
+                { "targets", targets.ToArray() },
+                { "useCount", items.Count() }
+            };
+            bool result = true;
+            foreach (Item item in items)
+            {
+                if (!result)
+                {
+                    break;
+                }
+                if (FunGameController.ItemCanUsed.Contains(item.ItemType))
+                {
+                    if (item.RemainUseTimes <= 0)
+                    {
+                        msgs.Add($"{item.Name} 的剩余使用次数为 0，无法使用！");
+                        result = false;
+                    }
+                    bool tempResult = item.UseItem(args);
+                    string tempStr = "";
+                    string key = args.Keys.FirstOrDefault(s => s.Equals("msg", StringComparison.CurrentCultureIgnoreCase)) ?? "";
+                    if (key != "" && args.TryGetValue(key, out object? value) && value is string str)
+                    {
+                        if (str != "") msgs.Add(str);
+                        tempStr = str;
+                    }
+                    if (tempStr.Trim() == "" && !tempResult)
+                    {
+                        // 使用自定义使用方法
+                        tempResult = UseItemCustom(item, user, targets, out tempStr);
+                    }
+                    if (!tempResult)
+                    {
+                        result = false;
+                    }
+                    msgs.Add(tempStr);
+                    // 这个参数会覆盖掉原消息
+                    key = args.Keys.FirstOrDefault(s => s.Equals("truemsg", StringComparison.CurrentCultureIgnoreCase)) ?? "";
+                    if (key != "" && args.TryGetValue(key, out value) && value is string truemsg)
+                    {
+                        msgs.Clear();
+                        msgs.Add(truemsg);
+                    }
+                }
+                else
+                {
+                    msgs.Add($"这个物品无法使用！");
+                }
+            }
+            return result;
+        }
+
+        public static bool UseItemCustom(Item item, User user, IEnumerable<Character> targets, out string msg)
+        {
+            msg = "";
+            switch (item.Name)
+            {
+                default:
+                    break;
+            }
+            return false;
         }
 
         public static string GetLevelBreakNeedy(int levelBreak)

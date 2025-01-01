@@ -40,12 +40,14 @@ namespace Oshima.FunGame.OshimaModules.Items
         {
             string msg = "";
             bool result = false;
+            Character[] targets = [];
             string key = args.Keys.FirstOrDefault(s => s.Equals("targets", StringComparison.CurrentCultureIgnoreCase)) ?? "";
-            if (key != "" && args.TryGetValue(key, out object? value) && value is Character[] targets)
+            if (key != "" && args.TryGetValue(key, out object? value) && value is Character[] temp)
             {
-                if (targets.Length > 0)
+                if (temp.Length > 0)
                 {
-                    msg = UseItem(item, targets[0]);
+                    targets = [temp[0]];
+                    msg = UseItem(item, temp[0]);
                     result = true;
                 }
                 else
@@ -53,7 +55,17 @@ namespace Oshima.FunGame.OshimaModules.Items
                     msg = $"使用物品失败，没有作用目标！";
                 }
             }
-            args.Add("msg", msg);
+            args["msg"] = msg;
+            key = args.Keys.FirstOrDefault(s => s.Equals("useCount", StringComparison.CurrentCultureIgnoreCase)) ?? "";
+            if (key != "" && args.TryGetValue(key, out value) && value is int count && targets.Length > 0)
+            {
+                string truemsg = $"对角色 [ {targets[0]} ] 使用 {count} 个 [ {item.Name} ] 成功！";
+                if (item is EXPBook expBook)
+                {
+                    truemsg += $"获得了 {expBook.EXP * count} 点经验值！";
+                }
+                args["truemsg"] = truemsg;
+            }
             return result;
         }
     }
