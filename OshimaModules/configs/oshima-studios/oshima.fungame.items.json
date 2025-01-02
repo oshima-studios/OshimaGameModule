@@ -634,6 +634,110 @@
       ]
     }
   },
+  "魔切剑": {
+    "Id": 11568,
+    "Name": "魔切剑",
+    "Description": "增加角色 85 点攻击力和 20% 魔法穿透。",
+    "BackgroundStory": "一把深色陨铁铸成的重剑，剑身宽厚刻满幽光符文，散发着压制魔法的威慑力。",
+    "ItemType": 1,
+    "WeaponType": 2,
+    "QualityType": 4,
+    "Skills": {
+      "Active": null,
+      "Passives": [
+        {
+          "Id": 7026,
+          "Name": "魔切剑",
+          "SkillType": 3,
+          "Effects": [
+            {
+              "Id": 8032,
+              "exatk": 85,
+              "exmpt": 0.2
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "鸳鸯眼": {
+    "Id": 11569,
+    "Name": "鸳鸯眼",
+    "Description": "增加角色 85 点攻击力和 25% 物理穿透。",
+    "BackgroundStory": "一对刀柄缠绕异色皮革的短刀，刀刃闪烁着冷暖交织的光泽。",
+    "ItemType": 1,
+    "WeaponType": 6,
+    "QualityType": 4,
+    "Skills": {
+      "Active": null,
+      "Passives": [
+        {
+          "Id": 7027,
+          "Name": "鸳鸯眼",
+          "SkillType": 3,
+          "Effects": [
+            {
+              "Id": 8032,
+              "exatk": 85,
+              "exppt": 0.25
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "昴宿": {
+    "Id": 11570,
+    "Name": "昴宿",
+    "Description": "增加角色 85 点攻击力和 15% 暴击率。",
+    "BackgroundStory": "一柄镶嵌着七颗星辰的银色长柄武器，散发着柔和而坚定的光辉。",
+    "ItemType": 1,
+    "WeaponType": 9,
+    "QualityType": 4,
+    "Skills": {
+      "Active": null,
+      "Passives": [
+        {
+          "Id": 7028,
+          "Name": "昴宿",
+          "SkillType": 3,
+          "Effects": [
+            {
+              "Id": 8032,
+              "exatk": 85,
+              "excr": 0.15
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "蔷薇花环": {
+    "Id": 11571,
+    "Name": "蔷薇花环",
+    "Description": "增加角色 85 点攻击力和 25% 暴击伤害。",
+    "BackgroundStory": "一环荆棘与花朵交织的暗器，美丽而致命，象征着爱与痛的纠缠。",
+    "ItemType": 1,
+    "WeaponType": 9,
+    "QualityType": 4,
+    "Skills": {
+      "Active": null,
+      "Passives": [
+        {
+          "Id": 7029,
+          "Name": "蔷薇花环",
+          "SkillType": 3,
+          "Effects": [
+            {
+              "Id": 8032,
+              "exatk": 85,
+              "excrd": 0.25
+            }
+          ]
+        }
+      ]
+    }
+  },
   "初级法袍": {
     "Id": 12501,
     "Name": "初级法袍",

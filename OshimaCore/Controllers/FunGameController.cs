@@ -241,65 +241,111 @@ namespace Oshima.Core.Controllers
         }
 
         [HttpGet("skillinfo")]
-        public string GetSkillInfo([FromQuery] long? id = null)
+        public string GetSkillInfo([FromQuery] long? qq = null, [FromQuery] long? id = null)
         {
+            long userid = qq ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
+            PluginConfig pc = new("saved", userid.ToString());
+            pc.LoadConfig();
+            List<string> msg = [];
+            Character? character = null;
+            if (pc.Count > 0)
+            {
+                User user = FunGameService.GetUser(pc);
+                character = user.Inventory.MainCharacter;
+                msg.Add($"技能展示的属性基于你的主战角色：[ {character} ]");
+            }
+            else
+            {
+                character = FunGameService.Characters[1].Copy();
+                msg.Add($"技能展示的属性基于演示角色：[ {character} ]");
+            }
             IEnumerable<Skill> skills = FunGameService.Skills.Union(FunGameService.Magics);
             if (id != null && FunGameService.Characters.Count > 1)
             {
-                List<string> msg = [];
-                Character c = FunGameService.Characters[1].Copy();
-                Skill? s = skills.Where(s => s.Id == id).FirstOrDefault()?.Copy();
-                if (s != null)
+                Skill? skill = skills.Where(s => s.Id == id).FirstOrDefault()?.Copy();
+                if (skill != null)
                 {
-                    s.Character = c;
-                    msg.Add($"技能展示的属性基于演示角色：[ {c} ]");
-                    msg.Add(c.ToStringWithLevel() + "\r\n" + s.ToString());
-                    s.Level++; ;
-                    msg.Add(c.ToStringWithLevel() + "\r\n" + s.ToString());
-                    c.Level = General.GameplayEquilibriumConstant.MaxLevel;
-                    s.Level = s.IsMagic ? General.GameplayEquilibriumConstant.MaxMagicLevel : General.GameplayEquilibriumConstant.MaxSkillLevel;
-                    msg.Add(c.ToStringWithLevel() + "\r\n" + s.ToString());
-                }
+                    msg.Add(character.ToStringWithLevel() + "\r\n" + skill.ToString());
+                    skill.Character = character;
+                    skill.Level++; ;
+                    msg.Add(character.ToStringWithLevel() + "\r\n" + skill.ToString());
+                    character.Level = General.GameplayEquilibriumConstant.MaxLevel;
+                    skill.Level = skill.IsMagic ? General.GameplayEquilibriumConstant.MaxMagicLevel : General.GameplayEquilibriumConstant.MaxSkillLevel;
+                    msg.Add(character.ToStringWithLevel() + "\r\n" + skill.ToString());
 
-                return NetworkUtility.JsonSerialize(string.Join("\r\n\r\n", msg));
+                    return NetworkUtility.JsonSerialize(string.Join("\r\n", msg));
+                }
             }
+
             return NetworkUtility.JsonSerialize("");
         }
 
         [HttpGet("iteminfo")]
-        public string GetItemInfo([FromQuery] long? id = null)
+        public string GetItemInfo([FromQuery] long? qq = null, [FromQuery] long? id = null)
         {
+            long userid = qq ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
+            PluginConfig pc = new("saved", userid.ToString());
+            pc.LoadConfig();
+            List<string> msg = [];
+            Character? character = null;
+            if (pc.Count > 0)
+            {
+                User user = FunGameService.GetUser(pc);
+                character = user.Inventory.MainCharacter;
+                msg.Add($"技能展示的属性基于你的主战角色：[ {character} ]");
+            }
+            else
+            {
+                character = FunGameService.Characters[1].Copy();
+                msg.Add($"技能展示的属性基于演示角色：[ {character} ]");
+            }
             IEnumerable<Item> items = FunGameService.AllItems;
             if (id != null)
             {
-                List<string> msg = [];
-                Item? i = items.Where(i => i.Id == id).FirstOrDefault()?.Copy();
-                if (i != null)
+                Item? item = items.Where(i => i.Id == id).FirstOrDefault()?.Copy();
+                if (item != null)
                 {
-                    i.SetLevel(1);
-                    msg.Add(i.ToString(false, true));
-                }
+                    item.Character = character;
+                    item.SetLevel(1);
+                    msg.Add(item.ToString(false, true));
 
-                return NetworkUtility.JsonSerialize(string.Join("\r\n\r\n", msg));
+                    return NetworkUtility.JsonSerialize(string.Join("\r\n", msg));
+                }
             }
             return NetworkUtility.JsonSerialize("");
         }
         
         [HttpGet("iteminfoname")]
-        public string GetItemInfo_Name([FromQuery] string? name = null)
+        public string GetItemInfo_Name([FromQuery] long? qq = null, [FromQuery] string? name = null)
         {
+            long userid = qq ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
+            PluginConfig pc = new("saved", userid.ToString());
+            pc.LoadConfig();
+            List<string> msg = [];
+            Character? character = null;
+            if (pc.Count > 0)
+            {
+                User user = FunGameService.GetUser(pc);
+                character = user.Inventory.MainCharacter;
+                msg.Add($"技能展示的属性基于你的主战角色：[ {character} ]");
+            }
+            else
+            {
+                character = FunGameService.Characters[1].Copy();
+                msg.Add($"技能展示的属性基于演示角色：[ {character} ]");
+            }
             IEnumerable<Item> items = FunGameService.AllItems;
             if (name != null)
             {
-                List<string> msg = [];
-                Item? i = items.Where(i => i.Name == name).FirstOrDefault()?.Copy();
-                if (i != null)
+                Item? item = items.Where(i => i.Name == name).FirstOrDefault()?.Copy();
+                if (item != null)
                 {
-                    i.SetLevel(1);
-                    msg.Add(i.ToString(false, true));
-                }
+                    item.Character = character;
+                    item.SetLevel(1);
+                    msg.Add(item.ToString(false, true));
 
-                return NetworkUtility.JsonSerialize(string.Join("\r\n\r\n", msg));
+                    return NetworkUtility.JsonSerialize(string.Join("\r\n", msg));
+                }
             }
             return NetworkUtility.JsonSerialize("");
         }
