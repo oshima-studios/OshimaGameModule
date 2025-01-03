@@ -25,10 +25,10 @@ namespace Oshima.FunGame.OshimaModules
             {
                 return id switch
                 {
-                    (long)AccessoryID.攻击之爪5 => new 攻击之爪5(),
-                    (long)AccessoryID.攻击之爪15 => new 攻击之爪15(),
-                    (long)AccessoryID.攻击之爪25 => new 攻击之爪25(),
+                    (long)AccessoryID.攻击之爪8 => new 攻击之爪8(),
+                    (long)AccessoryID.攻击之爪20 => new 攻击之爪20(),
                     (long)AccessoryID.攻击之爪35 => new 攻击之爪35(),
+                    (long)AccessoryID.攻击之爪50 => new 攻击之爪50(),
                     (long)ConsumableID.小经验书 => new 小经验书(),
                     (long)ConsumableID.中经验书 => new 中经验书(),
                     (long)ConsumableID.大经验书 => new 大经验书(),
@@ -39,6 +39,15 @@ namespace Oshima.FunGame.OshimaModules
                     (long)SpecialItemID.智慧之果 => new 智慧之果(),
                     (long)SpecialItemID.奥术符文 => new 奥术符文(),
                     (long)SpecialItemID.混沌之核 => new 混沌之核(),
+                    (long)ConsumableID.小回复药 => new 小回复药(),
+                    (long)ConsumableID.中回复药 => new 中回复药(),
+                    (long)ConsumableID.大回复药 => new 大回复药(),
+                    (long)ConsumableID.魔力填充剂1 => new 魔力填充剂1(),
+                    (long)ConsumableID.魔力填充剂2 => new 魔力填充剂2(),
+                    (long)ConsumableID.魔力填充剂3 => new 魔力填充剂3(),
+                    (long)ConsumableID.能量饮料1 => new 能量饮料1(),
+                    (long)ConsumableID.能量饮料2 => new 能量饮料2(),
+                    (long)ConsumableID.能量饮料3 => new 能量饮料3(),
                     _ => null,
                 };
             };

@@ -15,6 +15,8 @@ namespace Oshima.Core.Utils
     {
         public static List<Character> Characters { get; } = [];
         public static List<Skill> Skills { get; } = [];
+        public static List<Skill> PassiveSkills { get; } = [];
+        public static List<Skill> SuperSkills { get; } = [];
         public static List<Skill> Magics { get; } = [];
         public static List<Item> Equipment { get; } = [];
         public static List<Item> Items { get; } = [];
@@ -41,15 +43,20 @@ namespace Oshima.Core.Utils
 
             Skills.AddRange([new 疾风步()]);
 
+            SuperSkills.AddRange([new 嗜血本能(), new 平衡强化(), new 绝对领域(), new 精准打击(), new 三重叠加(), new 变幻之心(), new 力量爆发(), new 能量毁灭(), new 血之狂欢(), new 迅捷之势(), new 天赐之力(), new 魔法涌流()]);
+
+            PassiveSkills.AddRange([new META马(), new 心灵之火(), new 魔法震荡(), new 灵能反射(), new 智慧与力量(), new 致命打击(), new 毁灭之势(), new 枯竭打击(), new 破釜沉舟(), new 累积之压(), new 敏捷之刃(), new 弱者猎手()]);
+
             Magics.AddRange([new 冰霜攻击(), new 火之矢(), new 水之矢(), new 风之轮(), new 石之锤(), new 心灵之霞(), new 次元上升(), new 暗物质(), new 回复术(), new 治愈术(),
                 new 时间加速(), new 时间减速(), new 沉默十字(), new 反魔法领域()]);
 
             Dictionary<string, Item> exItems = Factory.GetGameModuleInstances<Item>(OshimaGameModuleConstant.General, OshimaGameModuleConstant.Item);
             Equipment.AddRange(exItems.Values.Where(i => (int)i.ItemType >= 0 && (int)i.ItemType < 5));
-            Equipment.AddRange([new 攻击之爪5(), new 攻击之爪15(), new 攻击之爪25(), new 攻击之爪35()]);
+            Equipment.AddRange([new 攻击之爪8(), new 攻击之爪20(), new 攻击之爪35(), new 攻击之爪50()]);
 
             Items.AddRange(exItems.Values.Where(i => (int)i.ItemType > 4));
-            Items.AddRange([new 小经验书(), new 中经验书(), new 大经验书(), new 升华之印(), new 流光之印(), new 永恒之印(), new 技能卷轴(), new 智慧之果(), new 奥术符文(), new 混沌之核()]);
+            Items.AddRange([new 小经验书(), new 中经验书(), new 大经验书(), new 升华之印(), new 流光之印(), new 永恒之印(), new 技能卷轴(), new 智慧之果(), new 奥术符文(), new 混沌之核(),
+                new 小回复药(), new 中回复药(), new 大回复药(), new 魔力填充剂1(), new 魔力填充剂2(), new 魔力填充剂3(), new 能量饮料1(), new 能量饮料2(), new 能量饮料3()]);
 
             AllItems.AddRange(Equipment);
             AllItems.AddRange(Items);
@@ -65,7 +72,9 @@ namespace Oshima.Core.Utils
             ItemSkills.AddRange([.. Equipment.SelectMany(i => i.Skills.Passives), .. Items.SelectMany(i => i.Skills.Passives)]);
 
             AllSkills.AddRange(Skills);
+            AllSkills.AddRange(PassiveSkills);
             AllSkills.AddRange(ItemSkills);
+            AllSkills.AddRange(SuperSkills);
         }
 
         public static List<Item> GenerateMagicCards(int count, QualityType? qualityType = null)
@@ -363,6 +372,8 @@ namespace Oshima.Core.Utils
             Characters.Clear();
             Equipment.Clear();
             Skills.Clear();
+            SuperSkills.Clear();
+            PassiveSkills.Clear();
             Magics.Clear();
             AllItems.Clear();
             ItemSkills.Clear();

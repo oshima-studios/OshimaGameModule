@@ -259,10 +259,50 @@ namespace Oshima.Core.Controllers
                 character = FunGameService.Characters[1].Copy();
                 msg.Add($"技能展示的属性基于演示角色：[ {character} ]");
             }
-            IEnumerable<Skill> skills = FunGameService.Skills.Union(FunGameService.Magics);
+            IEnumerable<Skill> skills = FunGameService.AllSkills;
             if (id != null && FunGameService.Characters.Count > 1)
             {
                 Skill? skill = skills.Where(s => s.Id == id).FirstOrDefault()?.Copy();
+                if (skill != null)
+                {
+                    msg.Add(character.ToStringWithLevel() + "\r\n" + skill.ToString());
+                    skill.Character = character;
+                    skill.Level++; ;
+                    msg.Add(character.ToStringWithLevel() + "\r\n" + skill.ToString());
+                    character.Level = General.GameplayEquilibriumConstant.MaxLevel;
+                    skill.Level = skill.IsMagic ? General.GameplayEquilibriumConstant.MaxMagicLevel : General.GameplayEquilibriumConstant.MaxSkillLevel;
+                    msg.Add(character.ToStringWithLevel() + "\r\n" + skill.ToString());
+
+                    return NetworkUtility.JsonSerialize(string.Join("\r\n", msg));
+                }
+            }
+
+            return NetworkUtility.JsonSerialize("");
+        }
+        
+        [HttpGet("skillinfoname")]
+        public string GetSkillInfo_Name([FromQuery] long? qq = null, [FromQuery] string? name = null)
+        {
+            long userid = qq ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
+            PluginConfig pc = new("saved", userid.ToString());
+            pc.LoadConfig();
+            List<string> msg = [];
+            Character? character = null;
+            if (pc.Count > 0)
+            {
+                User user = FunGameService.GetUser(pc);
+                character = user.Inventory.MainCharacter;
+                msg.Add($"技能展示的属性基于你的主战角色：[ {character} ]");
+            }
+            else
+            {
+                character = FunGameService.Characters[1].Copy();
+                msg.Add($"技能展示的属性基于演示角色：[ {character} ]");
+            }
+            IEnumerable<Skill> skills = FunGameService.AllSkills;
+            if (name != null && FunGameService.Characters.Count > 1)
+            {
+                Skill? skill = skills.Where(s => s.Name == name).FirstOrDefault()?.Copy();
                 if (skill != null)
                 {
                     msg.Add(character.ToStringWithLevel() + "\r\n" + skill.ToString());
@@ -1555,6 +1595,8 @@ namespace Oshima.Core.Controllers
 
                 if (user1 != null && user2 != null)
                 {
+                    user1.Inventory.MainCharacter.Recovery(EP: 200);
+                    user2.Inventory.MainCharacter.Recovery(EP: 200);
                     return FunGameActionQueue.NewAndStartGame([user1.Inventory.MainCharacter, user2.Inventory.MainCharacter], false, false, false, false, showAllRound);
                 }
                 else
@@ -1645,8 +1687,12 @@ namespace Oshima.Core.Controllers
 
                 if (user1 != null && user2 != null)
                 {
-                    Character[] squad1 = [.. user1.Inventory.Characters.Where(c => user1.Inventory.Squad.Contains(c.Id)).Select(c => c.Copy())];
-                    Character[] squad2 = [.. user2.Inventory.Characters.Where(c => user2.Inventory.Squad.Contains(c.Id)).Select(c => c.Copy())];
+                    Character[] squad1 = [.. user1.Inventory.Characters.Where(c => user1.Inventory.Squad.Contains(c.Id)).Select(c => c)];
+                    Character[] squad2 = [.. user2.Inventory.Characters.Where(c => user2.Inventory.Squad.Contains(c.Id)).Select(c => c)];
+                    foreach (Character character in squad1.Union(squad2))
+                    {
+                        character.Recovery(EP: 200);
+                    }
                     Team team1 = new($"{user1.Username}的小队", squad1);
                     Team team2 = new($"{user2.Username}的小队", squad2);
                     return FunGameActionQueue.NewAndStartTeamGame([team1, team2], 0, 0, false, false, false, false, showAllRound);
