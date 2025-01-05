@@ -29,7 +29,7 @@ namespace Oshima.FunGame.OshimaModules.Items
                 string msg = $"对角色 [ {character} ] 使用 [ {item.Name} ] 成功！";
                 if (item is EPBook hpBook)
                 {
-                    msg += $"回复了 {hpBook.EP} 点能量值！";
+                    msg += $"获得了 {hpBook.EP} 点能量值！";
                 }
                 return msg;
             }
@@ -62,7 +62,7 @@ namespace Oshima.FunGame.OshimaModules.Items
                 string truemsg = $"对角色 [ {targets[0]} ] 使用 {count} 个 [ {item.Name} ] 成功！";
                 if (item is EPBook expBook)
                 {
-                    truemsg += $"回复了 {expBook.EP * count} 点能量值！";
+                    truemsg += $"获得了 {expBook.EP * count} 点能量值！";
                 }
                 args["truemsg"] = truemsg;
             }

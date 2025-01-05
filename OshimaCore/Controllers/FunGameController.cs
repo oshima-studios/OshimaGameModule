@@ -1,4 +1,6 @@
+using System.Diagnostics.Metrics;
 using System.Text;
+using System.Text.RegularExpressions;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
@@ -422,7 +424,7 @@ namespace Oshima.Core.Controllers
                 User user = Factory.GetUser(userid, username, DateTime.Now, DateTime.Now, userid + "@qq.com", username);
                 user.Inventory.Credits = 5000000;
                 user.Inventory.Characters.Add(new CustomCharacter(userid, username));
-                FunGameService.UserIdAndUsername[userid] = username;
+                FunGameService.UserIdAndUsername[userid] = user;
                 pc.Add("user", user);
                 pc.SaveConfig();
                 return NetworkUtility.JsonSerialize($"创建存档成功！你的用户名是【{username}】。");
@@ -488,7 +490,22 @@ namespace Oshima.Core.Controllers
                     builder.AppendLine($"正在练级：{string.Join(" / ", user.Inventory.Characters.Where(c => user.Inventory.Training.ContainsKey(c.Id)).Select(c => c.ToStringWithLevelWithOutUser()))}");
                 }
                 builder.AppendLine($"物品数量：{user.Inventory.Items.Count}");
-                builder.AppendLine($"所属社团：无");
+                long clubid = 0;
+                if (pc.TryGetValue("club", out object? value) && long.TryParse(value.ToString(), out long temp))
+                {
+                    clubid = temp;
+                }
+                EntityModuleConfig<Club> emc = new("clubs", clubid.ToString());
+                emc.LoadConfig();
+                Club? club = emc.Get("club");
+                if (club != null)
+                {
+                    builder.AppendLine($"所属社团：{club.Name} [{club.Prefix}]");
+                }
+                else
+                {
+                    builder.AppendLine($"所属社团：无");
+                }
                 builder.AppendLine($"注册时间：{user.RegTime.ToString(General.GeneralDateTimeFormatChinese)}");
                 builder.AppendLine($"最后访问：{user.LastTime.ToString(General.GeneralDateTimeFormatChinese)}");
 
@@ -534,7 +551,7 @@ namespace Oshima.Core.Controllers
                 {
                     user.Inventory.Name = user.Username + "的库存";
                 }
-                FunGameService.UserIdAndUsername[user.Id] = user.Username;
+                FunGameService.UserIdAndUsername[user.Id] = user;
                 user.LastTime = DateTime.Now;
                 pc.Add("user", user);
                 pc.SaveConfig();
@@ -1617,7 +1634,7 @@ namespace Oshima.Core.Controllers
             {
                 if (name != null)
                 {
-                    long enemyid = FunGameService.UserIdAndUsername.Where(kv => kv.Value == name).Select(kv => kv.Key).FirstOrDefault();
+                    long enemyid = FunGameService.UserIdAndUsername.Where(kv => kv.Value.Username == name).Select(kv => kv.Key).FirstOrDefault();
                     if (enemyid == 0)
                     {
                         return [$"找不到此名称对应的玩家！"];
@@ -1715,7 +1732,7 @@ namespace Oshima.Core.Controllers
             {
                 if (name != null)
                 {
-                    long enemyid = FunGameService.UserIdAndUsername.Where(kv => kv.Value == name).Select(kv => kv.Key).FirstOrDefault();
+                    long enemyid = FunGameService.UserIdAndUsername.Where(kv => kv.Value.Username == name).Select(kv => kv.Key).FirstOrDefault();
                     if (enemyid == 0)
                     {
                         return [$"找不到此名称对应的玩家！"];
@@ -3677,21 +3694,445 @@ namespace Oshima.Core.Controllers
             {
                 User user = FunGameService.GetUser(pc);
                 bool sign = false;
+                int days = 0;
+                DateTime lastTime = DateTime.MinValue;
+                DateTime newLastTime = DateTime.Now;
                 if (pc.TryGetValue("signed", out object? value) && value is bool temp && temp)
                 {
                     sign = true;
                 }
+                if (pc.TryGetValue("days", out value) && int.TryParse(value.ToString(), out int temp2))
+                {
+                    days = temp2;
+                }
+
+                if (pc.TryGetValue("lastTime", out value) && DateTime.TryParse(value.ToString(), out lastTime) && (newLastTime.Date - lastTime.Date).TotalDays > 1)
+                {
+                    days = 0;
+                }
 
                 if (sign)
                 {
-                    return NetworkUtility.JsonSerialize("你今天已经签过到了哦！");
+                    return NetworkUtility.JsonSerialize($"你今天已经签过到了哦！" +
+                        (lastTime != DateTime.MinValue ? $"\r\n你上一次签到时间：{lastTime.ToString(General.GeneralDateTimeFormatChinese)}，连续签到：{days} 天。" : ""));
                 }
 
-                string msg = FunGameService.GetSignInResult(user);
-                user.LastTime = DateTime.Now;
+                string msg = FunGameService.GetSignInResult(user, days);
+                user.LastTime = newLastTime;
                 pc.Add("user", user);
                 pc.Add("signed", true);
+                pc.Add("days", days + 1);
+                pc.Add("lastTime", newLastTime);
                 pc.SaveConfig();
+                return NetworkUtility.JsonSerialize(msg);
+            }
+            else
+            {
+                return NetworkUtility.JsonSerialize(noSaved);
+            }
+        }
+        
+        [HttpPost("joinclub")]
+        public string JoinClub([FromQuery] long? qq = null, [FromQuery] long? id = null)
+        {
+            long userid = qq ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
+            long clubid = id ?? 0;
+
+            PluginConfig pc = new("saved", userid.ToString());
+            pc.LoadConfig();
+
+            if (pc.Count > 0)
+            {
+                User user = FunGameService.GetUser(pc);
+                if (pc.TryGetValue("club", out object? value) && long.TryParse(value.ToString(), out long userClub) && userClub != 0)
+                {
+                    return NetworkUtility.JsonSerialize($"你需要先退出当前社团才可以加入新社团。");
+                }
+
+                EntityModuleConfig<Club> emc = new("clubs", clubid.ToString());
+                emc.LoadConfig();
+                Club? club = emc.Get("club");
+                if (club is null)
+                {
+                    return NetworkUtility.JsonSerialize($"不存在编号为 {clubid} 的社团！");
+                }
+
+                if (!club.IsPublic)
+                {
+                    return NetworkUtility.JsonSerialize($"社团 [ {club.Name} ] 未公开，只能通过邀请加入。");
+                }
+
+                string msg = "";
+
+                if (club.IsNeedApproval || club.Applicants.ContainsKey(userid))
+                {
+                    club.Applicants[userid] = user;
+                    msg += $"已向社团 [ {club.Name} ] 提交加入申请！";
+                }
+                else
+                {
+                    club.Members[userid] = user;
+                    msg += $"加入社团 [ {club.Name} ] 成功！";
+                    pc.Add("club", clubid);
+                }
+                emc.Add("club", club);
+                emc.SaveConfig();
+                
+                user.LastTime = DateTime.Now;
+                pc.Add("user", user);
+                pc.SaveConfig();
+                return NetworkUtility.JsonSerialize(msg);
+            }
+            else
+            {
+                return NetworkUtility.JsonSerialize(noSaved);
+            }
+        }
+        
+        [HttpPost("quitclub")]
+        public string QuitClub([FromQuery] long? qq = null)
+        {
+            long userid = qq ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
+
+            PluginConfig pc = new("saved", userid.ToString());
+            pc.LoadConfig();
+
+            if (pc.Count > 0)
+            {
+                User user = FunGameService.GetUser(pc);
+                long clubid = 0;
+                if (pc.TryGetValue("club", out object? value) && long.TryParse(value.ToString(), out long temp))
+                {
+                    clubid = temp;
+                }
+
+                if (clubid == 0)
+                {
+                    return NetworkUtility.JsonSerialize($"你当前没有加入任何社团！");
+                }
+
+                EntityModuleConfig<Club> emc = new("clubs", clubid.ToString());
+                emc.LoadConfig();
+                Club? club = emc.Get("club");
+                if (club is null)
+                {
+                    return NetworkUtility.JsonSerialize($"不存在编号为 {clubid} 的社团！");
+                }
+
+                if (club.Master?.Id == userid)
+                {
+                    return NetworkUtility.JsonSerialize($"你是社团的社长，不能退出社团，请转让社长或【解散社团】！");
+                }
+
+                if (!club.Members.Remove(userid))
+                {
+                    return NetworkUtility.JsonSerialize($"你不是此社团的成员，请联系管理员处理。");
+                }
+                
+                emc.Add("club", club);
+                emc.SaveConfig();
+                
+                string msg = $"退出社团 [ {club.Name} ] 成功！";
+                user.LastTime = DateTime.Now;
+                pc.Add("user", user);
+                pc.Add("club", 0);
+                pc.SaveConfig();
+                return NetworkUtility.JsonSerialize(msg);
+            }
+            else
+            {
+                return NetworkUtility.JsonSerialize(noSaved);
+            }
+        }
+        
+        [HttpPost("createclub")]
+        public string CreateClub([FromQuery] long? qq = null, [FromQuery] bool? @public = null, [FromQuery] string? prefix = null)
+        {
+            long userid = qq ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
+            bool isPublic = @public ?? false;
+            string clubPrefix = prefix ?? "";
+
+            PluginConfig pc = new("saved", userid.ToString());
+            pc.LoadConfig();
+
+            if (pc.Count > 0)
+            {
+                User user = FunGameService.GetUser(pc);
+                if (pc.TryGetValue("club", out object? value) && long.TryParse(value.ToString(), out long userClub) && userClub != 0)
+                {
+                    return NetworkUtility.JsonSerialize($"你需要先退出当前社团才可以创建新社团。");
+                }
+
+                string pattern = @"^[a-zA-Z-_=+*%#^~.?!;:'"",]{3,4}$";
+                if (!Regex.IsMatch(clubPrefix, pattern))
+                {
+                    return NetworkUtility.JsonSerialize($"社团的前缀只能包含总共3-4个英文字母和允许的特殊字符，此前缀不满足条件。");
+                }
+
+                HashSet<long> clubids = [];
+                string directoryPath = $@"{AppDomain.CurrentDomain.BaseDirectory}configs/clubs";
+                if (Directory.Exists(directoryPath))
+                {
+                    string[] filePaths = Directory.GetFiles(directoryPath);
+                    foreach (string filePath in filePaths)
+                    {
+                        string fileName = Path.GetFileNameWithoutExtension(filePath);
+                        if (long.TryParse(fileName, out long id))
+                        {
+                            clubids.Add(id);
+                        }
+                    }
+                }
+
+                long clubid = clubids.Count > 0 ? clubids.Max() + 1 : 1;
+                Club club = new()
+                {
+                    Id = clubid,
+                    Guid = Guid.NewGuid(),
+                    Name = FunGameService.GenerateRandomChineseName(),
+                    Master = user,
+                    Prefix = clubPrefix,
+                    Members = new()
+                    {
+                        { user.Id, user }
+                    },
+                    IsPublic = isPublic,
+                    IsNeedApproval = false
+                };
+
+                EntityModuleConfig<Club> emc = new("clubs", clubid.ToString());
+                emc.LoadConfig();
+                emc.Add("club", club);
+                emc.SaveConfig();
+                
+                string msg = $"创建社团 [ {club.Name} ] （编号 {clubid}）成功！";
+                user.LastTime = DateTime.Now;
+                pc.Add("user", user);
+                pc.Add("club", clubid);
+                pc.SaveConfig();
+                return NetworkUtility.JsonSerialize(msg);
+            }
+            else
+            {
+                return NetworkUtility.JsonSerialize(noSaved);
+            }
+        }
+        
+        [HttpPost("showclubinfo")]
+        public string ShowClubInfo([FromQuery] long? qq = null)
+        {
+            long userid = qq ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
+
+            PluginConfig pc = new("saved", userid.ToString());
+            pc.LoadConfig();
+
+            if (pc.Count > 0)
+            {
+                User user = FunGameService.GetUser(pc);
+
+                string msg;
+                long clubid = 0;
+                if (pc.TryGetValue("club", out object? value) && long.TryParse(value.ToString(), out long temp))
+                {
+                    clubid = temp;
+                }
+                EntityModuleConfig<Club> emc = new("clubs", clubid.ToString());
+                emc.LoadConfig();
+                Club? club = emc.Get("club");
+                if (club != null)
+                {
+                    string master = "无";
+                    if (FunGameService.UserIdAndUsername.TryGetValue(club.Master?.Id ?? 0, out User? user2) && user2 != null)
+                    {
+                        master = user2.Username;
+                    }
+
+                    StringBuilder builer = new();
+                    builer.AppendLine($"☆--- {user.Username}的社团信息 ---☆");
+                    builer.AppendLine($"所属社团：{club.Name} [{club.Prefix}]");
+                    builer.AppendLine($"社团编号：{club.Id}");
+                    builer.AppendLine($"社团社长：{master}");
+                    builer.AppendLine($"是否公开：{(club.IsPublic ? "公开" : "私密")}");
+                    if (club.IsPublic) builer.AppendLine($"加入规则：{(club.IsNeedApproval ? "需要批准" : "直接加入")}");
+                    builer.AppendLine($"成员数量：{club.Members.Count}");
+                    if (club.Master?.Id == userid)
+                    {
+                        builer.AppendLine($"管理员数量：{club.Admins.Count}");
+                        builer.AppendLine($"待批准数量：{club.Applicants.Count}");
+                        builer.AppendLine($"社团基金：{club.ClubPoins}");
+                    }
+                    msg = builer.ToString().Trim();
+                }
+                else
+                {
+                    msg = $"你目前还没有加入任何社团。";
+                }
+
+                return NetworkUtility.JsonSerialize(msg);
+            }
+            else
+            {
+                return NetworkUtility.JsonSerialize(noSaved);
+            }
+        }
+        
+        [HttpPost("showclubmemberlist")]
+        public string ShowClubMemberList([FromQuery] long? qq = null, [FromQuery] int? type = null)
+        {
+            long userid = qq ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
+            int showType = type ?? 0;
+
+            PluginConfig pc = new("saved", userid.ToString());
+            pc.LoadConfig();
+
+            if (pc.Count > 0)
+            {
+                User user = FunGameService.GetUser(pc);
+
+                string msg;
+                long clubid = 0;
+                if (pc.TryGetValue("club", out object? value) && long.TryParse(value.ToString(), out long temp))
+                {
+                    clubid = temp;
+                }
+                EntityModuleConfig<Club> emc = new("clubs", clubid.ToString());
+                emc.LoadConfig();
+                Club? club = emc.Get("club");
+                if (club != null)
+                {
+                    StringBuilder builer = new();
+                    int count;
+                    switch (showType)
+                    {
+                        case 1:
+                            builer.AppendLine($"☆--- 社团 [ {club.Name} ] 管理员列表 ---☆");
+                            count = 1;
+                            foreach (long uid in club.Admins.Keys)
+                            {
+                                if (FunGameService.UserIdAndUsername.TryGetValue(club.Master?.Id ?? 0, out User? user2) && user2 != null)
+                                {
+                                    builer.AppendLine($"{count}.");
+                                    builer.AppendLine($"UID：{user2.Id}");
+                                    builer.AppendLine($"玩家昵称：{user2.Username}");
+                                }
+                                count++;
+                            }
+                            break;
+                        case 2:
+                            if (club.Master?.Id == user.Id || club.Admins.ContainsKey(user.Id))
+                            {
+                                builer.AppendLine($"☆--- 社团 [ {club.Name} ] 待批准列表 ---☆");
+                                count = 1;
+                                foreach (long uid in club.Applicants.Keys)
+                                {
+                                    if (FunGameService.UserIdAndUsername.TryGetValue(club.Master?.Id ?? 0, out User? user2) && user2 != null)
+                                    {
+                                        builer.AppendLine($"{count}.");
+                                        builer.AppendLine($"UID：{user2.Id}");
+                                        builer.AppendLine($"玩家昵称：{user2.Username}");
+                                    }
+                                    count++;
+                                }
+                            }
+                            else
+                            {
+                                builer.Append("你没有权限查看这个列表！");
+                            }
+                            break;
+                        case 0:
+                        default:
+                            builer.AppendLine($"☆--- 社团 [ {club.Name} ] 成员列表 ---☆");
+                            count = 1;
+                            foreach (long uid in club.Members.Keys)
+                            {
+                                if (FunGameService.UserIdAndUsername.TryGetValue(club.Master?.Id ?? 0, out User? user2) && user2 != null)
+                                {
+                                    builer.AppendLine($"{count}.");
+                                    builer.AppendLine($"UID：{user2.Id}");
+                                    builer.AppendLine($"玩家昵称：{user2.Username}");
+                                    string userType = "社员";
+                                    if (club.Master?.Id == user2.Id)
+                                    {
+                                        userType = "社长";
+                                    }
+                                    else if (club.Admins.ContainsKey(user2.Id))
+                                    {
+                                        userType = "管理员";
+                                    }
+                                    builer.AppendLine($"社团身份：{userType}");
+                                }
+                                count++;
+                            }
+                            break;
+                    }
+
+                    msg = builer.ToString().Trim();
+                }
+                else
+                {
+                    msg = $"你目前还没有加入任何社团。";
+                }
+
+                return NetworkUtility.JsonSerialize(msg);
+            }
+            else
+            {
+                return NetworkUtility.JsonSerialize(noSaved);
+            }
+        }
+
+        [HttpPost("disbandclub")]
+        public string DisbandClub([FromQuery] long? qq = null)
+        {
+            return NetworkUtility.JsonSerialize($"现在还不能解散社团！");
+
+            long userid = qq ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
+
+            PluginConfig pc = new("saved", userid.ToString());
+            pc.LoadConfig();
+
+            if (pc.Count > 0)
+            {
+                User user = FunGameService.GetUser(pc);
+                long clubid = 0;
+                if (pc.TryGetValue("club", out object? value) && long.TryParse(value.ToString(), out long temp))
+                {
+                    clubid = temp;
+                }
+
+                if (clubid == 0)
+                {
+                    return NetworkUtility.JsonSerialize($"你当前没有加入任何社团！");
+                }
+
+                EntityModuleConfig<Club> emc = new("clubs", clubid.ToString());
+                emc.LoadConfig();
+                Club? club = emc.Get("club");
+                if (club is null)
+                {
+                    return NetworkUtility.JsonSerialize($"不存在编号为 {clubid} 的社团！");
+                }
+
+                if (club.Master?.Id != userid)
+                {
+                    return NetworkUtility.JsonSerialize($"你不是社团的社长，没有权限使用此指令！");
+                }
+
+                string msg;
+                string path = $@"{AppDomain.CurrentDomain.BaseDirectory}configs/clubs/{clubid}.json";
+                try
+                {
+                    System.IO.File.Delete(path);
+                    msg = $"解散社团 [ {club.Name} ] 成功！";
+                    user.LastTime = DateTime.Now;
+                    pc.Add("user", user);
+                    pc.Add("club", 0);
+                    pc.SaveConfig();
+                }
+                catch
+                {
+                    msg = $"解散社团 [ {club.Name} ] 失败，请联系服务器管理员解决！";
+                }
                 return NetworkUtility.JsonSerialize(msg);
             }
             else

@@ -31,5 +31,13 @@ namespace Oshima.FunGame.OshimaModules.Effects.ItemEffects
         {
             HealToTarget(caster, caster, 实际回复, false);
         }
+
+        public override void OnSkillCasted(List<Character> targets, Dictionary<string, object> others)
+        {
+            foreach (Character target in targets)
+            {
+                target.HP += 实际回复;
+            }
+        }
     }
 }

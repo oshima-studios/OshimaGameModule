@@ -77,8 +77,8 @@ namespace Oshima.Core.WebAPI
                         if (pc.Count > 0)
                         {
                             User user = FunGameService.GetUser(pc);
-                            // 将用户名存入缓存
-                            FunGameService.UserIdAndUsername[user.Id] = user.Username;
+                            // 将用户存入缓存
+                            FunGameService.UserIdAndUsername[user.Id] = user;
                             // 任务结算
                             EntityModuleConfig<Quest> quests = new("quests", user.Id.ToString());
                             quests.LoadConfig();

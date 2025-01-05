@@ -23,7 +23,7 @@ namespace Oshima.Core.Utils
         public static List<Skill> ItemSkills { get; } = [];
         public static List<Item> AllItems { get; } = [];
         public static List<Skill> AllSkills { get; } = [];
-        public static Dictionary<long, string> UserIdAndUsername { get; } = [];
+        public static Dictionary<long, User> UserIdAndUsername { get; } = [];
         public static Dictionary<int, Character> Bosses { get; } = [];
 
         public static void InitFunGame()
@@ -71,6 +71,7 @@ namespace Oshima.Core.Utils
             }
             ItemSkills.AddRange([.. Equipment.SelectMany(i => i.Skills.Passives), .. Items.SelectMany(i => i.Skills.Passives)]);
 
+            AllSkills.AddRange(Magics);
             AllSkills.AddRange(Skills);
             AllSkills.AddRange(PassiveSkills);
             AllSkills.AddRange(ItemSkills);
@@ -677,27 +678,37 @@ namespace Oshima.Core.Utils
             return msg;
         }
 
-        public static string GetSignInResult(User user)
+        public static string GetSignInResult(User user, int days)
         {
-            string msg = "签到成功！本次签到获得：";
-            int currency = Random.Shared.Next(1000, 3000);
-            msg += $"{currency} 金币和 ";
-            int material = Random.Shared.Next(5, 15);
-            msg += $"{material} 材料！额外获得：";
+            string msg = $"签到成功，你已连续签到 {days +1} 天！\r\n本次签到获得：";
+            int currency = Random.Shared.Next(1000, 3000) + 10 * days;
+            msg += $"{currency} {General.GameplayEquilibriumConstant.InGameCurrency} 和 ";
+            int material = Random.Shared.Next(5, 15) + days / 7;
+            msg += $"{material} {General.GameplayEquilibriumConstant.InGameMaterial}！额外获得：";
             user.Inventory.Credits += currency;
             user.Inventory.Materials += material;
             int r = Random.Shared.Next(6);
             double q = Random.Shared.NextDouble() * 100;
-            QualityType type = q switch
+
+            // 根据签到天数调整概率
+            double daysFactor = Math.Min(days * 0.02, 30);
+            Dictionary<QualityType, double> adjustedProbabilities = new(DrawCardProbabilities);
+            foreach (QualityType typeTemp in adjustedProbabilities.Keys)
             {
-                <= 69.53 => QualityType.White,
-                > 69.53 and <= 69.53 + 15.35 => QualityType.Green,
-                > 69.53 + 15.35 and <= 69.53 + 15.35 + 9.48 => QualityType.Blue,
-                > 69.53 + 15.35 + 9.48 and <= 69.53 + 15.35 + 9.48 + 4.25 => QualityType.Purple,
-                > 69.53 + 15.35 + 9.48 + 4.25 and <= 69.53 + 15.35 + 9.48 + 4.25 + 1.33 => QualityType.Orange,
-                > 69.53 + 15.35 + 9.48 + 4.25 + 1.33 and <= 69.53 + 15.35 + 9.48 + 4.25 + 1.33 + 0.06 => QualityType.Red,
-                _ => QualityType.White
-            };
+                adjustedProbabilities[typeTemp] += daysFactor;
+            }
+
+            // 生成随机数并确定品质
+            double randomValue = Random.Shared.NextDouble() * 100;
+            QualityType type = QualityType.White;
+            foreach (QualityType typeTemp in adjustedProbabilities.Keys.OrderByDescending(o => (int)o))
+            {
+                if (randomValue <= adjustedProbabilities[typeTemp])
+                {
+                    type = typeTemp;
+                    break;
+                }
+            }
 
             switch (r)
             {
@@ -1811,6 +1822,22 @@ namespace Oshima.Core.Utils
                         "拯救被困在魔法结界里的市民",
                         "拯救被困在城市魔法结界里的市民。"
                     }
+                };
+            }
+        }
+
+        public static Dictionary<QualityType, double> DrawCardProbabilities
+        {
+            get
+            {
+                return new()
+                {
+                    { QualityType.White, 69.53 },
+                    { QualityType.Green, 15.35 },
+                    { QualityType.Blue, 9.48 },
+                    { QualityType.Purple, 4.25 },
+                    { QualityType.Orange, 1.33 },
+                    { QualityType.Red, 0.06 }
                 };
             }
         }

@@ -31,5 +31,13 @@ namespace Oshima.FunGame.OshimaModules.Effects.ItemEffects
         {
             caster.MP += 实际回复;
         }
+
+        public override void OnSkillCasted(List<Character> targets, Dictionary<string, object> others)
+        {
+            foreach (Character target in targets)
+            {
+                target.MP += 实际回复;
+            }
+        }
     }
 }
