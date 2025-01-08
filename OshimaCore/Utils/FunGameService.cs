@@ -501,9 +501,9 @@ namespace Oshima.Core.Utils
                 double recoveryHP = realCharacter.HR * seconds;
                 double recoveryMP = realCharacter.MR * seconds;
                 double recoveryEP = realCharacter.ER * seconds;
-                realCharacter.HP = inventoryCharacter.HP + recoveryHP;
-                realCharacter.MP = inventoryCharacter.MP + recoveryMP;
-                realCharacter.EP = inventoryCharacter.EP + recoveryEP;
+                realCharacter.HP += recoveryHP;
+                realCharacter.MP += recoveryMP;
+                realCharacter.EP += recoveryEP;
                 // 减少所有技能的冷却时间
                 foreach (Skill skill in realCharacter.Skills)
                 {
@@ -1986,7 +1986,7 @@ namespace Oshima.Core.Utils
         public static bool SettleQuest(User user, EntityModuleConfig<Quest> quests)
         {
             bool result = false;
-            IEnumerable<Quest> workingQuests = quests.Values.Where(q => q.Status == QuestState.InProgress);
+            IEnumerable<Quest> workingQuests = quests.Values.Where(q => q.QuestType == QuestType.Continuous && q.Status == QuestState.InProgress);
             foreach (Quest quest in workingQuests)
             {
                 if (quest.StartTime.HasValue && quest.StartTime.Value.AddMinutes(quest.EstimatedMinutes) <= DateTime.Now)

@@ -3974,7 +3974,7 @@ namespace Oshima.Core.Controllers
                     builer.AppendLine($"是否公开：{(club.IsPublic ? "公开" : "私密")}");
                     if (club.IsPublic) builer.AppendLine($"加入规则：{(club.IsNeedApproval ? "需要批准" : "直接加入")}");
                     builer.AppendLine($"成员数量：{club.Members.Count}");
-                    if (club.Master?.Id == userid && club.Admins.ContainsKey(userid))
+                    if (club.Master?.Id == userid || club.Admins.ContainsKey(userid))
                     {
                         builer.AppendLine($"管理员数量：{club.Admins.Count}");
                         builer.AppendLine($"申请人数量：{club.Applicants.Count}");
