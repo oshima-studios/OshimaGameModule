@@ -3881,7 +3881,7 @@ namespace Oshima.Core.Controllers
                 string pattern = @"^[a-zA-Z-_=+*%#^~.?!;:'"",]{3,4}$";
                 if (!Regex.IsMatch(clubPrefix, pattern))
                 {
-                    return NetworkUtility.JsonSerialize($"社团的前缀只能包含总共3-4个英文字母和允许的特殊字符，此前缀不满足条件。");
+                    return NetworkUtility.JsonSerialize($"社团的前缀只能包含总共3-4个英文字母和数字、允许的特殊字符，此前缀不满足条件。");
                 }
 
                 HashSet<long> clubids = [];
@@ -4407,7 +4407,7 @@ namespace Oshima.Core.Controllers
                                 {
                                     if (values[0].Length >= 2 && values[0].Length <= 10)
                                     {
-                                        return NetworkUtility.JsonSerialize("社团名称只能包含2至10个字符！");
+                                        return NetworkUtility.JsonSerialize("社团名称只能包含2至15个字符！");
                                     }
                                     club.Name = values[0];
                                     msg = "修改成功，新的社团名称是：" + club.Name;
@@ -4422,15 +4422,16 @@ namespace Oshima.Core.Controllers
                                 {
                                     return NetworkUtility.JsonSerialize("只有社长可以修改社团前缀！");
                                 }
-                                string pattern = @"^[a-zA-Z-_=+*%#^~.?!;:'"",]{3,4}$";
+                                string pattern = @"^[a-zA-Z0-9-_=+*%#^~.?!;:'"",]{3,4}$";
                                 if (values.Length > 0)
                                 {
                                     string clubPrefix = values[0];
                                     if (!Regex.IsMatch(clubPrefix, pattern))
                                     {
-                                        return NetworkUtility.JsonSerialize($"社团的前缀只能包含总共3-4个英文字母和允许的特殊字符，此前缀不满足条件。");
+                                        return NetworkUtility.JsonSerialize($"社团的前缀只能包含总共3-4个英文字母和数字、允许的特殊字符，此前缀不满足条件。");
                                     }
                                     club.Prefix = clubPrefix;
+                                    msg = "修改成功，新的社团前缀是：" + club.Prefix;
                                 }
                                 else
                                 {

@@ -581,18 +581,18 @@ namespace Oshima.Core.Utils
             {
                 msg = $"消耗 {reduce} {General.GameplayEquilibriumConstant.InGameCurrency}，恭喜你抽到了：";
             }
+
             int r = Random.Shared.Next(8);
             double q = Random.Shared.NextDouble() * 100;
-            QualityType type = q switch
+            QualityType type = QualityType.White;
+            foreach (QualityType typeTemp in DrawCardProbabilities.Keys.OrderByDescending(o => (int)o))
             {
-                <= 69.53 => QualityType.White,
-                > 69.53 and <= 69.53 + 15.35 => QualityType.Green,
-                > 69.53 + 15.35 and <= 69.53 + 15.35 + 9.48 => QualityType.Blue,
-                > 69.53 + 15.35 + 9.48 and <= 69.53 + 15.35 + 9.48 + 4.25 => QualityType.Purple,
-                > 69.53 + 15.35 + 9.48 + 4.25 and <= 69.53 + 15.35 + 9.48 + 4.25 + 1.33 => QualityType.Orange,
-                > 69.53 + 15.35 + 9.48 + 4.25 + 1.33 and <= 69.53 + 15.35 + 9.48 + 4.25 + 1.33 + 0.06 => QualityType.Red,
-                _ => QualityType.White
-            };
+                if (q <= DrawCardProbabilities[typeTemp])
+                {
+                    type = typeTemp;
+                    break;
+                }
+            }
 
             switch (r)
             {
