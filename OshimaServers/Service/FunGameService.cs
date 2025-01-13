@@ -2,14 +2,13 @@ using System.Text;
 using Milimoe.FunGame.Core.Api.Utility;
 using Milimoe.FunGame.Core.Entity;
 using Milimoe.FunGame.Core.Library.Constant;
-using Oshima.Core.Controllers;
 using Oshima.FunGame.OshimaModules;
 using Oshima.FunGame.OshimaModules.Characters;
 using Oshima.FunGame.OshimaModules.Effects.OpenEffects;
 using Oshima.FunGame.OshimaModules.Items;
 using Oshima.FunGame.OshimaModules.Skills;
 
-namespace Oshima.Core.Utils
+namespace Oshima.FunGame.OshimaServers.Service
 {
     public class FunGameService
     {
@@ -25,6 +24,7 @@ namespace Oshima.Core.Utils
         public static List<Skill> AllSkills { get; } = [];
         public static Dictionary<long, User> UserIdAndUsername { get; } = [];
         public static Dictionary<int, Character> Bosses { get; } = [];
+        public static ItemType[] ItemCanUsed => [ItemType.Consumable, ItemType.MagicCard, ItemType.SpecialItem, ItemType.GiftBox, ItemType.Others];
 
         public static void InitFunGame()
         {
@@ -1051,7 +1051,7 @@ namespace Oshima.Core.Utils
                 {
                     break;
                 }
-                if (FunGameController.ItemCanUsed.Contains(item.ItemType))
+                if (ItemCanUsed.Contains(item.ItemType))
                 {
                     if (item.RemainUseTimes <= 0)
                     {
@@ -2018,6 +2018,8 @@ namespace Oshima.Core.Utils
                         user.Inventory.Items.Add(newItem);
                     }
                 }
+                TaskUtility.NewTask(async () => await AnonymousServer.PushMessageToClients(user.Id, $"FunGame Web API 推送：你的任务【{quest.Name}】已结算，" +
+                    $"获得奖励：【{string.Join("，", quest.Awards.Select(kv => kv.Key + " * " + kv.Value))}】!"));
                 result = true;
             }
             return result;

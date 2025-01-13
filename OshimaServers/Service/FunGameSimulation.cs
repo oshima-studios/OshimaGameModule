@@ -5,7 +5,7 @@ using Milimoe.FunGame.Core.Library.Constant;
 using Milimoe.FunGame.Core.Model;
 using Oshima.FunGame.OshimaModules.Effects.OpenEffects;
 
-namespace Oshima.Core.Utils
+namespace Oshima.FunGame.OshimaServers.Service
 {
     public class FunGameSimulation
     {

@@ -4,7 +4,7 @@ using Milimoe.FunGame.Core.Entity;
 using Milimoe.FunGame.Core.Model;
 using Oshima.FunGame.OshimaModules.Effects.OpenEffects;
 
-namespace Oshima.Core.Utils
+namespace Oshima.FunGame.OshimaServers.Service
 {
     public class FunGameActionQueue
     {

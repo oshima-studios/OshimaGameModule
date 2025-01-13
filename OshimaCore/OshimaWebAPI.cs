@@ -1,10 +1,11 @@
 using Milimoe.FunGame.Core.Api.Utility;
 using Milimoe.FunGame.Core.Entity;
 using Milimoe.FunGame.Core.Library.Common.Addon;
+using Milimoe.FunGame.Core.Library.Constant;
 using Oshima.Core.Configs;
 using Oshima.Core.Constant;
-using Oshima.Core.Utils;
 using Oshima.FunGame.OshimaModules;
+using Oshima.FunGame.OshimaServers.Service;
 using TaskScheduler = Milimoe.FunGame.Core.Api.Utility.TaskScheduler;
 
 namespace Oshima.Core.WebAPI
@@ -91,7 +92,7 @@ namespace Oshima.Core.WebAPI
                             }
                         }
                     }
-                    Controller.WriteLine("读取 FunGame 存档缓存");
+                    Controller.WriteLine("读取 FunGame 存档缓存", LogLevel.Debug);
                 }
             }, true);
             TaskScheduler.Shared.AddTask("刷新每日任务", new TimeSpan(4, 0, 0), () =>

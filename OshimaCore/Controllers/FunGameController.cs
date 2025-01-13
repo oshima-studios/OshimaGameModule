@@ -1,4 +1,3 @@
-using System.Diagnostics.Metrics;
 using System.Text;
 using System.Text.RegularExpressions;
 using Microsoft.AspNetCore.Authorization;
@@ -9,9 +8,9 @@ using Milimoe.FunGame.Core.Entity;
 using Milimoe.FunGame.Core.Library.Constant;
 using Oshima.Core.Configs;
 using Oshima.Core.Models;
-using Oshima.Core.Utils;
 using Oshima.FunGame.OshimaModules.Characters;
 using Oshima.FunGame.OshimaModules.Items;
+using Oshima.FunGame.OshimaServers.Service;
 
 namespace Oshima.Core.Controllers
 {
@@ -20,8 +19,6 @@ namespace Oshima.Core.Controllers
     [Route("[controller]")]
     public class FunGameController(ILogger<FunGameController> logger) : ControllerBase
     {
-        public static ItemType[] ItemCanUsed => [ItemType.Consumable, ItemType.MagicCard, ItemType.SpecialItem, ItemType.GiftBox, ItemType.Others];
-
         private readonly ILogger<FunGameController> _logger = logger;
         private const int drawCardReduce = 2000;
         private const int drawCardReduce_Material = 10;
@@ -881,7 +878,7 @@ namespace Oshima.Core.Controllers
                         }
                         str += $"物品序号：{itemsIndex}\r\n";
                         str += $"拥有数量：{objs.Count}（" + (first.IsEquipment ? $"可装备数量：{objs.Count(i => i.Character is null)}，" : "") +
-                            (ItemCanUsed.Contains(first.ItemType) ? $"可使用数量：{objs.Count(i => i.RemainUseTimes > 0)}，" : "") +
+                            (FunGameService.ItemCanUsed.Contains(first.ItemType) ? $"可使用数量：{objs.Count(i => i.RemainUseTimes > 0)}，" : "") +
                             $"可出售数量：{objs.Count(i => i.IsSellable)}，可交易数量：{objs.Count(i => i.IsTradable)}）";
                         list.Add(str);
                     }
@@ -966,7 +963,7 @@ namespace Oshima.Core.Controllers
                         }
                         str += $"物品序号：{itemsIndex}\r\n";
                         str += $"拥有数量：{objs.Count}（" + (first.IsEquipment ? $"可装备数量：{objs.Count(i => i.Character is null)}，" : "") +
-                            (ItemCanUsed.Contains(first.ItemType) ? $"可使用数量：{objs.Count(i => i.RemainUseTimes > 0)}，" : "") +
+                            (FunGameService.ItemCanUsed.Contains(first.ItemType) ? $"可使用数量：{objs.Count(i => i.RemainUseTimes > 0)}，" : "") +
                             $"可出售数量：{objs.Count(i => i.IsSellable)}，可交易数量：{objs.Count(i => i.IsTradable)}）";
                         list.Add(str);
                     }
@@ -1780,7 +1777,7 @@ namespace Oshima.Core.Controllers
                     if (itemIndex > 0 && itemIndex <= user.Inventory.Items.Count)
                     {
                         item = user.Inventory.Items.ToList()[itemIndex - 1];
-                        if (ItemCanUsed.Contains(item.ItemType))
+                        if (FunGameService.ItemCanUsed.Contains(item.ItemType))
                         {
                             if (item.RemainUseTimes <= 0)
                             {

@@ -25,6 +25,7 @@
 
 	<ItemGroup>
 		<ProjectReference Include="..\OshimaModules\OshimaModules.csproj" />
+		<ProjectReference Include="..\OshimaServers\OshimaServers.csproj" />
 	</ItemGroup>
 
 	<ItemGroup>

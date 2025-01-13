@@ -14,6 +14,8 @@ namespace Oshima.FunGame.OshimaModules
         public const string Version = "1.0.0";
         public const string Author = "Oshima Studios";
         public const string FastAutoMap = "oshima.fungame.fastauto.map";
+        public const string Anonymous = "oshima.fungame.anonymous";
+        public const string AnonymousMap = "oshima.fungame.anonymous.map";
 
         private static readonly string[] Maps = [FastAutoMap];
         private static readonly string[] Characters = [Character];
