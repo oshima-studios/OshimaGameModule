@@ -113,10 +113,15 @@ namespace Oshima.FunGame.OshimaServers
             Dictionary<string, object> result = [];
             Controller.WriteLine("接收匿名服务器消息", LogLevel.Debug);
 
-            // 根据服务器和客户端的数据传输约定，自行处理 data，并返回。
+            long groupid = NetworkUtility.JsonDeserializeFromDictionary<long>(data, "groupid");
+            if (groupid > 0)
+            {
+                result["groupid"] = groupid;
+            }
             string msg = "";
             if (data.Count > 0)
             {
+                // 根据服务器和客户端的数据传输约定，自行处理 data，并返回。
                 string command = NetworkUtility.JsonDeserializeFromDictionary<string>(data, "command") ?? "";
                 switch (command.Trim().ToLower())
                 {
@@ -136,7 +141,7 @@ namespace Oshima.FunGame.OshimaServers
             }
             if (msg.Trim() != "")
             {
-                result.Add("msg", msg);
+                result["msg"] = msg;
             }
 
             return result;
@@ -198,7 +203,7 @@ namespace Oshima.FunGame.OshimaServers
 
         public string SCList()
         {
-            string result = "☆--- OSMTV 圣人排行榜 TOP10 ---☆\r\n统计时间：" + DateTime.Now.ToString(General.GeneralDateTimeFormatChinese);
+            string result = $"☆--- OSMTV 圣人排行榜 TOP10 ---☆\r\n统计时间：{DateTime.Now.ToString(General.GeneralDateTimeFormatChinese)}\r\n";
 
             SQLHelper? sql = Controller.SQLHelper;
             if (sql != null)
@@ -214,7 +219,8 @@ namespace Oshima.FunGame.OshimaServers
                         if (count > 10) break;
                         long qq = Convert.ToInt64(dr["qq"]);
                         double sc = Convert.ToDouble(dr["sc"]);
-                        result += $"{count}. 用户：{qq}，圣人点数：{sc} 分\r\n";
+                        string remark = Convert.ToString(dr["remark"]) ?? "";
+                        result += $"{count}. 用户：{qq}，圣人点数：{sc} 分{(remark.Trim() != "" ? $" ({remark})" : "")}\r\n";
                     }
                 }
             }
