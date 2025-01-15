@@ -1,4 +1,4 @@
-﻿namespace Oshima.Core.Models
+﻿namespace Oshima.FunGame.WebAPI.Models
 {
     public class UserDaily(long user_id, long type, string daily)
     {

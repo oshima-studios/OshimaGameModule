@@ -2,10 +2,10 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Milimoe.FunGame.Core.Api.Utility;
 using Oshima.Core.Configs;
-using Oshima.Core.Models;
-using Oshima.Core.Utils;
+using Oshima.FunGame.WebAPI.Models;
+using Oshima.FunGame.WebAPI.Utils;
 
-namespace Oshima.Core.Controllers
+namespace Oshima.FunGame.WebAPI.Controllers
 {
     [ApiController]
     [Route("[controller]")]

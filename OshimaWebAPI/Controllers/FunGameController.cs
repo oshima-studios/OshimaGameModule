@@ -7,12 +7,12 @@ using Milimoe.FunGame.Core.Api.Utility;
 using Milimoe.FunGame.Core.Entity;
 using Milimoe.FunGame.Core.Library.Constant;
 using Oshima.Core.Configs;
-using Oshima.Core.Models;
 using Oshima.FunGame.OshimaModules.Characters;
 using Oshima.FunGame.OshimaModules.Items;
 using Oshima.FunGame.OshimaServers.Service;
+using Oshima.FunGame.WebAPI.Models;
 
-namespace Oshima.Core.Controllers
+namespace Oshima.FunGame.WebAPI.Controllers
 {
     [Authorize(AuthenticationSchemes = "CustomBearer")]
     [ApiController]

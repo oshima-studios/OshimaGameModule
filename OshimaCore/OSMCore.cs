@@ -1,12 +1,13 @@
 ﻿using System.Globalization;
 using System.Reflection;
+using Oshima.Core.Configs;
 
-namespace Oshima.Core.Configs
+namespace Oshima.Core
 {
     public class OSMCore
     {
         public const string version = "v1.0";
-        public const string version2 = "Beta5";
+        public const string version2 = "Rebirth";
 
         public static string Info => $"OSM Core {version} {version2}\r\nAuthor: Milimoe\r\nBuilt on {GetBuiltTime(Assembly.GetExecutingAssembly().Location)}\r\nSee: https://github.com/milimoe";
 
@@ -19,6 +20,17 @@ namespace Oshima.Core.Configs
             string time = lastWriteTime.ToString("HH:mm:ss", CultureInfo.InvariantCulture);
 
             return $"{month}. {day}, {lastWriteTime.Year} {time}";
+        }
+
+        public static void InitOSMCore()
+        {
+            GeneralSettings.LoadSetting();
+            GeneralSettings.SaveConfig();
+            QQOpenID.LoadConfig();
+            QQOpenID.SaveConfig();
+            Daily.InitDaily();
+            SayNo.InitSayNo();
+            Ignore.InitIgnore();
         }
     }
 }

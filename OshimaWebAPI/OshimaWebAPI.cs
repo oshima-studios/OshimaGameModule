@@ -3,12 +3,12 @@ using Milimoe.FunGame.Core.Entity;
 using Milimoe.FunGame.Core.Library.Common.Addon;
 using Milimoe.FunGame.Core.Library.Constant;
 using Oshima.Core.Configs;
-using Oshima.Core.Constant;
 using Oshima.FunGame.OshimaModules;
 using Oshima.FunGame.OshimaServers.Service;
+using Oshima.FunGame.WebAPI.Constant;
 using TaskScheduler = Milimoe.FunGame.Core.Api.Utility.TaskScheduler;
 
-namespace Oshima.Core.WebAPI
+namespace Oshima.FunGame.WebAPI
 {
     public class OshimaWebAPI : WebAPIPlugin
     {
@@ -39,15 +39,6 @@ namespace Oshima.Core.WebAPI
             Statics.RunningPlugin = this;
             Controller.NewSQLHelper();
             Controller.NewMailSender();
-            GeneralSettings.LoadSetting();
-            GeneralSettings.SaveConfig();
-            QQOpenID.LoadConfig();
-            QQOpenID.SaveConfig();
-            Daily.InitDaily();
-            SayNo.InitSayNo();
-            Ignore.InitIgnore();
-            FunGameService.InitFunGame();
-            FunGameSimulation.InitFunGameSimulation();
             WebAPIAuthenticator.WebAPICustomBearerTokenAuthenticator += CustomBearerTokenAuthenticator;
             TaskScheduler.Shared.AddTask("重置每日运势", new TimeSpan(0, 0, 0), () =>
             {

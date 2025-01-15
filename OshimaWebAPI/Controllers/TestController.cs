@@ -6,10 +6,10 @@ using Milimoe.FunGame.Core.Api.Utility;
 using Milimoe.FunGame.Core.Library.Exception;
 using Milimoe.FunGame.Core.Library.SQLScript.Common;
 using Oshima.Core.Configs;
-using Oshima.Core.Constant;
+using Oshima.FunGame.WebAPI.Constant;
 using TaskScheduler = Milimoe.FunGame.Core.Api.Utility.TaskScheduler;
 
-namespace Oshima.Core.Controllers
+namespace Oshima.FunGame.WebAPI.Controllers
 {
     [ApiController]
     [Route("[controller]")]

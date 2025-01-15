@@ -1,4 +1,4 @@
-﻿namespace Oshima.Core.Models
+﻿namespace Oshima.FunGame.WebAPI.Models
 {
     public class BindQQ(string openid, long qq)
     {

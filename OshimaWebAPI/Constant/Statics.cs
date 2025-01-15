@@ -1,6 +1,6 @@
 ﻿using Milimoe.FunGame.Core.Library.Common.Addon;
 
-namespace Oshima.Core.Constant
+namespace Oshima.FunGame.WebAPI.Constant
 {
     public class Statics
     {

@@ -43,6 +43,7 @@ namespace Oshima.Core.Configs
             {
                 ReverseAtIgnore = (List<long>)value;
             }
+            SaveConfig();
         }
 
         public static void SaveConfig()

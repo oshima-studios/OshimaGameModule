@@ -11,7 +11,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OshimaModes", "OshimaModes\
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OshimaServers", "OshimaServers\OshimaServers.csproj", "{E8C696E0-96E4-45C3-8CB4-A02145179590}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OshimaCore", "OshimaCore\OshimaCore.csproj", "{978B06DE-2AD8-4DC4-B53A-D744781FDEA1}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OshimaWebAPI", "OshimaWebAPI\OshimaWebAPI.csproj", "{978B06DE-2AD8-4DC4-B53A-D744781FDEA1}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OshimaCore", "OshimaCore\OshimaCore.csproj", "{E0E709F9-755C-4BE7-915C-9B0A8CBBBF34}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -39,6 +41,10 @@ Global
 		{978B06DE-2AD8-4DC4-B53A-D744781FDEA1}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{978B06DE-2AD8-4DC4-B53A-D744781FDEA1}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{978B06DE-2AD8-4DC4-B53A-D744781FDEA1}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E0E709F9-755C-4BE7-915C-9B0A8CBBBF34}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E0E709F9-755C-4BE7-915C-9B0A8CBBBF34}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E0E709F9-755C-4BE7-915C-9B0A8CBBBF34}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E0E709F9-755C-4BE7-915C-9B0A8CBBBF34}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

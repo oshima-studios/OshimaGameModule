@@ -84,6 +84,7 @@ namespace Oshima.Core.Configs
                     }
                 }
             }
+            SaveConfig();
         }
 
         public static void SaveConfig()
