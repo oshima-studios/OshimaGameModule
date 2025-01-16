@@ -6,6 +6,7 @@ using Milimoe.FunGame.Core.Interface.Base;
 using Milimoe.FunGame.Core.Library.Common.Addon;
 using Milimoe.FunGame.Core.Library.Constant;
 using Oshima.Core;
+using Oshima.Core.Configs;
 using Oshima.FunGame.OshimaModules;
 using Oshima.FunGame.OshimaServers.Service;
 
@@ -45,26 +46,31 @@ namespace Oshima.FunGame.OshimaServers
                 catch (Exception e)
                 {
                     anonymous.Controller.Error(e);
-                    Instances.Remove(anonymous);
                 }
             }
         }
 
-        protected IServerModel? _clientModel;
+        protected HashSet<IServerModel> _clientModels = [];
 
         /// <summary>
         /// 启动匿名服务器
         /// </summary>
         /// <param name="model"></param>
         /// <returns></returns>
-        public override bool StartAnonymousServer(IServerModel model)
+        public override bool StartAnonymousServer(IServerModel model, Dictionary<string, object> data)
         {
-            // 添加当前单例
-            Instances.Add(this);
-            Controller.WriteLine($"{model.GetClientName()} 连接至匿名服务器", LogLevel.Info);
-            // 接收连接匿名服务器的客户端
-            _clientModel = model;
-            return true;
+            // 可以做验证处理
+            string access_token = NetworkUtility.JsonDeserializeFromDictionary<string>(data, "access_token") ?? "";
+            if (GeneralSettings.TokenList.Contains(access_token))
+            {
+                // 添加当前单例
+                Instances.Add(this);
+                Controller.WriteLine($"{model.GetClientName()} 连接至匿名服务器", LogLevel.Info);
+                // 接收连接匿名服务器的客户端
+                _clientModels.Add(model);
+                return true;
+            }
+            return false;
         }
 
         /// <summary>
@@ -75,6 +81,8 @@ namespace Oshima.FunGame.OshimaServers
         {
             // 移除当前单例
             Instances.Remove(this);
+            // 移除客户端
+            _clientModels.Remove(model);
             Controller.WriteLine($"{model.GetClientName()} 从匿名服务器断开", LogLevel.Info);
         }
 
@@ -93,22 +101,21 @@ namespace Oshima.FunGame.OshimaServers
         /// <param name="msg"></param>
         public async Task PushMessage(long qq, string msg)
         {
-            if (_clientModel != null)
-            {
-                Dictionary<string, object> data = [];
-                data.Add(nameof(qq), qq);
-                data.Add(nameof(msg), msg);
-                Controller.WriteLine("向客户端推送事件", LogLevel.Debug);
-                await SendAnonymousGameServerMessage([_clientModel], data);
-            }
+            Dictionary<string, object> data = [];
+            data.Add(nameof(qq), qq);
+            data.Add(nameof(msg), msg);
+            Controller.WriteLine("向客户端推送事件", LogLevel.Debug);
+            List<IServerModel> failedModels = await SendAnonymousGameServerMessage(_clientModels, data);
+            failedModels.ForEach(model => _clientModels.Remove(model));
         }
 
         /// <summary>
         /// 接收并处理匿名服务器消息
         /// </summary>
+        /// <param name="model"></param>
         /// <param name="data"></param>
         /// <returns></returns>
-        public override async Task<Dictionary<string, object>> AnonymousGameServerHandler(Dictionary<string, object> data)
+        public override async Task<Dictionary<string, object>> AnonymousGameServerHandler(IServerModel model, Dictionary<string, object> data)
         {
             Dictionary<string, object> result = [];
             Controller.WriteLine("接收匿名服务器消息", LogLevel.Debug);
@@ -229,7 +236,7 @@ namespace Oshima.FunGame.OshimaServers
             return result.Trim();
         }
 
-        public override Task<Dictionary<string, object>> GamingMessageHandler(string username, GamingType type, Dictionary<string, object> data)
+        public override Task<Dictionary<string, object>> GamingMessageHandler(IServerModel model, GamingType type, Dictionary<string, object> data)
         {
             throw new NotImplementedException();
         }

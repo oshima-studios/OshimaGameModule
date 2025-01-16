@@ -1,4 +1,5 @@
-﻿using System.Text;
+﻿using System.Collections.Concurrent;
+using System.Text;
 using Milimoe.FunGame.Core.Api.Transmittal;
 using Milimoe.FunGame.Core.Api.Utility;
 using Milimoe.FunGame.Core.Entity;
@@ -9,6 +10,7 @@ using Milimoe.FunGame.Core.Model;
 using Oshima.FunGame.OshimaModules;
 using Oshima.FunGame.OshimaModules.Items;
 using Oshima.FunGame.OshimaModules.Skills;
+using Oshima.FunGame.OshimaServers.Service;
 
 namespace Oshima.FunGame.OshimaServers
 {
@@ -24,19 +26,20 @@ namespace Oshima.FunGame.OshimaServers
         public static Dictionary<Character, CharacterStatistics> CharacterStatistics { get; } = [];
         public static PluginConfig StatsConfig { get; } = new(OshimaGameModuleConstant.FastAuto, nameof(CharacterStatistics));
         public static GameModuleLoader? GameModuleLoader { get; set; } = null;
-        public static List<User> ConnectedUsers { get; } = [];
 
-        public override async Task<Dictionary<string, object>> GamingMessageHandler(string username, GamingType type, Dictionary<string, object> data)
+        public override async Task<Dictionary<string, object>> GamingMessageHandler(IServerModel model, GamingType type, Dictionary<string, object> data)
         {
             Dictionary<string, object> result = [];
+            // 获取model所在的房间工作类
+            ModuleServerWorker worker = Workers[model.InRoom.Roomid];
 
             switch (type)
             {
                 case GamingType.Connect:
                     string un = (DataRequest.GetDictionaryJsonObject<string>(data, "un") ?? "").Trim();
-                    if (un != "" && !ConnectedUsers.Where(u => u.Username == un).Any())
+                    if (un != "" && !worker.ConnectedUser.Any(u => u.Username == un))
                     {
-                        ConnectedUsers.Add(Users.Where(u => u.Username == un).First());
+                        worker.ConnectedUser.Add(model.User);
                         Controller.WriteLine(un + " 已连接至房间。");
                     }
                     break;
@@ -87,29 +90,35 @@ namespace Oshima.FunGame.OshimaServers
             return result;
         }
 
-        protected Room Room = General.HallInstance;
-        protected List<User> Users = [];
-        protected IServerModel? RoomMaster;
-        protected Dictionary<string, IServerModel> All = [];
+        private readonly struct ModuleServerWorker(Room room, List<User> users, IServerModel roomMaster, Dictionary<string, IServerModel> serverModels)
+        {
+            public Room Room { get; } = room;
+            public List<User> Users { get; } = users;
+            public IServerModel RoomMaster { get; } = roomMaster;
+            public Dictionary<string, IServerModel> All { get; } = serverModels;
+            public List<User> ConnectedUser { get; } = [];
+            public Dictionary<string, Dictionary<string, object>> UserData { get; } = [];
+            public Dictionary<User, Character> PickCharacters { get; } = [];
+        }
+
+        private ConcurrentDictionary<string, ModuleServerWorker> Workers { get; } = [];
 
         public override bool StartServer(string GameModule, Room Room, List<User> Users, IServerModel RoomMasterServerModel, Dictionary<string, IServerModel> ServerModels, params object[] Args)
         {
-            // 将参数转为本地属性
-            this.Room = Room;
-            this.Users = Users;
-            RoomMaster = RoomMasterServerModel;
-            All = ServerModels;
-            TaskUtility.NewTask(StartGame).OnError(Controller.Error);
+            // 因为模组是单例的，需要为这个房间创建一个工作类接收参数，不能直接用本地变量处理
+            ModuleServerWorker worker = new(Room, Users, RoomMasterServerModel, ServerModels);
+            Workers[Room.Roomid] = worker;
+            TaskUtility.NewTask(async () => await StartGame(worker)).OnError(Controller.Error);
             return true;
         }
 
-        public async Task StartGame()
+        private async Task StartGame(ModuleServerWorker worker)
         {
             try
             {
                 while (true)
                 {
-                    if (ConnectedUsers.Count == Users.Count)
+                    if (worker.ConnectedUser.Count == worker.All.Count)
                     {
                         break;
                     }
@@ -121,7 +130,7 @@ namespace Oshima.FunGame.OshimaServers
                 Dictionary<string, object> data = [];
 
                 // 抽取角色
-                foreach (User user in Users)
+                foreach (User user in worker.Users)
                 {
                     List<Character> list = [.. Characters.Where(c => !characterPickeds.Contains(c))];
                     Character cr = list[Random.Shared.Next(list.Count - 1)];
@@ -129,7 +138,7 @@ namespace Oshima.FunGame.OshimaServers
                     characterPickeds.Add(cr);
                     characters.Add(user, cr.Copy());
                     Controller.WriteLine(msg);
-                    SendAllGamingMessage(data, msg);
+                    SendAllGamingMessage(worker, data, msg);
                 }
 
                 int clevel = 60;
@@ -156,192 +165,14 @@ namespace Oshima.FunGame.OshimaServers
                     };
                     c.Skills.Add(疾风步);
 
-                    if (c.Id == 1)
-                    {
-                        Skill META马 = new META马(c)
-                        {
-                            Level = 1
-                        };
-                        c.Skills.Add(META马);
+                    FunGameService.AddCharacterSkills(c, 1, slevel, slevel);
 
-                        Skill 力量爆发 = new 力量爆发(c)
-                        {
-                            Level = mlevel
-                        };
-                        c.Skills.Add(力量爆发);
-                    }
-
-                    if (c.Id == 2)
-                    {
-                        Skill 心灵之火 = new 心灵之火(c)
-                        {
-                            Level = 1
-                        };
-                        c.Skills.Add(心灵之火);
-
-                        Skill 天赐之力 = new 天赐之力(c)
-                        {
-                            Level = slevel
-                        };
-                        c.Skills.Add(天赐之力);
-                    }
-
-                    if (c.Id == 3)
-                    {
-                        Skill 魔法震荡 = new 魔法震荡(c)
-                        {
-                            Level = 1
-                        };
-                        c.Skills.Add(魔法震荡);
-
-                        Skill 魔法涌流 = new 魔法涌流(c)
-                        {
-                            Level = slevel
-                        };
-                        c.Skills.Add(魔法涌流);
-                    }
-
-                    if (c.Id == 4)
-                    {
-                        Skill 灵能反射 = new 灵能反射(c)
-                        {
-                            Level = 1
-                        };
-                        c.Skills.Add(灵能反射);
-
-                        Skill 三重叠加 = new 三重叠加(c)
-                        {
-                            Level = slevel
-                        };
-                        c.Skills.Add(三重叠加);
-                    }
-
-                    if (c.Id == 5)
-                    {
-                        Skill 智慧与力量 = new 智慧与力量(c)
-                        {
-                            Level = 1
-                        };
-                        c.Skills.Add(智慧与力量);
-
-                        Skill 变幻之心 = new 变幻之心(c)
-                        {
-                            Level = slevel
-                        };
-                        c.Skills.Add(变幻之心);
-                    }
-
-                    if (c.Id == 6)
-                    {
-                        Skill 致命打击 = new 致命打击(c)
-                        {
-                            Level = 1
-                        };
-                        c.Skills.Add(致命打击);
-
-                        Skill 精准打击 = new 精准打击(c)
-                        {
-                            Level = slevel
-                        };
-                        c.Skills.Add(精准打击);
-                    }
-
-                    if (c.Id == 7)
-                    {
-                        Skill 毁灭之势 = new 毁灭之势(c)
-                        {
-                            Level = 1
-                        };
-                        c.Skills.Add(毁灭之势);
-
-                        Skill 绝对领域 = new 绝对领域(c)
-                        {
-                            Level = slevel
-                        };
-                        c.Skills.Add(绝对领域);
-                    }
-
-                    if (c.Id == 8)
-                    {
-                        Skill 枯竭打击 = new 枯竭打击(c)
-                        {
-                            Level = 1
-                        };
-                        c.Skills.Add(枯竭打击);
-
-                        Skill 能量毁灭 = new 能量毁灭(c)
-                        {
-                            Level = slevel
-                        };
-                        c.Skills.Add(能量毁灭);
-                    }
-
-                    if (c.Id == 9)
-                    {
-                        Skill 破釜沉舟 = new 破釜沉舟(c)
-                        {
-                            Level = 1
-                        };
-                        c.Skills.Add(破釜沉舟);
-
-                        Skill 迅捷之势 = new 迅捷之势(c)
-                        {
-                            Level = slevel
-                        };
-                        c.Skills.Add(迅捷之势);
-                    }
-
-                    if (c.Id == 10)
-                    {
-                        Skill 累积之压 = new 累积之压(c)
-                        {
-                            Level = 1
-                        };
-                        c.Skills.Add(累积之压);
-
-                        Skill 嗜血本能 = new 嗜血本能(c)
-                        {
-                            Level = slevel
-                        };
-                        c.Skills.Add(嗜血本能);
-                    }
-
-                    if (c.Id == 11)
-                    {
-                        Skill 敏捷之刃 = new 敏捷之刃(c)
-                        {
-                            Level = 1
-                        };
-                        c.Skills.Add(敏捷之刃);
-
-                        Skill 平衡强化 = new 平衡强化(c)
-                        {
-                            Level = slevel
-                        };
-                        c.Skills.Add(平衡强化);
-                    }
-
-                    if (c.Id == 12)
-                    {
-                        Skill 弱者猎手 = new 弱者猎手(c)
-                        {
-                            Level = 1
-                        };
-                        c.Skills.Add(弱者猎手);
-
-                        Skill 血之狂欢 = new 血之狂欢(c)
-                        {
-                            Level = slevel
-                        };
-                        c.Skills.Add(血之狂欢);
-                    }
-
-                    SendAllGamingMessage(data, c.GetInfo());
+                    SendAllGamingMessage(worker, data, c.GetInfo());
                 }
 
                 ActionQueue actionQueue = new(inGameCharacters, false, (str) =>
                 {
-                    SendAllGamingMessage(data, str);
+                    SendAllGamingMessage(worker, data, str);
                 });
 
                 // 总游戏时长
@@ -358,7 +189,7 @@ namespace Oshima.FunGame.OshimaServers
                 {
                     if (i == 998)
                     {
-                        SendAllGamingMessage(data, $"=== 终局审判 ===");
+                        SendAllGamingMessage(worker, data, $"=== 终局审判 ===");
                         Dictionary<Character, double> 他们的血量百分比 = [];
                         foreach (Character c in inGameCharacters)
                         {
@@ -366,10 +197,10 @@ namespace Oshima.FunGame.OshimaServers
                         }
                         double max = 他们的血量百分比.Values.Max();
                         Character winner = 他们的血量百分比.Keys.Where(c => 他们的血量百分比[c] == max).First();
-                        SendAllGamingMessage(data, "[ " + winner + " ] 成为了天选之人！！");
+                        SendAllGamingMessage(worker, data, "[ " + winner + " ] 成为了天选之人！！");
                         foreach (Character c in inGameCharacters.Where(c => c != winner && c.HP > 0))
                         {
-                            SendAllGamingMessage(data, "[ " + winner + " ] 对 [ " + c + " ] 造成了 99999999999 点真实伤害。");
+                            SendAllGamingMessage(worker, data, "[ " + winner + " ] 对 [ " + c + " ] 造成了 99999999999 点真实伤害。");
                             actionQueue.DeathCalculation(winner, c);
                         }
                         actionQueue.EndGameInfo(winner);
@@ -382,8 +213,8 @@ namespace Oshima.FunGame.OshimaServers
                     // 处理回合
                     if (characterToAct != null)
                     {
-                        SendAllGamingMessage(data, $"=== Round {i++} ===");
-                        SendAllGamingMessage(data, "现在是 [ " + characterToAct + " ] 的回合！");
+                        SendAllGamingMessage(worker, data, $"=== Round {i++} ===");
+                        SendAllGamingMessage(worker, data, "现在是 [ " + characterToAct + " ] 的回合！");
 
                         if (actionQueue.Queue.Count == 0)
                         {
@@ -408,11 +239,11 @@ namespace Oshima.FunGame.OshimaServers
                     }
                 }
 
-                SendAllGamingMessage(data, "--- End ---");
-                SendAllGamingMessage(data, "总游戏时长：" + Calculation.Round2Digits(totalTime));
+                SendAllGamingMessage(worker, data, "--- End ---");
+                SendAllGamingMessage(worker, data, "总游戏时长：" + Calculation.Round2Digits(totalTime));
 
                 // 赛后统计
-                SendAllGamingMessage(data, "=== 伤害排行榜 ===");
+                SendAllGamingMessage(worker, data, "=== 伤害排行榜 ===");
                 int top = inGameCharacters.Count;
                 int count = 1;
                 foreach (Character character in actionQueue.CharacterStatistics.OrderByDescending(d => d.Value.TotalDamage).Select(d => d.Key))
@@ -425,7 +256,7 @@ namespace Oshima.FunGame.OshimaServers
                     builder.AppendLine($"总承受伤害：{stats.TotalTakenDamage} / 总承受物理伤害：{stats.TotalTakenPhysicalDamage} / 总承受魔法伤害：{stats.TotalTakenMagicDamage}");
                     builder.Append($"每秒伤害：{stats.DamagePerSecond} / 每回合伤害：{stats.DamagePerTurn}");
 
-                    SendAllGamingMessage(data, builder.ToString());
+                    SendAllGamingMessage(worker, data, builder.ToString());
 
                     CharacterStatistics? totalStats = CharacterStatistics.Where(kv => kv.Key.GetName() == character.GetName()).Select(kv => kv.Value).FirstOrDefault();
                     if (totalStats != null)
@@ -480,7 +311,7 @@ namespace Oshima.FunGame.OshimaServers
                 for (i = actionQueue.Eliminated.Count - 1; i >= 0; i--)
                 {
                     Character character = actionQueue.Eliminated[i];
-                    SendAllGamingMessage(data, $"=== 角色 [ {character} ] ===\r\n{character.GetInfo()}");
+                    SendAllGamingMessage(worker, data, $"=== 角色 [ {character} ] ===\r\n{character.GetInfo()}");
                 }
 
                 lock (StatsConfig)
@@ -493,12 +324,13 @@ namespace Oshima.FunGame.OshimaServers
                 }
 
                 // 结束
-                await Send(All.Values, SocketMessageType.EndGame, Room, Users);
-                foreach (IServerModel model in All.Values)
+                await Send(worker.All.Values, SocketMessageType.EndGame, worker.Room, worker.Users);
+                foreach (IServerModel model in worker.All.Values)
                 {
                     model.NowGamingServer = null;
                 }
-                ConnectedUsers.Clear();
+                worker.ConnectedUser.Clear();
+                Workers.Remove(worker.Room.Roomid, out _);
             }
             catch (Exception e)
             {
@@ -522,12 +354,12 @@ namespace Oshima.FunGame.OshimaServers
             }
         }
 
-        public void SendAllGamingMessage(Dictionary<string, object> data, string str, bool showmessage = false)
+        private void SendAllGamingMessage(ModuleServerWorker worker, Dictionary<string, object> data, string str, bool showmessage = false)
         {
             data.Clear();
             data.Add("msg", str);
             data.Add("showmessage", showmessage);
-            SendGamingMessage(All.Values, GamingType.UpdateInfo, data);
+            _ = SendGamingMessage(worker.All.Values, GamingType.UpdateInfo, data);
         }
 
         public override void AfterLoad(params object[] args)
