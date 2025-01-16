@@ -70,6 +70,10 @@ namespace Oshima.FunGame.OshimaServers
                 _clientModels.Add(model);
                 return true;
             }
+            else
+            {
+                Controller.WriteLine($"{model.GetClientName()} 连接匿名服务器失败，访问令牌不匹配", LogLevel.Warning);
+            }
             return false;
         }
 
