@@ -19,7 +19,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\OshimaModules\OshimaModules.csproj" />
+    <ProjectReference Include="..\OshimaCore\OshimaCore.csproj" />
   </ItemGroup>
 
   <ItemGroup>

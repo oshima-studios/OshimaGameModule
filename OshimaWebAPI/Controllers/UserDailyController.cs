@@ -3,7 +3,7 @@ using Microsoft.Extensions.Logging;
 using Milimoe.FunGame.Core.Api.Utility;
 using Oshima.Core.Configs;
 using Oshima.FunGame.WebAPI.Models;
-using Oshima.FunGame.WebAPI.Utils;
+using Oshima.FunGame.WebAPI.Services;
 
 namespace Oshima.FunGame.WebAPI.Controllers
 {
@@ -16,13 +16,13 @@ namespace Oshima.FunGame.WebAPI.Controllers
         [HttpPost("get/{user_id}", Name = "GetUserDaily")]
         public UserDaily Get(long user_id)
         {
-            return UserDailyUtil.GetUserDaily(user_id);
+            return UserDailyService.GetUserDaily(user_id);
         }
 
         [HttpGet("view/{user_id}", Name = "ViewUserDaily")]
         public UserDaily View(long user_id)
         {
-            return UserDailyUtil.ViewUserDaily(user_id);
+            return UserDailyService.ViewUserDaily(user_id);
         }
 
         [HttpPost("open/{open_id}", Name = "GetOpenUserDaily")]
@@ -30,7 +30,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
         {
             if (QQOpenID.QQAndOpenID.TryGetValue(open_id, out long qq) && qq != 0)
             {
-                return UserDailyUtil.GetUserDaily(qq);
+                return UserDailyService.GetUserDaily(qq);
             }
             return new(0, 0, "你似乎没有绑定QQ呢，请先发送【绑定+QQ号】（如：绑定123456789）再使用哦！");
         }
@@ -38,7 +38,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
         [HttpPost("remove/{user_id}", Name = "RemoveUserDaily")]
         public string Remove(long user_id)
         {
-            return UserDailyUtil.RemoveDaily(user_id);
+            return UserDailyService.RemoveDaily(user_id);
         }
 
         [HttpGet("img/{type}", Name = "GetTypeImage")]

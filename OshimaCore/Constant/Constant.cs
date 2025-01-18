@@ -1,6 +1,6 @@
 ﻿using Milimoe.FunGame.Core.Library.Common.Addon;
 
-namespace Oshima.FunGame.OshimaModules
+namespace Oshima.Core.Constant
 {
     public class OshimaGameModuleConstant
     {
@@ -16,6 +16,7 @@ namespace Oshima.FunGame.OshimaModules
         public const string FastAutoMap = "oshima.fungame.fastauto.map";
         public const string Anonymous = "oshima.fungame.anonymous";
         public const string AnonymousMap = "oshima.fungame.anonymous.map";
+        public const string Server = "oshima.fungame.server";
 
         private static readonly string[] Maps = [FastAutoMap];
         private static readonly string[] Characters = [Character];

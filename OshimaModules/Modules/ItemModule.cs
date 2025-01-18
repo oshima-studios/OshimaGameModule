@@ -1,5 +1,6 @@
 ﻿using Milimoe.FunGame.Core.Api.Utility;
 using Milimoe.FunGame.Core.Entity;
+using Oshima.Core.Constant;
 using Oshima.FunGame.OshimaModules.Items;
 
 namespace Oshima.FunGame.OshimaModules

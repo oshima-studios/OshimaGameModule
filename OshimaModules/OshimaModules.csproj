@@ -23,6 +23,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\OshimaCore\OshimaCore.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Reference Include="FunGame.Core">
       <HintPath>..\..\FunGame.Core\bin\Debug\net9.0\FunGame.Core.dll</HintPath>
     </Reference>

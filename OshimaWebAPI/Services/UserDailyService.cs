@@ -3,9 +3,9 @@ using Oshima.Core.Configs;
 using Oshima.Core.Constant;
 using Oshima.FunGame.WebAPI.Models;
 
-namespace Oshima.FunGame.WebAPI.Utils
+namespace Oshima.FunGame.WebAPI.Services
 {
-    public class UserDailyUtil
+    public class UserDailyService
     {
         public static UserDaily GetUserDaily(long user_id)
         {

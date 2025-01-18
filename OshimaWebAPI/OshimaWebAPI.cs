@@ -1,12 +1,13 @@
+using Microsoft.AspNetCore.Builder;
+using Microsoft.Extensions.DependencyInjection;
 using Milimoe.FunGame.Core.Api.Utility;
-using Milimoe.FunGame.Core.Entity;
 using Milimoe.FunGame.Core.Library.Common.Addon;
-using Milimoe.FunGame.Core.Library.Constant;
 using Oshima.Core.Configs;
-using Oshima.FunGame.OshimaModules;
+using Oshima.Core.Constant;
 using Oshima.FunGame.OshimaServers.Service;
 using Oshima.FunGame.WebAPI.Constant;
-using TaskScheduler = Milimoe.FunGame.Core.Api.Utility.TaskScheduler;
+using Oshima.FunGame.WebAPI.Models;
+using Oshima.FunGame.WebAPI.Services;
 
 namespace Oshima.FunGame.WebAPI
 {
@@ -34,95 +35,19 @@ namespace Oshima.FunGame.WebAPI
             }
         }
 
-        public override void AfterLoad(params object[] objs)
+        public override void AfterLoad(WebAPIPluginLoader loader, params object[] objs)
         {
             Statics.RunningPlugin = this;
             Controller.NewSQLHelper();
             Controller.NewMailSender();
+            if (objs.Length > 0 && objs[0] is WebApplicationBuilder builder)
+            {
+                builder.Services.AddMemoryCache();
+                builder.Services.AddScoped<QQBotService>();
+                // 使用 Configure<BotConfig> 从配置源绑定
+                builder.Services.Configure<BotConfig>(builder.Configuration.GetSection("Bot"));
+            }
             WebAPIAuthenticator.WebAPICustomBearerTokenAuthenticator += CustomBearerTokenAuthenticator;
-            TaskScheduler.Shared.AddTask("重置每日运势", new TimeSpan(0, 0, 0), () =>
-            {
-                Controller.WriteLine("已重置所有人的今日运势");
-                Daily.ClearDaily();
-            });
-            TaskScheduler.Shared.AddTask("重置交易冷却1", new TimeSpan(9, 0, 0), () =>
-            {
-                Controller.WriteLine("重置物品交易冷却时间");
-                _ = FunGameService.AllowSellAndTrade();
-            });
-            TaskScheduler.Shared.AddTask("重置交易冷却2", new TimeSpan(15, 0, 0), () =>
-            {
-                Controller.WriteLine("重置物品交易冷却时间");
-                _ = FunGameService.AllowSellAndTrade();
-            });
-            TaskScheduler.Shared.AddRecurringTask("刷新存档缓存", TimeSpan.FromMinutes(1), () =>
-            {
-                string directoryPath = $@"{AppDomain.CurrentDomain.BaseDirectory}configs/saved";
-                if (Directory.Exists(directoryPath))
-                {
-                    string[] filePaths = Directory.GetFiles(directoryPath);
-                    foreach (string filePath in filePaths)
-                    {
-                        string fileName = Path.GetFileNameWithoutExtension(filePath);
-                        PluginConfig pc = new("saved", fileName);
-                        pc.LoadConfig();
-                        if (pc.Count > 0)
-                        {
-                            User user = FunGameService.GetUser(pc);
-                            // 将用户存入缓存
-                            FunGameService.UserIdAndUsername[user.Id] = user;
-                            // 任务结算
-                            EntityModuleConfig<Quest> quests = new("quests", user.Id.ToString());
-                            quests.LoadConfig();
-                            if (quests.Count > 0 && FunGameService.SettleQuest(user, quests))
-                            {
-                                quests.SaveConfig();
-                                user.LastTime = DateTime.Now;
-                                pc.Add("user", user);
-                                pc.SaveConfig();
-                            }
-                        }
-                    }
-                    Controller.WriteLine("读取 FunGame 存档缓存", LogLevel.Debug);
-                }
-            }, true);
-            TaskScheduler.Shared.AddTask("刷新每日任务", new TimeSpan(4, 0, 0), () =>
-            {
-                string directoryPath = $@"{AppDomain.CurrentDomain.BaseDirectory}configs/quests";
-                if (Directory.Exists(directoryPath))
-                {
-                    string[] filePaths = Directory.GetFiles(directoryPath);
-                    foreach (string filePath in filePaths)
-                    {
-                        string fileName = Path.GetFileNameWithoutExtension(filePath);
-                        EntityModuleConfig<Quest> quests = new("quests", fileName);
-                        quests.Clear();
-                        FunGameService.CheckQuestList(quests);
-                        quests.SaveConfig();
-                    }
-                    Controller.WriteLine("刷新每日任务");
-                }
-                // 刷新签到
-                directoryPath = $@"{AppDomain.CurrentDomain.BaseDirectory}configs/saved";
-                if (Directory.Exists(directoryPath))
-                {
-                    string[] filePaths = Directory.GetFiles(directoryPath);
-                    foreach (string filePath in filePaths)
-                    {
-                        string fileName = Path.GetFileNameWithoutExtension(filePath);
-                        PluginConfig pc = new("saved", fileName);
-                        pc.LoadConfig();
-                        pc.Add("signed", false);
-                        pc.SaveConfig();
-                    }
-                    Controller.WriteLine("刷新签到");
-                }
-            });
-            TaskScheduler.Shared.AddRecurringTask("刷新boss", TimeSpan.FromHours(1), () =>
-            {
-                FunGameService.GenerateBoss();
-                Controller.WriteLine("刷新boss");
-            }, true);
         }
 
         private string CustomBearerTokenAuthenticator(string token)

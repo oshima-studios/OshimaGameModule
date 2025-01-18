@@ -25,6 +25,10 @@
 	</ItemGroup>
 
 	<ItemGroup>
+	  <PackageReference Include="Rebex.Elliptic.Ed25519" Version="1.2.2" />
+	</ItemGroup>
+
+	<ItemGroup>
 		<ProjectReference Include="..\OshimaCore\OshimaCore.csproj" />
 		<ProjectReference Include="..\OshimaModules\OshimaModules.csproj" />
 		<ProjectReference Include="..\OshimaServers\OshimaServers.csproj" />

@@ -7,7 +7,7 @@ using Milimoe.FunGame.Core.Interface.Base;
 using Milimoe.FunGame.Core.Library.Common.Addon;
 using Milimoe.FunGame.Core.Library.Constant;
 using Milimoe.FunGame.Core.Model;
-using Oshima.FunGame.OshimaModules;
+using Oshima.Core.Constant;
 using Oshima.FunGame.OshimaModules.Items;
 using Oshima.FunGame.OshimaModules.Skills;
 using Oshima.FunGame.OshimaServers.Service;

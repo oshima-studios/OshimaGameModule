@@ -1,5 +1,5 @@
 ﻿using Milimoe.FunGame.Core.Library.Common.Addon;
-using Oshima.FunGame.OshimaModules;
+using Oshima.Core.Constant;
 
 namespace Oshima.FunGame.OshimaMaps
 {

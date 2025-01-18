@@ -5,10 +5,8 @@ using Milimoe.FunGame.Core.Entity;
 using Milimoe.FunGame.Core.Interface.Base;
 using Milimoe.FunGame.Core.Library.Common.Addon;
 using Milimoe.FunGame.Core.Library.Constant;
-using Oshima.Core;
 using Oshima.Core.Configs;
-using Oshima.FunGame.OshimaModules;
-using Oshima.FunGame.OshimaServers.Service;
+using Oshima.Core.Constant;
 
 namespace Oshima.FunGame.OshimaServers
 {
@@ -94,9 +92,6 @@ namespace Oshima.FunGame.OshimaServers
         {
             Controller.NewSQLHelper();
             Controller.NewMailSender();
-            OSMCore.InitOSMCore();
-            FunGameService.InitFunGame();
-            FunGameSimulation.InitFunGameSimulation();
         }
 
         /// <summary>
