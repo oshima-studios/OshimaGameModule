@@ -26,7 +26,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
                 return BadRequest("Payload 格式无效");
             }
 
-            _logger.LogDebug("收到 Webhook 请求：{payload}", payload);
+            _logger.LogDebug("收到 Webhook 请求：{payload.Op}", payload.Op);
 
             try
             {
@@ -70,7 +70,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
             byte[] privateKeyBytes = Encoding.UTF8.GetBytes(seed);
 
             Ed25519 ed25519 = new();
-            
+
             ed25519.FromSeed(privateKeyBytes);
 
             // 将你的消息转换为 byte[]
@@ -107,11 +107,15 @@ namespace Oshima.FunGame.WebAPI.Controllers
                             // TODO
                             _logger.LogInformation("收到来自用户 {c2cMessage.Author.UserOpenId} 的消息：{c2cMessage.Content}", c2cMessage.Author.UserOpenId, c2cMessage.Content);
                             // 上传图片
-                            var (fileUuid, fileInfo, ttl, error) = await _service.UploadC2CMediaAsync(c2cMessage.Author.UserOpenId, 1, $"{Request.Scheme}://{Request.Host}{Request.PathBase}/images/zi/dj1.png");
+                            string url = $"{Request.Scheme}://{Request.Host}{Request.PathBase}/images/zi/dj1.png";
+                            var (fileUuid, fileInfo, ttl, error) = await _service.UploadC2CMediaAsync(c2cMessage.Author.UserOpenId, 1, url);
+                            _logger.LogDebug("发送的图片地址：{url}", url);
                             if (string.IsNullOrEmpty(error))
                             {
+                                // 回复消息
+                                await _service.SendC2CMessageAsync(c2cMessage.Author.UserOpenId, $"你发送的消息是：{c2cMessage.Content}", msgId: c2cMessage.Id);
                                 // 回复富媒体消息
-                                await _service.SendC2CMessageAsync(c2cMessage.Author.UserOpenId, "", msgType: 7, media: new { file_info = fileInfo });
+                                await _service.SendC2CMessageAsync(c2cMessage.Author.UserOpenId, "", msgType: 7, media: new { file_info = fileInfo }, msgId: c2cMessage.Id);
                             }
                             else
                             {
@@ -131,7 +135,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
                             // TODO
                             _logger.LogInformation("收到来自群组 {groupAtMessage.GroupOpenId} 的消息：{groupAtMessage.Content}", groupAtMessage.GroupOpenId, groupAtMessage.Content);
                             // 回复消息
-                            await _service.SendGroupMessageAsync(groupAtMessage.GroupOpenId, $"你发送的消息是：{groupAtMessage.Content}", msgType: 0);
+                            await _service.SendGroupMessageAsync(groupAtMessage.GroupOpenId, $"你发送的消息是：{groupAtMessage.Content}", msgId: groupAtMessage.Id);
                         }
                         else
                         {

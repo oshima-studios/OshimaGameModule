@@ -1,15 +1,16 @@
 ﻿using System.Net.Http.Headers;
 using System.Text.Json;
 using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using Oshima.FunGame.WebAPI.Constant;
 using Oshima.FunGame.WebAPI.Models;
 
 namespace Oshima.FunGame.WebAPI.Services
 {
-    public class QQBotService(IOptions<BotConfig> botConfig, IHttpClientFactory httpClientFactory, IMemoryCache memoryCache)
+    public class QQBotService(IOptions<BotConfig> botConfig, ILogger<QQBotService> logger, IHttpClientFactory httpClientFactory, IMemoryCache memoryCache)
     {
         private readonly BotConfig _botConfig = botConfig.Value;
+        private readonly ILogger<QQBotService> _logger = logger;
         private readonly HttpClient _httpClient = httpClientFactory.CreateClient();
         private readonly IMemoryCache _memoryCache = memoryCache;
         private const string AccessTokenCacheKey = "QQBotAccessToken";
@@ -29,7 +30,7 @@ namespace Oshima.FunGame.WebAPI.Services
             string accessToken = await GetAccessTokenAsync();
             HttpRequestMessage request = new(HttpMethod.Post, $"https://api.sgroup.qq.com{url}");
             request.Headers.Authorization = new AuthenticationHeaderValue("QQBot", accessToken);
-            Statics.RunningPlugin?.Controller.WriteLine($"使用的 Access Token：{accessToken}", Milimoe.FunGame.Core.Library.Constant.LogLevel.Debug);
+            _logger.LogDebug("使用的 Access Token：{accessToken}", accessToken);
             Dictionary<string, object> requestBody = new()
             {
                 { "content", content },
@@ -50,7 +51,11 @@ namespace Oshima.FunGame.WebAPI.Services
             request.Content = new StringContent(JsonSerializer.Serialize(requestBody), System.Text.Encoding.UTF8, "application/json");
 
             HttpResponseMessage response = await _httpClient.SendAsync(request);
-            response.EnsureSuccessStatusCode();
+            if (!response.IsSuccessStatusCode)
+            {
+                string errorBody = await response.Content.ReadAsStringAsync();
+                _logger.LogError("状态码：{response.StatusCode}，错误信息：{errorBody}", response.StatusCode, errorBody);
+            }
         }
 
         public async Task<(string? fileUuid, string? fileInfo, int ttl, string? error)> UploadC2CMediaAsync(string openid, int fileType, string url)
@@ -68,7 +73,7 @@ namespace Oshima.FunGame.WebAPI.Services
             string accessToken = await GetAccessTokenAsync();
             HttpRequestMessage request = new(HttpMethod.Post, $"https://api.sgroup.qq.com{url}");
             request.Headers.Authorization = new AuthenticationHeaderValue("QQBot", accessToken);
-            Statics.RunningPlugin?.Controller.WriteLine($"使用的 Access Token：{accessToken}", Milimoe.FunGame.Core.Library.Constant.LogLevel.Debug);
+            _logger.LogDebug("使用的 Access Token：{accessToken}", accessToken);
             Dictionary<string, object> requestBody = new()
             {
                 { "file_type", fileType },
@@ -89,7 +94,7 @@ namespace Oshima.FunGame.WebAPI.Services
             {
                 return (null, null, 0, "反序列化富媒体消息失败。");
             }
-            Statics.RunningPlugin?.Controller.WriteLine($"接收到的富媒体消息：{mediaResponse.FileInfo}", Milimoe.FunGame.Core.Library.Constant.LogLevel.Debug);
+            _logger.LogDebug("接收到的富媒体消息：{mediaResponse.FileInfo}，有效时间：{mediaResponse.Ttl}", mediaResponse.FileInfo, mediaResponse.Ttl);
             return (mediaResponse.FileUuid, mediaResponse.FileInfo, mediaResponse.Ttl, null);
         }
 
@@ -118,7 +123,7 @@ namespace Oshima.FunGame.WebAPI.Services
                 throw new Exception("获取 Access Token 失败！");
             }
             _memoryCache.Set(AccessTokenCacheKey, tokenResponse.AccessToken, TimeSpan.FromSeconds(expiresIn - 60));
-            Statics.RunningPlugin?.Controller.WriteLine($"获取到 Access Token：{tokenResponse.AccessToken}", Milimoe.FunGame.Core.Library.Constant.LogLevel.Debug);
+            _logger.LogDebug("获取到 Access Token：{tokenResponse.AccessToken}", tokenResponse.AccessToken);
             return tokenResponse.AccessToken;
         }
     }
