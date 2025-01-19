@@ -74,7 +74,17 @@ namespace Oshima.FunGame.WebAPI.Models
         public string Url { get; set; } = "";
     }
 
-    public class C2CMessage
+    public interface IBotMessage
+    {
+        public string Id { get; }
+        public bool IsGroup { get; }
+        public string Detail { get; set; }
+        public string Timestamp { get; }
+        public string OpenId { get; }
+        public string AuthorOpenId { get; }
+    }
+
+    public class C2CMessage : IBotMessage
     {
         [JsonPropertyName("id")]
         public string Id { get; set; } = "";
@@ -90,9 +100,18 @@ namespace Oshima.FunGame.WebAPI.Models
 
         [JsonPropertyName("attachments")]
         public Attachment[] Attachments { get; set; } = [];
+
+        public string Detail
+        {
+            get => Content;
+            set => Content = value;
+        }
+        public string OpenId => Author.UserOpenId;
+        public bool IsGroup => false;
+        public string AuthorOpenId => Author.UserOpenId;
     }
 
-    public class GroupAtMessage
+    public class GroupAtMessage : IBotMessage
     {
         [JsonPropertyName("id")]
         public string Id { get; set; } = "";
@@ -111,6 +130,15 @@ namespace Oshima.FunGame.WebAPI.Models
 
         [JsonPropertyName("attachments")]
         public Attachment[] Attachments { get; set; } = [];
+
+        public string Detail
+        {
+            get => Content;
+            set => Content = value;
+        }
+        public string OpenId => GroupOpenId;
+        public bool IsGroup => true;
+        public string AuthorOpenId => Author.MemberOpenId;
     }
 
     public class MediaResponse

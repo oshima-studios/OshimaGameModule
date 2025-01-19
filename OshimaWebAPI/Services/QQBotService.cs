@@ -9,10 +9,11 @@ namespace Oshima.FunGame.WebAPI.Services
 {
     public class QQBotService(IOptions<BotConfig> botConfig, ILogger<QQBotService> logger, IHttpClientFactory httpClientFactory, IMemoryCache memoryCache)
     {
-        private readonly BotConfig _botConfig = botConfig.Value;
-        private readonly ILogger<QQBotService> _logger = logger;
-        private readonly HttpClient _httpClient = httpClientFactory.CreateClient();
-        private readonly IMemoryCache _memoryCache = memoryCache;
+        private BotConfig BotConfig { get; set; } = botConfig.Value;
+        private ILogger<QQBotService> Logger { get; set; } = logger;
+        private HttpClient HttpClient { get; set; } = httpClientFactory.CreateClient();
+        private IMemoryCache MemoryCache { get; set; } = memoryCache;
+
         private const string AccessTokenCacheKey = "QQBotAccessToken";
 
         public async Task SendC2CMessageAsync(string openid, string content, int msgType = 0, object? media = null, string? msgId = null, int? msgSeq = null)
@@ -30,7 +31,7 @@ namespace Oshima.FunGame.WebAPI.Services
             string accessToken = await GetAccessTokenAsync();
             HttpRequestMessage request = new(HttpMethod.Post, $"https://api.sgroup.qq.com{url}");
             request.Headers.Authorization = new AuthenticationHeaderValue("QQBot", accessToken);
-            _logger.LogDebug("使用的 Access Token：{accessToken}", accessToken);
+            Logger.LogDebug("使用的 Access Token：{accessToken}", accessToken);
             Dictionary<string, object> requestBody = new()
             {
                 { "content", content },
@@ -50,11 +51,11 @@ namespace Oshima.FunGame.WebAPI.Services
             }
             request.Content = new StringContent(JsonSerializer.Serialize(requestBody), System.Text.Encoding.UTF8, "application/json");
 
-            HttpResponseMessage response = await _httpClient.SendAsync(request);
+            HttpResponseMessage response = await HttpClient.SendAsync(request);
             if (!response.IsSuccessStatusCode)
             {
                 string errorBody = await response.Content.ReadAsStringAsync();
-                _logger.LogError("状态码：{response.StatusCode}，错误信息：{errorBody}", response.StatusCode, errorBody);
+                Logger.LogError("状态码：{response.StatusCode}，错误信息：{errorBody}", response.StatusCode, errorBody);
             }
         }
 
@@ -73,7 +74,7 @@ namespace Oshima.FunGame.WebAPI.Services
             string accessToken = await GetAccessTokenAsync();
             HttpRequestMessage request = new(HttpMethod.Post, $"https://api.sgroup.qq.com{url}");
             request.Headers.Authorization = new AuthenticationHeaderValue("QQBot", accessToken);
-            _logger.LogDebug("使用的 Access Token：{accessToken}", accessToken);
+            Logger.LogDebug("使用的 Access Token：{accessToken}", accessToken);
             Dictionary<string, object> requestBody = new()
             {
                 { "file_type", fileType },
@@ -82,7 +83,7 @@ namespace Oshima.FunGame.WebAPI.Services
             };
             request.Content = new StringContent(JsonSerializer.Serialize(requestBody), System.Text.Encoding.UTF8, "application/json");
 
-            HttpResponseMessage response = await _httpClient.SendAsync(request);
+            HttpResponseMessage response = await HttpClient.SendAsync(request);
             if (!response.IsSuccessStatusCode)
             {
                 string errorBody = await response.Content.ReadAsStringAsync();
@@ -94,13 +95,13 @@ namespace Oshima.FunGame.WebAPI.Services
             {
                 return (null, null, 0, "反序列化富媒体消息失败。");
             }
-            _logger.LogDebug("接收到的富媒体消息：{mediaResponse.FileInfo}，有效时间：{mediaResponse.Ttl}", mediaResponse.FileInfo, mediaResponse.Ttl);
+            Logger.LogDebug("接收到的富媒体消息：{mediaResponse.FileInfo}，有效时间：{mediaResponse.Ttl}", mediaResponse.FileInfo, mediaResponse.Ttl);
             return (mediaResponse.FileUuid, mediaResponse.FileInfo, mediaResponse.Ttl, null);
         }
 
         public async Task<string> GetAccessTokenAsync()
         {
-            if (_memoryCache.TryGetValue(AccessTokenCacheKey, out string? accessToken) && !string.IsNullOrEmpty(accessToken))
+            if (MemoryCache.TryGetValue(AccessTokenCacheKey, out string? accessToken) && !string.IsNullOrEmpty(accessToken))
             {
                 return accessToken;
             }
@@ -112,9 +113,9 @@ namespace Oshima.FunGame.WebAPI.Services
         {
             HttpRequestMessage request = new(HttpMethod.Post, "https://bots.qq.com/app/getAppAccessToken")
             {
-                Content = new StringContent(JsonSerializer.Serialize(new { appId = _botConfig.AppId, clientSecret = _botConfig.Secret }), System.Text.Encoding.UTF8, "application/json")
+                Content = new StringContent(JsonSerializer.Serialize(new { appId = BotConfig.AppId, clientSecret = BotConfig.Secret }), System.Text.Encoding.UTF8, "application/json")
             };
-            HttpResponseMessage response = await _httpClient.SendAsync(request);
+            HttpResponseMessage response = await HttpClient.SendAsync(request);
             response.EnsureSuccessStatusCode();
             string responseBody = await response.Content.ReadAsStringAsync();
             AccessTokenResponse? tokenResponse = JsonSerializer.Deserialize<AccessTokenResponse>(responseBody);
@@ -122,8 +123,8 @@ namespace Oshima.FunGame.WebAPI.Services
             {
                 throw new Exception("获取 Access Token 失败！");
             }
-            _memoryCache.Set(AccessTokenCacheKey, tokenResponse.AccessToken, TimeSpan.FromSeconds(expiresIn - 60));
-            _logger.LogDebug("获取到 Access Token：{tokenResponse.AccessToken}", tokenResponse.AccessToken);
+            MemoryCache.Set(AccessTokenCacheKey, tokenResponse.AccessToken, TimeSpan.FromSeconds(expiresIn - 60));
+            Logger.LogDebug("获取到 Access Token：{tokenResponse.AccessToken}", tokenResponse.AccessToken);
             return tokenResponse.AccessToken;
         }
     }

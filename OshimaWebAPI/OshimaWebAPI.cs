@@ -6,6 +6,7 @@ using Oshima.Core.Configs;
 using Oshima.Core.Constant;
 using Oshima.FunGame.OshimaServers.Service;
 using Oshima.FunGame.WebAPI.Constant;
+using Oshima.FunGame.WebAPI.Controllers;
 using Oshima.FunGame.WebAPI.Models;
 using Oshima.FunGame.WebAPI.Services;
 
@@ -44,6 +45,9 @@ namespace Oshima.FunGame.WebAPI
             {
                 builder.Services.AddMemoryCache();
                 builder.Services.AddScoped<QQBotService>();
+                builder.Services.AddScoped<RainBOTService>();
+                builder.Services.AddScoped<FunGameController>();
+                builder.Services.AddScoped<QQController>();
                 // 使用 Configure<BotConfig> 从配置源绑定
                 builder.Services.Configure<BotConfig>(builder.Configuration.GetSection("Bot"));
             }

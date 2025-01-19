@@ -19,7 +19,8 @@ namespace Oshima.FunGame.WebAPI.Controllers
     [Route("[controller]")]
     public class FunGameController(ILogger<FunGameController> logger) : ControllerBase
     {
-        private readonly ILogger<FunGameController> _logger = logger;
+        private ILogger<FunGameController> Logger { get; set; } = logger;
+
         private const int drawCardReduce = 2000;
         private const int drawCardReduce_Material = 10;
         private const string noSaved = "你还没有创建存档！请发送【创建存档】创建。";
