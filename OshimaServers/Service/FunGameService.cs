@@ -1978,7 +1978,7 @@ namespace Oshima.FunGame.OshimaServers.Service
                 }
                 else
                 {
-                    return "任务列表为空，请等待刷新！";
+                    return "任务列表为空，请使用【任务列表】指令来获取任务列表！";
                 }
             }
         }
@@ -2023,6 +2023,35 @@ namespace Oshima.FunGame.OshimaServers.Service
                 result = true;
             }
             return result;
+        }
+
+        public static string CheckDailyStore(EntityModuleConfig<Store> store)
+        {
+            if (store.Count == 0)
+            {
+                // 生成每日商店
+                Store daily = new("每日商店");
+                for (int i = 0; i < 4; i++)
+                {
+                    int index = Random.Shared.Next(AllItems.Count);
+                    Item item = AllItems[index];
+                    double price = Random.Shared.NextDouble() * 10000 * (int)item.QualityType * 20;
+                    daily.AddItem(item, Random.Shared.Next(3));
+                }
+                store.Add("daily", daily);
+                return store.ToString() + "\r\n温馨提示：使用【商店查看+序号】查看物品详细信息，使用【商店购买+序号】购买物品！每天 4:00 刷新每日商店。";
+            }
+            else
+            {
+                if (store.Count > 0)
+                {
+                    return store.ToString() + "\r\n温馨提示：使用【商店查看+序号】查看物品详细信息，使用【商店购买+序号】购买物品！每天 4:00 刷新每日商店。";
+                }
+                else
+                {
+                    return "商品列表为空，请使用【每日商店】指令来获取商品列表！";
+                }
+            }
         }
     }
 }

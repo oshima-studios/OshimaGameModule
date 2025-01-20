@@ -18,17 +18,17 @@ namespace Oshima.FunGame.WebAPI.Services
         private QQBotService Service { get; } = service;
         private ILogger<RainBOTService> Logger { get; } = logger;
 
-        private async Task SendAsync(IBotMessage msg, string title, string content, int msgType = 0, object? media = null)
+        private async Task SendAsync(IBotMessage msg, string title, string content, int msgType = 0, object? media = null, int? msgSeq = null)
         {
             Statics.RunningPlugin?.Controller.WriteLine(title, Milimoe.FunGame.Core.Library.Constant.LogLevel.Debug);
             if (msg.IsGroup)
             {
-                await Service.SendGroupMessageAsync(msg.OpenId, content, msgType, media, msg.Id);
+                await Service.SendGroupMessageAsync(msg.OpenId, content, msgType, media, msg.Id, msgSeq);
             }
             else
             {
                 content = content.Trim();
-                await Service.SendC2CMessageAsync(msg.OpenId, content, msgType, media, msg.Id);
+                await Service.SendC2CMessageAsync(msg.OpenId, content, msgType, media, msg.Id, msgSeq);
             }
         }
 
@@ -79,7 +79,7 @@ namespace Oshima.FunGame.WebAPI.Services
 
                 if (e.Detail == "帮助" || e.Detail == "帮助1")
                 {
-                    await SendAsync(e, "饭给木", @"《饭给木》游戏指令列表（第 1 / 5 页）
+                    await SendAsync(e, "饭给木", @"《饭给木》游戏指令列表（第 1 / 6 页）
 1、创建存档：创建存档，生成随机一个自建角色（序号固定为1）
 2、我的库存/我的背包/查看库存 [页码]：显示所有角色、物品库存，每个角色和物品都有一个专属序号
 3、我的库存 <物品类型> [页码]：卡包/武器/防具/鞋子/饰品/消耗品/魔法卡等...
@@ -97,7 +97,7 @@ namespace Oshima.FunGame.WebAPI.Services
 
                 if (e.Detail == "帮助2")
                 {
-                    await SendAsync(e, "饭给木", @"《饭给木》游戏指令列表（第 2 / 5 页）
+                    await SendAsync(e, "饭给木", @"《饭给木》游戏指令列表（第 2 / 6 页）
 12、装备 <角色序号> <物品序号>：装备指定物品给指定角色
 13、取消装备 <角色序号> <装备槽序号>：卸下角色指定装备槽上的物品
 * 装备槽序号从1开始，卡包/武器/防具/鞋子/饰品1/饰品2
@@ -114,7 +114,7 @@ namespace Oshima.FunGame.WebAPI.Services
 
                 if (e.Detail == "帮助3")
                 {
-                    await SendAsync(e, "饭给木", @"《饭给木》游戏指令列表（第 3 / 5 页）
+                    await SendAsync(e, "饭给木", @"《饭给木》游戏指令列表（第 3 / 6 页）
 22、普攻升级 [角色序号]：升级普攻等级
 23、查看普攻升级 [角色序号]：查看下一次普攻升级信息
 23、技能升级 <角色序号> <技能名称>：升级技能等级
@@ -132,7 +132,7 @@ namespace Oshima.FunGame.WebAPI.Services
 
                 if (e.Detail == "帮助4")
                 {
-                    await SendAsync(e, "饭给木", @"《饭给木》游戏指令列表（第 4 / 5 页）
+                    await SendAsync(e, "饭给木", @"《饭给木》游戏指令列表（第 4 / 6 页）
 33、兑换金币 <材料数>：1材料=200金币
 34、还原存档：没有后悔药
 35、我的主战：查看当前主战角色
@@ -148,13 +148,34 @@ namespace Oshima.FunGame.WebAPI.Services
 
                 if (e.Detail == "帮助5")
                 {
-                    await SendAsync(e, "饭给木", @"《饭给木》游戏指令列表（第 5 / 5 页）
+                    await SendAsync(e, "饭给木", @"《饭给木》游戏指令列表（第 5 / 6 页）
 43：任务列表：查看今日任务列表
 44：开始任务 <任务序号>
 45、任务信息：查看进行中任务的详细信息
 46、任务结算：对进行中的任务进行结算
 47、我的状态：查看主战角色状态
-48、小队状态/我的小队状态：查看小队所有角色的状态");
+48、小队状态/我的小队状态：查看小队所有角色的状态
+49、小队添加 <角色序号>：将角色加入小队
+50、小队移除 <角色序号>：将角色移出小队
+51、清空小队
+发送【帮助6】查看第 6 页");
+                }
+                
+                if (e.Detail == "帮助6")
+                {
+                    await SendAsync(e, "饭给木", @"《饭给木》游戏指令列表（第 6 / 6 页）
+52、我的社团：查看社团信息
+53、加入社团 <社团编号>：申请加入社团
+54、退出社团
+55、创建社团 <社团前缀>：创建一个公开社团，若指令中包含私密一词，将创建私密社团
+社团前缀：3-4个字符，允许：英文字母和数字、部分特殊字符
+56、查看社团成员/查看社团管理/查看申请人列表：查看对应列表
+57、解散社团
+58、社团批准 <@对方>/<QQ号
+59、社团拒绝 <@对方>/<QQ号
+60、社团踢出 <@对方>/<QQ号
+61、社团转让 <@对方>/<QQ号
+62、社团设置 <设置项> <{参数...}>");
                 }
 
                 if (e.Detail.StartsWith("FunGame模拟", StringComparison.CurrentCultureIgnoreCase))
@@ -190,9 +211,10 @@ namespace Oshima.FunGame.WebAPI.Services
                         {
                             real = real[^3..];
                         }
+                        int count = 1;
                         foreach (string msg in real)
                         {
-                            await SendAsync(e, "饭给木", msg.Trim());
+                            await SendAsync(e, "饭给木", msg.Trim(), msgSeq: count++);
                             await Task.Delay(5500);
                         }
                         FunGameSimulation = false;
@@ -241,9 +263,10 @@ namespace Oshima.FunGame.WebAPI.Services
                         {
                             real = real[^3..];
                         }
+                        int count = 1;
                         foreach (string msg in real)
                         {
-                            await SendAsync(e, "饭给木", msg.Trim());
+                            await SendAsync(e, "饭给木", msg.Trim(), msgSeq: count++);
                             await Task.Delay(5500);
                         }
                         FunGameSimulation = false;
@@ -1320,9 +1343,10 @@ namespace Oshima.FunGame.WebAPI.Services
                     {
                         real = real[^3..];
                     }
+                    int count = 1;
                     foreach (string msg in real)
                     {
-                        await SendAsync(e, "完整决斗", msg.Trim());
+                        await SendAsync(e, "完整决斗", msg.Trim(), msgSeq: count++);
                         await Task.Delay(1500);
                     }
                     return result;
@@ -1370,9 +1394,10 @@ namespace Oshima.FunGame.WebAPI.Services
                     {
                         real = real[^3..];
                     }
+                    int count = 1;
                     foreach (string msg in real)
                     {
-                        await SendAsync(e, "决斗", msg.Trim());
+                        await SendAsync(e, "决斗", msg.Trim(), msgSeq: count++);
                         await Task.Delay(1500);
                     }
                     return result;
@@ -1428,9 +1453,10 @@ namespace Oshima.FunGame.WebAPI.Services
                     {
                         real = real[^3..];
                     }
+                    int count = 1;
                     foreach (string msg in real)
                     {
-                        await SendAsync(e, "完整决斗", msg.Trim());
+                        await SendAsync(e, "完整决斗", msg.Trim(), msgSeq: count++);
                         await Task.Delay(1500);
                     }
                     return result;
@@ -1500,9 +1526,10 @@ namespace Oshima.FunGame.WebAPI.Services
                         {
                             real = real[^3..];
                         }
+                        int count = 1;
                         foreach (string msg in real)
                         {
-                            await SendAsync(e, "BOSS", msg.Trim());
+                            await SendAsync(e, "BOSS", msg.Trim(), msgSeq: count++);
                             await Task.Delay(1500);
                         }
                     }
@@ -1558,9 +1585,10 @@ namespace Oshima.FunGame.WebAPI.Services
                         {
                             real = real[^3..];
                         }
+                        int count = 1;
                         foreach (string msg in real)
                         {
-                            await SendAsync(e, "BOSS", msg.Trim());
+                            await SendAsync(e, "BOSS", msg.Trim(), msgSeq: count++);
                             await Task.Delay(1500);
                         }
                     }
@@ -1792,6 +1820,44 @@ namespace Oshima.FunGame.WebAPI.Services
                     if (msg != "")
                     {
                         await SendAsync(e, "社团", msg);
+                    }
+                    return result;
+                }
+
+                if (e.Detail == "每日商店")
+                {
+                    string msg = NetworkUtility.JsonDeserialize<string>(Controller.ShowDailyStore(qq)) ?? "";
+                    if (msg != "")
+                    {
+                        await SendAsync(e, "商店", "\r\n" + msg);
+                    }
+                    return result;
+                }
+
+                if (e.Detail.StartsWith("商店购买", StringComparison.CurrentCultureIgnoreCase))
+                {
+                    string detail = e.Detail.Replace("商店购买", "").Trim();
+                    if (int.TryParse(detail, out int id))
+                    {
+                        string msg = NetworkUtility.JsonDeserialize<string>(Controller.DailyStoreBuy(qq, id)) ?? "";
+                        if (msg != "")
+                        {
+                            await SendAsync(e, "商店", msg);
+                        }
+                    }
+                    return result;
+                }
+                
+                if (e.Detail.StartsWith("商店查看", StringComparison.CurrentCultureIgnoreCase))
+                {
+                    string detail = e.Detail.Replace("商店查看", "").Trim();
+                    if (int.TryParse(detail, out int id))
+                    {
+                        string msg = NetworkUtility.JsonDeserialize<string>(Controller.DailyStoreShowInfo(qq, id)) ?? "";
+                        if (msg != "")
+                        {
+                            await SendAsync(e, "商店", msg);
+                        }
                     }
                     return result;
                 }

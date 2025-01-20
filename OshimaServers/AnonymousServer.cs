@@ -7,6 +7,8 @@ using Milimoe.FunGame.Core.Library.Common.Addon;
 using Milimoe.FunGame.Core.Library.Constant;
 using Oshima.Core.Configs;
 using Oshima.Core.Constant;
+using Oshima.FunGame.OshimaServers.Service;
+using TaskScheduler = Milimoe.FunGame.Core.Api.Utility.TaskScheduler;
 
 namespace Oshima.FunGame.OshimaServers
 {
@@ -58,7 +60,7 @@ namespace Oshima.FunGame.OshimaServers
         public override bool StartAnonymousServer(IServerModel model, Dictionary<string, object> data)
         {
             // 可以做验证处理
-            string access_token = NetworkUtility.JsonDeserializeFromDictionary<string>(data, "access_token") ?? "";
+            string access_token = Controller.JSON.GetObject<string>(data, "access_token") ?? "";
             if (GeneralSettings.TokenList.Contains(access_token))
             {
                 // 添加当前单例
@@ -92,6 +94,106 @@ namespace Oshima.FunGame.OshimaServers
         {
             Controller.NewSQLHelper();
             Controller.NewMailSender();
+            FunGameService.InitFunGame();
+            FunGameSimulation.InitFunGameSimulation();
+            TaskScheduler.Shared.AddTask("重置每日运势", new TimeSpan(0, 0, 0), () =>
+            {
+                Controller.WriteLine("已重置所有人的今日运势");
+                Daily.ClearDaily();
+            });
+            TaskScheduler.Shared.AddTask("重置交易冷却1", new TimeSpan(9, 0, 0), () =>
+            {
+                Controller.WriteLine("重置物品交易冷却时间");
+                _ = FunGameService.AllowSellAndTrade();
+            });
+            TaskScheduler.Shared.AddTask("重置交易冷却2", new TimeSpan(15, 0, 0), () =>
+            {
+                Controller.WriteLine("重置物品交易冷却时间");
+                _ = FunGameService.AllowSellAndTrade();
+            });
+            TaskScheduler.Shared.AddRecurringTask("刷新存档缓存", TimeSpan.FromMinutes(1), () =>
+            {
+                string directoryPath = $@"{AppDomain.CurrentDomain.BaseDirectory}configs/saved";
+                if (Directory.Exists(directoryPath))
+                {
+                    string[] filePaths = Directory.GetFiles(directoryPath);
+                    foreach (string filePath in filePaths)
+                    {
+                        string fileName = Path.GetFileNameWithoutExtension(filePath);
+                        PluginConfig pc = new("saved", fileName);
+                        pc.LoadConfig();
+                        if (pc.Count > 0)
+                        {
+                            User user = FunGameService.GetUser(pc);
+                            // 将用户存入缓存
+                            FunGameService.UserIdAndUsername[user.Id] = user;
+                            // 任务结算
+                            EntityModuleConfig<Quest> quests = new("quests", user.Id.ToString());
+                            quests.LoadConfig();
+                            if (quests.Count > 0 && FunGameService.SettleQuest(user, quests))
+                            {
+                                quests.SaveConfig();
+                                user.LastTime = DateTime.Now;
+                                pc.Add("user", user);
+                                pc.SaveConfig();
+                            }
+                        }
+                    }
+                    Controller.WriteLine("读取 FunGame 存档缓存", LogLevel.Debug);
+                }
+            }, true);
+            TaskScheduler.Shared.AddTask("刷新每日任务", new TimeSpan(4, 0, 0), () =>
+            {
+                string directoryPath = $@"{AppDomain.CurrentDomain.BaseDirectory}configs/quests";
+                if (Directory.Exists(directoryPath))
+                {
+                    string[] filePaths = Directory.GetFiles(directoryPath);
+                    foreach (string filePath in filePaths)
+                    {
+                        string fileName = Path.GetFileNameWithoutExtension(filePath);
+                        EntityModuleConfig<Quest> quests = new("quests", fileName);
+                        quests.Clear();
+                        FunGameService.CheckQuestList(quests);
+                        quests.SaveConfig();
+                    }
+                    Controller.WriteLine("刷新每日任务");
+                }
+                // 刷新签到
+                directoryPath = $@"{AppDomain.CurrentDomain.BaseDirectory}configs/saved";
+                if (Directory.Exists(directoryPath))
+                {
+                    string[] filePaths = Directory.GetFiles(directoryPath);
+                    foreach (string filePath in filePaths)
+                    {
+                        string fileName = Path.GetFileNameWithoutExtension(filePath);
+                        PluginConfig pc = new("saved", fileName);
+                        pc.LoadConfig();
+                        pc.Add("signed", false);
+                        pc.SaveConfig();
+                    }
+                    Controller.WriteLine("刷新签到");
+                }
+                // 刷新商店
+                directoryPath = $@"{AppDomain.CurrentDomain.BaseDirectory}configs/stores";
+                if (Directory.Exists(directoryPath))
+                {
+                    string[] filePaths = Directory.GetFiles(directoryPath);
+                    foreach (string filePath in filePaths)
+                    {
+                        string fileName = Path.GetFileNameWithoutExtension(filePath);
+                        EntityModuleConfig<Store> store = new("stores", fileName);
+                        store.Clear();
+                        FunGameService.CheckDailyStore(store);
+                        store.SaveConfig();
+                    }
+                    Controller.WriteLine("刷新签到");
+                }
+            });
+            TaskScheduler.Shared.AddRecurringTask("刷新boss", TimeSpan.FromHours(1), () =>
+            {
+                FunGameService.GenerateBoss();
+                Controller.WriteLine("刷新boss");
+            }, true);
         }
 
         /// <summary>
@@ -119,7 +221,7 @@ namespace Oshima.FunGame.OshimaServers
             Dictionary<string, object> result = [];
             Controller.WriteLine("接收匿名服务器消息", LogLevel.Debug);
 
-            long groupid = NetworkUtility.JsonDeserializeFromDictionary<long>(data, "groupid");
+            long groupid = Controller.JSON.GetObject<long>(data, "groupid");
             if (groupid > 0)
             {
                 result["groupid"] = groupid;
@@ -128,7 +230,7 @@ namespace Oshima.FunGame.OshimaServers
             if (data.Count > 0)
             {
                 // 根据服务器和客户端的数据传输约定，自行处理 data，并返回。
-                string command = NetworkUtility.JsonDeserializeFromDictionary<string>(data, "command") ?? "";
+                string command = Controller.JSON.GetObject<string>(data, "command") ?? "";
                 switch (command.Trim().ToLower())
                 {
                     case "scadd":
@@ -157,49 +259,42 @@ namespace Oshima.FunGame.OshimaServers
         {
             string result = "";
 
-            SQLHelper? sql = Factory.OpenFactory.GetSQLHelper();
+            using SQLHelper? sql = Controller.GetSQLHelper();
             if (sql != null)
             {
-                using (sql)
+                try
                 {
-                    try
+                    long qq = Controller.JSON.GetObject<long>(data, "qq");
+                    double sc = Controller.JSON.GetObject<double>(data, "sc");
+                    sql.NewTransaction();
+                    sql.Script = "select * from saints where qq = @qq";
+                    sql.Parameters.Add("qq", qq);
+                    sql.ExecuteDataSet();
+                    sql.Parameters.Add("sc", sc);
+                    sql.Parameters.Add("qq", qq);
+                    if (sql.Success)
                     {
-                        long qq = NetworkUtility.JsonDeserializeFromDictionary<long>(data, "qq");
-                        double sc = NetworkUtility.JsonDeserializeFromDictionary<double>(data, "sc");
-                        sql.NewTransaction();
-                        sql.Script = "select * from saints where qq = @qq";
-                        sql.Parameters.Add("qq", qq);
-                        sql.ExecuteDataSet();
-                        sql.Parameters.Add("sc", sc);
-                        sql.Parameters.Add("qq", qq);
-                        if (sql.Success)
-                        {
-                            sql.Script = "update saints set sc = sc + @sc where qq = @qq";
-                        }
-                        else
-                        {
-                            sql.Script = "insert into saints(qq, sc) values(@qq, @sc)";
-                        }
-                        sql.Execute();
-                        if (sql.Success)
-                        {
-                            Controller.WriteLine($"用户 {qq} 的圣人点数增加了 {sc}", LogLevel.Debug);
-                            sql.Commit();
-                        }
-                        else
-                        {
-                            sql.Rollback();
-                        }
+                        sql.Script = "update saints set sc = sc + @sc where qq = @qq";
                     }
-                    catch (Exception e)
+                    else
                     {
-                        result = e.ToString();
+                        sql.Script = "insert into saints(qq, sc) values(@qq, @sc)";
+                    }
+                    sql.Execute();
+                    if (sql.Success)
+                    {
+                        Controller.WriteLine($"用户 {qq} 的圣人点数增加了 {sc}", LogLevel.Debug);
+                        sql.Commit();
+                    }
+                    else
+                    {
                         sql.Rollback();
                     }
-                    finally
-                    {
-                        sql.Close();
-                    }
+                }
+                catch (Exception e)
+                {
+                    result = e.ToString();
+                    sql.Rollback();
                 }
             }
             else result = "无法调用此接口：SQL 服务不可用。";

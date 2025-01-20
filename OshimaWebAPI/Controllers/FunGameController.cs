@@ -4551,6 +4551,193 @@ namespace Oshima.FunGame.WebAPI.Controllers
             }
         }
 
+        [HttpPost("showdailystore")]
+        public string ShowDailyStore([FromQuery] long? qq = null)
+        {
+            long userid = qq ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
+
+            PluginConfig pc = new("saved", userid.ToString());
+            pc.LoadConfig();
+
+            if (pc.Count > 0)
+            {
+                User user = FunGameService.GetUser(pc);
+
+                EntityModuleConfig<Store> store = new("stores", userid.ToString());
+                store.LoadConfig();
+                string msg = FunGameService.CheckDailyStore(store);
+                store.SaveConfig();
+
+                user.LastTime = DateTime.Now;
+                pc.Add("user", user);
+                pc.SaveConfig();
+
+                return NetworkUtility.JsonSerialize(msg);
+            }
+            else
+            {
+                return NetworkUtility.JsonSerialize(noSaved);
+            }
+        }
+
+        [HttpPost("dailystorebuy")]
+        public string DailyStoreBuy([FromQuery] long? qq = null, [FromQuery] long? id = null)
+        {
+            long userid = qq ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
+            long goodid = id ?? 0;
+
+            PluginConfig pc = new("saved", userid.ToString());
+            pc.LoadConfig();
+
+            if (pc.Count > 0)
+            {
+                User user = FunGameService.GetUser(pc);
+
+                EntityModuleConfig<Store> store = new("stores", userid.ToString());
+                store.LoadConfig();
+                FunGameService.CheckDailyStore(store);
+                store.SaveConfig();
+
+                string msg = "";
+                Store? daily = store.Get("daily");
+                if (daily != null)
+                {
+                    if (daily.Goods.Values.FirstOrDefault(g => g.Id == goodid) is Goods good)
+                    {
+                        if (good.Stock <= 0)
+                        {
+                            return NetworkUtility.JsonSerialize($"此商品【{good.Name}】库存不足，无法购买！");
+                        }
+
+                        foreach (string needy in good.Prices.Keys)
+                        {
+                            if (needy == General.GameplayEquilibriumConstant.InGameCurrency)
+                            {
+                                double reduce = good.Prices[needy];
+                                if (user.Inventory.Credits >= reduce)
+                                {
+                                    user.Inventory.Credits -= reduce;
+                                }
+                                else
+                                {
+                                    return NetworkUtility.JsonSerialize($"你的{General.GameplayEquilibriumConstant.InGameCurrency}不足 {reduce} 呢，无法购买【{good.Name}】！");
+                                }
+                            }
+                            else if (needy == General.GameplayEquilibriumConstant.InGameMaterial)
+                            {
+                                double reduce = good.Prices[needy];
+                                if (user.Inventory.Materials >= reduce)
+                                {
+                                    user.Inventory.Materials -= reduce;
+                                }
+                                else
+                                {
+                                    return NetworkUtility.JsonSerialize($"你的{General.GameplayEquilibriumConstant.InGameMaterial}不足 {reduce} 呢，无法购买【{good.Name}】！");
+                                }
+                            }
+                        }
+
+                        foreach (Item item in good.Items)
+                        {
+                            Item newItem = item.Copy();
+                            FunGameService.SetSellAndTradeTime(newItem);
+                            if (good.GetPrice(General.GameplayEquilibriumConstant.InGameCurrency, out double price))
+                            {
+                                newItem.Price = Calculation.Round2Digits(price * 0.35);
+                            }
+                            newItem.User = user;
+                            user.Inventory.Items.Add(newItem);
+                        }
+
+                        good.Stock--;
+
+                        msg += $"恭喜你成功购买【${good.Name}】！" +
+                            $"总计消费：{string.Join("、", good.Prices.Select(kv => $"{kv.Value} {kv.Key}"))}" +
+                            $"包含物品：{string.Join("、", good.Items.Select(i => $"[{ItemSet.GetQualityTypeName(i.QualityType)}|{ItemSet.GetItemTypeName(i.ItemType)}] {i.Name}"))}";
+                    }
+                    else
+                    {
+                        return NetworkUtility.JsonSerialize($"没有对应编号的商品！");
+                    }
+
+                }
+                else
+                {
+                    return NetworkUtility.JsonSerialize($"商品列表不存在，请刷新！");
+                }
+
+                store.Add("daily", daily);
+                store.SaveConfig();
+                user.LastTime = DateTime.Now;
+                pc.Add("user", user);
+                pc.SaveConfig();
+                return NetworkUtility.JsonSerialize(msg);
+            }
+            else
+            {
+                return NetworkUtility.JsonSerialize(noSaved);
+            }
+        }
+        
+        [HttpPost("dailystoreshowinfo")]
+        public string DailyStoreShowInfo([FromQuery] long? qq = null, [FromQuery] long? id = null)
+        {
+            long userid = qq ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
+            long goodid = id ?? 0;
+
+            PluginConfig pc = new("saved", userid.ToString());
+            pc.LoadConfig();
+
+            if (pc.Count > 0)
+            {
+                User user = FunGameService.GetUser(pc);
+
+                EntityModuleConfig<Store> store = new("stores", userid.ToString());
+                store.LoadConfig();
+                FunGameService.CheckDailyStore(store);
+                store.SaveConfig();
+
+                string msg = "";
+                Store? daily = store.Get("daily");
+                if (daily != null)
+                {
+                    if (daily.Goods.Values.FirstOrDefault(g => g.Id == goodid) is Goods good)
+                    {
+                        int count = 0;
+                        string itemMsg = "";
+                        foreach (Item item in good.Items)
+                        {
+                            count++;
+                            itemMsg += $"[ {count} ] -> {item.ToString(false, true)}\r\n";
+                        }
+                        msg += $"{good.Id}. {good.Name}\r\n" +
+                            $"商品描述：{good.Description}\r\n" +
+                            $"商品售价：{string.Join("、", good.Prices.Select(kv => $"{kv.Value} {kv.Key}"))}\r\n" +
+                            $"包含物品：\r\n" + itemMsg +
+                            $"剩余库存：{good.Stock}";
+                    }
+                    else
+                    {
+                        return NetworkUtility.JsonSerialize($"没有对应编号的物品！");
+                    }
+
+                }
+                else
+                {
+                    return NetworkUtility.JsonSerialize($"商品列表不存在，请刷新！");
+                }
+
+                user.LastTime = DateTime.Now;
+                pc.Add("user", user);
+                pc.SaveConfig();
+                return NetworkUtility.JsonSerialize(msg);
+            }
+            else
+            {
+                return NetworkUtility.JsonSerialize(noSaved);
+            }
+        }
+
         [HttpGet("reload")]
         public string Relaod([FromQuery] long? master = null)
         {

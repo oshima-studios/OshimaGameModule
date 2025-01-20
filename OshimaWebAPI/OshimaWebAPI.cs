@@ -1,10 +1,10 @@
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Milimoe.FunGame.Core.Api.Utility;
 using Milimoe.FunGame.Core.Library.Common.Addon;
 using Oshima.Core.Configs;
 using Oshima.Core.Constant;
-using Oshima.FunGame.OshimaServers.Service;
 using Oshima.FunGame.WebAPI.Constant;
 using Oshima.FunGame.WebAPI.Controllers;
 using Oshima.FunGame.WebAPI.Models;
@@ -24,15 +24,13 @@ namespace Oshima.FunGame.WebAPI
 
         public override void ProcessInput(string input)
         {
-            if (input.StartsWith("fungametest"))
+            if (input == "test")
             {
-                FunGameSimulation.StartSimulationGame(true, true);
-            }
-            // OSM指令
-            if (input.Length >= 4 && input[..4].Equals(".osm", StringComparison.CurrentCultureIgnoreCase))
-            {
-                //MasterCommand.Execute(read, GeneralSettings.Master, false, GeneralSettings.Master, false);
-                Controller.WriteLine("试图使用 .osm 指令：" + input);
+                FunGameController controller = new(new Logger<FunGameController>(new LoggerFactory()));
+                Controller.WriteLine(Controller.JSON.GetObject<string>(controller.CreateSaved(1, "测试用户")) ?? "test");
+                Controller.WriteLine(Controller.JSON.GetObject<string>(controller.GetItemInfo_Name(1, "鸳鸯眼")) ?? "test");
+                Controller.WriteLine(Controller.JSON.GetObject<string>(controller.GetCharacterInfoFromInventory(1, 1, false)) ?? "test");
+                Controller.WriteLine(string.Join("\r\n", controller.GetBoss(1)));
             }
         }
 
