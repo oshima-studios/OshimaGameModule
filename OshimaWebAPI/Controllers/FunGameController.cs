@@ -4595,8 +4595,6 @@ namespace Oshima.FunGame.WebAPI.Controllers
 
                 EntityModuleConfig<Store> store = new("stores", userid.ToString());
                 store.LoadConfig();
-                FunGameService.CheckDailyStore(store);
-                store.SaveConfig();
 
                 string msg = "";
                 Store? daily = store.Get("daily");
@@ -4663,7 +4661,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
                 }
                 else
                 {
-                    return NetworkUtility.JsonSerialize($"商品列表不存在，请刷新！");
+                    return NetworkUtility.JsonSerialize($"商品列表为空，请使用【每日商店】指令来获取商品列表！");
                 }
 
                 store.Add("daily", daily);
@@ -4694,8 +4692,6 @@ namespace Oshima.FunGame.WebAPI.Controllers
 
                 EntityModuleConfig<Store> store = new("stores", userid.ToString());
                 store.LoadConfig();
-                FunGameService.CheckDailyStore(store);
-                store.SaveConfig();
 
                 string msg = "";
                 Store? daily = store.Get("daily");

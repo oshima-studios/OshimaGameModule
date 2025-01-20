@@ -2,6 +2,7 @@ using System.Text;
 using Milimoe.FunGame.Core.Api.Utility;
 using Milimoe.FunGame.Core.Entity;
 using Milimoe.FunGame.Core.Library.Constant;
+using Oshima.Core.Configs;
 using Oshima.Core.Constant;
 using Oshima.FunGame.OshimaModules.Characters;
 using Oshima.FunGame.OshimaModules.Effects.OpenEffects;
@@ -2035,18 +2036,18 @@ namespace Oshima.FunGame.OshimaServers.Service
                 {
                     int index = Random.Shared.Next(AllItems.Count);
                     Item item = AllItems[index].Copy();
-                    double price = Random.Shared.NextDouble() * 10000 * (int)item.QualityType * 20;
-                    item.Price = price;
-                    daily.AddItem(item, Random.Shared.Next(3));
+                    double price = Random.Shared.NextDouble() * 10000 * (int)item.QualityType * Random.Shared.Next(5,20);
+                    item.Price = Calculation.Round2Digits(price);
+                    daily.AddItem(item, Random.Shared.Next(1, 3));
                 }
                 store.Add("daily", daily);
-                return store.ToString() + "\r\n温馨提示：使用【商店查看+序号】查看物品详细信息，使用【商店购买+序号】购买物品！每天 4:00 刷新每日商店。";
+                return daily.ToString() + "\r\n温馨提示：使用【商店查看+序号】查看物品详细信息，使用【商店购买+序号】购买物品！每天 4:00 刷新每日商店。";
             }
             else
             {
-                if (store.Count > 0)
+                if (store.Count > 0 && store.Where(kv => kv.Key == "daily").Select(kv => kv.Value).FirstOrDefault() is Store daily)
                 {
-                    return store.ToString() + "\r\n温馨提示：使用【商店查看+序号】查看物品详细信息，使用【商店购买+序号】购买物品！每天 4:00 刷新每日商店。";
+                    return daily.ToString() + "\r\n温馨提示：使用【商店查看+序号】查看物品详细信息，使用【商店购买+序号】购买物品！每天 4:00 刷新每日商店。";
                 }
                 else
                 {
