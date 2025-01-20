@@ -2034,8 +2034,9 @@ namespace Oshima.FunGame.OshimaServers.Service
                 for (int i = 0; i < 4; i++)
                 {
                     int index = Random.Shared.Next(AllItems.Count);
-                    Item item = AllItems[index];
+                    Item item = AllItems[index].Copy();
                     double price = Random.Shared.NextDouble() * 10000 * (int)item.QualityType * 20;
+                    item.Price = price;
                     daily.AddItem(item, Random.Shared.Next(3));
                 }
                 store.Add("daily", daily);
