@@ -98,7 +98,7 @@ namespace Oshima.FunGame.OshimaServers.Service
                             foreach (Skill skill in skillRewards)
                             {
                                 Dictionary<string, object> effectArgs = [];
-                                if (FunGameService.RoundRewards.TryGetValue((EffectID)skill.Id, out Dictionary<string, object>? dict) && dict != null)
+                                if (FunGameConstant.RoundRewards.TryGetValue((EffectID)skill.Id, out Dictionary<string, object>? dict) && dict != null)
                                 {
                                     effectArgs = new(dict);
                                 }
@@ -341,7 +341,7 @@ namespace Oshima.FunGame.OshimaServers.Service
                                 foreach (Skill skill in skillRewards)
                                 {
                                     Dictionary<string, object> effectArgs = [];
-                                    if (FunGameService.RoundRewards.TryGetValue((EffectID)skill.Id, out Dictionary<string, object>? dict) && dict != null)
+                                    if (FunGameConstant.RoundRewards.TryGetValue((EffectID)skill.Id, out Dictionary<string, object>? dict) && dict != null)
                                     {
                                         effectArgs = new(dict);
                                     }

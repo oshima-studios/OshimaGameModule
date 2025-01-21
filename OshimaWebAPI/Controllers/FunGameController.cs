@@ -3,9 +3,12 @@ using System.Text.RegularExpressions;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
+using Milimoe.FunGame.Core.Api.Transmittal;
 using Milimoe.FunGame.Core.Api.Utility;
 using Milimoe.FunGame.Core.Entity;
+using Milimoe.FunGame.Core.Library.Common.Event;
 using Milimoe.FunGame.Core.Library.Constant;
+using Milimoe.FunGame.Core.Library.SQLScript.Entity;
 using Oshima.Core.Configs;
 using Oshima.FunGame.OshimaModules.Characters;
 using Oshima.FunGame.OshimaModules.Items;
@@ -24,6 +27,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
         private const int drawCardReduce = 2000;
         private const int drawCardReduce_Material = 10;
         private const string noSaved = "你还没有创建存档！请发送【创建存档】创建。";
+        private const string refused = "暂时无法使用此指令。";
 
         [AllowAnonymous]
         [HttpGet("test")]
@@ -39,9 +43,9 @@ namespace Oshima.FunGame.WebAPI.Controllers
         [HttpGet("stats")]
         public string GetStats([FromQuery] int? id = null)
         {
-            if (id != null && id > 0 && id <= FunGameService.Characters.Count)
+            if (id != null && id > 0 && id <= FunGameConstant.Characters.Count)
             {
-                Character character = FunGameService.Characters[Convert.ToInt32(id) - 1];
+                Character character = FunGameConstant.Characters[Convert.ToInt32(id) - 1];
                 if (FunGameSimulation.CharacterStatistics.TryGetValue(character, out CharacterStatistics? stats) && stats != null)
                 {
                     StringBuilder builder = new();
@@ -94,9 +98,9 @@ namespace Oshima.FunGame.WebAPI.Controllers
         [HttpGet("teamstats")]
         public string GetTeamStats([FromQuery] int? id = null)
         {
-            if (id != null && id > 0 && id <= FunGameService.Characters.Count)
+            if (id != null && id > 0 && id <= FunGameConstant.Characters.Count)
             {
-                Character character = FunGameService.Characters[Convert.ToInt32(id) - 1];
+                Character character = FunGameConstant.Characters[Convert.ToInt32(id) - 1];
                 if (FunGameSimulation.TeamCharacterStatistics.TryGetValue(character, out CharacterStatistics? stats) && stats != null)
                 {
                     StringBuilder builder = new();
@@ -234,9 +238,9 @@ namespace Oshima.FunGame.WebAPI.Controllers
         [HttpGet("characterinfo")]
         public string GetCharacterInfo([FromQuery] int? id = null)
         {
-            if (id != null && id > 0 && id <= FunGameService.Characters.Count)
+            if (id != null && id > 0 && id <= FunGameConstant.Characters.Count)
             {
-                Character c = FunGameService.Characters[Convert.ToInt32(id) - 1].Copy();
+                Character c = FunGameConstant.Characters[Convert.ToInt32(id) - 1].Copy();
                 c.Level = General.GameplayEquilibriumConstant.MaxLevel;
                 c.NormalAttack.Level = General.GameplayEquilibriumConstant.MaxNormalAttackLevel;
                 FunGameService.AddCharacterSkills(c, 1, General.GameplayEquilibriumConstant.MaxSkillLevel, General.GameplayEquilibriumConstant.MaxSuperSkillLevel);
@@ -248,9 +252,9 @@ namespace Oshima.FunGame.WebAPI.Controllers
 
         [AllowAnonymous]
         [HttpGet("skillinfo")]
-        public string GetSkillInfo([FromQuery] long? qq = null, [FromQuery] long? id = null)
+        public string GetSkillInfo([FromQuery] long? uid = null, [FromQuery] long? id = null)
         {
-            long userid = qq ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
+            long userid = uid ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
             PluginConfig pc = new("saved", userid.ToString());
             pc.LoadConfig();
             List<string> msg = [];
@@ -263,11 +267,11 @@ namespace Oshima.FunGame.WebAPI.Controllers
             }
             else
             {
-                character = FunGameService.Characters[1].Copy();
+                character = FunGameConstant.Characters[1].Copy();
                 msg.Add($"技能展示的属性基于演示角色：[ {character} ]");
             }
-            IEnumerable<Skill> skills = FunGameService.AllSkills;
-            if (id != null && FunGameService.Characters.Count > 1)
+            IEnumerable<Skill> skills = FunGameConstant.AllSkills;
+            if (id != null && FunGameConstant.Characters.Count > 1)
             {
                 Skill? skill = skills.Where(s => s.Id == id).FirstOrDefault()?.Copy();
                 if (skill != null)
@@ -289,9 +293,9 @@ namespace Oshima.FunGame.WebAPI.Controllers
 
         [AllowAnonymous]
         [HttpGet("skillinfoname")]
-        public string GetSkillInfo_Name([FromQuery] long? qq = null, [FromQuery] string? name = null)
+        public string GetSkillInfo_Name([FromQuery] long? uid = null, [FromQuery] string? name = null)
         {
-            long userid = qq ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
+            long userid = uid ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
             PluginConfig pc = new("saved", userid.ToString());
             pc.LoadConfig();
             List<string> msg = [];
@@ -304,11 +308,11 @@ namespace Oshima.FunGame.WebAPI.Controllers
             }
             else
             {
-                character = FunGameService.Characters[1].Copy();
+                character = FunGameConstant.Characters[1].Copy();
                 msg.Add($"技能展示的属性基于演示角色：[ {character} ]");
             }
-            IEnumerable<Skill> skills = FunGameService.AllSkills;
-            if (name != null && FunGameService.Characters.Count > 1)
+            IEnumerable<Skill> skills = FunGameConstant.AllSkills;
+            if (name != null && FunGameConstant.Characters.Count > 1)
             {
                 Skill? skill = skills.Where(s => s.Name == name).FirstOrDefault()?.Copy();
                 if (skill != null)
@@ -330,9 +334,9 @@ namespace Oshima.FunGame.WebAPI.Controllers
 
         [AllowAnonymous]
         [HttpGet("iteminfo")]
-        public string GetItemInfo([FromQuery] long? qq = null, [FromQuery] long? id = null)
+        public string GetItemInfo([FromQuery] long? uid = null, [FromQuery] long? id = null)
         {
-            long userid = qq ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
+            long userid = uid ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
             PluginConfig pc = new("saved", userid.ToString());
             pc.LoadConfig();
             List<string> msg = [];
@@ -345,10 +349,10 @@ namespace Oshima.FunGame.WebAPI.Controllers
             }
             else
             {
-                character = FunGameService.Characters[1].Copy();
+                character = FunGameConstant.Characters[1].Copy();
                 msg.Add($"技能展示的属性基于演示角色：[ {character} ]");
             }
-            IEnumerable<Item> items = FunGameService.AllItems;
+            IEnumerable<Item> items = FunGameConstant.AllItems;
             if (id != null)
             {
                 Item? item = items.Where(i => i.Id == id).FirstOrDefault()?.Copy();
@@ -366,9 +370,9 @@ namespace Oshima.FunGame.WebAPI.Controllers
 
         [AllowAnonymous]
         [HttpGet("iteminfoname")]
-        public string GetItemInfo_Name([FromQuery] long? qq = null, [FromQuery] string? name = null)
+        public string GetItemInfo_Name([FromQuery] long? uid = null, [FromQuery] string? name = null)
         {
-            long userid = qq ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
+            long userid = uid ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
             PluginConfig pc = new("saved", userid.ToString());
             pc.LoadConfig();
             List<string> msg = [];
@@ -381,10 +385,10 @@ namespace Oshima.FunGame.WebAPI.Controllers
             }
             else
             {
-                character = FunGameService.Characters[1].Copy();
+                character = FunGameConstant.Characters[1].Copy();
                 msg.Add($"技能展示的属性基于演示角色：[ {character} ]");
             }
-            IEnumerable<Item> items = FunGameService.AllItems;
+            IEnumerable<Item> items = FunGameConstant.AllItems;
             if (name != null)
             {
                 Item? item = items.Where(i => i.Name == name).FirstOrDefault()?.Copy();
@@ -421,34 +425,88 @@ namespace Oshima.FunGame.WebAPI.Controllers
         }
 
         [HttpPost("createsaved")]
-        public string CreateSaved([FromQuery] long? qq = null, [FromQuery] string? name = null)
+        public string CreateSaved([FromQuery] long? uid = null, [FromQuery] string? name = null)
         {
-            long userid = qq ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
-            string username = name ?? FunGameService.GenerateRandomChineseUserName();
+            string username = FunGameService.GenerateRandomChineseUserName();
+            using SQLHelper? sqlHelper = Factory.OpenFactory.GetSQLHelper();
 
-            PluginConfig pc = new("saved", userid.ToString());
-            pc.LoadConfig();
+            if (name != null && sqlHelper != null)
+            {
+                try
+                {
+                    if (name.Trim() == "")
+                    {
+                        return NetworkUtility.JsonSerialize("未提供接入ID！");
+                    }
+                    Logger.LogInformation("[Reg] 接入ID：{name}", name);
+                    sqlHelper.ExecuteDataSet(FunGameService.Select_CheckAutoKey(sqlHelper, name));
+                    if (sqlHelper.Success)
+                    {
+                        return NetworkUtility.JsonSerialize("你已经创建过存档！");
+                    }
+                    string password = name.Encrypt(name);
+                    sqlHelper.NewTransaction();
+                    sqlHelper.Execute(UserQuery.Insert_Register(sqlHelper, username, password, "", "", name));
+                    if (sqlHelper.Result == SQLResult.Success)
+                    {
+                        sqlHelper.ExecuteDataSet(FunGameService.Select_CheckAutoKey(sqlHelper, name));
+                        if (sqlHelper.Success)
+                        {
+                            User user = Factory.GetUser(sqlHelper.DataSet);
+                            sqlHelper.Commit();
+                            user.Inventory.Credits = 5000;
+                            user.Inventory.Characters.Add(new CustomCharacter(FunGameConstant.CustomCharacterId, username, nickname: username));
+                            FunGameConstant.UserIdAndUsername[user.Id] = user;
+                            PluginConfig pc = new("saved", user.Id.ToString());
+                            pc.LoadConfig();
+                            pc.Add("user", user);
+                            pc.SaveConfig();
+                            return NetworkUtility.JsonSerialize($"创建存档成功！你的昵称是【{username}】。");
+                        }
+                        else
+                        {
+                            return NetworkUtility.JsonSerialize("无法处理注册，创建存档失败！");
+                        }
+                    }
+                    else
+                    {
+                        sqlHelper.Rollback();
+                    }
+                }
+                catch (Exception e)
+                {
+                    sqlHelper.Rollback();
+                    Logger.LogError(e, "Error: ");
+                }
+                return NetworkUtility.JsonSerialize("无法处理注册，创建存档失败！");
+            }
+            else if (uid != null && uid != 0)
+            {
+                PluginConfig pc = new("saved", uid.Value.ToString());
+                pc.LoadConfig();
 
-            if (pc.Count == 0)
-            {
-                User user = Factory.GetUser(userid, username, DateTime.Now, DateTime.Now, userid + "@qq.com", username);
-                user.Inventory.Credits = 5000000;
-                user.Inventory.Characters.Add(new CustomCharacter(userid, username));
-                FunGameService.UserIdAndUsername[userid] = user;
-                pc.Add("user", user);
-                pc.SaveConfig();
-                return NetworkUtility.JsonSerialize($"创建存档成功！你的用户名是【{username}】。");
+                if (pc.Count == 0)
+                {
+                    User user = Factory.GetUser(uid.Value, username, DateTime.Now, DateTime.Now, uid + "@qq.com", username);
+                    user.Inventory.Credits = 5000;
+                    user.Inventory.Characters.Add(new CustomCharacter(uid.Value, username));
+                    FunGameConstant.UserIdAndUsername[uid.Value] = user;
+                    pc.Add("user", user);
+                    pc.SaveConfig();
+                    return NetworkUtility.JsonSerialize($"创建存档成功！你的昵称是【{username}】。");
+                }
+                else
+                {
+                    return NetworkUtility.JsonSerialize("你已经创建过存档！");
+                }
             }
-            else
-            {
-                return NetworkUtility.JsonSerialize("你已经创建过存档！");
-            }
+            return NetworkUtility.JsonSerialize("创建存档失败！");
         }
         
         [HttpPost("restoresaved")]
-        public string RestoreSaved([FromQuery] long? qq = null)
+        public string RestoreSaved([FromQuery] long? uid = null)
         {
-            long userid = qq ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
+            long userid = uid ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
 
             PluginConfig pc = new("saved", userid.ToString());
             pc.LoadConfig();
@@ -456,11 +514,11 @@ namespace Oshima.FunGame.WebAPI.Controllers
             if (pc.Count > 0)
             {
                 User user = FunGameService.GetUser(pc);
-                user.Inventory.Credits = 5000000;
+                user.Inventory.Credits = 5000;
                 user.Inventory.Materials = 0;
                 user.Inventory.Characters.Clear();
                 user.Inventory.Items.Clear();
-                user.Inventory.Characters.Add(new CustomCharacter(userid, user.Username));
+                user.Inventory.Characters.Add(new CustomCharacter(FunGameConstant.CustomCharacterId, user.Username));
                 user.LastTime = DateTime.Now;
                 pc.Add("user", user);
                 pc.SaveConfig();
@@ -473,9 +531,9 @@ namespace Oshima.FunGame.WebAPI.Controllers
         }
 
         [HttpPost("showsaved")]
-        public string ShowSaved([FromQuery] long? qq = null)
+        public string ShowSaved([FromQuery] long? uid = null)
         {
-            long userid = qq ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
+            long userid = uid ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
 
             PluginConfig pc = new("saved", userid.ToString());
             pc.LoadConfig();
@@ -494,7 +552,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
                 Dictionary<Character, int> characters = user.Inventory.Characters
                     .Select((character, index) => new { character, index })
                     .ToDictionary(x => x.character, x => x.index + 1);
-                builder.AppendLine($"小队成员：{(squad.Length > 0 ? string.Join(" / ", squad.Select(c => $"[#{characters[c]}]{c.Name}({c.Level})")) : "空")}");
+                builder.AppendLine($"小队成员：{(squad.Length > 0 ? string.Join(" / ", squad.Select(c => $"[#{characters[c]}]{c.NickName}({c.Level})")) : "空")}");
                 if (user.Inventory.Training.Count > 0)
                 {
                     builder.AppendLine($"正在练级：{string.Join(" / ", user.Inventory.Characters.Where(c => user.Inventory.Training.ContainsKey(c.Id)).Select(c => c.ToStringWithLevelWithOutUser()))}");
@@ -531,9 +589,9 @@ namespace Oshima.FunGame.WebAPI.Controllers
         }
 
         [HttpPost("rename")]
-        public string ReName([FromQuery] long? qq = null)
+        public string ReName([FromQuery] long? uid = null)
         {
-            long userid = qq ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
+            long userid = uid ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
 
             PluginConfig pc = new("saved", userid.ToString());
             pc.LoadConfig();
@@ -553,19 +611,21 @@ namespace Oshima.FunGame.WebAPI.Controllers
                 }
 
                 user.Username = FunGameService.GenerateRandomChineseUserName();
-                if (user.Inventory.Characters.FirstOrDefault(c => c.Id == user.Id) is Character character)
+                user.NickName = user.Username;
+                if (user.Inventory.Characters.FirstOrDefault(c => c.Id == FunGameConstant.CustomCharacterId) is Character character)
                 {
                     character.Name = user.Username;
+                    character.NickName = user.NickName;
                 }
                 if (user.Inventory.Name.EndsWith("的库存"))
                 {
                     user.Inventory.Name = user.Username + "的库存";
                 }
-                FunGameService.UserIdAndUsername[user.Id] = user;
+                FunGameConstant.UserIdAndUsername[user.Id] = user;
                 user.LastTime = DateTime.Now;
                 pc.Add("user", user);
                 pc.SaveConfig();
-                return NetworkUtility.JsonSerialize($"消耗 {reduce} {General.GameplayEquilibriumConstant.InGameCurrency}，你的新名字是【{user.Username}】");
+                return NetworkUtility.JsonSerialize($"消耗 {reduce} {General.GameplayEquilibriumConstant.InGameCurrency}，你的新昵称是【{user.Username}】");
             }
             else
             {
@@ -574,9 +634,9 @@ namespace Oshima.FunGame.WebAPI.Controllers
         }
         
         [HttpPost("randomcustom")]
-        public string RandomCustomCharacter([FromQuery] long? qq = null, [FromQuery] bool? confirm = null)
+        public string RandomCustomCharacter([FromQuery] long? uid = null, [FromQuery] bool? confirm = null)
         {
-            long userid = qq ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
+            long userid = uid ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
             bool isConfirm = confirm ?? false;
 
             PluginConfig pc = new("saved", userid.ToString());
@@ -588,7 +648,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
             if (pc.Count > 0)
             {
                 User user = FunGameService.GetUser(pc);
-                if (user.Inventory.Characters.FirstOrDefault(c => c.Id == user.Id) is Character character)
+                if (user.Inventory.Characters.FirstOrDefault(c => c.Id == FunGameConstant.CustomCharacterId) is Character character)
                 {
                     PrimaryAttribute oldPA = character.PrimaryAttribute;
                     double oldSTR = character.InitialSTR;
@@ -639,7 +699,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
                             {
                                 return NetworkUtility.JsonSerialize($"你的{General.GameplayEquilibriumConstant.InGameMaterial}不足 {reduce} 呢，无法重随自建角色属性！");
                             }
-                            newCustom = new CustomCharacter(user.Id, "");
+                            newCustom = new CustomCharacter(FunGameConstant.CustomCharacterId, "");
                             user.LastTime = DateTime.Now;
                             pc.Add("user", user);
                             pc.SaveConfig();
@@ -652,7 +712,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
                                 $"初始智力：{oldINT}（+{oldINTG}/Lv）=> {newCustom.InitialINT}（+{newCustom.INTGrowth}/Lv）\r\n" +
                                 $"请发送【确认角色重随】来确认更新，或者发送【取消角色重随】来取消操作。");
                         }
-                        else if (newCustom.Id == user.Id)
+                        else if (newCustom.Id == FunGameConstant.CustomCharacterId)
                         {
                             return NetworkUtility.JsonSerialize($"你已经有一个待确认的重随属性如下：\r\n" +
                                 $"核心属性：{CharacterSet.GetPrimaryAttributeName(oldPA)} => {CharacterSet.GetPrimaryAttributeName(newCustom.PrimaryAttribute)}\r\n" +
@@ -679,9 +739,9 @@ namespace Oshima.FunGame.WebAPI.Controllers
         }
 
         [HttpPost("cancelrandomcustom")]
-        public string CancelRandomCustomCharacter([FromQuery] long? qq = null)
+        public string CancelRandomCustomCharacter([FromQuery] long? uid = null)
         {
-            long userid = qq ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
+            long userid = uid ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
 
             PluginConfig pc = new("saved", userid.ToString());
             pc.LoadConfig();
@@ -708,9 +768,9 @@ namespace Oshima.FunGame.WebAPI.Controllers
         }
         
         [HttpPost("inventoryinfo")]
-        public string GetInventoryInfo([FromQuery] long? qq = null)
+        public string GetInventoryInfo([FromQuery] long? uid = null)
         {
-            long userid = qq ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
+            long userid = uid ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
 
             PluginConfig pc = new("saved", userid.ToString());
             pc.LoadConfig();
@@ -728,9 +788,9 @@ namespace Oshima.FunGame.WebAPI.Controllers
         }
 
         [HttpPost("inventoryinfo2")]
-        public List<string> GetInventoryInfo2([FromQuery] long? qq = null, [FromQuery] int? page = null)
+        public List<string> GetInventoryInfo2([FromQuery] long? uid = null, [FromQuery] int? page = null)
         {
-            long userid = qq ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
+            long userid = uid ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
             int showPage = page ?? 1;
             if (showPage <= 0) showPage = 1;
 
@@ -804,9 +864,9 @@ namespace Oshima.FunGame.WebAPI.Controllers
         }
 
         [HttpPost("inventoryinfo3")]
-        public List<string> GetInventoryInfo3([FromQuery] long? qq = null, [FromQuery] int? page = null, [FromQuery] int? order = null, [FromQuery] int? orderqty = null)
+        public List<string> GetInventoryInfo3([FromQuery] long? uid = null, [FromQuery] int? page = null, [FromQuery] int? order = null, [FromQuery] int? orderqty = null)
         {
-            long userid = qq ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
+            long userid = uid ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
             int showPage = page ?? 1;
             if (showPage <= 0) showPage = 1;
 
@@ -879,7 +939,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
                         }
                         str += $"物品序号：{itemsIndex}\r\n";
                         str += $"拥有数量：{objs.Count}（" + (first.IsEquipment ? $"可装备数量：{objs.Count(i => i.Character is null)}，" : "") +
-                            (FunGameService.ItemCanUsed.Contains(first.ItemType) ? $"可使用数量：{objs.Count(i => i.RemainUseTimes > 0)}，" : "") +
+                            (FunGameConstant.ItemCanUsed.Contains(first.ItemType) ? $"可使用数量：{objs.Count(i => i.RemainUseTimes > 0)}，" : "") +
                             $"可出售数量：{objs.Count(i => i.IsSellable)}，可交易数量：{objs.Count(i => i.IsTradable)}）";
                         list.Add(str);
                     }
@@ -898,9 +958,9 @@ namespace Oshima.FunGame.WebAPI.Controllers
         }
         
         [HttpPost("inventoryinfo4")]
-        public List<string> GetInventoryInfo4([FromQuery] long? qq = null, [FromQuery] int? page = null, [FromQuery] int? type = null)
+        public List<string> GetInventoryInfo4([FromQuery] long? uid = null, [FromQuery] int? page = null, [FromQuery] int? type = null)
         {
-            long userid = qq ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
+            long userid = uid ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
             int showPage = page ?? 1;
             int itemtype = type ?? -1;
             if (showPage <= 0) showPage = 1;
@@ -964,7 +1024,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
                         }
                         str += $"物品序号：{itemsIndex}\r\n";
                         str += $"拥有数量：{objs.Count}（" + (first.IsEquipment ? $"可装备数量：{objs.Count(i => i.Character is null)}，" : "") +
-                            (FunGameService.ItemCanUsed.Contains(first.ItemType) ? $"可使用数量：{objs.Count(i => i.RemainUseTimes > 0)}，" : "") +
+                            (FunGameConstant.ItemCanUsed.Contains(first.ItemType) ? $"可使用数量：{objs.Count(i => i.RemainUseTimes > 0)}，" : "") +
                             $"可出售数量：{objs.Count(i => i.IsSellable)}，可交易数量：{objs.Count(i => i.IsTradable)}）";
                         list.Add(str);
                     }
@@ -983,9 +1043,9 @@ namespace Oshima.FunGame.WebAPI.Controllers
         }
 
         [HttpPost("inventoryinfo5")]
-        public List<string> GetInventoryInfo5([FromQuery] long? qq = null, [FromQuery] int? page = null)
+        public List<string> GetInventoryInfo5([FromQuery] long? uid = null, [FromQuery] int? page = null)
         {
-            long userid = qq ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
+            long userid = uid ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
             int showPage = page ?? 1;
             if (showPage <= 0) showPage = 1;
 
@@ -1045,9 +1105,9 @@ namespace Oshima.FunGame.WebAPI.Controllers
         }
 
         [HttpPost("newcustomcharacter")]
-        public string NewCustomCharacter([FromQuery] long? qq = null)
+        public string NewCustomCharacter([FromQuery] long? uid = null)
         {
-            long userid = qq ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
+            long userid = uid ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
 
             PluginConfig pc = new("saved", userid.ToString());
             pc.LoadConfig();
@@ -1055,13 +1115,13 @@ namespace Oshima.FunGame.WebAPI.Controllers
             if (pc.Count > 0)
             {
                 User user = FunGameService.GetUser(pc);
-                if (user.Inventory.Characters.Any(c => c.Id == user.Id))
+                if (user.Inventory.Characters.Any(c => c.Id == FunGameConstant.CustomCharacterId))
                 {
                     return NetworkUtility.JsonSerialize($"你已经拥有一个自建角色【{user.Username}】，无法再创建！");
                 }
                 else
                 {
-                    user.Inventory.Characters.Add(new CustomCharacter(userid, user.Username));
+                    user.Inventory.Characters.Add(new CustomCharacter(FunGameConstant.CustomCharacterId, user.Username));
                     user.LastTime = DateTime.Now;
                     pc.Add("user", user);
                     pc.SaveConfig();
@@ -1075,9 +1135,9 @@ namespace Oshima.FunGame.WebAPI.Controllers
         }
         
         [HttpPost("drawcard")]
-        public string DrawCard([FromQuery] long? qq = null)
+        public string DrawCard([FromQuery] long? uid = null)
         {
-            long userid = qq ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
+            long userid = uid ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
 
             PluginConfig pc = new("saved", userid.ToString());
             pc.LoadConfig();
@@ -1118,9 +1178,9 @@ namespace Oshima.FunGame.WebAPI.Controllers
         }
 
         [HttpPost("drawcards")]
-        public List<string> DrawCards([FromQuery] long? qq = null)
+        public List<string> DrawCards([FromQuery] long? uid = null)
         {
-            long userid = qq ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
+            long userid = uid ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
 
             PluginConfig pc = new("saved", userid.ToString());
             pc.LoadConfig();
@@ -1166,9 +1226,9 @@ namespace Oshima.FunGame.WebAPI.Controllers
         }
 
         [HttpPost("drawcardm")]
-        public string DrawCard_Material([FromQuery] long? qq = null)
+        public string DrawCard_Material([FromQuery] long? uid = null)
         {
-            long userid = qq ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
+            long userid = uid ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
 
             PluginConfig pc = new("saved", userid.ToString());
             pc.LoadConfig();
@@ -1209,9 +1269,9 @@ namespace Oshima.FunGame.WebAPI.Controllers
         }
 
         [HttpPost("drawcardsm")]
-        public List<string> DrawCards_Material([FromQuery] long? qq = null)
+        public List<string> DrawCards_Material([FromQuery] long? uid = null)
         {
-            long userid = qq ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
+            long userid = uid ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
 
             PluginConfig pc = new("saved", userid.ToString());
             pc.LoadConfig();
@@ -1257,9 +1317,9 @@ namespace Oshima.FunGame.WebAPI.Controllers
         }
 
         [HttpPost("exchangecredits")]
-        public string ExchangeCredits([FromQuery] long? qq = null, [FromQuery] double? materials = null)
+        public string ExchangeCredits([FromQuery] long? uid = null, [FromQuery] double? materials = null)
         {
-            long userid = qq ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
+            long userid = uid ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
             double useMaterials = materials ?? 0;
 
             PluginConfig pc = new("saved", userid.ToString());
@@ -1293,11 +1353,11 @@ namespace Oshima.FunGame.WebAPI.Controllers
         }
 
         [HttpPost("showcharacterinfo")]
-        public string GetCharacterInfoFromInventory([FromQuery] long? qq = null, [FromQuery] int? seq = null, [FromQuery] bool? simple = null)
+        public string GetCharacterInfoFromInventory([FromQuery] long? uid = null, [FromQuery] int? seq = null, [FromQuery] bool? simple = null)
         {
             try
             {
-                long userid = qq ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
+                long userid = uid ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
                 int cIndex = seq ?? 0;
                 bool isSimple = simple ?? false;
 
@@ -1345,11 +1405,11 @@ namespace Oshima.FunGame.WebAPI.Controllers
         }
         
         [HttpPost("showcharacterskills")]
-        public string GetCharacterSkills([FromQuery] long? qq = null, [FromQuery] int? seq = null)
+        public string GetCharacterSkills([FromQuery] long? uid = null, [FromQuery] int? seq = null)
         {
             try
             {
-                long userid = qq ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
+                long userid = uid ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
                 int cIndex = seq ?? 0;
 
                 PluginConfig pc = new("saved", userid.ToString());
@@ -1388,11 +1448,11 @@ namespace Oshima.FunGame.WebAPI.Controllers
         }
         
         [HttpPost("showcharacteritems")]
-        public string GetCharacterItems([FromQuery] long? qq = null, [FromQuery] int? seq = null)
+        public string GetCharacterItems([FromQuery] long? uid = null, [FromQuery] int? seq = null)
         {
             try
             {
-                long userid = qq ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
+                long userid = uid ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
                 int cIndex = seq ?? 0;
 
                 PluginConfig pc = new("saved", userid.ToString());
@@ -1431,11 +1491,11 @@ namespace Oshima.FunGame.WebAPI.Controllers
         }
 
         [HttpPost("showiteminfo")]
-        public string GetItemInfoFromInventory([FromQuery] long? qq = null, [FromQuery] int? seq = null)
+        public string GetItemInfoFromInventory([FromQuery] long? uid = null, [FromQuery] int? seq = null)
         {
             try
             {
-                long userid = qq ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
+                long userid = uid ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
                 int itemIndex = seq ?? 0;
 
                 PluginConfig pc = new("saved", userid.ToString());
@@ -1467,11 +1527,11 @@ namespace Oshima.FunGame.WebAPI.Controllers
         }
         
         [HttpPost("equipitem")]
-        public string EquipItem([FromQuery] long? qq = null, [FromQuery] int? c = null, [FromQuery] int? i = null)
+        public string EquipItem([FromQuery] long? uid = null, [FromQuery] int? c = null, [FromQuery] int? i = null)
         {
             try
             {
-                long userid = qq ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
+                long userid = uid ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
                 int characterIndex = c ?? 0;
                 int itemIndex = i ?? 0;
 
@@ -1533,11 +1593,11 @@ namespace Oshima.FunGame.WebAPI.Controllers
         }
         
         [HttpPost("unequipitem")]
-        public string UnEquipItem([FromQuery] long? qq = null, [FromQuery] int? c = null, [FromQuery] int? i = null)
+        public string UnEquipItem([FromQuery] long? uid = null, [FromQuery] int? c = null, [FromQuery] int? i = null)
         {
             try
             {
-                long userid = qq ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
+                long userid = uid ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
                 int characterIndex = c ?? 0;
                 EquipSlotType type = (EquipSlotType)(i ?? 0);
 
@@ -1580,11 +1640,11 @@ namespace Oshima.FunGame.WebAPI.Controllers
         }
 
         [HttpPost("fightcustom")]
-        public List<string> FightCustom([FromQuery] long? qq = null, [FromQuery] long? eqq = null, [FromQuery] bool? all = null)
+        public List<string> FightCustom([FromQuery] long? uid = null, [FromQuery] long? eqq = null, [FromQuery] bool? all = null)
         {
             try
             {
-                long userid = qq ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
+                long userid = uid ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
                 long enemyid = eqq ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
                 bool showAllRound = all ?? false;
 
@@ -1638,18 +1698,18 @@ namespace Oshima.FunGame.WebAPI.Controllers
         }
         
         [HttpPost("fightcustom2")]
-        public List<string> FightCustom2([FromQuery] long? qq = null, [FromQuery] string? name = null, [FromQuery] bool? all = null)
+        public List<string> FightCustom2([FromQuery] long? uid = null, [FromQuery] string? name = null, [FromQuery] bool? all = null)
         {
             try
             {
                 if (name != null)
                 {
-                    long enemyid = FunGameService.UserIdAndUsername.Where(kv => kv.Value.Username == name).Select(kv => kv.Key).FirstOrDefault();
+                    long enemyid = FunGameConstant.UserIdAndUsername.Where(kv => kv.Value.Username == name).Select(kv => kv.Key).FirstOrDefault();
                     if (enemyid == 0)
                     {
-                        return [$"找不到此名称对应的玩家！"];
+                        return [$"找不到此昵称对应的玩家！"];
                     }
-                    return FightCustom(qq, enemyid, all);
+                    return FightCustom(uid, enemyid, all);
                 }
                 return [$"决斗发起失败！"];
             }
@@ -1660,11 +1720,11 @@ namespace Oshima.FunGame.WebAPI.Controllers
         }
 
         [HttpPost("fightcustomteam")]
-        public List<string> FightCustomTeam([FromQuery] long? qq = null, [FromQuery] long? eqq = null, [FromQuery] bool? all = null)
+        public List<string> FightCustomTeam([FromQuery] long? uid = null, [FromQuery] long? eqq = null, [FromQuery] bool? all = null)
         {
             try
             {
-                long userid = qq ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
+                long userid = uid ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
                 long enemyid = eqq ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
                 bool showAllRound = all ?? false;
 
@@ -1736,18 +1796,18 @@ namespace Oshima.FunGame.WebAPI.Controllers
         }
 
         [HttpPost("fightcustomteam2")]
-        public List<string> FightCustomTeam2([FromQuery] long? qq = null, [FromQuery] string? name = null, [FromQuery] bool? all = null)
+        public List<string> FightCustomTeam2([FromQuery] long? uid = null, [FromQuery] string? name = null, [FromQuery] bool? all = null)
         {
             try
             {
                 if (name != null)
                 {
-                    long enemyid = FunGameService.UserIdAndUsername.Where(kv => kv.Value.Username == name).Select(kv => kv.Key).FirstOrDefault();
+                    long enemyid = FunGameConstant.UserIdAndUsername.Where(kv => kv.Value.Username == name).Select(kv => kv.Key).FirstOrDefault();
                     if (enemyid == 0)
                     {
-                        return [$"找不到此名称对应的玩家！"];
+                        return [$"找不到此昵称对应的玩家！"];
                     }
-                    return FightCustomTeam(qq, enemyid, all);
+                    return FightCustomTeam(uid, enemyid, all);
                 }
                 return [$"决斗发起失败！"];
             }
@@ -1758,11 +1818,11 @@ namespace Oshima.FunGame.WebAPI.Controllers
         }
 
         [HttpPost("useitem")]
-        public string UseItem([FromQuery] long? qq = null, [FromQuery] int? id = null, [FromBody] int[]? characters = null)
+        public string UseItem([FromQuery] long? uid = null, [FromQuery] int? id = null, [FromBody] int[]? characters = null)
         {
             try
             {
-                long userid = qq ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
+                long userid = uid ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
                 int itemIndex = id ?? 0;
                 List<int> charactersIndex = characters?.ToList() ?? [];
 
@@ -1778,7 +1838,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
                     if (itemIndex > 0 && itemIndex <= user.Inventory.Items.Count)
                     {
                         item = user.Inventory.Items.ToList()[itemIndex - 1];
-                        if (FunGameService.ItemCanUsed.Contains(item.ItemType))
+                        if (FunGameConstant.ItemCanUsed.Contains(item.ItemType))
                         {
                             if (item.RemainUseTimes <= 0)
                             {
@@ -1825,11 +1885,11 @@ namespace Oshima.FunGame.WebAPI.Controllers
         }
         
         [HttpPost("useitem2")]
-        public string UseItem2([FromQuery] long? qq = null, [FromQuery] string? name = null, [FromQuery] int? count = null, [FromBody] int[]? characters = null)
+        public string UseItem2([FromQuery] long? uid = null, [FromQuery] string? name = null, [FromQuery] int? count = null, [FromBody] int[]? characters = null)
         {
             try
             {
-                long userid = qq ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
+                long userid = uid ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
                 string itemName = name ?? "";
                 int useCount = count ?? 0;
                 List<int> charactersIndex = characters?.ToList() ?? [];
@@ -1893,11 +1953,11 @@ namespace Oshima.FunGame.WebAPI.Controllers
         }
 
         [HttpPost("useitem3")]
-        public string UseItem3([FromQuery] long? qq = null, [FromQuery] int? id = null, [FromQuery] int? id2 = null, [FromQuery] bool? c = null)
+        public string UseItem3([FromQuery] long? uid = null, [FromQuery] int? id = null, [FromQuery] int? id2 = null, [FromQuery] bool? c = null)
         {
             try
             {
-                long userid = qq ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
+                long userid = uid ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
                 int itemIndex = id ?? 0;
                 int itemToIndex = id2 ?? 0;
                 bool isCharacter = c ?? false;
@@ -1996,11 +2056,11 @@ namespace Oshima.FunGame.WebAPI.Controllers
         }
 
         [HttpPost("characterlevelup")]
-        public string CharacterLevelUp([FromQuery] long? qq = null, [FromQuery] int? c = null, [FromQuery] int? count = null)
+        public string CharacterLevelUp([FromQuery] long? uid = null, [FromQuery] int? c = null, [FromQuery] int? count = null)
         {
             try
             {
-                long userid = qq ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
+                long userid = uid ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
                 int characterIndex = c ?? 0;
                 int upCount = count ?? 0;
 
@@ -2065,9 +2125,9 @@ namespace Oshima.FunGame.WebAPI.Controllers
         }
 
         [HttpPost("getlevelbreakneedy")]
-        public string GetLevelBreakNeedy([FromQuery] long? qq = null, [FromQuery] int? id = null)
+        public string GetLevelBreakNeedy([FromQuery] long? uid = null, [FromQuery] int? id = null)
         {
-            long userid = qq ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
+            long userid = uid ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
             int characterIndex = id ?? 0;
 
             PluginConfig pc = new("saved", userid.ToString());
@@ -2101,11 +2161,11 @@ namespace Oshima.FunGame.WebAPI.Controllers
         }
 
         [HttpPost("characterlevelbreak")]
-        public string CharacterLevelBreak([FromQuery] long? qq = null, [FromQuery] int? c = null)
+        public string CharacterLevelBreak([FromQuery] long? uid = null, [FromQuery] int? c = null)
         {
             try
             {
-                long userid = qq ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
+                long userid = uid ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
                 int characterIndex = c ?? 0;
 
                 PluginConfig pc = new("saved", userid.ToString());
@@ -2132,7 +2192,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
 
                     int originalBreak = character.LevelBreak;
 
-                    if (FunGameService.LevelBreakNeedyList.TryGetValue(originalBreak + 1, out Dictionary<string, int>? needy) && needy != null && needy.Count > 0)
+                    if (FunGameConstant.LevelBreakNeedyList.TryGetValue(originalBreak + 1, out Dictionary<string, int>? needy) && needy != null && needy.Count > 0)
                     {
                         foreach (string key in needy.Keys)
                         {
@@ -2200,9 +2260,9 @@ namespace Oshima.FunGame.WebAPI.Controllers
         }
 
         [HttpPost("createitem")]
-        public string CreateItem([FromQuery] long? qq = null, [FromQuery] string? name = null, [FromQuery] int? count = null, [FromQuery] long? target = null)
+        public string CreateItem([FromQuery] long? uid = null, [FromQuery] string? name = null, [FromQuery] int? count = null, [FromQuery] long? target = null)
         {
-            long userid = qq ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
+            long userid = uid ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
             string itemName = name ?? "";
             int itemCount = count ?? 0;
             long targetid = target ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
@@ -2271,7 +2331,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
                                 }
                             }
                         }
-                        else if (FunGameService.AllItems.FirstOrDefault(i => i.Name == itemName) is Item item)
+                        else if (FunGameConstant.AllItems.FirstOrDefault(i => i.Name == itemName) is Item item)
                         {
                             for (int i = 0; i < itemCount; i++)
                             {
@@ -2307,11 +2367,11 @@ namespace Oshima.FunGame.WebAPI.Controllers
         }
 
         [HttpPost("decomposeitem")]
-        public string DecomposeItem([FromQuery] long? qq = null, [FromBody] int[]? items = null)
+        public string DecomposeItem([FromQuery] long? uid = null, [FromBody] int[]? items = null)
         {
             try
             {
-                long userid = qq ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
+                long userid = uid ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
                 int[] ids = items ?? [];
 
                 PluginConfig pc = new("saved", userid.ToString());
@@ -2336,12 +2396,12 @@ namespace Oshima.FunGame.WebAPI.Controllers
                         {
                             double gained = item.QualityType switch
                             {
-                                QualityType.Gold => 80,
-                                QualityType.Red => 55,
-                                QualityType.Orange => 35,
-                                QualityType.Purple => 20,
-                                QualityType.Blue => 10,
-                                QualityType.Green => 4,
+                                QualityType.Gold => 28,
+                                QualityType.Red => 21,
+                                QualityType.Orange => 15,
+                                QualityType.Purple => 10,
+                                QualityType.Blue => 6,
+                                QualityType.Green => 3,
                                 _ => 1
                             };
                             totalGained += gained;
@@ -2370,11 +2430,11 @@ namespace Oshima.FunGame.WebAPI.Controllers
         }
 
         [HttpPost("decomposeitem2")]
-        public string DecomposeItem2([FromQuery] long? qq = null, [FromQuery] string? name = null, [FromQuery] int? count = null)
+        public string DecomposeItem2([FromQuery] long? uid = null, [FromQuery] string? name = null, [FromQuery] int? count = null)
         {
             try
             {
-                long userid = qq ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
+                long userid = uid ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
                 string itemName = name ?? "";
                 int useCount = count ?? 0;
 
@@ -2404,12 +2464,12 @@ namespace Oshima.FunGame.WebAPI.Controllers
                             {
                                 double gained = item.QualityType switch
                                 {
-                                    QualityType.Gold => 80,
-                                    QualityType.Red => 55,
-                                    QualityType.Orange => 35,
-                                    QualityType.Purple => 20,
-                                    QualityType.Blue => 10,
-                                    QualityType.Green => 4,
+                                    QualityType.Gold => 28,
+                                    QualityType.Red => 21,
+                                    QualityType.Orange => 15,
+                                    QualityType.Purple => 10,
+                                    QualityType.Blue => 6,
+                                    QualityType.Green => 3,
                                     _ => 1
                                 };
                                 totalGained += gained;
@@ -2442,11 +2502,11 @@ namespace Oshima.FunGame.WebAPI.Controllers
         }
         
         [HttpPost("decomposeitem3")]
-        public string DecomposeItem3([FromQuery] long? qq = null, [FromQuery] int? q = null)
+        public string DecomposeItem3([FromQuery] long? uid = null, [FromQuery] int? q = null)
         {
             try
             {
-                long userid = qq ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
+                long userid = uid ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
                 int qType = q ?? 0;
 
                 if (qType < 0 || qType > (int)QualityType.Gold)
@@ -2472,12 +2532,12 @@ namespace Oshima.FunGame.WebAPI.Controllers
                     int successCount = 0;
                     double gained = items.First().QualityType switch
                     {
-                        QualityType.Gold => 80,
-                        QualityType.Red => 55,
-                        QualityType.Orange => 35,
-                        QualityType.Purple => 20,
-                        QualityType.Blue => 10,
-                        QualityType.Green => 4,
+                        QualityType.Gold => 28,
+                        QualityType.Red => 21,
+                        QualityType.Orange => 15,
+                        QualityType.Purple => 10,
+                        QualityType.Blue => 6,
+                        QualityType.Green => 3,
                         _ => 1
                     };
 
@@ -2512,11 +2572,11 @@ namespace Oshima.FunGame.WebAPI.Controllers
         }
 
         [HttpPost("conflatemagiccardpack")]
-        public string ConflateMagicCardPack([FromQuery] long? qq = null, [FromBody] int[]? items = null)
+        public string ConflateMagicCardPack([FromQuery] long? uid = null, [FromBody] int[]? items = null)
         {
             try
             {
-                long userid = qq ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
+                long userid = uid ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
                 List<int> itemsIndex = items?.ToList() ?? [];
 
                 PluginConfig pc = new("saved", userid.ToString());
@@ -2585,11 +2645,11 @@ namespace Oshima.FunGame.WebAPI.Controllers
         }
 
         [HttpPost("setmain")]
-        public string SetMain([FromQuery] long? qq = null, [FromQuery] int? c = null)
+        public string SetMain([FromQuery] long? uid = null, [FromQuery] int? c = null)
         {
             try
             {
-                long userid = qq ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
+                long userid = uid ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
                 int characterIndex = c ?? 0;
 
                 PluginConfig pc = new("saved", userid.ToString());
@@ -2627,11 +2687,11 @@ namespace Oshima.FunGame.WebAPI.Controllers
         }
         
         [HttpPost("starttraining")]
-        public string StartTraining([FromQuery] long? qq = null, [FromQuery] int? c = null)
+        public string StartTraining([FromQuery] long? uid = null, [FromQuery] int? c = null)
         {
             try
             {
-                long userid = qq ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
+                long userid = uid ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
                 int characterIndex = c ?? 0;
 
                 PluginConfig pc = new("saved", userid.ToString());
@@ -2674,11 +2734,11 @@ namespace Oshima.FunGame.WebAPI.Controllers
         }
         
         [HttpPost("stoptraining")]
-        public string StopTraining([FromQuery] long? qq = null)
+        public string StopTraining([FromQuery] long? uid = null)
         {
             try
             {
-                long userid = qq ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
+                long userid = uid ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
 
                 PluginConfig pc = new("saved", userid.ToString());
                 pc.LoadConfig();
@@ -2748,11 +2808,11 @@ namespace Oshima.FunGame.WebAPI.Controllers
         }
         
         [HttpPost("gettraininginfo")]
-        public string GetTrainingInfo([FromQuery] long? qq = null)
+        public string GetTrainingInfo([FromQuery] long? uid = null)
         {
             try
             {
-                long userid = qq ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
+                long userid = uid ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
 
                 PluginConfig pc = new("saved", userid.ToString());
                 pc.LoadConfig();
@@ -2794,9 +2854,9 @@ namespace Oshima.FunGame.WebAPI.Controllers
         }
 
         [HttpPost("getskilllevelupneedy")]
-        public string GetSkillLevelUpNeedy([FromQuery] long? qq = null, [FromQuery] int? c = null, [FromQuery] string? s = null)
+        public string GetSkillLevelUpNeedy([FromQuery] long? uid = null, [FromQuery] int? c = null, [FromQuery] string? s = null)
         {
-            long userid = qq ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
+            long userid = uid ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
             int characterIndex = c ?? 0;
             string skillName = s ?? "";
 
@@ -2842,11 +2902,11 @@ namespace Oshima.FunGame.WebAPI.Controllers
         }
         
         [HttpPost("skilllevelup")]
-        public string SkillLevelUp([FromQuery] long? qq = null, [FromQuery] int? c = null, [FromQuery] string? s = null)
+        public string SkillLevelUp([FromQuery] long? uid = null, [FromQuery] int? c = null, [FromQuery] string? s = null)
         {
             try
             {
-                long userid = qq ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
+                long userid = uid ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
                 int characterIndex = c ?? 0;
                 string skillName = s ?? "";
 
@@ -2878,7 +2938,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
                                 return NetworkUtility.JsonSerialize($"此技能【{skill.Name}】已经升至满级！");
                             }
 
-                            if (FunGameService.SkillLevelUpList.TryGetValue(skill.Level + 1, out Dictionary<string, int>? needy) && needy != null && needy.Count > 0)
+                            if (FunGameConstant.SkillLevelUpList.TryGetValue(skill.Level + 1, out Dictionary<string, int>? needy) && needy != null && needy.Count > 0)
                             {
                                 foreach (string key in needy.Keys)
                                 {
@@ -2983,9 +3043,9 @@ namespace Oshima.FunGame.WebAPI.Controllers
         }
 
         [HttpPost("getnormalattacklevelupneedy")]
-        public string GetNormalAttackLevelUpNeedy([FromQuery] long? qq = null, [FromQuery] int? c = null)
+        public string GetNormalAttackLevelUpNeedy([FromQuery] long? uid = null, [FromQuery] int? c = null)
         {
-            long userid = qq ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
+            long userid = uid ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
             int characterIndex = c ?? 0;
 
             PluginConfig pc = new("saved", userid.ToString());
@@ -3020,11 +3080,11 @@ namespace Oshima.FunGame.WebAPI.Controllers
         }
 
         [HttpPost("normalattacklevelup")]
-        public string NormalAttackLevelUp([FromQuery] long? qq = null, [FromQuery] int? c = null)
+        public string NormalAttackLevelUp([FromQuery] long? uid = null, [FromQuery] int? c = null)
         {
             try
             {
-                long userid = qq ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
+                long userid = uid ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
                 int characterIndex = c ?? 0;
 
                 PluginConfig pc = new("saved", userid.ToString());
@@ -3050,7 +3110,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
                         return NetworkUtility.JsonSerialize($"角色 [ {character} ] 的【{na.Name}】已经升至满级！");
                     }
 
-                    if (FunGameService.NormalAttackLevelUpList.TryGetValue(na.Level + 1, out Dictionary<string, int>? needy) && needy != null && needy.Count > 0)
+                    if (FunGameConstant.NormalAttackLevelUpList.TryGetValue(na.Level + 1, out Dictionary<string, int>? needy) && needy != null && needy.Count > 0)
                     {
                         foreach (string key in needy.Keys)
                         {
@@ -3179,9 +3239,9 @@ namespace Oshima.FunGame.WebAPI.Controllers
         }
         
         [HttpPost("fightboss")]
-        public List<string> FightBoss([FromQuery] long? qq = null, [FromQuery] int? index = null, [FromQuery] bool? all = null)
+        public List<string> FightBoss([FromQuery] long? uid = null, [FromQuery] int? index = null, [FromQuery] bool? all = null)
         {
-            long userid = qq ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
+            long userid = uid ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
             int bossIndex = index ?? 0;
             bool showAllRound = all ?? false;
 
@@ -3199,7 +3259,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
                         return [$"主战角色重伤未愈，当前生命值低于 10%，请先等待生命值自动回复或设置其他主战角色！"];
                     }
 
-                    Character boss2 = CharacterBuilder.Build(boss, false, true, null, FunGameService.AllItems, FunGameService.AllSkills, false);
+                    Character boss2 = CharacterBuilder.Build(boss, false, true, null, FunGameConstant.AllItems, FunGameConstant.AllSkills, false);
                     List<string> msgs = FunGameActionQueue.NewAndStartGame([user.Inventory.MainCharacter, boss2], false, false, false, false, showAllRound);
 
                     if (boss2.HP <= 0)
@@ -3234,11 +3294,11 @@ namespace Oshima.FunGame.WebAPI.Controllers
         }
 
         [HttpPost("addsquad")]
-        public string AddSquad([FromQuery] long? qq = null, [FromQuery] int? c = null)
+        public string AddSquad([FromQuery] long? uid = null, [FromQuery] int? c = null)
         {
             try
             {
-                long userid = qq ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
+                long userid = uid ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
                 int characterIndex = c ?? 0;
 
                 PluginConfig pc = new("saved", userid.ToString());
@@ -3288,11 +3348,11 @@ namespace Oshima.FunGame.WebAPI.Controllers
         }
         
         [HttpPost("removesquad")]
-        public string RemoveSquad([FromQuery] long? qq = null, [FromQuery] int? c = null)
+        public string RemoveSquad([FromQuery] long? uid = null, [FromQuery] int? c = null)
         {
             try
             {
-                long userid = qq ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
+                long userid = uid ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
                 int characterIndex = c ?? 0;
 
                 PluginConfig pc = new("saved", userid.ToString());
@@ -3336,11 +3396,11 @@ namespace Oshima.FunGame.WebAPI.Controllers
         }
 
         [HttpPost("setsquad")]
-        public string SetSquad([FromQuery] long? qq = null, [FromBody] int[]? c = null)
+        public string SetSquad([FromQuery] long? uid = null, [FromBody] int[]? c = null)
         {
             try
             {
-                long userid = qq ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
+                long userid = uid ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
                 int[] characterIndexs = c ?? [];
 
                 PluginConfig pc = new("saved", userid.ToString());
@@ -3383,11 +3443,11 @@ namespace Oshima.FunGame.WebAPI.Controllers
         }
         
         [HttpPost("clearsquad")]
-        public string ClearSquad([FromQuery] long? qq = null, [FromBody] int[]? c = null)
+        public string ClearSquad([FromQuery] long? uid = null, [FromBody] int[]? c = null)
         {
             try
             {
-                long userid = qq ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
+                long userid = uid ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
                 int[] characterIndexs = c ?? [];
 
                 PluginConfig pc = new("saved", userid.ToString());
@@ -3415,11 +3475,11 @@ namespace Oshima.FunGame.WebAPI.Controllers
         }
         
         [HttpPost("showsquad")]
-        public string ShowSquad([FromQuery] long? qq = null)
+        public string ShowSquad([FromQuery] long? uid = null)
         {
             try
             {
-                long userid = qq ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
+                long userid = uid ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
 
                 PluginConfig pc = new("saved", userid.ToString());
                 pc.LoadConfig();
@@ -3442,9 +3502,9 @@ namespace Oshima.FunGame.WebAPI.Controllers
         }
 
         [HttpPost("fightbossteam")]
-        public List<string> FightBossTeam([FromQuery] long? qq = null, [FromQuery] int? index = null, [FromQuery] bool? all = null)
+        public List<string> FightBossTeam([FromQuery] long? uid = null, [FromQuery] int? index = null, [FromQuery] bool? all = null)
         {
-            long userid = qq ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
+            long userid = uid ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
             int bossIndex = index ?? 0;
             bool showAllRound = all ?? false;
 
@@ -3466,7 +3526,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
                             string.Join("\r\n", user.Inventory.Characters.Where(c => user.Inventory.Squad.Contains(c.Id)))];
                     }
 
-                    Character boss2 = CharacterBuilder.Build(boss, false, true, null, FunGameService.AllItems, FunGameService.AllSkills, false);
+                    Character boss2 = CharacterBuilder.Build(boss, false, true, null, FunGameConstant.AllItems, FunGameConstant.AllSkills, false);
                     Team team1 = new($"{user.Username}的小队", squad);
                     Team team2 = new($"Boss", [boss2]);
                     List<string> msgs = FunGameActionQueue.NewAndStartTeamGame([team1, team2], showAllRound: showAllRound);
@@ -3503,9 +3563,9 @@ namespace Oshima.FunGame.WebAPI.Controllers
         }
 
         [HttpPost("checkquestlist")]
-        public string CheckQuestList([FromQuery] long? qq = null)
+        public string CheckQuestList([FromQuery] long? uid = null)
         {
-            long userid = qq ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
+            long userid = uid ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
 
             PluginConfig pc = new("saved", userid.ToString());
             pc.LoadConfig();
@@ -3532,9 +3592,9 @@ namespace Oshima.FunGame.WebAPI.Controllers
         }
         
         [HttpPost("checkworkingquest")]
-        public string CheckWorkingQuest([FromQuery] long? qq = null)
+        public string CheckWorkingQuest([FromQuery] long? uid = null)
         {
-            long userid = qq ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
+            long userid = uid ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
 
             PluginConfig pc = new("saved", userid.ToString());
             pc.LoadConfig();
@@ -3569,9 +3629,9 @@ namespace Oshima.FunGame.WebAPI.Controllers
         }
         
         [HttpPost("acceptquest")]
-        public string AcceptQuest([FromQuery] long? qq = null, [FromQuery] int? id = null)
+        public string AcceptQuest([FromQuery] long? uid = null, [FromQuery] int? id = null)
         {
-            long userid = qq ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
+            long userid = uid ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
             int questid = id ?? 0;
 
             PluginConfig pc = new("saved", userid.ToString());
@@ -3627,9 +3687,9 @@ namespace Oshima.FunGame.WebAPI.Controllers
         }
 
         [HttpPost("settlequest")]
-        public string SettleQuest([FromQuery] long? qq = null)
+        public string SettleQuest([FromQuery] long? uid = null)
         {
-            long userid = qq ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
+            long userid = uid ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
 
             PluginConfig pc = new("saved", userid.ToString());
             pc.LoadConfig();
@@ -3657,9 +3717,9 @@ namespace Oshima.FunGame.WebAPI.Controllers
         }
         
         [HttpPost("showmaincharacterorsquadstatus")]
-        public string ShowMainCharacterOrSquadStatus([FromQuery] long? qq = null, [FromQuery] bool? squad = null)
+        public string ShowMainCharacterOrSquadStatus([FromQuery] long? uid = null, [FromQuery] bool? squad = null)
         {
-            long userid = qq ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
+            long userid = uid ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
             bool showSquad = squad ?? false; 
 
             PluginConfig pc = new("saved", userid.ToString());
@@ -3693,9 +3753,9 @@ namespace Oshima.FunGame.WebAPI.Controllers
         }
 
         [HttpPost("signin")]
-        public string SignIn([FromQuery] long? qq = null)
+        public string SignIn([FromQuery] long? uid = null)
         {
-            long userid = qq ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
+            long userid = uid ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
 
             PluginConfig pc = new("saved", userid.ToString());
             pc.LoadConfig();
@@ -3743,9 +3803,9 @@ namespace Oshima.FunGame.WebAPI.Controllers
         }
         
         [HttpPost("joinclub")]
-        public string JoinClub([FromQuery] long? qq = null, [FromQuery] long? id = null)
+        public string JoinClub([FromQuery] long? uid = null, [FromQuery] long? id = null)
         {
-            long userid = qq ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
+            long userid = uid ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
             long clubid = id ?? 0;
 
             PluginConfig pc = new("saved", userid.ToString());
@@ -3802,9 +3862,9 @@ namespace Oshima.FunGame.WebAPI.Controllers
         }
         
         [HttpPost("quitclub")]
-        public string QuitClub([FromQuery] long? qq = null)
+        public string QuitClub([FromQuery] long? uid = null)
         {
-            long userid = qq ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
+            long userid = uid ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
 
             PluginConfig pc = new("saved", userid.ToString());
             pc.LoadConfig();
@@ -3859,9 +3919,9 @@ namespace Oshima.FunGame.WebAPI.Controllers
         }
         
         [HttpPost("createclub")]
-        public string CreateClub([FromQuery] long? qq = null, [FromQuery] bool? @public = null, [FromQuery] string? prefix = null)
+        public string CreateClub([FromQuery] long? uid = null, [FromQuery] bool? @public = null, [FromQuery] string? prefix = null)
         {
-            long userid = qq ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
+            long userid = uid ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
             bool isPublic = @public ?? false;
             string clubPrefix = prefix ?? "";
 
@@ -3936,9 +3996,9 @@ namespace Oshima.FunGame.WebAPI.Controllers
         }
         
         [HttpPost("showclubinfo")]
-        public string ShowClubInfo([FromQuery] long? qq = null)
+        public string ShowClubInfo([FromQuery] long? uid = null)
         {
-            long userid = qq ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
+            long userid = uid ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
 
             PluginConfig pc = new("saved", userid.ToString());
             pc.LoadConfig();
@@ -3959,7 +4019,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
                 if (club != null)
                 {
                     string master = "无";
-                    if (FunGameService.UserIdAndUsername.TryGetValue(club.Master?.Id ?? 0, out User? user2) && user2 != null)
+                    if (FunGameConstant.UserIdAndUsername.TryGetValue(club.Master?.Id ?? 0, out User? user2) && user2 != null)
                     {
                         master = user2.Username;
                     }
@@ -3998,9 +4058,9 @@ namespace Oshima.FunGame.WebAPI.Controllers
         }
         
         [HttpPost("showclubmemberlist")]
-        public string ShowClubMemberList([FromQuery] long? qq = null, [FromQuery] int? type = null)
+        public string ShowClubMemberList([FromQuery] long? uid = null, [FromQuery] int? type = null)
         {
-            long userid = qq ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
+            long userid = uid ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
             int showType = type ?? 0;
 
             PluginConfig pc = new("saved", userid.ToString());
@@ -4033,9 +4093,9 @@ namespace Oshima.FunGame.WebAPI.Controllers
                             {
                                 admins.Add(club.Master.Id);
                             }
-                            foreach (long uid in admins)
+                            foreach (long uid2 in admins)
                             {
-                                if (FunGameService.UserIdAndUsername.TryGetValue(uid, out User? user2) && user2 != null)
+                                if (FunGameConstant.UserIdAndUsername.TryGetValue(uid2, out User? user2) && user2 != null)
                                 {
                                     builer.AppendLine($"{count}.");
                                     builer.AppendLine($"UID：{user2.Id}");
@@ -4050,9 +4110,9 @@ namespace Oshima.FunGame.WebAPI.Controllers
                             {
                                 builer.AppendLine($"☆--- 社团 [ {club.Name} ] 申请人列表 ---☆");
                                 count = 1;
-                                foreach (long uid in club.Applicants.Keys)
+                                foreach (long uid2 in club.Applicants.Keys)
                                 {
-                                    if (FunGameService.UserIdAndUsername.TryGetValue(uid, out User? user2) && user2 != null)
+                                    if (FunGameConstant.UserIdAndUsername.TryGetValue(uid2, out User? user2) && user2 != null)
                                     {
                                         builer.AppendLine($"{count}.");
                                         builer.AppendLine($"UID：{user2.Id}");
@@ -4071,9 +4131,9 @@ namespace Oshima.FunGame.WebAPI.Controllers
                         default:
                             builer.AppendLine($"☆--- 社团 [ {club.Name} ] 成员列表 ---☆");
                             count = 1;
-                            foreach (long uid in club.Members.Keys)
+                            foreach (long uid2 in club.Members.Keys)
                             {
-                                if (FunGameService.UserIdAndUsername.TryGetValue(uid, out User? user2) && user2 != null)
+                                if (FunGameConstant.UserIdAndUsername.TryGetValue(uid2, out User? user2) && user2 != null)
                                 {
                                     builer.AppendLine($"{count}.");
                                     builer.AppendLine($"UID：{user2.Id}");
@@ -4111,9 +4171,9 @@ namespace Oshima.FunGame.WebAPI.Controllers
         }
 
         [HttpPost("disbandclub")]
-        public string DisbandClub([FromQuery] long? qq = null)
+        public string DisbandClub([FromQuery] long? uid = null)
         {
-            long userid = qq ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
+            long userid = uid ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
 
             PluginConfig pc = new("saved", userid.ToString());
             pc.LoadConfig();
@@ -4188,9 +4248,9 @@ namespace Oshima.FunGame.WebAPI.Controllers
         }
 
         [HttpPost("approveclub")]
-        public string ApproveClub([FromQuery] long? qq = null, [FromQuery] long? id = null, [FromQuery] bool? approval = null)
+        public string ApproveClub([FromQuery] long? uid = null, [FromQuery] long? id = null, [FromQuery] bool? approval = null)
         {
-            long userid = qq ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
+            long userid = uid ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
             long applicant = id ?? 0;
             bool isApproval = approval ?? false;
 
@@ -4281,9 +4341,9 @@ namespace Oshima.FunGame.WebAPI.Controllers
         }
 
         [HttpPost("kickclub")]
-        public string KickClub([FromQuery] long? qq = null, [FromQuery] long? id = null)
+        public string KickClub([FromQuery] long? uid = null, [FromQuery] long? id = null)
         {
-            long userid = qq ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
+            long userid = uid ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
             long kickid = id ?? 0;
 
             PluginConfig pc = new("saved", userid.ToString());
@@ -4365,9 +4425,9 @@ namespace Oshima.FunGame.WebAPI.Controllers
         }
 
         [HttpPost("changeclub")]
-        public string ChangeClub([FromQuery] long? qq = null, [FromQuery] string? part = null, [FromBody] string[]? args = null)
+        public string ChangeClub([FromQuery] long? uid = null, [FromQuery] string? part = null, [FromBody] string[]? args = null)
         {
-            long userid = qq ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
+            long userid = uid ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
             string name = part?.Trim().ToLower() ?? "";
             string[] values = args ?? [];
 
@@ -4405,10 +4465,10 @@ namespace Oshima.FunGame.WebAPI.Controllers
                                 {
                                     if (values[0].Length >= 2 && values[0].Length <= 10)
                                     {
-                                        return NetworkUtility.JsonSerialize("社团名称只能包含2至15个字符！");
+                                        club.Name = values[0];
+                                        msg = "修改成功，新的社团名称是：" + club.Name;
                                     }
-                                    club.Name = values[0];
-                                    msg = "修改成功，新的社团名称是：" + club.Name;
+                                    else return NetworkUtility.JsonSerialize("社团名称只能包含2至15个字符！");
                                 }
                                 else
                                 {
@@ -4475,7 +4535,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
                                 {
                                     return NetworkUtility.JsonSerialize("只有社长可以设置社团管理员！");
                                 }
-                                if (values.Length > 0 && long.TryParse(values[0], out long id) && club.Members.ContainsKey(id) && FunGameService.UserIdAndUsername.TryGetValue(id, out User? user2) && user2 != null)
+                                if (values.Length > 0 && long.TryParse(values[0], out long id) && club.Members.ContainsKey(id) && FunGameConstant.UserIdAndUsername.TryGetValue(id, out User? user2) && user2 != null)
                                 {
                                     club.Admins[id] = user2;
                                     msg = $"将 [ {user2.Username} ] 设置为社团管理员成功！";
@@ -4490,7 +4550,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
                                 {
                                     return NetworkUtility.JsonSerialize("只有社长可以取消社团管理员！");
                                 }
-                                if (values.Length > 0 && long.TryParse(values[0], out id) && club.Members.ContainsKey(id) && FunGameService.UserIdAndUsername.TryGetValue(id, out user2) && user2 != null)
+                                if (values.Length > 0 && long.TryParse(values[0], out id) && club.Members.ContainsKey(id) && FunGameConstant.UserIdAndUsername.TryGetValue(id, out user2) && user2 != null)
                                 {
                                     if (club.Admins.Remove(id))
                                     {
@@ -4511,7 +4571,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
                                 {
                                     return NetworkUtility.JsonSerialize("只有社长可以转让社团！");
                                 }
-                                if (values.Length > 0 && long.TryParse(values[0], out id) && club.Members.ContainsKey(id) && FunGameService.UserIdAndUsername.TryGetValue(id, out user2) && user2 != null)
+                                if (values.Length > 0 && long.TryParse(values[0], out id) && club.Members.ContainsKey(id) && FunGameConstant.UserIdAndUsername.TryGetValue(id, out user2) && user2 != null)
                                 {
                                     club.Master = user2;
                                     club.Admins.Remove(user2.Id);
@@ -4552,9 +4612,9 @@ namespace Oshima.FunGame.WebAPI.Controllers
         }
 
         [HttpPost("showdailystore")]
-        public string ShowDailyStore([FromQuery] long? qq = null)
+        public string ShowDailyStore([FromQuery] long? uid = null)
         {
-            long userid = qq ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
+            long userid = uid ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
 
             PluginConfig pc = new("saved", userid.ToString());
             pc.LoadConfig();
@@ -4563,14 +4623,27 @@ namespace Oshima.FunGame.WebAPI.Controllers
             {
                 User user = FunGameService.GetUser(pc);
 
+                GeneralEventArgs e = new()
+                {
+                    EventMsg = $"{user.Username}正在访问每日商店"
+                };
+                FunGameService.ServerPluginLoader?.OnBeforeOpenStoreEvent(user, e);
+                if (e.Cancel)
+                {
+                    return NetworkUtility.JsonSerialize(refused + (e.EventMsg != "" ? $"原因：{e.EventMsg}" : ""));
+                }
+
                 EntityModuleConfig<Store> store = new("stores", userid.ToString());
                 store.LoadConfig();
-                string msg = FunGameService.CheckDailyStore(store);
+                string msg = FunGameService.CheckDailyStore(store, user);
                 store.SaveConfig();
 
                 user.LastTime = DateTime.Now;
                 pc.Add("user", user);
                 pc.SaveConfig();
+
+                e.EventMsg = $"{user.Username}访问每日商店成功";
+                FunGameService.ServerPluginLoader?.OnSucceedOpenStoreEvent(user, e);
 
                 return NetworkUtility.JsonSerialize(msg);
             }
@@ -4581,10 +4654,11 @@ namespace Oshima.FunGame.WebAPI.Controllers
         }
 
         [HttpPost("dailystorebuy")]
-        public string DailyStoreBuy([FromQuery] long? qq = null, [FromQuery] long? id = null)
+        public string DailyStoreBuy([FromQuery] long? uid = null, [FromQuery] long? id = null, [FromQuery] int? count = null)
         {
-            long userid = qq ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
+            long userid = uid ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
             long goodid = id ?? 0;
+            int buycount = count ?? 0;
 
             PluginConfig pc = new("saved", userid.ToString());
             pc.LoadConfig();
@@ -4602,56 +4676,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
                 {
                     if (daily.Goods.Values.FirstOrDefault(g => g.Id == goodid) is Goods good)
                     {
-                        if (good.Stock <= 0)
-                        {
-                            return NetworkUtility.JsonSerialize($"此商品【{good.Name}】库存不足，无法购买！");
-                        }
-
-                        foreach (string needy in good.Prices.Keys)
-                        {
-                            if (needy == General.GameplayEquilibriumConstant.InGameCurrency)
-                            {
-                                double reduce = good.Prices[needy];
-                                if (user.Inventory.Credits >= reduce)
-                                {
-                                    user.Inventory.Credits -= reduce;
-                                }
-                                else
-                                {
-                                    return NetworkUtility.JsonSerialize($"你的{General.GameplayEquilibriumConstant.InGameCurrency}不足 {reduce} 呢，无法购买【{good.Name}】！");
-                                }
-                            }
-                            else if (needy == General.GameplayEquilibriumConstant.InGameMaterial)
-                            {
-                                double reduce = good.Prices[needy];
-                                if (user.Inventory.Materials >= reduce)
-                                {
-                                    user.Inventory.Materials -= reduce;
-                                }
-                                else
-                                {
-                                    return NetworkUtility.JsonSerialize($"你的{General.GameplayEquilibriumConstant.InGameMaterial}不足 {reduce} 呢，无法购买【{good.Name}】！");
-                                }
-                            }
-                        }
-
-                        foreach (Item item in good.Items)
-                        {
-                            Item newItem = item.Copy();
-                            FunGameService.SetSellAndTradeTime(newItem);
-                            if (good.GetPrice(General.GameplayEquilibriumConstant.InGameCurrency, out double price))
-                            {
-                                newItem.Price = Calculation.Round2Digits(price * 0.35);
-                            }
-                            newItem.User = user;
-                            user.Inventory.Items.Add(newItem);
-                        }
-
-                        good.Stock--;
-
-                        msg += $"恭喜你成功购买【${good.Name}】！" +
-                            $"总计消费：{string.Join("、", good.Prices.Select(kv => $"{kv.Value} {kv.Key}"))}" +
-                            $"包含物品：{string.Join("、", good.Items.Select(i => $"[{ItemSet.GetQualityTypeName(i.QualityType)}|{ItemSet.GetItemTypeName(i.ItemType)}] {i.Name}"))}";
+                        msg = FunGameService.StoreBuyItem(daily, good, user, buycount);
                     }
                     else
                     {
@@ -4678,9 +4703,9 @@ namespace Oshima.FunGame.WebAPI.Controllers
         }
         
         [HttpPost("dailystoreshowinfo")]
-        public string DailyStoreShowInfo([FromQuery] long? qq = null, [FromQuery] long? id = null)
+        public string DailyStoreShowInfo([FromQuery] long? uid = null, [FromQuery] long? id = null)
         {
-            long userid = qq ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
+            long userid = uid ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
             long goodid = id ?? 0;
 
             PluginConfig pc = new("saved", userid.ToString());
@@ -4704,13 +4729,14 @@ namespace Oshima.FunGame.WebAPI.Controllers
                         foreach (Item item in good.Items)
                         {
                             count++;
-                            itemMsg += $"[ {count} ] -> {item.ToString(false, true)}\r\n";
+                            Item newItem = item.Copy();
+                            newItem.Character = user.Inventory.MainCharacter;
+                            newItem.SetLevel(1);
+                            itemMsg += $"[ {count} ] {newItem.ToString(false, true)}".Trim();
                         }
-                        msg += $"{good.Id}. {good.Name}\r\n" +
-                            $"商品描述：{good.Description}\r\n" +
-                            $"商品售价：{string.Join("、", good.Prices.Select(kv => $"{kv.Value} {kv.Key}"))}\r\n" +
-                            $"包含物品：\r\n" + itemMsg +
-                            $"剩余库存：{good.Stock}";
+                        msg = good.ToString().Split("包含物品：")[0].Trim();
+                        msg += $"\r\n包含物品：\r\n" + itemMsg +
+                            $"\r\n剩余库存：{good.Stock}";
                     }
                     else
                     {
@@ -4723,9 +4749,6 @@ namespace Oshima.FunGame.WebAPI.Controllers
                     return NetworkUtility.JsonSerialize($"商品列表不存在，请刷新！");
                 }
 
-                user.LastTime = DateTime.Now;
-                pc.Add("user", user);
-                pc.SaveConfig();
                 return NetworkUtility.JsonSerialize(msg);
             }
             else

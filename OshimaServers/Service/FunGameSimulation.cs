@@ -24,7 +24,7 @@ namespace Oshima.FunGame.OshimaServers.Service
             CharacterStatistics.Clear();
             TeamCharacterStatistics.Clear();
 
-            foreach (Character c in FunGameService.Characters)
+            foreach (Character c in FunGameConstant.Characters)
             {
                 CharacterStatistics.Add(c, new());
             }
@@ -38,7 +38,7 @@ namespace Oshima.FunGame.OshimaServers.Service
                 }
             }
 
-            foreach (Character c in FunGameService.Characters)
+            foreach (Character c in FunGameConstant.Characters)
             {
                 TeamCharacterStatistics.Add(c, new());
             }
@@ -76,7 +76,7 @@ namespace Oshima.FunGame.OshimaServers.Service
                 // M = 5, W = 0, P1 = 0, P3 = 2
                 // M = 5, W = 1, P1 = 0, P3 = 0
 
-                List<Character> list = new(FunGameService.Characters);
+                List<Character> list = new(FunGameConstant.Characters);
 
                 if (list.Count > 11)
                 {
@@ -270,7 +270,7 @@ namespace Oshima.FunGame.OshimaServers.Service
                                 foreach (Skill skill in skillRewards)
                                 {
                                     Dictionary<string, object> effectArgs = [];
-                                    if (FunGameService.RoundRewards.TryGetValue((EffectID)skill.Id, out Dictionary<string, object>? dict) && dict != null)
+                                    if (FunGameConstant.RoundRewards.TryGetValue((EffectID)skill.Id, out Dictionary<string, object>? dict) && dict != null)
                                     {
                                         effectArgs = new(dict);
                                     }
@@ -589,10 +589,10 @@ namespace Oshima.FunGame.OshimaServers.Service
         {
             foreach (Character character in queue.Queue)
             {
-                Item[] 武器 = FunGameService.Equipment.Where(i => i.Id.ToString().StartsWith("11") && (int)i.QualityType == wQuality).ToArray();
-                Item[] 防具 = FunGameService.Equipment.Where(i => i.Id.ToString().StartsWith("12") && (int)i.QualityType == aQuality).ToArray();
-                Item[] 鞋子 = FunGameService.Equipment.Where(i => i.Id.ToString().StartsWith("13") && (int)i.QualityType == sQuality).ToArray();
-                Item[] 饰品 = FunGameService.Equipment.Where(i => i.Id.ToString().StartsWith("14") && (int)i.QualityType == acQuality).ToArray();
+                Item[] 武器 = FunGameConstant.Equipment.Where(i => i.Id.ToString().StartsWith("11") && (int)i.QualityType == wQuality).ToArray();
+                Item[] 防具 = FunGameConstant.Equipment.Where(i => i.Id.ToString().StartsWith("12") && (int)i.QualityType == aQuality).ToArray();
+                Item[] 鞋子 = FunGameConstant.Equipment.Where(i => i.Id.ToString().StartsWith("13") && (int)i.QualityType == sQuality).ToArray();
+                Item[] 饰品 = FunGameConstant.Equipment.Where(i => i.Id.ToString().StartsWith("14") && (int)i.QualityType == acQuality).ToArray();
                 Item? a = null, b = null, c = null, d = null;
                 if (武器.Length > 0)
                 {

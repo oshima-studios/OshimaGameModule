@@ -126,7 +126,7 @@ namespace Oshima.FunGame.OshimaServers
                         {
                             User user = FunGameService.GetUser(pc);
                             // 将用户存入缓存
-                            FunGameService.UserIdAndUsername[user.Id] = user;
+                            FunGameConstant.UserIdAndUsername[user.Id] = user;
                             // 任务结算
                             EntityModuleConfig<Quest> quests = new("quests", user.Id.ToString());
                             quests.LoadConfig();

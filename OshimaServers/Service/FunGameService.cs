@@ -1,8 +1,8 @@
 using System.Text;
+using Milimoe.FunGame.Core.Api.Transmittal;
 using Milimoe.FunGame.Core.Api.Utility;
 using Milimoe.FunGame.Core.Entity;
 using Milimoe.FunGame.Core.Library.Constant;
-using Oshima.Core.Configs;
 using Oshima.Core.Constant;
 using Oshima.FunGame.OshimaModules.Characters;
 using Oshima.FunGame.OshimaModules.Effects.OpenEffects;
@@ -13,70 +13,60 @@ namespace Oshima.FunGame.OshimaServers.Service
 {
     public class FunGameService
     {
-        public static List<Character> Characters { get; } = [];
-        public static List<Skill> Skills { get; } = [];
-        public static List<Skill> PassiveSkills { get; } = [];
-        public static List<Skill> SuperSkills { get; } = [];
-        public static List<Skill> Magics { get; } = [];
-        public static List<Item> Equipment { get; } = [];
-        public static List<Item> Items { get; } = [];
-        public static List<Skill> ItemSkills { get; } = [];
-        public static List<Item> AllItems { get; } = [];
-        public static List<Skill> AllSkills { get; } = [];
-        public static Dictionary<long, User> UserIdAndUsername { get; } = [];
         public static Dictionary<int, Character> Bosses { get; } = [];
-        public static ItemType[] ItemCanUsed => [ItemType.Consumable, ItemType.MagicCard, ItemType.SpecialItem, ItemType.GiftBox, ItemType.Others];
+        public static ServerPluginLoader? ServerPluginLoader { get; set; } = null;
+        public static WebAPIPluginLoader? WebAPIPluginLoader { get; set; } = null;
 
         public static void InitFunGame()
         {
-            Characters.Add(new OshimaShiya());
-            Characters.Add(new XinYin());
-            Characters.Add(new Yang());
-            Characters.Add(new NanGanYu());
-            Characters.Add(new NiuNan());
-            Characters.Add(new DokyoMayor());
-            Characters.Add(new MagicalGirl());
-            Characters.Add(new QingXiang());
-            Characters.Add(new QWQAQW());
-            Characters.Add(new ColdBlue());
-            Characters.Add(new dddovo());
-            Characters.Add(new Quduoduo());
+            FunGameConstant.Characters.Add(new OshimaShiya());
+            FunGameConstant.Characters.Add(new XinYin());
+            FunGameConstant.Characters.Add(new Yang());
+            FunGameConstant.Characters.Add(new NanGanYu());
+            FunGameConstant.Characters.Add(new NiuNan());
+            FunGameConstant.Characters.Add(new DokyoMayor());
+            FunGameConstant.Characters.Add(new MagicalGirl());
+            FunGameConstant.Characters.Add(new QingXiang());
+            FunGameConstant.Characters.Add(new QWQAQW());
+            FunGameConstant.Characters.Add(new ColdBlue());
+            FunGameConstant.Characters.Add(new dddovo());
+            FunGameConstant.Characters.Add(new Quduoduo());
 
-            Skills.AddRange([new 疾风步()]);
+            FunGameConstant.Skills.AddRange([new 疾风步()]);
 
-            SuperSkills.AddRange([new 嗜血本能(), new 平衡强化(), new 绝对领域(), new 精准打击(), new 三重叠加(), new 变幻之心(), new 力量爆发(), new 能量毁灭(), new 血之狂欢(), new 迅捷之势(), new 天赐之力(), new 魔法涌流()]);
+            FunGameConstant.SuperSkills.AddRange([new 嗜血本能(), new 平衡强化(), new 绝对领域(), new 精准打击(), new 三重叠加(), new 变幻之心(), new 力量爆发(), new 能量毁灭(), new 血之狂欢(), new 迅捷之势(), new 天赐之力(), new 魔法涌流()]);
 
-            PassiveSkills.AddRange([new META马(), new 心灵之火(), new 魔法震荡(), new 灵能反射(), new 智慧与力量(), new 致命打击(), new 毁灭之势(), new 枯竭打击(), new 破釜沉舟(), new 累积之压(), new 敏捷之刃(), new 弱者猎手()]);
+            FunGameConstant.PassiveSkills.AddRange([new META马(), new 心灵之火(), new 魔法震荡(), new 灵能反射(), new 智慧与力量(), new 致命打击(), new 毁灭之势(), new 枯竭打击(), new 破釜沉舟(), new 累积之压(), new 敏捷之刃(), new 弱者猎手()]);
 
-            Magics.AddRange([new 冰霜攻击(), new 火之矢(), new 水之矢(), new 风之轮(), new 石之锤(), new 心灵之霞(), new 次元上升(), new 暗物质(), new 回复术(), new 治愈术(),
+            FunGameConstant.Magics.AddRange([new 冰霜攻击(), new 火之矢(), new 水之矢(), new 风之轮(), new 石之锤(), new 心灵之霞(), new 次元上升(), new 暗物质(), new 回复术(), new 治愈术(),
                 new 时间加速(), new 时间减速(), new 沉默十字(), new 反魔法领域()]);
 
             Dictionary<string, Item> exItems = Factory.GetGameModuleInstances<Item>(OshimaGameModuleConstant.General, OshimaGameModuleConstant.Item);
-            Equipment.AddRange(exItems.Values.Where(i => (int)i.ItemType >= 0 && (int)i.ItemType < 5));
-            Equipment.AddRange([new 攻击之爪8(), new 攻击之爪20(), new 攻击之爪35(), new 攻击之爪50()]);
+            FunGameConstant.Equipment.AddRange(exItems.Values.Where(i => (int)i.ItemType >= 0 && (int)i.ItemType < 5));
+            FunGameConstant.Equipment.AddRange([new 攻击之爪8(), new 攻击之爪20(), new 攻击之爪35(), new 攻击之爪50()]);
 
-            Items.AddRange(exItems.Values.Where(i => (int)i.ItemType > 4));
-            Items.AddRange([new 小经验书(), new 中经验书(), new 大经验书(), new 升华之印(), new 流光之印(), new 永恒之印(), new 技能卷轴(), new 智慧之果(), new 奥术符文(), new 混沌之核(),
+            FunGameConstant.Items.AddRange(exItems.Values.Where(i => (int)i.ItemType > 4));
+            FunGameConstant.Items.AddRange([new 小经验书(), new 中经验书(), new 大经验书(), new 升华之印(), new 流光之印(), new 永恒之印(), new 技能卷轴(), new 智慧之果(), new 奥术符文(), new 混沌之核(),
                 new 小回复药(), new 中回复药(), new 大回复药(), new 魔力填充剂1(), new 魔力填充剂2(), new 魔力填充剂3(), new 能量饮料1(), new 能量饮料2(), new 能量饮料3()]);
 
-            AllItems.AddRange(Equipment);
-            AllItems.AddRange(Items);
+            FunGameConstant.AllItems.AddRange(FunGameConstant.Equipment);
+            FunGameConstant.AllItems.AddRange(FunGameConstant.Items);
 
-            Skill?[] activeSkills = [.. Equipment.Select(i => i.Skills.Active), .. Items.Select(i => i.Skills.Active)];
+            Skill?[] activeSkills = [.. FunGameConstant.Equipment.Select(i => i.Skills.Active), .. FunGameConstant.Items.Select(i => i.Skills.Active)];
             foreach (Skill? skill in activeSkills)
             {
                 if (skill != null)
                 {
-                    ItemSkills.Add(skill);
+                    FunGameConstant.ItemSkills.Add(skill);
                 }
             }
-            ItemSkills.AddRange([.. Equipment.SelectMany(i => i.Skills.Passives), .. Items.SelectMany(i => i.Skills.Passives)]);
+            FunGameConstant.ItemSkills.AddRange([.. FunGameConstant.Equipment.SelectMany(i => i.Skills.Passives), .. FunGameConstant.Items.SelectMany(i => i.Skills.Passives)]);
 
-            AllSkills.AddRange(Magics);
-            AllSkills.AddRange(Skills);
-            AllSkills.AddRange(PassiveSkills);
-            AllSkills.AddRange(ItemSkills);
-            AllSkills.AddRange(SuperSkills);
+            FunGameConstant.AllSkills.AddRange(FunGameConstant.Magics);
+            FunGameConstant.AllSkills.AddRange(FunGameConstant.Skills);
+            FunGameConstant.AllSkills.AddRange(FunGameConstant.PassiveSkills);
+            FunGameConstant.AllSkills.AddRange(FunGameConstant.ItemSkills);
+            FunGameConstant.AllSkills.AddRange(FunGameConstant.SuperSkills);
         }
 
         public static List<Item> GenerateMagicCards(int count, QualityType? qualityType = null)
@@ -140,7 +130,7 @@ namespace Oshima.FunGame.OshimaServers.Service
 
         public static void GenerateAndAddSkillToMagicCard(Item item, int total)
         {
-            Skill magic = Magics[Random.Shared.Next(Magics.Count)].Copy();
+            Skill magic = FunGameConstant.Magics[Random.Shared.Next(FunGameConstant.Magics.Count)].Copy();
             magic.Guid = item.Guid;
             magic.Level = (int)item.QualityType switch
             {
@@ -371,15 +361,15 @@ namespace Oshima.FunGame.OshimaServers.Service
 
         public static void Reload()
         {
-            Characters.Clear();
-            Equipment.Clear();
-            Skills.Clear();
-            SuperSkills.Clear();
-            PassiveSkills.Clear();
-            Magics.Clear();
-            AllItems.Clear();
-            ItemSkills.Clear();
-            AllSkills.Clear();
+            FunGameConstant.Characters.Clear();
+            FunGameConstant.Equipment.Clear();
+            FunGameConstant.Skills.Clear();
+            FunGameConstant.SuperSkills.Clear();
+            FunGameConstant.PassiveSkills.Clear();
+            FunGameConstant.Magics.Clear();
+            FunGameConstant.AllItems.Clear();
+            FunGameConstant.ItemSkills.Clear();
+            FunGameConstant.AllSkills.Clear();
 
             InitFunGame();
         }
@@ -471,7 +461,7 @@ namespace Oshima.FunGame.OshimaServers.Service
 
             foreach (Item inventoryItem in items)
             {
-                Item realItem = inventoryItem.Copy(true, true, true, AllItems, AllSkills);
+                Item realItem = inventoryItem.Copy(true, true, true, FunGameConstant.AllItems, FunGameConstant.AllSkills);
                 realItem.User = user;
                 user.Inventory.Items.Add(realItem);
             }
@@ -495,7 +485,7 @@ namespace Oshima.FunGame.OshimaServers.Service
                     inventoryCharacter.InitialHR = tempCharacter.InitialHR;
                     inventoryCharacter.InitialMR = tempCharacter.InitialMR;
                 }
-                Character realCharacter = CharacterBuilder.Build(inventoryCharacter, false, true, user.Inventory, AllItems, AllSkills, false);
+                Character realCharacter = CharacterBuilder.Build(inventoryCharacter, false, true, user.Inventory, FunGameConstant.AllItems, FunGameConstant.AllSkills, false);
                 // 自动回血
                 DateTime now = DateTime.Now;
                 int seconds = (int)(now - user.LastTime).TotalSeconds;
@@ -586,9 +576,9 @@ namespace Oshima.FunGame.OshimaServers.Service
             int r = Random.Shared.Next(8);
             double q = Random.Shared.NextDouble() * 100;
             QualityType type = QualityType.White;
-            foreach (QualityType typeTemp in DrawCardProbabilities.Keys.OrderByDescending(o => (int)o))
+            foreach (QualityType typeTemp in FunGameConstant.DrawCardProbabilities.Keys.OrderByDescending(o => (int)o))
             {
-                if (q <= DrawCardProbabilities[typeTemp])
+                if (q <= FunGameConstant.DrawCardProbabilities[typeTemp])
                 {
                     type = typeTemp;
                     break;
@@ -599,7 +589,7 @@ namespace Oshima.FunGame.OshimaServers.Service
             {
                 case 1:
                     if ((int)type > (int)QualityType.Orange) type = QualityType.Orange;
-                    Item[] 武器 = Equipment.Where(i => i.Id.ToString().StartsWith("11") && i.QualityType == type).ToArray();
+                    Item[] 武器 = FunGameConstant.Equipment.Where(i => i.Id.ToString().StartsWith("11") && i.QualityType == type).ToArray();
                     Item a = 武器[Random.Shared.Next(武器.Length)].Copy();
                     SetSellAndTradeTime(a);
                     user.Inventory.Items.Add(a);
@@ -608,7 +598,7 @@ namespace Oshima.FunGame.OshimaServers.Service
 
                 case 2:
                     if ((int)type > (int)QualityType.Green) type = QualityType.Green;
-                    Item[] 防具 = Equipment.Where(i => i.Id.ToString().StartsWith("12") && i.QualityType == type).ToArray();
+                    Item[] 防具 = FunGameConstant.Equipment.Where(i => i.Id.ToString().StartsWith("12") && i.QualityType == type).ToArray();
                     Item b = 防具[Random.Shared.Next(防具.Length)].Copy();
                     SetSellAndTradeTime(b);
                     user.Inventory.Items.Add(b);
@@ -617,7 +607,7 @@ namespace Oshima.FunGame.OshimaServers.Service
 
                 case 3:
                     if ((int)type > (int)QualityType.Green) type = QualityType.Green;
-                    Item[] 鞋子 = Equipment.Where(i => i.Id.ToString().StartsWith("13") && i.QualityType == type).ToArray();
+                    Item[] 鞋子 = FunGameConstant.Equipment.Where(i => i.Id.ToString().StartsWith("13") && i.QualityType == type).ToArray();
                     Item c = 鞋子[Random.Shared.Next(鞋子.Length)].Copy();
                     SetSellAndTradeTime(c);
                     user.Inventory.Items.Add(c);
@@ -626,7 +616,7 @@ namespace Oshima.FunGame.OshimaServers.Service
 
                 case 4:
                     if ((int)type > (int)QualityType.Purple) type = QualityType.Purple;
-                    Item[] 饰品 = Equipment.Where(i => i.Id.ToString().StartsWith("14") && i.QualityType == type).ToArray();
+                    Item[] 饰品 = FunGameConstant.Equipment.Where(i => i.Id.ToString().StartsWith("14") && i.QualityType == type).ToArray();
                     Item d = 饰品[Random.Shared.Next(饰品.Length)].Copy();
                     SetSellAndTradeTime(d);
                     user.Inventory.Items.Add(d);
@@ -634,7 +624,7 @@ namespace Oshima.FunGame.OshimaServers.Service
                     break;
 
                 case 5:
-                    Character character = Characters[Random.Shared.Next(Characters.Count)].Copy();
+                    Character character = FunGameConstant.Characters[Random.Shared.Next(FunGameConstant.Characters.Count)].Copy();
                     AddCharacterSkills(character, 1, 0, 0);
                     if (user.Inventory.Characters.Any(c => c.Id == character.Id))
                     {
@@ -657,7 +647,7 @@ namespace Oshima.FunGame.OshimaServers.Service
                     break;
                     
                 case 7:
-                    Item 物品 = Items[Random.Shared.Next(Items.Count)].Copy();
+                    Item 物品 = FunGameConstant.Items[Random.Shared.Next(FunGameConstant.Items.Count)].Copy();
                     SetSellAndTradeTime(物品);
                     user.Inventory.Items.Add(物品);
                     msg += ItemSet.GetQualityTypeName(物品.QualityType) + ItemSet.GetItemTypeName(物品.ItemType) + "【" + 物品.Name + "】！\r\n" + 物品.Description;
@@ -693,7 +683,7 @@ namespace Oshima.FunGame.OshimaServers.Service
 
             // 根据签到天数调整概率
             double daysFactor = Math.Min(days * 0.02, 30);
-            Dictionary<QualityType, double> adjustedProbabilities = new(DrawCardProbabilities);
+            Dictionary<QualityType, double> adjustedProbabilities = new(FunGameConstant.DrawCardProbabilities);
             foreach (QualityType typeTemp in adjustedProbabilities.Keys)
             {
                 adjustedProbabilities[typeTemp] += daysFactor;
@@ -715,7 +705,7 @@ namespace Oshima.FunGame.OshimaServers.Service
             {
                 case 1:
                     if ((int)type > (int)QualityType.Orange) type = QualityType.Orange;
-                    Item[] 武器 = Equipment.Where(i => i.Id.ToString().StartsWith("11") && i.QualityType == type).ToArray();
+                    Item[] 武器 = FunGameConstant.Equipment.Where(i => i.Id.ToString().StartsWith("11") && i.QualityType == type).ToArray();
                     Item a = 武器[Random.Shared.Next(武器.Length)].Copy();
                     SetSellAndTradeTime(a);
                     user.Inventory.Items.Add(a);
@@ -724,7 +714,7 @@ namespace Oshima.FunGame.OshimaServers.Service
 
                 case 2:
                     if ((int)type > (int)QualityType.Green) type = QualityType.Green;
-                    Item[] 防具 = Equipment.Where(i => i.Id.ToString().StartsWith("12") && i.QualityType == type).ToArray();
+                    Item[] 防具 = FunGameConstant.Equipment.Where(i => i.Id.ToString().StartsWith("12") && i.QualityType == type).ToArray();
                     Item b = 防具[Random.Shared.Next(防具.Length)].Copy();
                     SetSellAndTradeTime(b);
                     user.Inventory.Items.Add(b);
@@ -733,7 +723,7 @@ namespace Oshima.FunGame.OshimaServers.Service
 
                 case 3:
                     if ((int)type > (int)QualityType.Green) type = QualityType.Green;
-                    Item[] 鞋子 = Equipment.Where(i => i.Id.ToString().StartsWith("13") && i.QualityType == type).ToArray();
+                    Item[] 鞋子 = FunGameConstant.Equipment.Where(i => i.Id.ToString().StartsWith("13") && i.QualityType == type).ToArray();
                     Item c = 鞋子[Random.Shared.Next(鞋子.Length)].Copy();
                     SetSellAndTradeTime(c);
                     user.Inventory.Items.Add(c);
@@ -742,7 +732,7 @@ namespace Oshima.FunGame.OshimaServers.Service
 
                 case 4:
                     if ((int)type > (int)QualityType.Purple) type = QualityType.Purple;
-                    Item[] 饰品 = Equipment.Where(i => i.Id.ToString().StartsWith("14") && i.QualityType == type).ToArray();
+                    Item[] 饰品 = FunGameConstant.Equipment.Where(i => i.Id.ToString().StartsWith("14") && i.QualityType == type).ToArray();
                     Item d = 饰品[Random.Shared.Next(饰品.Length)].Copy();
                     SetSellAndTradeTime(d);
                     user.Inventory.Items.Add(d);
@@ -1052,7 +1042,7 @@ namespace Oshima.FunGame.OshimaServers.Service
                 {
                     break;
                 }
-                if (ItemCanUsed.Contains(item.ItemType))
+                if (FunGameConstant.ItemCanUsed.Contains(item.ItemType))
                 {
                     if (item.RemainUseTimes <= 0)
                     {
@@ -1106,7 +1096,7 @@ namespace Oshima.FunGame.OshimaServers.Service
 
         public static string GetLevelBreakNeedy(int levelBreak)
         {
-            if (LevelBreakNeedyList.TryGetValue(levelBreak, out Dictionary<string, int>? needy) && needy != null && needy.Count > 0)
+            if (FunGameConstant.LevelBreakNeedyList.TryGetValue(levelBreak, out Dictionary<string, int>? needy) && needy != null && needy.Count > 0)
             {
                 return string.Join("，", needy.Select(kv => kv.Key + " * " + kv.Value));
             }
@@ -1205,7 +1195,7 @@ namespace Oshima.FunGame.OshimaServers.Service
 
         public static string GetSkillLevelUpNeedy(int level)
         {
-            if (SkillLevelUpList.TryGetValue(level, out Dictionary<string, int>? needy) && needy != null && needy.Count > 0)
+            if (FunGameConstant.SkillLevelUpList.TryGetValue(level, out Dictionary<string, int>? needy) && needy != null && needy.Count > 0)
             {
                 return GetNeedyInfo(needy);
             }
@@ -1214,7 +1204,7 @@ namespace Oshima.FunGame.OshimaServers.Service
 
         public static string GetNormalAttackLevelUpNeedy(int level)
         {
-            if (NormalAttackLevelUpList.TryGetValue(level, out Dictionary<string, int>? needy) && needy != null && needy.Count > 0)
+            if (FunGameConstant.NormalAttackLevelUpList.TryGetValue(level, out Dictionary<string, int>? needy) && needy != null && needy.Count > 0)
             {
                 return GetNeedyInfo(needy);
             }
@@ -1270,10 +1260,10 @@ namespace Oshima.FunGame.OshimaServers.Service
                     boss.Level = cLevel;
                     boss.NormalAttack.Level = naLevel;
                     boss.NormalAttack.HardnessTime = 6;
-                    Item[] weapons = Equipment.Where(i => i.Id.ToString().StartsWith("11") && (int)i.QualityType == 4).ToArray();
-                    Item[] armors = Equipment.Where(i => i.Id.ToString().StartsWith("12") && (int)i.QualityType == 1).ToArray();
-                    Item[] shoes = Equipment.Where(i => i.Id.ToString().StartsWith("13") && (int)i.QualityType == 1).ToArray();
-                    Item[] accessory = Equipment.Where(i => i.Id.ToString().StartsWith("14") && (int)i.QualityType == 3).ToArray();
+                    Item[] weapons = FunGameConstant.Equipment.Where(i => i.Id.ToString().StartsWith("11") && (int)i.QualityType == 4).ToArray();
+                    Item[] armors = FunGameConstant.Equipment.Where(i => i.Id.ToString().StartsWith("12") && (int)i.QualityType == 1).ToArray();
+                    Item[] shoes = FunGameConstant.Equipment.Where(i => i.Id.ToString().StartsWith("13") && (int)i.QualityType == 1).ToArray();
+                    Item[] accessory = FunGameConstant.Equipment.Where(i => i.Id.ToString().StartsWith("14") && (int)i.QualityType == 3).ToArray();
                     Item? a = null, b = null, c = null, d = null, d2 = null;
                     if (weapons.Length > 0)
                     {
@@ -1373,476 +1363,6 @@ namespace Oshima.FunGame.OshimaServers.Service
             }
         }
 
-        public static Dictionary<int, Dictionary<string, int>> LevelBreakNeedyList
-        {
-            get
-            {
-                return new()
-                {
-                    {
-                        0, new()
-                        {
-                            { General.GameplayEquilibriumConstant.InGameMaterial, 80 },
-                            { nameof(升华之印), 10 }
-                        }
-                    },
-                    {
-                        1, new()
-                        {
-                            { General.GameplayEquilibriumConstant.InGameMaterial, 400 },
-                            { nameof(升华之印), 20 }
-                        }
-                    },
-                    {
-                        2, new()
-                        {
-                            { General.GameplayEquilibriumConstant.InGameMaterial, 960 },
-                            { nameof(升华之印), 30 },
-                            { nameof(流光之印), 10 }
-                        }
-                    },
-                    {
-                        3, new()
-                        {
-                            { General.GameplayEquilibriumConstant.InGameMaterial, 1760 },
-                            { nameof(升华之印), 40 },
-                            { nameof(流光之印), 20 }
-                        }
-                    },
-                    {
-                        4, new()
-                        {
-                            { General.GameplayEquilibriumConstant.InGameMaterial, 2800 },
-                            { nameof(升华之印), 50 },
-                            { nameof(流光之印), 30 },
-                            { nameof(永恒之印), 10 }
-                        }
-                    },
-                    {
-                        5, new()
-                        {
-                            { General.GameplayEquilibriumConstant.InGameMaterial, 4080 },
-                            { nameof(升华之印), 60 },
-                            { nameof(流光之印), 40 },
-                            { nameof(永恒之印), 20 }
-                        }
-                    },
-                };
-            }
-        }
-
-        public static Dictionary<int, Dictionary<string, int>> SkillLevelUpList
-        {
-            get
-            {
-                return new()
-                {
-                    {
-                        1, new()
-                        {
-                            { "角色等级", 1 },
-                            { General.GameplayEquilibriumConstant.InGameCurrency, 2000 },
-                            { General.GameplayEquilibriumConstant.InGameMaterial, 10 },
-                            { nameof(技能卷轴), 1 },
-                        }
-                    },
-                    {
-                        2, new()
-                        {
-                            { "角色等级", 12 },
-                            { General.GameplayEquilibriumConstant.InGameCurrency, 5000 },
-                            { General.GameplayEquilibriumConstant.InGameMaterial, 30 },
-                            { nameof(技能卷轴), 2 },
-                        }
-                    },
-                    {
-                        3, new()
-                        {
-                            { "角色等级", 24 },
-                            { General.GameplayEquilibriumConstant.InGameCurrency, 10000 },
-                            { General.GameplayEquilibriumConstant.InGameMaterial, 60 },
-                            { nameof(技能卷轴), 3 },
-                            { nameof(智慧之果), 1 },
-                        }
-                    },
-                    {
-                        4, new()
-                        {
-                            { "角色等级", 36 },
-                            { General.GameplayEquilibriumConstant.InGameCurrency, 18000 },
-                            { General.GameplayEquilibriumConstant.InGameMaterial, 100 },
-                            { nameof(技能卷轴), 4 },
-                            { nameof(智慧之果), 2 },
-                        }
-                    },
-                    {
-                        5, new()
-                        {
-                            { "角色等级", 48 },
-                            { General.GameplayEquilibriumConstant.InGameCurrency, 30000 },
-                            { General.GameplayEquilibriumConstant.InGameMaterial, 150 },
-                            { nameof(技能卷轴), 5 },
-                            { nameof(智慧之果), 3 },
-                            { nameof(奥术符文), 1 }
-                        }
-                    },
-                    {
-                        6, new()
-                        {
-                            { "角色等级", 60 },
-                            { General.GameplayEquilibriumConstant.InGameCurrency, 47000 },
-                            { General.GameplayEquilibriumConstant.InGameMaterial, 210 },
-                            { nameof(技能卷轴), 6 },
-                            { nameof(智慧之果), 4 },
-                            { nameof(奥术符文), 2 }
-                        }
-                    }
-                };
-            }
-        }
-
-        public static Dictionary<int, Dictionary<string, int>> NormalAttackLevelUpList
-        {
-            get
-            {
-                return new()
-                {
-                    {
-                        2, new()
-                        {
-                            { "角色等级", 8 },
-                            { General.GameplayEquilibriumConstant.InGameCurrency, 2000 },
-                            { General.GameplayEquilibriumConstant.InGameMaterial, 10 },
-                            { nameof(技能卷轴), 1 },
-                        }
-                    },
-                    {
-                        3, new()
-                        {
-                            { "角色等级", 16 },
-                            { General.GameplayEquilibriumConstant.InGameCurrency, 5000 },
-                            { General.GameplayEquilibriumConstant.InGameMaterial, 30 },
-                            { nameof(技能卷轴), 2 },
-                        }
-                    },
-                    {
-                        4, new()
-                        {
-                            { "角色等级", 24 },
-                            { General.GameplayEquilibriumConstant.InGameCurrency, 10000 },
-                            { General.GameplayEquilibriumConstant.InGameMaterial, 60 },
-                            { nameof(技能卷轴), 3 },
-                            { nameof(智慧之果), 1 },
-                        }
-                    },
-                    {
-                        5, new()
-                        {
-                            { "角色等级", 32 },
-                            { General.GameplayEquilibriumConstant.InGameCurrency, 18000 },
-                            { General.GameplayEquilibriumConstant.InGameMaterial, 100 },
-                            { nameof(技能卷轴), 4 },
-                            { nameof(智慧之果), 2 },
-                        }
-                    },
-                    {
-                        6, new()
-                        {
-                            { "角色等级", 40 },
-                            { "角色突破进度", 4 },
-                            { General.GameplayEquilibriumConstant.InGameCurrency, 30000 },
-                            { General.GameplayEquilibriumConstant.InGameMaterial, 150 },
-                            { nameof(技能卷轴), 5 },
-                            { nameof(智慧之果), 3 },
-                            { nameof(奥术符文), 1 }
-                        }
-                    },
-                    {
-                        7, new()
-                        {
-                            { "角色等级", 48 },
-                            { General.GameplayEquilibriumConstant.InGameCurrency, 47000 },
-                            { General.GameplayEquilibriumConstant.InGameMaterial, 210 },
-                            { nameof(技能卷轴), 6 },
-                            { nameof(智慧之果), 4 },
-                            { nameof(奥术符文), 2 }
-                        }
-                    },
-                    {
-                        8, new()
-                        {
-                            { "角色等级", 56 },
-                            { General.GameplayEquilibriumConstant.InGameCurrency, 70000 },
-                            { General.GameplayEquilibriumConstant.InGameMaterial, 280 },
-                            { nameof(技能卷轴), 7 },
-                            { nameof(智慧之果), 5 },
-                            { nameof(奥术符文), 3 },
-                            { nameof(混沌之核), 1 }
-                        }
-                    }
-                };
-            }
-        }
-
-        public static Dictionary<EffectID, Dictionary<string, object>> RoundRewards
-        {
-            get
-            {
-                return new()
-                {
-                    {
-                        EffectID.ExATK,
-                        new()
-                        {
-                            { "exatk", Random.Shared.Next(40, 80) }
-                        }
-                    },
-                    {
-                        EffectID.ExCritRate,
-                        new()
-                        {
-                            { "excr", Math.Clamp(Random.Shared.NextDouble(), 0.25, 0.5) }
-                        }
-                    },
-                    {
-                        EffectID.ExCritDMG,
-                        new()
-                        {
-                            { "excrd", Math.Clamp(Random.Shared.NextDouble(), 0.5, 1) }
-                        }
-                    },
-                    {
-                        EffectID.ExATK2,
-                        new()
-                        {
-                            { "exatk", Math.Clamp(Random.Shared.NextDouble(), 0.15, 0.3) }
-                        }
-                    },
-                    {
-                        EffectID.RecoverHP,
-                        new()
-                        {
-                            { "hp", Random.Shared.Next(160, 640) }
-                        }
-                    },
-                    {
-                        EffectID.RecoverMP,
-                        new()
-                        {
-                            { "mp", Random.Shared.Next(140, 490) }
-                        }
-                    },
-                    {
-                        EffectID.RecoverHP2,
-                        new()
-                        {
-                            { "hp", Math.Clamp(Random.Shared.NextDouble(), 0.04, 0.08) }
-                        }
-                    },
-                    {
-                        EffectID.RecoverMP2,
-                        new()
-                        {
-                            { "mp", Math.Clamp(Random.Shared.NextDouble(), 0.09, 0.18) }
-                        }
-                    },
-                    {
-                        EffectID.GetEP,
-                        new()
-                        {
-                            { "ep", Random.Shared.Next(20, 40) }
-                        }
-                    }
-                };
-            }
-        }
-
-        public static Dictionary<string, string> QuestList
-        {
-            get
-            {
-                return new()
-                {
-                    {
-                        "丢失的共享单车之谜",
-                        "寻找被魔法传送走的共享单车。"
-                    },
-                    {
-                        "咖啡店的神秘顾客",
-                        "调查每天都点奇怪饮品的神秘顾客。"
-                    },
-                    {
-                        "地铁里的幽灵乘客",
-                        "找出在地铁里出没的半透明乘客。"
-                    },
-                    {
-                        "公园的精灵涂鸦",
-                        "清除公园里突然出现的精灵涂鸦。"
-                    },
-                    {
-                        "手机信号的干扰源",
-                        "找出干扰手机信号的魔法源头。"
-                    },
-                    {
-                        "外卖小哥的奇遇",
-                        "帮助外卖小哥找回被偷走的魔法外卖。"
-                    },
-                    {
-                        "广场舞的魔法节奏",
-                        "调查广场舞音乐中隐藏的魔法节奏。"
-                    },
-                    {
-                        "自动贩卖机的秘密",
-                        "找出自动贩卖机里突然出现的奇怪物品。"
-                    },
-                    {
-                        "便利店的异次元入口",
-                        "调查便利店里突然出现的异次元入口。"
-                    },
-                    {
-                        "街头艺人的魔法表演",
-                        "调查街头艺人表演中使用的魔法。"
-                    },
-                    {
-                        "午夜电台的幽灵来电",
-                        "调查午夜电台收到的奇怪来电。"
-                    },
-                    {
-                        "高楼大厦的秘密通道",
-                        "寻找隐藏在高楼大厦里的秘密通道。"
-                    },
-                    {
-                        "城市下水道的神秘生物",
-                        "调查城市下水道里出现的神秘生物。"
-                    },
-                    {
-                        "废弃工厂的魔法实验",
-                        "调查废弃工厂里进行的秘密魔法实验。"
-                    },
-                    {
-                        "博物馆的活化雕像",
-                        "调查博物馆里突然活化的雕像。"
-                    },
-                    {
-                        "公园的都市传说",
-                        "调查公园里流传的都市传说。"
-                    },
-                    {
-                        "闹鬼公寓的真相",
-                        "调查闹鬼公寓里的真相。"
-                    },
-                    {
-                        "地下酒吧的秘密交易",
-                        "调查地下酒吧里进行的秘密魔法交易。"
-                    },
-                    {
-                        "旧书店的魔法书籍",
-                        "寻找旧书店里隐藏的魔法书籍。"
-                    },
-                    {
-                        "涂鸦墙的预言",
-                        "解读涂鸦墙上出现的神秘预言。"
-                    },
-                    {
-                        "黑客的魔法入侵",
-                        "阻止黑客利用魔法入侵城市网络。"
-                    },
-                    {
-                        "高科技魔法装备的测试",
-                        "测试新型的高科技魔法装备。"
-                    },
-                    {
-                        "无人机的魔法改造",
-                        "改造无人机，使其拥有魔法能力。"
-                    },
-                    {
-                        "人工智能的觉醒",
-                        "调查人工智能觉醒的原因。"
-                    },
-                    {
-                        "虚拟现实的魔法世界",
-                        "探索虚拟现实中出现的魔法世界。"
-                    },
-                    {
-                        "智能家居的魔法故障",
-                        "修复智能家居的魔法故障。"
-                    },
-                    {
-                        "能量饮料的魔法副作用",
-                        "调查能量饮料的魔法副作用。"
-                    },
-                    {
-                        "社交媒体的魔法病毒",
-                        "清除社交媒体上出现的魔法病毒。"
-                    },
-                    {
-                        "共享汽车的魔法漂移",
-                        "调查共享汽车的魔法漂移现象。"
-                    },
-                    {
-                        "城市监控的魔法干扰",
-                        "修复城市监控的魔法干扰。"
-                    },
-                    {
-                        "寻找丢失的魔法宠物",
-                        "寻找在城市里走失的魔法宠物。"
-                    },
-                    {
-                        "参加魔法美食节",
-                        "参加城市举办的魔法美食节。"
-                    },
-                    {
-                        "解开城市谜题",
-                        "解开隐藏在城市各处的谜题。"
-                    },
-                    {
-                        "参加魔法cosplay大赛",
-                        "参加城市举办的魔法cosplay大赛。"
-                    },
-                    {
-                        "寻找隐藏的魔法商店",
-                        "寻找隐藏在城市里的魔法商店。"
-                    },
-                    {
-                        "制作魔法主题的街头艺术",
-                        "在城市里创作魔法主题的街头艺术。"
-                    },
-                    {
-                        "举办一场魔法快闪活动",
-                        "在城市里举办一场魔法快闪活动。"
-                    },
-                    {
-                        "寻找失落的魔法乐器",
-                        "寻找失落的魔法乐器，让城市充满音乐。"
-                    },
-                    {
-                        "参加魔法运动会",
-                        "参加城市举办的魔法运动会。"
-                    },
-                    {
-                        "拯救被困在魔法结界里的市民",
-                        "拯救被困在城市魔法结界里的市民。"
-                    }
-                };
-            }
-        }
-
-        public static Dictionary<QualityType, double> DrawCardProbabilities
-        {
-            get
-            {
-                return new()
-                {
-                    { QualityType.White, 69.53 },
-                    { QualityType.Green, 15.35 },
-                    { QualityType.Blue, 9.48 },
-                    { QualityType.Purple, 4.25 },
-                    { QualityType.Orange, 1.33 },
-                    { QualityType.Red, 0.06 }
-                };
-            }
-        }
-
         public static Dictionary<int, List<Skill>> GenerateRoundRewards(int maxRound)
         {
             Dictionary<int, List<Skill>> roundRewards = [];
@@ -1857,7 +1377,7 @@ namespace Oshima.FunGame.OshimaServers.Service
                     List<Skill> skills = [];
 
                     // 添加回合奖励特效
-                    long effectID = (long)RoundRewards.Keys.ToArray()[Random.Shared.Next(RoundRewards.Count)];
+                    long effectID = (long)FunGameConstant.RoundRewards.Keys.ToArray()[Random.Shared.Next(FunGameConstant.RoundRewards.Count)];
                     Dictionary<string, object> args = [];
                     if (effectID > (long)EffectID.Active_Start)
                     {
@@ -1945,25 +1465,25 @@ namespace Oshima.FunGame.OshimaServers.Service
                     Dictionary<string, int> items = [];
                     items[General.GameplayEquilibriumConstant.InGameCurrency] = minutes * 20;
                     items[General.GameplayEquilibriumConstant.InGameMaterial] = minutes / 8 * 1;
-                    int index = Random.Shared.Next(AllItems.Count);
-                    Item item = AllItems[index];
+                    int index = Random.Shared.Next(FunGameConstant.AllItems.Count);
+                    Item item = FunGameConstant.AllItems[index];
                     items.Add(item.Name, 1);
                     while (true)
                     {
-                        int index2 = Random.Shared.Next(AllItems.Count);
+                        int index2 = Random.Shared.Next(FunGameConstant.AllItems.Count);
                         if (index2 != index)
                         {
-                            Item item2 = AllItems[index2];
+                            Item item2 = FunGameConstant.AllItems[index2];
                             items.Add(item2.Name, 1);
                             break;
                         }
                     }
-                    string name = QuestList.Keys.OrderBy(o => Random.Shared.Next()).First();
+                    string name = FunGameConstant.QuestList.Keys.OrderBy(o => Random.Shared.Next()).First();
                     Quest quest = new()
                     {
                         Id = quests.Count > 0 ? quests.Values.Max(q => q.Id) + 1 : 1,
                         Name = name,
-                        Description = QuestList[name],
+                        Description = FunGameConstant.QuestList[name],
                         EstimatedMinutes = minutes,
                         Awards = items
                     };
@@ -2011,7 +1531,7 @@ namespace Oshima.FunGame.OshimaServers.Service
                     {
                         user.Inventory.Materials += quest.Awards[name];
                     }
-                    else if (AllItems.FirstOrDefault(i => i.Name == name) is Item item)
+                    else if (FunGameConstant.AllItems.FirstOrDefault(i => i.Name == name) is Item item)
                     {
                         Item newItem = item.Copy();
                         newItem.User = user;
@@ -2026,17 +1546,26 @@ namespace Oshima.FunGame.OshimaServers.Service
             return result;
         }
 
-        public static string CheckDailyStore(EntityModuleConfig<Store> store)
+        public static string CheckDailyStore(EntityModuleConfig<Store> store, User? user = null)
         {
             if (store.Count == 0)
             {
                 // 生成每日商店
-                Store daily = new("每日商店");
+                Store daily = new($"{(user != null ? user.Username + "的" : "")}每日商店");
                 for (int i = 0; i < 4; i++)
                 {
-                    int index = Random.Shared.Next(AllItems.Count);
-                    Item item = AllItems[index].Copy();
-                    double price = Random.Shared.NextDouble() * 10000 * (int)item.QualityType * Random.Shared.Next(5,20);
+                    int index = Random.Shared.Next(FunGameConstant.AllItems.Count);
+                    Item item = FunGameConstant.AllItems[index].Copy();
+                    (int min, int max) = (0, 0);
+                    if (FunGameConstant.PriceRanges.TryGetValue(item.QualityType, out (int Min, int Max) range))
+                    {
+                        (min, max) = (range.Min, range.Max);
+                    }
+                    double price = Random.Shared.Next(min, max);
+                    if (price == 0)
+                    {
+                        price = (Random.Shared.NextDouble() + 0.1) * Random.Shared.Next(1000, 10000) * Random.Shared.Next((int)item.QualityType + 2, 6 + ((int)item.QualityType));
+                    }
                     item.Price = Calculation.Round2Digits(price);
                     daily.AddItem(item, Random.Shared.Next(1, 3));
                 }
@@ -2054,6 +1583,72 @@ namespace Oshima.FunGame.OshimaServers.Service
                     return "商品列表为空，请使用【每日商店】指令来获取商品列表！";
                 }
             }
+        }
+
+        public static string StoreBuyItem(Store store, Goods goods, User user, int count)
+        {
+            string msg = "";
+            if (goods.Stock - count < 0)
+            {
+                return msg = $"此商品【{goods.Name}】库存不足，无法购买！\r\n你想要购买 {count} 件，但库存只有 {goods.Stock} 件。";
+            }
+
+            foreach (string needy in goods.Prices.Keys)
+            {
+                if (needy == General.GameplayEquilibriumConstant.InGameCurrency)
+                {
+                    double reduce = Calculation.Round2Digits(goods.Prices[needy] * count);
+                    if (user.Inventory.Credits >= reduce)
+                    {
+                        user.Inventory.Credits -= reduce;
+                    }
+                    else
+                    {
+                        return NetworkUtility.JsonSerialize($"你的{General.GameplayEquilibriumConstant.InGameCurrency}不足 {reduce} 呢，无法购买【{goods.Name}】！");
+                    }
+                }
+                else if (needy == General.GameplayEquilibriumConstant.InGameMaterial)
+                {
+                    double reduce = Calculation.Round2Digits(goods.Prices[needy] * count);
+                    if (user.Inventory.Materials >= reduce)
+                    {
+                        user.Inventory.Materials -= reduce;
+                    }
+                    else
+                    {
+                        return NetworkUtility.JsonSerialize($"你的{General.GameplayEquilibriumConstant.InGameMaterial}不足 {reduce} 呢，无法购买【{goods.Name}】！");
+                    }
+                }
+            }
+
+            foreach (Item item in goods.Items)
+            {
+                for (int i = 0; i < count; i++)
+                {
+                    Item newItem = item.Copy();
+                    SetSellAndTradeTime(newItem);
+                    if (goods.GetPrice(General.GameplayEquilibriumConstant.InGameCurrency, out double price) && price > 0)
+                    {
+                        newItem.Price = Calculation.Round2Digits(price * 0.35);
+                    }
+                    newItem.User = user;
+                    user.Inventory.Items.Add(newItem);
+                }
+            }
+
+            goods.Stock -= count;
+
+            msg += $"恭喜你成功购买 {count} 件【{goods.Name}】！\r\n" +
+                $"总计消费：{(goods.Prices.Count > 0 ? string.Join("、", goods.Prices.Select(kv => $"{kv.Value * count:0.##} {kv.Key}")) : "免单")}\r\n" +
+                $"包含物品：{string.Join("、", goods.Items.Select(i => $"[{ItemSet.GetQualityTypeName(i.QualityType)}|{ItemSet.GetItemTypeName(i.ItemType)}] {i.Name} * {count}"))}";
+
+            return msg;
+        }
+
+        public static string Select_CheckAutoKey(SQLHelper SQLHelper, string AutoKey)
+        {
+            SQLHelper.Parameters["@AutoKey"] = AutoKey;
+            return $"{Milimoe.FunGame.Core.Library.SQLScript.Entity.UserQuery.Select_Users} {Milimoe.FunGame.Core.Library.SQLScript.Constant.Command_Where} {Milimoe.FunGame.Core.Library.SQLScript.Entity.UserQuery.Column_AutoKey} = @AutoKey";
         }
     }
 }

@@ -1,12 +1,14 @@
 using Milimoe.FunGame.Core.Api.Utility;
+using Milimoe.FunGame.Core.Interface;
 using Milimoe.FunGame.Core.Library.Common.Addon;
+using Milimoe.FunGame.Core.Library.Common.Event;
 using Oshima.Core;
 using Oshima.Core.Constant;
 using Oshima.FunGame.OshimaServers.Service;
 
 namespace Oshima.FunGame.OshimaServers
 {
-    public class OshimaServer : ServerPlugin
+    public class OshimaServer : ServerPlugin, IOpenStoreEvent
     {
         public override string Name => OshimaGameModuleConstant.Server;
 
@@ -32,7 +34,28 @@ namespace Oshima.FunGame.OshimaServers
 
         public override void AfterLoad(ServerPluginLoader loader, params object[] objs)
         {
+            FunGameService.ServerPluginLoader ??= loader;
             OSMCore.InitOSMCore();
+        }
+
+        public void BeforeOpenStoreEvent(object sender, GeneralEventArgs e)
+        {
+            if (e.EventMsg != "") Controller.WriteLine(e.EventMsg, Milimoe.FunGame.Core.Library.Constant.LogLevel.Debug);
+        }
+
+        public void AfterOpenStoreEvent(object sender, GeneralEventArgs e)
+        {
+
+        }
+
+        public void SucceedOpenStoreEvent(object sender, GeneralEventArgs e)
+        {
+            if (e.EventMsg != "") Controller.WriteLine(e.EventMsg, Milimoe.FunGame.Core.Library.Constant.LogLevel.Debug);
+        }
+
+        public void FailedOpenStoreEvent(object sender, GeneralEventArgs e)
+        {
+
         }
     }
 }

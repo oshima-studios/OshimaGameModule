@@ -4,6 +4,7 @@ using System.Text.Json;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Milimoe.FunGame.Core.Api.Utility;
 using Oshima.FunGame.WebAPI.Models;
 using Oshima.FunGame.WebAPI.Services;
 using Rebex.Security.Cryptography;
@@ -20,7 +21,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
         private RainBOTService FungameService { get; set; } = fungameService;
 
         [HttpPost]
-        public async Task<IActionResult> Post([FromBody] Payload? payload)
+        public IActionResult Post([FromBody] Payload? payload)
         {
             if (payload is null)
             {
@@ -38,7 +39,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
                 else if (payload.Op == 0)
                 {
                     // 处理其他事件
-                    return await HandleEventAsync(payload);
+                    return HandleEventAsync(payload);
                 }
                 else
                 {
@@ -93,7 +94,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
             return Ok(response);
         }
 
-        private async Task<IActionResult> HandleEventAsync(Payload payload)
+        private IActionResult HandleEventAsync(Payload payload)
         {
             Logger.LogDebug("处理事件：{EventType}, 数据：{Data}", payload.EventType, payload.Data);
 
@@ -122,7 +123,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
                             //{
                             //    _logger.LogError("上传图片失败：{error}", error);
                             //}
-                            await FungameService.Handler(c2c: c2cMessage);
+                            TaskUtility.NewTask(async () => await FungameService.Handler(c2c: c2cMessage));
                         }
                         else
                         {
@@ -139,7 +140,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
                             Logger.LogInformation("收到来自群组 {groupAtMessage.GroupOpenId} 的消息：{groupAtMessage.Content}", groupAtMessage.GroupOpenId, groupAtMessage.Content);
                             // 回复消息
                             //await _service.SendGroupMessageAsync(groupAtMessage.GroupOpenId, $"你发送的消息是：{groupAtMessage.Content}", msgId: groupAtMessage.Id);
-                            await FungameService.Handler(groupAt: groupAtMessage);
+                            TaskUtility.NewTask(async () => await FungameService.Handler(groupAt: groupAtMessage));
                         }
                         else
                         {
