@@ -713,7 +713,7 @@ namespace Oshima.FunGame.WebAPI.Services
                 if (e.Detail.StartsWith("分类库存"))
                 {
                     string detail = e.Detail.Replace("分类库存", "").Trim();
-                    string[] strings = detail.Split(" ");
+                    string[] strings = detail.Split(" ", StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
                     int t = -1;
                     if (strings.Length > 0 && int.TryParse(strings[0].Trim(), out t))
                     {
@@ -953,7 +953,7 @@ namespace Oshima.FunGame.WebAPI.Services
                 if (e.Detail.StartsWith("取消装备", StringComparison.CurrentCultureIgnoreCase))
                 {
                     string detail = e.Detail.Replace("取消装备", "").Trim();
-                    string[] strings = detail.Split(" ");
+                    string[] strings = detail.Split(" ", StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
                     int c = -1, i = -1;
                     if (strings.Length > 0 && int.TryParse(strings[0].Trim(), out c) && strings.Length > 1 && int.TryParse(strings[1].Trim(), out i))
                     {
@@ -972,7 +972,7 @@ namespace Oshima.FunGame.WebAPI.Services
                 if (e.Detail.StartsWith("装备", StringComparison.CurrentCultureIgnoreCase))
                 {
                     string detail = e.Detail.Replace("装备", "").Trim();
-                    string[] strings = detail.Split(" ");
+                    string[] strings = detail.Split(" ", StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
                     int c = -1, i = -1;
                     if (strings.Length > 0 && int.TryParse(strings[0].Trim(), out c) && strings.Length > 1 && int.TryParse(strings[1].Trim(), out i))
                     {
@@ -991,7 +991,7 @@ namespace Oshima.FunGame.WebAPI.Services
                 if (e.Detail.StartsWith("查看技能升级", StringComparison.CurrentCultureIgnoreCase))
                 {
                     string detail = e.Detail.Replace("查看技能升级", "").Trim();
-                    string[] strings = detail.Split(" ");
+                    string[] strings = detail.Split(" ", StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
                     int c = -1;
                     if (strings.Length > 0 && int.TryParse(strings[0].Trim(), out c) && strings.Length > 1)
                     {
@@ -1011,7 +1011,7 @@ namespace Oshima.FunGame.WebAPI.Services
                 if (e.Detail.StartsWith("技能升级", StringComparison.CurrentCultureIgnoreCase))
                 {
                     string detail = e.Detail.Replace("技能升级", "").Trim();
-                    string[] strings = detail.Split(" ");
+                    string[] strings = detail.Split(" ", StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
                     int c = -1;
                     if (strings.Length > 0 && int.TryParse(strings[0].Trim(), out c) && strings.Length > 1)
                     {
@@ -1031,7 +1031,7 @@ namespace Oshima.FunGame.WebAPI.Services
                 if (e.Detail.StartsWith("合成魔法卡", StringComparison.CurrentCultureIgnoreCase))
                 {
                     string detail = e.Detail.Replace("合成魔法卡", "").Trim();
-                    string[] strings = detail.Split(" ");
+                    string[] strings = detail.Split(" ", StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
                     int id1 = -1, id2 = -1, id3 = -1;
                     if (strings.Length > 0 && int.TryParse(strings[0].Trim(), out id1) && strings.Length > 1 && int.TryParse(strings[1].Trim(), out id2) && strings.Length > 2 && int.TryParse(strings[2].Trim(), out id3))
                     {
@@ -1178,7 +1178,7 @@ namespace Oshima.FunGame.WebAPI.Services
                             if (int.TryParse(match.Groups["count"].Value, out int count))
                             {
                                 string characterIdsString = match.Groups["characterIds"].Value;
-                                int[] characterIds = characterIdsString != "" ? [.. characterIdsString.Split(chars, StringSplitOptions.RemoveEmptyEntries).Select(int.Parse)] : [1];
+                                int[] characterIds = characterIdsString != "" ? [.. characterIdsString.Split(chars, StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries).Select(int.Parse)] : [1];
                                 string msg = NetworkUtility.JsonDeserialize<string>(Controller.UseItem2(uid, itemName, count, characterIds)) ?? "";
                                 if (msg != "")
                                 {
@@ -1195,7 +1195,7 @@ namespace Oshima.FunGame.WebAPI.Services
                                 if (int.TryParse(match.Groups["itemId"].Value, out int itemId))
                                 {
                                     string characterIdsString = match.Groups["characterIds"].Value;
-                                    int[] characterIds = characterIdsString != "" ? [.. characterIdsString.Split(chars, StringSplitOptions.RemoveEmptyEntries).Select(int.Parse)] : [1];
+                                    int[] characterIds = characterIdsString != "" ? [.. characterIdsString.Split(chars, StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries).Select(int.Parse)] : [1];
                                     string msg = NetworkUtility.JsonDeserialize<string>(Controller.UseItem(uid, itemId, characterIds)) ?? "";
                                     if (msg != "")
                                     {
@@ -1246,7 +1246,7 @@ namespace Oshima.FunGame.WebAPI.Services
                 {
                     string detail = e.Detail.Replace("分解物品", "").Trim();
                     List<int> ids = [];
-                    foreach (string str in detail.Split(' '))
+                    foreach (string str in detail.Split(' ', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries))
                     {
                         if (int.TryParse(str, out int id))
                         {
@@ -1301,7 +1301,7 @@ namespace Oshima.FunGame.WebAPI.Services
                 if (e.Detail.StartsWith("熟圣之力", StringComparison.CurrentCultureIgnoreCase))
                 {
                     string detail = e.Detail.Replace("熟圣之力", "").Trim();
-                    string[] strings = detail.Split(" ");
+                    string[] strings = detail.Split(" ", StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
                     int count = -1;
                     if (strings.Length > 1 && int.TryParse(strings[1].Trim(), out count))
                     {
@@ -1663,7 +1663,7 @@ namespace Oshima.FunGame.WebAPI.Services
                 if (e.Detail.StartsWith("设置小队") || e.Detail.StartsWith("重组小队"))
                 {
                     string detail = e.Detail.Replace("设置小队", "").Replace("重组小队", "").Trim();
-                    string[] strings = detail.Split(' ');
+                    string[] strings = detail.Split(' ', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
                     List<int> cindexs = [];
                     foreach (string s in strings)
                     {
@@ -1816,7 +1816,7 @@ namespace Oshima.FunGame.WebAPI.Services
                 if (e.Detail.StartsWith("社团设置", StringComparison.CurrentCultureIgnoreCase))
                 {
                     string detail = e.Detail.Replace("社团设置", "").Trim();
-                    string[] strings = detail.Split(' ');
+                    string[] strings = detail.Split(' ', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
                     if (strings.Length > 0)
                     {
                         string part = strings[0].Trim() switch
@@ -1870,12 +1870,18 @@ namespace Oshima.FunGame.WebAPI.Services
                 if (e.Detail.StartsWith("商店购买", StringComparison.CurrentCultureIgnoreCase))
                 {
                     string detail = e.Detail.Replace("商店购买", "").Trim();
-                    if (int.TryParse(detail, out int id))
+                    string[] strings = detail.Split(' ', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
+                    if (strings.Length > 0 && int.TryParse(strings[0].Trim(), out int id))
                     {
-                        string msg = NetworkUtility.JsonDeserialize<string>(Controller.DailyStoreBuy(uid, id)) ?? "";
+                        int count = 1;
+                        if (strings.Length > 1 && int.TryParse(strings[1].Trim(), out int temp))
+                        {
+                            count = temp;
+                        }
+                        string msg = NetworkUtility.JsonDeserialize<string>(Controller.DailyStoreBuy(uid, id, count)) ?? "";
                         if (msg != "")
                         {
-                            await SendAsync(e, "商店", msg);
+                            await SendAsync(e, "商店购买", msg);
                         }
                     }
                     return result;

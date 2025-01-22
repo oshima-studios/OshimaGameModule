@@ -1246,7 +1246,8 @@ namespace Oshima.FunGame.OshimaServers.Service
                 for (int i = 0; i < genCount; i++)
                 {
                     int nowIndex = Bosses.Count > 0 ? Bosses.Keys.Max() + 1 : 1;
-                    Character boss = new CustomCharacter(nowIndex, GenerateRandomChineseUserName(), "", "Boss");
+                    string bossName = GenerateRandomChineseUserName();
+                    Character boss = new CustomCharacter(nowIndex, bossName, "", bossName);
                     int cutRate = Random.Shared.Next(3) switch
                     {
                         0 => 1,

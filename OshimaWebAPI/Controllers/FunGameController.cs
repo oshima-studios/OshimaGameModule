@@ -1892,6 +1892,10 @@ namespace Oshima.FunGame.WebAPI.Controllers
                 long userid = uid ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
                 string itemName = name ?? "";
                 int useCount = count ?? 0;
+                if (useCount <= 0)
+                {
+                    return NetworkUtility.JsonSerialize("数量必须大于0！");
+                }
                 List<int> charactersIndex = characters?.ToList() ?? [];
 
                 PluginConfig pc = new("saved", userid.ToString());
@@ -2063,6 +2067,10 @@ namespace Oshima.FunGame.WebAPI.Controllers
                 long userid = uid ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
                 int characterIndex = c ?? 0;
                 int upCount = count ?? 0;
+                if (upCount <= 0)
+                {
+                    return NetworkUtility.JsonSerialize("数量必须大于0！");
+                }
 
                 PluginConfig pc = new("saved", userid.ToString());
                 pc.LoadConfig();
@@ -2265,6 +2273,10 @@ namespace Oshima.FunGame.WebAPI.Controllers
             long userid = uid ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
             string itemName = name ?? "";
             int itemCount = count ?? 0;
+            if (itemCount <= 0)
+            {
+                return NetworkUtility.JsonSerialize("数量必须大于0！");
+            }
             long targetid = target ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
 
             PluginConfig pc = new("saved", userid.ToString());
@@ -2437,6 +2449,10 @@ namespace Oshima.FunGame.WebAPI.Controllers
                 long userid = uid ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
                 string itemName = name ?? "";
                 int useCount = count ?? 0;
+                if (useCount <= 0)
+                {
+                    return NetworkUtility.JsonSerialize("数量必须大于0！");
+                }
 
                 PluginConfig pc = new("saved", userid.ToString());
                 pc.LoadConfig();
@@ -4658,7 +4674,11 @@ namespace Oshima.FunGame.WebAPI.Controllers
         {
             long userid = uid ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
             long goodid = id ?? 0;
-            int buycount = count ?? 0;
+            int buycount = count ?? 1;
+            if (buycount <= 0)
+            {
+                return NetworkUtility.JsonSerialize("数量必须大于0！");
+            }
 
             PluginConfig pc = new("saved", userid.ToString());
             pc.LoadConfig();

@@ -106,6 +106,11 @@ namespace Oshima.FunGame.WebAPI.Controllers
                         C2CMessage? c2cMessage = JsonSerializer.Deserialize<C2CMessage>(payload.Data.ToString() ?? "");
                         if (c2cMessage != null)
                         {
+                            c2cMessage.Detail = c2cMessage.Detail.Trim();
+                            if (c2cMessage.Detail.StartsWith('/'))
+                            {
+                                c2cMessage.Detail = c2cMessage.Detail[1..];
+                            }
                             // TODO
                             Logger.LogInformation("收到来自用户 {c2cMessage.Author.UserOpenId} 的消息：{c2cMessage.Content}", c2cMessage.Author.UserOpenId, c2cMessage.Content);
                             //// 上传图片
@@ -136,6 +141,10 @@ namespace Oshima.FunGame.WebAPI.Controllers
                         if (groupAtMessage != null)
                         {
                             groupAtMessage.Detail = groupAtMessage.Detail.Trim();
+                            if (groupAtMessage.Detail.StartsWith('/'))
+                            {
+                                groupAtMessage.Detail = groupAtMessage.Detail[1..];
+                            }
                             // TODO
                             Logger.LogInformation("收到来自群组 {groupAtMessage.GroupOpenId} 的消息：{groupAtMessage.Content}", groupAtMessage.GroupOpenId, groupAtMessage.Content);
                             // 回复消息
