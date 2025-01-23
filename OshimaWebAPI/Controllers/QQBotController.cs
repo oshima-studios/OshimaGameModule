@@ -1,6 +1,7 @@
 ﻿using System.Globalization;
 using System.Text;
 using System.Text.Json;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -173,6 +174,34 @@ namespace Oshima.FunGame.WebAPI.Controllers
                 Logger.LogError("Error: {e}", e);
                 return StatusCode(500, "服务器内部错误");
             }
+        }
+
+        [Authorize(AuthenticationSchemes = "CustomBearer")]
+        [HttpPost("thirdparty")]
+        public async Task<string> ThirdParty([FromBody] ThirdPartyMessage? msg = null)
+        {
+            if (msg is null) return "";
+
+            if (await FungameService.Handler(third: msg))
+            {
+                int time = 0;
+                int timeout = 8 * 1000;
+                while (true)
+                {
+                    await Task.Delay(200);
+                    time += 200;
+                    if (time >= timeout)
+                    {
+                        break;
+                    }
+                    if (msg.IsCompleted)
+                    {
+                        break;
+                    }
+                }
+            }
+
+            return NetworkUtility.JsonSerialize(msg.Result);
         }
     }
 }

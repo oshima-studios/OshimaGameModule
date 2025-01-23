@@ -25,6 +25,12 @@ namespace Oshima.FunGame.WebAPI.Services
         private async Task SendAsync(IBotMessage msg, string title, string content, int msgType = 0, object? media = null, int? msgSeq = null)
         {
             Statics.RunningPlugin?.Controller.WriteLine(title, Milimoe.FunGame.Core.Library.Constant.LogLevel.Debug);
+            if (msg is ThirdPartyMessage third)
+            {
+                third.IsCompleted = true;
+                third.Result = content;
+                return;
+            }
             if (msg.IsGroup)
             {
                 await Service.SendGroupMessageAsync(msg.OpenId, content, msgType, media, msg.Id, msgSeq);
@@ -36,7 +42,7 @@ namespace Oshima.FunGame.WebAPI.Services
             }
         }
 
-        public async Task<bool> Handler(GroupAtMessage? groupAt = null, C2CMessage? c2c = null)
+        public async Task<bool> Handler(GroupAtMessage? groupAt = null, C2CMessage? c2c = null, ThirdPartyMessage? third = null)
         {
             bool result = true;
             try
@@ -99,6 +105,12 @@ namespace Oshima.FunGame.WebAPI.Services
                 //    }
                 //    await SendAsync(e, "绑定", msg);
                 //}
+
+                if (!e.IsGroup && e.Detail == "获取接入码")
+                {
+                    await SendAsync(e, "获取接入码", $"你的接入码为 {openid}，请妥善保存！");
+                    return true;
+                }
 
                 if (e.Detail == "帮助" || e.Detail == "帮助1")
                 {

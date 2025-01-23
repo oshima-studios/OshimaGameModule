@@ -83,6 +83,33 @@ namespace Oshima.FunGame.WebAPI.Models
         public string OpenId { get; }
         public string AuthorOpenId { get; }
     }
+    
+    public class ThirdPartyMessage : IBotMessage
+    {
+        [JsonPropertyName("id")]
+        public string Id { get; set; } = "";
+
+        [JsonPropertyName("isgroup")]
+        public bool IsGroup { get; set; } = false;
+
+        [JsonPropertyName("detail")]
+        public string Detail { get; set; } = "";
+
+        [JsonPropertyName("timestamp")]
+        public string Timestamp { get; set; } = "";
+
+        [JsonPropertyName("openid")]
+        public string OpenId { get; set; } = "";
+
+        [JsonPropertyName("authoropenid")]
+        public string AuthorOpenId { get; set; } = "";
+
+        [JsonIgnore]
+        public bool IsCompleted { get; set; } = false;
+
+        [JsonIgnore]
+        public string Result { get; set; } = "";
+    }
 
     public class C2CMessage : IBotMessage
     {

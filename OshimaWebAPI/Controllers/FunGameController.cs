@@ -13,7 +13,6 @@ using Oshima.Core.Configs;
 using Oshima.FunGame.OshimaModules.Characters;
 using Oshima.FunGame.OshimaModules.Items;
 using Oshima.FunGame.OshimaServers.Service;
-using Oshima.FunGame.WebAPI.Models;
 
 namespace Oshima.FunGame.WebAPI.Controllers
 {
@@ -4787,18 +4786,6 @@ namespace Oshima.FunGame.WebAPI.Controllers
                 return NetworkUtility.JsonSerialize("FunGame已重新加载。");
             }
             return NetworkUtility.JsonSerialize("提供的参数不正确。");
-        }
-
-        [HttpPost("post")]
-        public string PostName([FromBody] string name)
-        {
-            return NetworkUtility.JsonSerialize($"Your Name received successfully: {name}.");
-        }
-
-        [HttpPost("bind")]
-        public string Post([FromBody] BindQQ b)
-        {
-            return NetworkUtility.JsonSerialize("绑定失败，请稍后再试。");
         }
     }
 }
