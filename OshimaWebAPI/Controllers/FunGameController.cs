@@ -2066,10 +2066,6 @@ namespace Oshima.FunGame.WebAPI.Controllers
                 long userid = uid ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
                 int characterIndex = c ?? 0;
                 int upCount = count ?? 0;
-                if (upCount <= 0)
-                {
-                    return NetworkUtility.JsonSerialize("数量必须大于0！");
-                }
 
                 PluginConfig pc = new("saved", userid.ToString());
                 pc.LoadConfig();

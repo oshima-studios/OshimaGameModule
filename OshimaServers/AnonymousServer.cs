@@ -34,14 +34,14 @@ namespace Oshima.FunGame.OshimaServers
         /// 向客户端推送事件
         /// </summary>
         /// <param name="msg"></param>
-        public static async Task PushMessageToClients(long qq, string msg)
+        public static async Task PushMessageToClients(string openid, string msg)
         {
             AnonymousServer[] servers = [.. Instances];
             foreach (AnonymousServer anonymous in servers)
             {
                 try
                 {
-                    await anonymous.PushMessage(qq, msg);
+                    await anonymous.PushMessage(openid, msg);
                 }
                 catch (Exception e)
                 {
@@ -200,10 +200,10 @@ namespace Oshima.FunGame.OshimaServers
         /// 向客户端推送事件
         /// </summary>
         /// <param name="msg"></param>
-        public async Task PushMessage(long qq, string msg)
+        public async Task PushMessage(string openid, string msg)
         {
             Dictionary<string, object> data = [];
-            data.Add(nameof(qq), qq);
+            data.Add(nameof(openid), openid);
             data.Add(nameof(msg), msg);
             Controller.WriteLine("向客户端推送事件", LogLevel.Debug);
             List<IServerModel> failedModels = await SendAnonymousGameServerMessage(_clientModels, data);

@@ -376,15 +376,6 @@ namespace Oshima.FunGame.OshimaServers.Service
 
         public static string GenerateRandomChineseName()
         {
-            // 定义一个包含常用汉字的字符串
-            string commonChineseCharacters = "云星宝灵梦龙花雨风叶山川月石羽水竹金" +
-                "玉海火雷光天地凤虎虹珠华霞鹏雪银沙松桃兰青霜鸿康骏波泉河湖江泽洋林枫" +
-                "梅桂樱桐晴韵凌若悠碧涛渊壁剑影霖玄承珍雅耀瑞鹤烟燕霏翼翔璃绮纱绫绣锦" +
-                "瑜琼瑾璇璧琳琪瑶瑛芝杏茜荷莉莹菡莲诗瑰翠椒槐榆槿柱梧曜曙晶暖智煌熙霓" +
-                "熠嘉琴曼菁蓉菲淑妙惠秋涵映巧慧茹荣菱曦容芬玲澜清湘澄泓润珺晨翠涟洁悠" +
-                "霏淑绮润东南西北云山川风月溪雪雨雷天云海霜柏芳春秋夏冬温景寒和竹阳溪" +
-                "溪飞风峰阳";
-
             // 随机生成名字长度，2到5个字
             int nameLength = Random.Shared.Next(2, 6);
             StringBuilder name = new();
@@ -392,7 +383,7 @@ namespace Oshima.FunGame.OshimaServers.Service
             for (int i = 0; i < nameLength; i++)
             {
                 // 从常用汉字集中随机选择一个汉字
-                char chineseCharacter = commonChineseCharacters[Random.Shared.Next(commonChineseCharacters.Length)];
+                char chineseCharacter = FunGameConstant.CommonChineseCharacters[Random.Shared.Next(FunGameConstant.CommonChineseCharacters.Length)];
                 name.Append(chineseCharacter);
             }
 
@@ -401,35 +392,10 @@ namespace Oshima.FunGame.OshimaServers.Service
 
         public static string GenerateRandomChineseUserName()
         {
-            string[] commonSurnames = [
-                "顾", "沈", "陆", "楚", "白", "苏", "叶", "萧", "莫", "司马", "欧阳",
-                "上官", "慕容", "尉迟", "司徒", "轩辕", "端木", "南宫", "长孙", "百里",
-                "东方", "西门", "独孤", "公孙", "令狐", "宇文", "夏侯", "赫连", "皇甫",
-                "北堂", "安陵", "东篱", "花容", "夜", "柳", "云", "凌", "寒", "龙",
-                "凤", "蓝", "冷", "华", "蓝夜", "叶南", "墨", "君", "月", "子车",
-                "澹台", "钟离", "公羊", "闾丘", "仲孙", "司空", "羊舌", "亓官", "公冶",
-                "濮阳", "独月", "南风", "凤栖", "南门", "姬", "闻人", "花怜", "若",
-                "紫", "卿", "微", "清", "易", "月华", "霜", "兰", "岑", "语", "雪",
-                "夜阑", "梦", "洛", "江", "黎", "夜北", "唐", "水", "韩", "庄",
-                "夜雪", "夜凌", "君临", "青冥", "漠然", "林", "青", "岑", "容",
-                "墨", "柏", "安", "晏", "尉", "南", "轩", "竹", "晨", "桓", "晖",
-                "瑾", "溪", "汐", "沐", "玉", "汀", "归", "羽", "颜", "辰", "琦",
-                "芷", "尹", "施", "原", "孟", "尧", "荀", "单", "简", "植", "傅",
-                "司", "钟", "方", "谢"
-            ];
-
-            // 定义一个包含常用汉字的字符串
-            string commonChineseCharacters = "云星宝灵梦龙花雨风叶山川月石羽水竹金" +
-                "玉海火雷光天地凤虎虹珠华霞鹏雪银沙松桃兰青霜鸿康骏波泉河湖江泽洋林枫" +
-                "梅桂樱桐晴韵凌若悠碧涛渊壁剑影霖玄承珍雅耀瑞鹤烟燕霏翼翔璃绮纱绫绣锦" +
-                "瑜琼瑾璇璧琳琪瑶瑛芝杏茜荷莉莹菡莲诗瑰翠椒槐榆槿柱梧曜曙晶暖智煌熙霓" +
-                "熠嘉琴曼菁蓉菲淑妙惠秋涵映巧慧茹荣菱曦容芬玲澜清湘澄泓润珺晨涟洁东南" +
-                "西北溪飞峰阳龄一二三四五六七十";
-
             StringBuilder name = new();
 
             // 随机姓
-            string lastname = commonSurnames[Random.Shared.Next(commonSurnames.Length)];
+            string lastname = FunGameConstant.CommonSurnames[Random.Shared.Next(FunGameConstant.CommonSurnames.Length)];
             name.Append(lastname);
 
             // 随机生成名字长度，2到5个字
@@ -438,7 +404,7 @@ namespace Oshima.FunGame.OshimaServers.Service
             for (int i = 0; i < nameLength; i++)
             {
                 // 从常用汉字集中随机选择一个汉字
-                char chineseCharacter = commonChineseCharacters[Random.Shared.Next(commonChineseCharacters.Length)];
+                char chineseCharacter = FunGameConstant.CommonChineseCharacters[Random.Shared.Next(FunGameConstant.CommonChineseCharacters.Length)];
                 name.Append(chineseCharacter);
             }
 
@@ -1540,7 +1506,7 @@ namespace Oshima.FunGame.OshimaServers.Service
                         user.Inventory.Items.Add(newItem);
                     }
                 }
-                TaskUtility.NewTask(async () => await AnonymousServer.PushMessageToClients(user.Id, $"FunGame Web API 推送：你的任务【{quest.Name}】已结算，" +
+                TaskUtility.NewTask(async () => await AnonymousServer.PushMessageToClients(user.AutoKey, $"FunGame Web API 推送：你的任务【{quest.Name}】已结算，" +
                     $"获得奖励：【{string.Join("，", quest.Awards.Select(kv => kv.Key + " * " + kv.Value))}】!"));
                 result = true;
             }

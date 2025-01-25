@@ -27,8 +27,8 @@ namespace Oshima.FunGame.WebAPI.Services
             Statics.RunningPlugin?.Controller.WriteLine(title, Milimoe.FunGame.Core.Library.Constant.LogLevel.Debug);
             if (msg is ThirdPartyMessage third)
             {
-                third.IsCompleted = true;
                 third.Result = content;
+                third.IsCompleted = true;
                 return;
             }
             if (msg.IsGroup)
@@ -57,6 +57,10 @@ namespace Oshima.FunGame.WebAPI.Services
                 else if (c2c != null)
                 {
                     e = c2c;
+                }
+                else if (third != null)
+                {
+                    e = third;
                 }
 
                 if (e is null)
