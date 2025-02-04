@@ -1,4 +1,5 @@
-﻿using Milimoe.FunGame.Core.Api.Utility;
+﻿using System;
+using Milimoe.FunGame.Core.Api.Utility;
 using Milimoe.FunGame.Core.Entity;
 using Milimoe.FunGame.Core.Library.Constant;
 
@@ -46,6 +47,30 @@ namespace Oshima.FunGame.OshimaModules.Characters
             InitialSPD = Random.Shared.Next(220, 291);
             InitialHR = Random.Shared.Next(1, 6);
             InitialMR = Random.Shared.Next(1, 6);
+        }
+
+        public void SetPrimaryAttribute(PrimaryAttribute? value = null)
+        {
+            if (value != null && value.HasValue)
+            {
+                PrimaryAttribute = value.Value;
+            }
+            else
+            {
+                double max = Math.Max(Math.Max(STR, AGI), INT);
+                if (max == STR)
+                {
+                    PrimaryAttribute = PrimaryAttribute.STR;
+                }
+                else if (max == AGI)
+                {
+                    PrimaryAttribute = PrimaryAttribute.AGI;
+                }
+                else if (max == INT)
+                {
+                    PrimaryAttribute = PrimaryAttribute.INT;
+                }
+            }
         }
     }
 }

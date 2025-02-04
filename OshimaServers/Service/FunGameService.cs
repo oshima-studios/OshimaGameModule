@@ -47,7 +47,7 @@ namespace Oshima.FunGame.OshimaServers.Service
 
             FunGameConstant.Items.AddRange(exItems.Values.Where(i => (int)i.ItemType > 4));
             FunGameConstant.Items.AddRange([new 小经验书(), new 中经验书(), new 大经验书(), new 升华之印(), new 流光之印(), new 永恒之印(), new 技能卷轴(), new 智慧之果(), new 奥术符文(), new 混沌之核(),
-                new 小回复药(), new 中回复药(), new 大回复药(), new 魔力填充剂1(), new 魔力填充剂2(), new 魔力填充剂3(), new 能量饮料1(), new 能量饮料2(), new 能量饮料3()]);
+                new 小回复药(), new 中回复药(), new 大回复药(), new 魔力填充剂1(), new 魔力填充剂2(), new 魔力填充剂3(), new 能量饮料1(), new 能量饮料2(), new 能量饮料3(), new 年夜饭(), new 蛇年大吉(), new 新春快乐()]);
 
             FunGameConstant.AllItems.AddRange(FunGameConstant.Equipment);
             FunGameConstant.AllItems.AddRange(FunGameConstant.Items);
@@ -1052,6 +1052,53 @@ namespace Oshima.FunGame.OshimaServers.Service
         public static bool UseItemCustom(Item item, User user, IEnumerable<Character> targets, out string msg)
         {
             msg = "";
+            if (item.ItemType == ItemType.GiftBox)
+            {
+                if (item is 礼包.GiftBox box && box.Gifts.Count > 0)
+                {
+                    foreach (string name in box.Gifts.Keys)
+                    {
+                        if (name == General.GameplayEquilibriumConstant.InGameCurrency)
+                        {
+                            user.Inventory.Credits += box.Gifts[name];
+                        }
+                        if (name == General.GameplayEquilibriumConstant.InGameMaterial)
+                        {
+                            user.Inventory.Materials += box.Gifts[name];
+                        }
+                        if (FunGameConstant.AllItems.FirstOrDefault(i => i.Name == name) is Item currentItem)
+                        {
+                            for (int i = 0; i < box.Gifts[name]; i++)
+                            {
+                                Item newItem = currentItem.Copy();
+                                SetSellAndTradeTime(newItem);
+                                newItem.User = user;
+                                user.Inventory.Items.Add(newItem);
+                            }
+                        }
+                    }
+                    msg = "打开礼包成功！获得了以下物品：\r\n" + string.Join("，", box.Gifts.Select(kv => $"{kv.Key} * {kv.Value}"));
+                    if (item.Name == nameof(年夜饭))
+                    {
+                        msg += "\r\n" + "热腾腾的除夕年夜饭，祝您阖家团圆，年味浓浓！";
+                    }
+                    else if (item.Name == nameof(蛇年大吉))
+                    {
+                        msg += "\r\n" + "金蛇送福，好运连连！！";
+                    }
+                    else if (item.Name == nameof(新春快乐))
+                    {
+                        msg += "\r\n" + "新春纳福，喜乐安康！！";
+                    }
+                    item.RemainUseTimes--;
+                    if (item.RemainUseTimes < 0) item.RemainUseTimes = 0;
+                    if (item.RemainUseTimes == 0)
+                    {
+                        user.Inventory.Items.Remove(item);
+                    }
+                    return true;
+                }
+            }
             switch (item.Name)
             {
                 default:
@@ -1213,7 +1260,7 @@ namespace Oshima.FunGame.OshimaServers.Service
                 {
                     int nowIndex = Bosses.Count > 0 ? Bosses.Keys.Max() + 1 : 1;
                     string bossName = GenerateRandomChineseUserName();
-                    Character boss = new CustomCharacter(nowIndex, bossName, "", bossName);
+                    CustomCharacter boss = new(nowIndex, bossName, "", bossName);
                     int cutRate = Random.Shared.Next(3) switch
                     {
                         0 => 1,
@@ -1324,6 +1371,7 @@ namespace Oshima.FunGame.OshimaServers.Service
                     boss.Skills.Add(super);
                     
                     boss.Recovery();
+                    boss.SetPrimaryAttribute();
 
                     Bosses[nowIndex] = boss;
                 }
@@ -1428,41 +1476,110 @@ namespace Oshima.FunGame.OshimaServers.Service
                 // 生成任务
                 for (int i = 0; i < 6; i++)
                 {
-                    int minutes = Random.Shared.Next(10, 41);
-                    Dictionary<string, int> items = [];
-                    items[General.GameplayEquilibriumConstant.InGameCurrency] = minutes * 20;
-                    items[General.GameplayEquilibriumConstant.InGameMaterial] = minutes / 8 * 1;
-                    int index = Random.Shared.Next(FunGameConstant.AllItems.Count);
-                    Item item = FunGameConstant.AllItems[index];
-                    items.Add(item.Name, 1);
-                    while (true)
+                    QuestType type = (QuestType)Random.Shared.Next(3);
+                    long id = quests.Count > 0 ? quests.Values.Max(q => q.Id) + 1 : 1;
+
+                    Quest quest;
+                    if (type == QuestType.Continuous)
                     {
-                        int index2 = Random.Shared.Next(FunGameConstant.AllItems.Count);
-                        if (index2 != index)
+                        string name = FunGameConstant.ContinuousQuestList.Keys.OrderBy(o => Random.Shared.Next()).First();
+                        int minutes = Random.Shared.Next(10, 41);
+                        HashSet<Item> items = [];
+                        Dictionary<string, int> itemsCount = [];
+                        int index = Random.Shared.Next(FunGameConstant.AllItems.Count);
+                        Item item = FunGameConstant.AllItems[index];
+                        items.Add(item);
+                        itemsCount[item.Name] = 1;
+                        index = Random.Shared.Next(FunGameConstant.AllItems.Count);
+                        Item item2 = FunGameConstant.AllItems[index];
+                        items.Add(item2);
+                        if (!itemsCount.TryAdd(item2.Name, 1))
                         {
-                            Item item2 = FunGameConstant.AllItems[index2];
-                            items.Add(item2.Name, 1);
-                            break;
+                            itemsCount[item2.Name]++;
                         }
+                        quest = new()
+                        {
+                            Id = id,
+                            Name = name,
+                            Description = FunGameConstant.ContinuousQuestList[name],
+                            QuestType = QuestType.Continuous,
+                            EstimatedMinutes = minutes,
+                            CreditsAward = minutes * 20,
+                            MaterialsAward = minutes / 8 * 1,
+                            Awards = items,
+                            AwardsCount = itemsCount
+                        };
                     }
-                    string name = FunGameConstant.QuestList.Keys.OrderBy(o => Random.Shared.Next()).First();
-                    Quest quest = new()
+                    else if (type == QuestType.Immediate)
                     {
-                        Id = quests.Count > 0 ? quests.Values.Max(q => q.Id) + 1 : 1,
-                        Name = name,
-                        Description = FunGameConstant.QuestList[name],
-                        EstimatedMinutes = minutes,
-                        Awards = items
-                    };
+                        string name = FunGameConstant.ImmediateQuestList.Keys.OrderBy(o => Random.Shared.Next()).First();
+                        int difficulty = Random.Shared.Next(3, 11);
+                        HashSet<Item> items = [];
+                        Dictionary<string, int> itemsCount = [];
+                        int index = Random.Shared.Next(FunGameConstant.AllItems.Count);
+                        Item item = FunGameConstant.AllItems[index];
+                        items.Add(item);
+                        itemsCount[item.Name] = 1;
+                        index = Random.Shared.Next(FunGameConstant.AllItems.Count);
+                        Item item2 = FunGameConstant.AllItems[index];
+                        items.Add(item2);
+                        if (!itemsCount.TryAdd(item2.Name, 1))
+                        {
+                            itemsCount[item2.Name]++;
+                        }
+                        quest = new()
+                        {
+                            Id = id,
+                            Name = name,
+                            Description = FunGameConstant.ImmediateQuestList[name],
+                            QuestType = QuestType.Immediate,
+                            CreditsAward = difficulty * 80,
+                            MaterialsAward = difficulty / 2 * 1,
+                            Awards = items,
+                            AwardsCount = itemsCount
+                        };
+                    }
+                    else
+                    {
+                        string name = FunGameConstant.ProgressiveQuestList.Keys.OrderBy(o => Random.Shared.Next()).First();
+                        int maxProgress = Random.Shared.Next(3, 11);
+                        HashSet<Item> items = [];
+                        Dictionary<string, int> itemsCount = [];
+                        int index = Random.Shared.Next(FunGameConstant.AllItems.Count);
+                        Item item = FunGameConstant.AllItems[index];
+                        items.Add(item);
+                        itemsCount[item.Name] = 1;
+                        index = Random.Shared.Next(FunGameConstant.AllItems.Count);
+                        Item item2 = FunGameConstant.AllItems[index];
+                        items.Add(item2);
+                        if (!itemsCount.TryAdd(item2.Name, 1))
+                        {
+                            itemsCount[item2.Name]++;
+                        }
+                        quest = new()
+                        {
+                            Id = id,
+                            Name = name,
+                            Description = string.Format(FunGameConstant.ProgressiveQuestList[name], maxProgress),
+                            QuestType = QuestType.Progressive,
+                            Progress = 0,
+                            MaxProgress = maxProgress,
+                            CreditsAward = maxProgress * 80,
+                            MaterialsAward = maxProgress / 2 * 1,
+                            Awards = items,
+                            AwardsCount = itemsCount
+                        };
+                    }
+
                     quests.Add(quest.GetIdName(), quest);
                 }
-                return "☆--- 今日任务列表 ---☆\r\n" + string.Join("\r\n", quests.Values.Select(q => q.ToString())) + "\r\n温馨提示：请务必在次日 4:00 前完成任务结算，未结算的任务都会被取消！";
+                return "☆--- 今日任务列表 ---☆\r\n" + string.Join("\r\n", quests.Values.Select(q => q.ToString())) + "\r\n温馨提示：使用【做任务+任务序号】指令来进行任务。\r\n请务必在次日 4:00 前完成任务结算，未结算的任务都会被取消！";
             }
             else
             {
                 if (quests.Count > 0)
                 {
-                    return "☆--- 今日任务列表 ---☆\r\n" + string.Join("\r\n", quests.Values.Select(q => q.ToString())) + "\r\n温馨提示：请务必在次日 4:00 前完成任务结算，未结算的任务都会被取消！";
+                    return "☆--- 今日任务列表 ---☆\r\n" + string.Join("\r\n", quests.Values.Select(q => q.ToString())) + "\r\n温馨提示：使用【做任务+任务序号】指令来进行任务。\r\n请务必在次日 4:00 前完成任务结算，未结算的任务都会被取消！";
                 }
                 else
                 {
@@ -1488,26 +1605,32 @@ namespace Oshima.FunGame.OshimaServers.Service
             {
                 quest.Status = QuestState.Settled;
                 quest.SettleTime = DateTime.Now;
-                foreach (string name in quest.Awards.Keys)
+                if (quest.CreditsAward > 0)
                 {
-                    if (name == General.GameplayEquilibriumConstant.InGameCurrency)
+                    user.Inventory.Credits += quest.CreditsAward;
+                }
+                if (quest.MaterialsAward > 0)
+                {
+                    user.Inventory.Materials += quest.MaterialsAward;
+                }
+                foreach (Item item in quest.Awards)
+                {
+                    if (quest.AwardsCount.TryGetValue(item.Name, out int qty))
                     {
-                        user.Inventory.Credits += quest.Awards[name];
-                    }
-                    else if (name == General.GameplayEquilibriumConstant.InGameMaterial)
-                    {
-                        user.Inventory.Materials += quest.Awards[name];
-                    }
-                    else if (FunGameConstant.AllItems.FirstOrDefault(i => i.Name == name) is Item item)
-                    {
-                        Item newItem = item.Copy();
-                        newItem.User = user;
-                        SetSellAndTradeTime(newItem);
-                        user.Inventory.Items.Add(newItem);
+                        for (int i = 0; i < qty; i++)
+                        {
+                            if (FunGameConstant.AllItems.FirstOrDefault(i => i.Name == item.Name) != null)
+                            {
+                                Item newItem = item.Copy();
+                                newItem.User = user;
+                                SetSellAndTradeTime(newItem);
+                                user.Inventory.Items.Add(newItem);
+                            }
+                        }
                     }
                 }
                 TaskUtility.NewTask(async () => await AnonymousServer.PushMessageToClients(user.AutoKey, $"FunGame Web API 推送：你的任务【{quest.Name}】已结算，" +
-                    $"获得奖励：【{string.Join("，", quest.Awards.Select(kv => kv.Key + " * " + kv.Value))}】!"));
+                    $"获得奖励：【{quest.AwardsString}】!"));
                 result = true;
             }
             return result;
@@ -1531,7 +1654,7 @@ namespace Oshima.FunGame.OshimaServers.Service
                     double price = Random.Shared.Next(min, max);
                     if (price == 0)
                     {
-                        price = (Random.Shared.NextDouble() + 0.1) * Random.Shared.Next(1000, 10000) * Random.Shared.Next((int)item.QualityType + 2, 6 + ((int)item.QualityType));
+                        price = (Random.Shared.NextDouble() + 0.1) * Random.Shared.Next(1000, 5000) * Random.Shared.Next((int)item.QualityType + 2, 6 + ((int)item.QualityType));
                     }
                     item.Price = Calculation.Round2Digits(price);
                     daily.AddItem(item, Random.Shared.Next(1, 3));

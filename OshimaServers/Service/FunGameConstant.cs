@@ -8,6 +8,8 @@ namespace Oshima.FunGame.OshimaServers.Service
     public class FunGameConstant
     {
         public const long CustomCharacterId = -1;
+        public const int ItemsPerPage1 = 6;
+        public const int ItemsPerPage2 = 10;
         public static List<Character> Characters { get; } = [];
         public static List<Skill> Skills { get; } = [];
         public static List<Skill> PassiveSkills { get; } = [];
@@ -21,508 +23,752 @@ namespace Oshima.FunGame.OshimaServers.Service
         public static Dictionary<long, User> UserIdAndUsername { get; } = [];
         public static ItemType[] ItemCanUsed => [ItemType.Consumable, ItemType.MagicCard, ItemType.SpecialItem, ItemType.GiftBox, ItemType.Others];
 
-        public static Dictionary<int, Dictionary<string, int>> LevelBreakNeedyList
+        public static Dictionary<int, Dictionary<string, int>> LevelBreakNeedyList { get; } = new()
         {
-            get
             {
-                return new()
+                0, new()
                 {
-                    {
-                        0, new()
-                        {
-                            { General.GameplayEquilibriumConstant.InGameMaterial, 20 },
-                            { nameof(升华之印), 2 }
-                        }
-                    },
-                    {
-                        1, new()
-                        {
-                            { General.GameplayEquilibriumConstant.InGameMaterial, 40 },
-                            { nameof(升华之印), 4 }
-                        }
-                    },
-                    {
-                        2, new()
-                        {
-                            { General.GameplayEquilibriumConstant.InGameMaterial, 80 },
-                            { nameof(升华之印), 6 },
-                            { nameof(流光之印), 2 }
-                        }
-                    },
-                    {
-                        3, new()
-                        {
-                            { General.GameplayEquilibriumConstant.InGameMaterial, 160 },
-                            { nameof(升华之印), 9 },
-                            { nameof(流光之印), 4 }
-                        }
-                    },
-                    {
-                        4, new()
-                        {
-                            { General.GameplayEquilibriumConstant.InGameMaterial, 320 },
-                            { nameof(升华之印), 12 },
-                            { nameof(流光之印), 6 },
-                            { nameof(永恒之印), 2 }
-                        }
-                    },
-                    {
-                        5, new()
-                        {
-                            { General.GameplayEquilibriumConstant.InGameMaterial, 640 },
-                            { nameof(升华之印), 16 },
-                            { nameof(流光之印), 9 },
-                            { nameof(永恒之印), 4 }
-                        }
-                    },
-                };
-            }
-        }
+                    { General.GameplayEquilibriumConstant.InGameMaterial, 20 },
+                    { nameof(升华之印), 2 }
+                }
+            },
+            {
+                1, new()
+                {
+                    { General.GameplayEquilibriumConstant.InGameMaterial, 40 },
+                    { nameof(升华之印), 4 }
+                }
+            },
+            {
+                2, new()
+                {
+                    { General.GameplayEquilibriumConstant.InGameMaterial, 80 },
+                    { nameof(升华之印), 6 },
+                    { nameof(流光之印), 2 }
+                }
+            },
+            {
+                3, new()
+                {
+                    { General.GameplayEquilibriumConstant.InGameMaterial, 160 },
+                    { nameof(升华之印), 9 },
+                    { nameof(流光之印), 4 }
+                }
+            },
+            {
+                4, new()
+                {
+                    { General.GameplayEquilibriumConstant.InGameMaterial, 320 },
+                    { nameof(升华之印), 12 },
+                    { nameof(流光之印), 6 },
+                    { nameof(永恒之印), 2 }
+                }
+            },
+            {
+                5, new()
+                {
+                    { General.GameplayEquilibriumConstant.InGameMaterial, 640 },
+                    { nameof(升华之印), 16 },
+                    { nameof(流光之印), 9 },
+                    { nameof(永恒之印), 4 }
+                }
+            },
+        };
 
-        public static Dictionary<int, Dictionary<string, int>> SkillLevelUpList
+        public static Dictionary<int, Dictionary<string, int>> SkillLevelUpList { get; } = new()
         {
-            get
             {
-                return new()
+                1, new()
                 {
-                    {
-                        1, new()
-                        {
-                            { "角色等级", 1 },
-                            { General.GameplayEquilibriumConstant.InGameCurrency, 2000 },
-                            { General.GameplayEquilibriumConstant.InGameMaterial, 10 },
-                            { nameof(技能卷轴), 1 },
-                        }
-                    },
-                    {
-                        2, new()
-                        {
-                            { "角色等级", 12 },
-                            { General.GameplayEquilibriumConstant.InGameCurrency, 5000 },
-                            { General.GameplayEquilibriumConstant.InGameMaterial, 30 },
-                            { nameof(技能卷轴), 2 },
-                        }
-                    },
-                    {
-                        3, new()
-                        {
-                            { "角色等级", 24 },
-                            { General.GameplayEquilibriumConstant.InGameCurrency, 10000 },
-                            { General.GameplayEquilibriumConstant.InGameMaterial, 60 },
-                            { nameof(技能卷轴), 4 },
-                            { nameof(智慧之果), 1 },
-                        }
-                    },
-                    {
-                        4, new()
-                        {
-                            { "角色等级", 36 },
-                            { General.GameplayEquilibriumConstant.InGameCurrency, 18000 },
-                            { General.GameplayEquilibriumConstant.InGameMaterial, 100 },
-                            { nameof(技能卷轴), 6 },
-                            { nameof(智慧之果), 2 },
-                        }
-                    },
-                    {
-                        5, new()
-                        {
-                            { "角色等级", 48 },
-                            { General.GameplayEquilibriumConstant.InGameCurrency, 30000 },
-                            { General.GameplayEquilibriumConstant.InGameMaterial, 150 },
-                            { nameof(技能卷轴), 9 },
-                            { nameof(智慧之果), 4 },
-                            { nameof(奥术符文), 1 }
-                        }
-                    },
-                    {
-                        6, new()
-                        {
-                            { "角色等级", 60 },
-                            { General.GameplayEquilibriumConstant.InGameCurrency, 47000 },
-                            { General.GameplayEquilibriumConstant.InGameMaterial, 210 },
-                            { nameof(技能卷轴), 6 },
-                            { nameof(智慧之果), 6 },
-                            { nameof(奥术符文), 2 }
-                        }
-                    }
-                };
+                    { "角色等级", 1 },
+                    { General.GameplayEquilibriumConstant.InGameCurrency, 2000 },
+                    { General.GameplayEquilibriumConstant.InGameMaterial, 10 },
+                    { nameof(技能卷轴), 1 },
+                }
+            },
+            {
+                2, new()
+                {
+                    { "角色等级", 12 },
+                    { General.GameplayEquilibriumConstant.InGameCurrency, 5000 },
+                    { General.GameplayEquilibriumConstant.InGameMaterial, 30 },
+                    { nameof(技能卷轴), 2 },
+                }
+            },
+            {
+                3, new()
+                {
+                    { "角色等级", 24 },
+                    { General.GameplayEquilibriumConstant.InGameCurrency, 10000 },
+                    { General.GameplayEquilibriumConstant.InGameMaterial, 60 },
+                    { nameof(技能卷轴), 4 },
+                    { nameof(智慧之果), 1 },
+                }
+            },
+            {
+                4, new()
+                {
+                    { "角色等级", 36 },
+                    { General.GameplayEquilibriumConstant.InGameCurrency, 18000 },
+                    { General.GameplayEquilibriumConstant.InGameMaterial, 100 },
+                    { nameof(技能卷轴), 6 },
+                    { nameof(智慧之果), 2 },
+                }
+            },
+            {
+                5, new()
+                {
+                    { "角色等级", 48 },
+                    { General.GameplayEquilibriumConstant.InGameCurrency, 30000 },
+                    { General.GameplayEquilibriumConstant.InGameMaterial, 150 },
+                    { nameof(技能卷轴), 9 },
+                    { nameof(智慧之果), 4 },
+                    { nameof(奥术符文), 1 }
+                }
+            },
+            {
+                6, new()
+                {
+                    { "角色等级", 60 },
+                    { General.GameplayEquilibriumConstant.InGameCurrency, 47000 },
+                    { General.GameplayEquilibriumConstant.InGameMaterial, 210 },
+                    { nameof(技能卷轴), 6 },
+                    { nameof(智慧之果), 6 },
+                    { nameof(奥术符文), 2 }
+                }
             }
-        }
+        };
 
-        public static Dictionary<int, Dictionary<string, int>> NormalAttackLevelUpList
+        public static Dictionary<int, Dictionary<string, int>> NormalAttackLevelUpList { get; } = new()
         {
-            get
             {
-                return new()
+                2, new()
                 {
-                    {
-                        2, new()
-                        {
-                            { "角色等级", 8 },
-                            { General.GameplayEquilibriumConstant.InGameCurrency, 2000 },
-                            { General.GameplayEquilibriumConstant.InGameMaterial, 10 },
-                            { nameof(技能卷轴), 1 },
-                        }
-                    },
-                    {
-                        3, new()
-                        {
-                            { "角色等级", 16 },
-                            { General.GameplayEquilibriumConstant.InGameCurrency, 5000 },
-                            { General.GameplayEquilibriumConstant.InGameMaterial, 30 },
-                            { nameof(技能卷轴), 2 },
-                        }
-                    },
-                    {
-                        4, new()
-                        {
-                            { "角色等级", 24 },
-                            { General.GameplayEquilibriumConstant.InGameCurrency, 10000 },
-                            { General.GameplayEquilibriumConstant.InGameMaterial, 60 },
-                            { nameof(技能卷轴), 4 },
-                            { nameof(智慧之果), 1 },
-                        }
-                    },
-                    {
-                        5, new()
-                        {
-                            { "角色等级", 32 },
-                            { General.GameplayEquilibriumConstant.InGameCurrency, 18000 },
-                            { General.GameplayEquilibriumConstant.InGameMaterial, 100 },
-                            { nameof(技能卷轴), 6 },
-                            { nameof(智慧之果), 2 },
-                        }
-                    },
-                    {
-                        6, new()
-                        {
-                            { "角色等级", 40 },
-                            { "角色突破进度", 4 },
-                            { General.GameplayEquilibriumConstant.InGameCurrency, 30000 },
-                            { General.GameplayEquilibriumConstant.InGameMaterial, 150 },
-                            { nameof(技能卷轴), 9 },
-                            { nameof(智慧之果), 4 },
-                            { nameof(奥术符文), 1 }
-                        }
-                    },
-                    {
-                        7, new()
-                        {
-                            { "角色等级", 48 },
-                            { General.GameplayEquilibriumConstant.InGameCurrency, 47000 },
-                            { General.GameplayEquilibriumConstant.InGameMaterial, 210 },
-                            { nameof(技能卷轴), 12 },
-                            { nameof(智慧之果), 6 },
-                            { nameof(奥术符文), 2 }
-                        }
-                    },
-                    {
-                        8, new()
-                        {
-                            { "角色等级", 56 },
-                            { General.GameplayEquilibriumConstant.InGameCurrency, 70000 },
-                            { General.GameplayEquilibriumConstant.InGameMaterial, 280 },
-                            { nameof(技能卷轴), 16 },
-                            { nameof(智慧之果), 9 },
-                            { nameof(奥术符文), 4 },
-                            { nameof(混沌之核), 1 }
-                        }
-                    }
-                };
+                    { "角色等级", 8 },
+                    { General.GameplayEquilibriumConstant.InGameCurrency, 2000 },
+                    { General.GameplayEquilibriumConstant.InGameMaterial, 10 },
+                    { nameof(技能卷轴), 1 },
+                }
+            },
+            {
+                3, new()
+                {
+                    { "角色等级", 16 },
+                    { General.GameplayEquilibriumConstant.InGameCurrency, 5000 },
+                    { General.GameplayEquilibriumConstant.InGameMaterial, 30 },
+                    { nameof(技能卷轴), 2 },
+                }
+            },
+            {
+                4, new()
+                {
+                    { "角色等级", 24 },
+                    { General.GameplayEquilibriumConstant.InGameCurrency, 10000 },
+                    { General.GameplayEquilibriumConstant.InGameMaterial, 60 },
+                    { nameof(技能卷轴), 4 },
+                    { nameof(智慧之果), 1 },
+                }
+            },
+            {
+                5, new()
+                {
+                    { "角色等级", 32 },
+                    { General.GameplayEquilibriumConstant.InGameCurrency, 18000 },
+                    { General.GameplayEquilibriumConstant.InGameMaterial, 100 },
+                    { nameof(技能卷轴), 6 },
+                    { nameof(智慧之果), 2 },
+                }
+            },
+            {
+                6, new()
+                {
+                    { "角色等级", 40 },
+                    { "角色突破进度", 4 },
+                    { General.GameplayEquilibriumConstant.InGameCurrency, 30000 },
+                    { General.GameplayEquilibriumConstant.InGameMaterial, 150 },
+                    { nameof(技能卷轴), 9 },
+                    { nameof(智慧之果), 4 },
+                    { nameof(奥术符文), 1 }
+                }
+            },
+            {
+                7, new()
+                {
+                    { "角色等级", 48 },
+                    { General.GameplayEquilibriumConstant.InGameCurrency, 47000 },
+                    { General.GameplayEquilibriumConstant.InGameMaterial, 210 },
+                    { nameof(技能卷轴), 12 },
+                    { nameof(智慧之果), 6 },
+                    { nameof(奥术符文), 2 }
+                }
+            },
+            {
+                8, new()
+                {
+                    { "角色等级", 56 },
+                    { General.GameplayEquilibriumConstant.InGameCurrency, 70000 },
+                    { General.GameplayEquilibriumConstant.InGameMaterial, 280 },
+                    { nameof(技能卷轴), 16 },
+                    { nameof(智慧之果), 9 },
+                    { nameof(奥术符文), 4 },
+                    { nameof(混沌之核), 1 }
+                }
             }
-        }
+        };
 
-        public static Dictionary<EffectID, Dictionary<string, object>> RoundRewards
+        public static Dictionary<EffectID, Dictionary<string, object>> RoundRewards { get; } = new()
         {
-            get
             {
-                return new()
+                EffectID.ExATK,
+                new()
                 {
-                    {
-                        EffectID.ExATK,
-                        new()
-                        {
-                            { "exatk", Random.Shared.Next(40, 80) }
-                        }
-                    },
-                    {
-                        EffectID.ExCritRate,
-                        new()
-                        {
-                            { "excr", Math.Clamp(Random.Shared.NextDouble(), 0.25, 0.5) }
-                        }
-                    },
-                    {
-                        EffectID.ExCritDMG,
-                        new()
-                        {
-                            { "excrd", Math.Clamp(Random.Shared.NextDouble(), 0.5, 1) }
-                        }
-                    },
-                    {
-                        EffectID.ExATK2,
-                        new()
-                        {
-                            { "exatk", Math.Clamp(Random.Shared.NextDouble(), 0.15, 0.3) }
-                        }
-                    },
-                    {
-                        EffectID.RecoverHP,
-                        new()
-                        {
-                            { "hp", Random.Shared.Next(160, 640) }
-                        }
-                    },
-                    {
-                        EffectID.RecoverMP,
-                        new()
-                        {
-                            { "mp", Random.Shared.Next(140, 490) }
-                        }
-                    },
-                    {
-                        EffectID.RecoverHP2,
-                        new()
-                        {
-                            { "hp", Math.Clamp(Random.Shared.NextDouble(), 0.04, 0.08) }
-                        }
-                    },
-                    {
-                        EffectID.RecoverMP2,
-                        new()
-                        {
-                            { "mp", Math.Clamp(Random.Shared.NextDouble(), 0.09, 0.18) }
-                        }
-                    },
-                    {
-                        EffectID.GetEP,
-                        new()
-                        {
-                            { "ep", Random.Shared.Next(20, 40) }
-                        }
-                    }
-                };
+                    { "exatk", Random.Shared.Next(40, 80) }
+                }
+            },
+            {
+                EffectID.ExCritRate,
+                new()
+                {
+                    { "excr", Math.Clamp(Random.Shared.NextDouble(), 0.25, 0.5) }
+                }
+            },
+            {
+                EffectID.ExCritDMG,
+                new()
+                {
+                    { "excrd", Math.Clamp(Random.Shared.NextDouble(), 0.5, 1) }
+                }
+            },
+            {
+                EffectID.ExATK2,
+                new()
+                {
+                    { "exatk", Math.Clamp(Random.Shared.NextDouble(), 0.15, 0.3) }
+                }
+            },
+            {
+                EffectID.RecoverHP,
+                new()
+                {
+                    { "hp", Random.Shared.Next(160, 640) }
+                }
+            },
+            {
+                EffectID.RecoverMP,
+                new()
+                {
+                    { "mp", Random.Shared.Next(140, 490) }
+                }
+            },
+            {
+                EffectID.RecoverHP2,
+                new()
+                {
+                    { "hp", Math.Clamp(Random.Shared.NextDouble(), 0.04, 0.08) }
+                }
+            },
+            {
+                EffectID.RecoverMP2,
+                new()
+                {
+                    { "mp", Math.Clamp(Random.Shared.NextDouble(), 0.09, 0.18) }
+                }
+            },
+            {
+                EffectID.GetEP,
+                new()
+                {
+                    { "ep", Random.Shared.Next(20, 40) }
+                }
             }
-        }
+        };
 
-        public static Dictionary<string, string> QuestList
+        public static Dictionary<string, string> ContinuousQuestList { get; } = new()
         {
-            get
             {
-                return new()
-                {
-                    {
-                        "丢失的共享单车之谜",
-                        "寻找被魔法传送走的共享单车。"
-                    },
-                    {
-                        "咖啡店的神秘顾客",
-                        "调查每天都点奇怪饮品的神秘顾客。"
-                    },
-                    {
-                        "地铁里的幽灵乘客",
-                        "找出在地铁里出没的半透明乘客。"
-                    },
-                    {
-                        "公园的精灵涂鸦",
-                        "清除公园里突然出现的精灵涂鸦。"
-                    },
-                    {
-                        "手机信号的干扰源",
-                        "找出干扰手机信号的魔法源头。"
-                    },
-                    {
-                        "外卖小哥的奇遇",
-                        "帮助外卖小哥找回被偷走的魔法外卖。"
-                    },
-                    {
-                        "广场舞的魔法节奏",
-                        "调查广场舞音乐中隐藏的魔法节奏。"
-                    },
-                    {
-                        "自动贩卖机的秘密",
-                        "找出自动贩卖机里突然出现的奇怪物品。"
-                    },
-                    {
-                        "便利店的异次元入口",
-                        "调查便利店里突然出现的异次元入口。"
-                    },
-                    {
-                        "街头艺人的魔法表演",
-                        "调查街头艺人表演中使用的魔法。"
-                    },
-                    {
-                        "午夜电台的幽灵来电",
-                        "调查午夜电台收到的奇怪来电。"
-                    },
-                    {
-                        "高楼大厦的秘密通道",
-                        "寻找隐藏在高楼大厦里的秘密通道。"
-                    },
-                    {
-                        "城市下水道的神秘生物",
-                        "调查城市下水道里出现的神秘生物。"
-                    },
-                    {
-                        "废弃工厂的魔法实验",
-                        "调查废弃工厂里进行的秘密魔法实验。"
-                    },
-                    {
-                        "博物馆的活化雕像",
-                        "调查博物馆里突然活化的雕像。"
-                    },
-                    {
-                        "公园的都市传说",
-                        "调查公园里流传的都市传说。"
-                    },
-                    {
-                        "闹鬼公寓的真相",
-                        "调查闹鬼公寓里的真相。"
-                    },
-                    {
-                        "地下酒吧的秘密交易",
-                        "调查地下酒吧里进行的秘密魔法交易。"
-                    },
-                    {
-                        "旧书店的魔法书籍",
-                        "寻找旧书店里隐藏的魔法书籍。"
-                    },
-                    {
-                        "涂鸦墙的预言",
-                        "解读涂鸦墙上出现的神秘预言。"
-                    },
-                    {
-                        "黑客的魔法入侵",
-                        "阻止黑客利用魔法入侵城市网络。"
-                    },
-                    {
-                        "高科技魔法装备的测试",
-                        "测试新型的高科技魔法装备。"
-                    },
-                    {
-                        "无人机的魔法改造",
-                        "改造无人机，使其拥有魔法能力。"
-                    },
-                    {
-                        "人工智能的觉醒",
-                        "调查人工智能觉醒的原因。"
-                    },
-                    {
-                        "虚拟现实的魔法世界",
-                        "探索虚拟现实中出现的魔法世界。"
-                    },
-                    {
-                        "智能家居的魔法故障",
-                        "修复智能家居的魔法故障。"
-                    },
-                    {
-                        "能量饮料的魔法副作用",
-                        "调查能量饮料的魔法副作用。"
-                    },
-                    {
-                        "社交媒体的魔法病毒",
-                        "清除社交媒体上出现的魔法病毒。"
-                    },
-                    {
-                        "共享汽车的魔法漂移",
-                        "调查共享汽车的魔法漂移现象。"
-                    },
-                    {
-                        "城市监控的魔法干扰",
-                        "修复城市监控的魔法干扰。"
-                    },
-                    {
-                        "寻找丢失的魔法宠物",
-                        "寻找在城市里走失的魔法宠物。"
-                    },
-                    {
-                        "参加魔法美食节",
-                        "参加城市举办的魔法美食节。"
-                    },
-                    {
-                        "解开城市谜题",
-                        "解开隐藏在城市各处的谜题。"
-                    },
-                    {
-                        "参加魔法cosplay大赛",
-                        "参加城市举办的魔法cosplay大赛。"
-                    },
-                    {
-                        "寻找隐藏的魔法商店",
-                        "寻找隐藏在城市里的魔法商店。"
-                    },
-                    {
-                        "制作魔法主题的街头艺术",
-                        "在城市里创作魔法主题的街头艺术。"
-                    },
-                    {
-                        "举办一场魔法快闪活动",
-                        "在城市里举办一场魔法快闪活动。"
-                    },
-                    {
-                        "寻找失落的魔法乐器",
-                        "寻找失落的魔法乐器，让城市充满音乐。"
-                    },
-                    {
-                        "参加魔法运动会",
-                        "参加城市举办的魔法运动会。"
-                    },
-                    {
-                        "拯救被困在魔法结界里的市民",
-                        "拯救被困在城市魔法结界里的市民。"
-                    }
-                };
+                "悖论引擎的暗涌之息",
+                "穿梭于银辉城流淌液态月光的街道，侦测悖论引擎释放的异常能量潮汐，揭开可能撕裂现实结构的危险谜团。"
+            },
+            {
+                "林海深处的记忆协奏曲",
+                "在瑟兰薇歌林海水晶化的树冠建立观测站，记录春季地貌重组时树木根系发出的低频共振波，破译其与旋律古龙苏醒周期的关联。"
+            },
+            {
+                "元素裂隙的熵增警告",
+                "使用抗魔探针扫描赫菲斯托斯之喉第47层矿道，绘制元素裂缝的扩张轨迹，评估其引发位面坍缩的风险等级。"
+            },
+            {
+                "时间琥珀中的战争回响",
+                "在永霜裂痕建立时滞力场实验室，分析冻结在冰壁中的古代战争幻象，还原时霜药剂对观察者认知体系的扭曲机制。"
+            },
+            {
+                "镜像维度的认知污染",
+                "佩戴反重力拘束装置潜入千瞳镜湖，测绘镜像城的拓扑结构，警惕瞳孔状传送门对记忆模块的逆向写入现象。"
+            },
+            {
+                "雷霆王座的符文解读",
+                "攀登雷霆王座山脉，记录裁决尖碑在月圆之夜投射的泰坦符文，破译其蕴含的宇宙法则。"
+            },
+            {
+                "流沙时计的昨日寻踪",
+                "在流沙时计荒漠中寻找海市蜃楼般的昨日之城，收集散落在其中的时间碎片，还原历史真相。"
+            },
+            {
+               "腐萤沼渊的共生调查",
+               "深入腐萤沼渊，研究共生母体的生态系统，记录菌类模仿动物叫声的频率和模式。"
+            },
+            {
+                "苍穹碎屿的星锚校准",
+                "前往苍穹碎屿的星锚之地，校准引雷柱的能量输出，防止星空巨兽挣脱束缚。"
+            },
+            {
+                "齿与血回廊的改造逆转",
+                "潜入齿与血回廊的造物车间，研究其改造机制，寻找逆转改造的方法。"
+            },
+            {
+                "穹顶之泪的星辉观测",
+                "在穹顶之泪湖畔建立观测点，记录星辉水母群在午夜重构水体重力法则时的变化。"
+            },
+            {
+                "齿轮坟场的构装残骸",
+                "在齿轮坟场搜寻构装巨龙的残骸，分析其动力核心，寻找上古机械文明的线索。"
+            },
+            {
+                "回音棱镜林的记忆共鸣",
+                "进入回音棱镜林，收集晶体化红杉中储存的亡者记忆，调查影狼嚎叫产生的空间褶皱。"
+            },
+            {
+                "永燃坩埚的活体金属",
+                "在永燃坩埚的火山灰中采集活体金属苔藓样本，研究其生长特性。"
+            },
+            {
+                "骨桥深渊的幽灵航线",
+                "调查骨桥深渊的幽灵船航线，收集桥底虚空中的能量波动数据。"
+            },
+            {
+                "时漏沙漠的时凝液",
+                "在时漏沙漠中寻找沙漏仙人掌，采集其分泌的时凝液，研究其时间魔法特性。"
+            },
+            {
+                "脉轮圣树的蜜蜡编码",
+                "攀登脉轮圣树，收集树液凝结的可编程蜜蜡，分析其编码模式。"
+            },
+            {
+               "悲鸣矿脉的神经宝石",
+               "在悲鸣矿脉中采集神经宝石样本，研究其与山体剧痛的关联。"
+            },
+            {
+               "双生月崖的湮灭边界",
+               "在双生月崖的边界处进行实验，研究跨越永昼和永夜界限时产生的湮灭现象。"
+            },
+            {
+               "谵妄海市的梦境碎片",
+               "进入谵妄海市，收集可食用梦境碎片，分析其对认知的影响。"
             }
-        }
+        };
 
-        public static Dictionary<QualityType, double> DrawCardProbabilities
+        public static Dictionary<string, string> ImmediateQuestList { get; } = new()
         {
-            get
             {
-                return new()
-                {
-                    { QualityType.White, 69.53 },
-                    { QualityType.Green, 15.35 },
-                    { QualityType.Blue, 9.48 },
-                    { QualityType.Purple, 4.25 },
-                    { QualityType.Orange, 1.33 },
-                    { QualityType.Red, 0.06 }
-                };
+                "星银警戒协议·弎级响应",
+                "星银合金守卫在悖论引擎周边暴走，形成包围核心区的杀戮矩阵，必须在三刻钟内解除警戒协议"
+            },
+            {
+                "音律囚笼突破作战",
+                "苏醒的旋律古龙释放出高频震波，将精灵们困在水晶共振牢笼中，需在下次地貌重组前切断声波共鸣节点"
+            },
+            {
+                "深渊火种收容危机",
+                "矿道底层的深渊火钻因元素污染进入链式裂变，引发全矿道魔能过载，立即部署熵减力场遏制反应"
+            },
+            {
+                "时霜逆流救援行动",
+                "科研小组被困在加速百倍的时间泡内，其肉体正以肉眼可见的速度衰老，必须校准哨塔时钟恢复时间流速"
+            },
+            {
+                "镜像侵蚀净化指令",
+                "镜像守卫突破湖面屏障入侵现实维度，携带的认知病毒正在改写物理法则，启动银辉城防卫协议实施净化"
+            },
+            {
+                "雷霆风暴紧急预警",
+                "雷霆王座山脉的悬浮岩块因磁场紊乱开始崩塌，必须在半小时内稳定磁场。"
+            },
+            {
+                "流沙陷阱救援行动",
+                "一支探险队被困在流沙时计荒漠的昨日之城中，必须在沙暴来临前将其救出。"
+            },
+            {
+                "沼泽毒气泄漏警报",
+                "腐萤沼渊的毒气浓度超标，必须立即启动通风系统，防止毒气扩散。"
+            },
+            {
+                "星空巨兽挣脱危机",
+                "苍穹碎屿的星锚之地出现裂缝，星空巨兽即将挣脱束缚，必须立即加固引雷柱。"
+            },
+            {
+                "活体建筑暴走事件",
+                "齿与血回廊的活体建筑开始失控，必须立即关闭其动力系统。"
+            },
+            {
+                "水母重力失控事件",
+                "穹顶之泪湖的星辉水母群重力法则失控，必须立即稳定水体。"
+            },
+            {
+                 "构装巨龙苏醒警报",
+                 "齿轮坟场的构装巨龙开始苏醒，必须立即启动防御系统。"
+            },
+            {
+                "记忆共鸣失控事件",
+               "回音棱镜林的记忆共鸣失控，引发空间褶皱，必须立即稳定空间。"
+            },
+            {
+                "活体金属苔藓异变",
+                "永燃坩埚的活体金属苔藓发生异变，开始吞噬周围的金属，必须立即遏制。"
+            },
+            {
+               "幽灵船袭击事件",
+               "骨桥深渊的幽灵船开始袭击过往的船只，必须立即击退。"
+            },
+            {
+                "时之蝎暴走事件",
+                "时漏沙漠的时之蝎因时凝液泄漏而暴走，必须立即控制。"
+            },
+            {
+                "蜜蜡编码泄露危机",
+                "脉轮圣树的可编程蜜蜡编码泄露，引发未知危机，必须立即阻止。"
+            },
+            {
+                "神经宝石共鸣危机",
+                "悲鸣矿脉的神经宝石发生共鸣，引发山体震荡，必须立即稳定。"
+            },
+            {
+                "湮灭风暴预警",
+                "双生月崖的湮灭边界出现不稳定，引发湮灭风暴，必须立即撤离。"
+            },
+            {
+               "思维寄生虫感染事件",
+               "谵妄海市的思维寄生虫开始感染居民，必须立即隔离。"
             }
-        }
+        };
 
-        public static Dictionary<QualityType, (int Min, int Max)> PriceRanges
+        public static Dictionary<string, string> ProgressiveQuestList { get; } = new()
         {
-            get
             {
-                return new()
-                {
-                    { QualityType.White, (200, 2000) },
-                    { QualityType.Green, (1500, 15000) },
-                    { QualityType.Blue, (5000, 50000) },
-                    { QualityType.Purple, (10000, 100000) },
-                    { QualityType.Orange, (40000, 400000) },
-                    { QualityType.Red, (100000, 1000000) },
-                    { QualityType.Gold, (500000, 5000000) }
-                };
+                "月光萃取计划",
+                "在星银合金建筑的沟壑中采集 {0} 份液态月光（注意避开月光洪流的高潮时段/每夜丑时三刻）。"
+            },
+            {
+                "灵脉汁液采收行动",
+                "使用抗腐蚀容器收集 {0} 份瑟兰薇歌林海的荧蓝汁液（树木自卫系统激活时汁液会转化为神经毒素）。"
+            },
+            {
+                "火钻精炼协议",
+                "在矿工灵魂烙印的指引下获取 {0} 颗深渊火钻（未烙印者触碰火钻将引发元素爆燃）。"
+            },
+            {
+                "时霜逆向工程",
+                "通过时间镜像收集 {0} 份不同历史断片的时霜药剂样本（注意时空回响对记忆的覆盖效应）。"
+            },
+            {
+                "瞳孔密钥重构计划",
+                "从 {0} 个瞳孔状传送门提取量子纠缠碎片（每个采集点需保持镜像对称操作以避免维度塌缩）。"
+            },
+            {
+                "泰坦符文拓印",
+                "在雷霆王座山脉的裁决尖碑上拓印 {0} 份不同的泰坦符文（注意避开雷暴时段/每逢子时）。"
+            },
+            {
+                "时间碎片收集",
+                "在流沙时计荒漠的昨日之城中收集 {0} 份不同的时间碎片（注意时间碎片会随机重组）。"
+            },
+            {
+                "共生母体样本采集",
+                "从腐萤沼渊的共生母体上采集 {0} 份不同的菌类样本（注意菌类会释放麻痹毒素）。"
+            },
+            {
+                "星锚能量校准",
+                "在苍穹碎屿的星锚之地校准 {0} 个不同的引雷柱（注意引雷柱会释放高压电流）。"
+            },
+            {
+                "改造逆转实验",
+                "在齿与血回廊的造物车间进行 {0} 次不同的改造逆转实验（注意改造实验会引发身体异变）。"
+            },
+            {
+                "星辉水母观测记录",
+                "在穹顶之泪湖记录 {0} 次星辉水母重构水体重力法则的完整过程（注意水母重构时会产生重力波动）。"
+            },
+            {
+                "构装巨龙残骸分析",
+                "在齿轮坟场分析 {0} 个不同的构装巨龙残骸（注意残骸可能带有自毁装置）。"
+            },
+            {
+                "亡者记忆提取",
+                "在回音棱镜林提取 {0} 份不同的亡者记忆（注意记忆提取会引发共感）。"
+            },
+            {
+                "活体金属苔藓培养",
+                "在永燃坩埚培养 {0} 份不同的活体金属苔藓样本（注意苔藓会吸收金属）。"
+            },
+            {
+                "幽灵船能量分析",
+               "在骨桥深渊收集 {0} 份幽灵船的能量波动数据（注意幽灵船会释放虚空能量）。"
+            },
+            {
+                "时凝液提纯",
+                "在时漏沙漠提纯 {0} 份时凝液（注意时凝液会加速时间流速）。"
+            },
+            {
+                "蜜蜡编码破解",
+                "在脉轮圣树破解 {0} 份不同的蜜蜡编码（注意编码会引发精神干扰）。"
+            },
+            {
+                "神经宝石能量分析",
+                "在悲鸣矿脉分析 {0} 份不同的神经宝石能量（注意宝石会引发山体剧痛）。"
+            },
+            {
+                "湮灭边界观察",
+                "在双生月崖观察 {0} 次不同的湮灭边界现象（注意湮灭边界会吞噬物质）。"
+            },
+            {
+                "梦境碎片分析",
+                "在谵妄海市分析 {0} 份不同的梦境碎片（注意梦境碎片会引发幻觉）。"
             }
-        }
+        };
+
+        public static List<Region> Regions { get; } = [
+            new Region()
+            {
+                Id = 1,
+                Name = "银辉城",
+                Description = "悬浮在云海中的倒三角金属都市，建筑由星银合金铸造，街道流淌着液态月光。核心区藏有能改写现实法则的「悖论引擎」",
+                Weather = "晴朗",
+                Temperature = 20,
+                Difficulty = RarityType.TwoStar
+            },
+            new Region()
+            {
+                Id = 2,
+                Name = "瑟兰薇歌林海",
+                Description = "树木枝干中流淌荧蓝汁液，春季行走重组地貌，冬季化为水晶雕塑。深处沉睡着被精灵封印的「旋律古龙」",
+                Weather = "多云",
+                Temperature = 15,
+                Difficulty = RarityType.FourStar
+            },
+            new Region()
+            {
+                Id = 3,
+                Name = "赫菲斯托斯之喉",
+                Description = "螺旋向下的火山矿井，底层矿工开采深渊火钻，矿道会突然熔化成通往元素位面的裂缝",
+                Weather = "炎热",
+                Temperature = 45,
+                Difficulty = RarityType.FourStar
+            },
+            new Region()
+            {
+                Id = 4,
+                Name = "永霜裂痕",
+                Description = "冰晶峡谷冻结着不同时代的战争残影，哨塔时钟随机倒转/加速，需服用「时霜药剂」保持神智",
+                Weather = "极寒",
+                Temperature = -25,
+                Difficulty = RarityType.FiveStar
+            },
+            new Region()
+            {
+                Id = 5,
+                Name = "千瞳镜湖",
+                Description = "湖面倒影展现平行时空，潜入会进入重力颠倒的镜像城，湖底布满瞳孔状传送门",
+                Weather = "阴沉",
+                Temperature = 10,
+                Difficulty = RarityType.TwoStar
+            },
+            new Region()
+            {
+                Id = 6,
+                Name = "雷霆王座山脉",
+                Description = "悬浮岩块组成的三维迷宫，最高峰「裁决尖碑」在月圆之夜投射出泰坦调试世界的符文",
+                Weather = "雷暴",
+                Temperature = 5,
+                Difficulty = RarityType.FourStar
+            },
+            new Region()
+            {
+                Id = 7,
+                Name = "流沙时计荒漠",
+                Description = "沙粒蕴含时间魔法，沙丘每小时重组地形，沙暴中会出现海市蜃楼般的「昨日之城」",
+                Weather = "沙尘暴",
+                Temperature = 35,
+                Difficulty = RarityType.ThreeStar
+            },
+            new Region()
+            {
+                Id = 8,
+                Name = "腐萤沼渊",
+                Description = "荧光毒气沼泽，中心生长直径三公里的脑状肉瘤「共生母体」，菌类模仿动物叫声诱捕猎物",
+                Weather = "潮湿",
+                Temperature = 22,
+                Difficulty = RarityType.OneStar
+            },
+            new Region()
+            {
+                Id = 9,
+                Name = "苍穹碎屿",
+                Description = "破碎天穹形成的浮空岛群，「星锚之地」竖立着束缚星空巨兽的引雷柱",
+                Weather = "晴朗",
+                Temperature = 18,
+                Difficulty = RarityType.ThreeStar
+            },
+            new Region()
+            {
+                Id = 10,
+                Name = "齿与血回廊",
+                Description = "自我扩建的活体建筑群，齿轮血管输送液态魔力，「造物车间」会强制改造闯入者",
+                Weather = "阴暗",
+                Temperature = 12,
+                Difficulty = RarityType.FiveStar
+            },
+            new Region()
+            {
+                Id = 11,
+                Name = "穹顶之泪湖",
+                Description = "破碎天穹下的倒影湖泊，折射多维星空，星辉水母群午夜重构水体重力法则",
+                Weather = "星光",
+                Temperature = 16,
+                Difficulty = RarityType.OneStar
+            },
+            new Region()
+            {
+                Id = 12,
+                Name = "齿轮坟场",
+                Description = "堆积上古机械文明的金属荒漠，沙粒为微缩齿轮，构装巨龙在沙暴中游荡",
+                 Weather = "沙尘",
+                Temperature = 30,
+                Difficulty = RarityType.ThreeStar
+            },
+            new Region()
+            {
+                Id = 13,
+                Name = "回音棱镜林",
+                Description = "晶体化红杉储存亡者记忆，荧光孢子引发共感，影狼嚎叫产生空间褶皱",
+                Weather = "雾气",
+                Temperature = 14,
+                Difficulty = RarityType.FourStar
+            },
+            new Region()
+            {
+                Id = 14,
+                Name = "永燃坩埚",
+                Description = "岩浆海上的球形锻造都市，岩浆鱿鱼游弋街道，火山灰培育活体金属苔藓",
+                Weather = "高温",
+                Temperature = 60,
+                Difficulty = RarityType.FiveStar
+            },
+            new Region()
+            {
+                Id = 15,
+                Name = "骨桥深渊",
+                Description = "巨型骸骨形成的呼吸桥梁，幽灵船在桥底虚空航行，骸骨寄生神经蕨类",
+                Weather = "阴森",
+                Temperature = 8,
+                Difficulty = RarityType.ThreeStar
+            },
+            new Region()
+            {
+                Id = 16,
+                Name = "时漏沙漠",
+                Description = "时间碎片组成的流沙领域，时之蝎加速局部时间，沙漏仙人掌分泌时凝液",
+                Weather = "不稳定",
+                Temperature = 38,
+                Difficulty = RarityType.TwoStar
+            },
+            new Region()
+            {
+                Id = 17,
+                Name = "脉轮圣树",
+                Description = "树干直径十公里的螺旋巨树，年轮是立体城市，树液凝结可编程蜜蜡",
+                Weather = "晴朗",
+                Temperature = 24,
+                Difficulty = RarityType.ThreeStar
+            },
+            new Region()
+            {
+                Id = 18,
+                Name = "悲鸣矿脉",
+                Description = "岩层嵌满神经宝石的活体矿山，开采引发山体剧痛，晶簇守卫实体化巡逻",
+                Weather = "幽暗",
+                Temperature = 10,
+                Difficulty = RarityType.FourStar
+            },
+            new Region()
+            {
+                Id = 19,
+                Name = "双生月崖",
+                Description = "撕裂的悬浮山脉，永昼侧栖光鹰，永夜侧绽影玫瑰，跨越界限触发湮灭",
+                Weather = "昼夜交替",
+                Temperature = 15,
+                Difficulty = RarityType.FiveStar
+            },
+            new Region()
+            {
+                Id = 20,
+                Name = "谵妄海市",
+                Description = "需认知干扰剂进入的幻觉城市，思维寄生虫伪装市民，贩卖可食用梦境碎片",
+                Weather = "迷幻",
+                Temperature = 20,
+                Difficulty = RarityType.FourStar
+            }
+        ];
+
+        public static Dictionary<QualityType, double> DrawCardProbabilities { get; } = new()
+        {
+            { QualityType.White, 69.53 },
+            { QualityType.Green, 15.35 },
+            { QualityType.Blue, 9.48 },
+            { QualityType.Purple, 4.25 },
+            { QualityType.Orange, 1.33 },
+            { QualityType.Red, 0.06 }
+        };
+
+        public static Dictionary<QualityType, (int Min, int Max)> PriceRanges { get; } = new()
+        {
+            { QualityType.White, (200, 2000) },
+            { QualityType.Green, (1500, 15000) },
+            { QualityType.Blue, (5000, 50000) },
+            { QualityType.Purple, (10000, 100000) },
+            { QualityType.Orange, (40000, 400000) },
+            { QualityType.Red, (100000, 1000000) },
+            { QualityType.Gold, (500000, 5000000) }
+        };
 
         public static string[] CommonSurnames { get; } = [
             "顾", "沈", "陆", "楚", "白", "苏", "叶", "萧", "莫", "司马", "欧阳",
-                "上官", "慕容", "尉迟", "司徒", "轩辕", "端木", "南宫", "长孙", "百里",
-                "东方", "西门", "独孤", "公孙", "令狐", "宇文", "夏侯", "赫连", "皇甫",
-                "北堂", "安陵", "东篱", "花容", "夜", "柳", "云", "凌", "寒", "龙",
-                "凤", "蓝", "冷", "华", "蓝夜", "叶南", "墨", "君", "月", "子车",
-                "澹台", "钟离", "公羊", "闾丘", "仲孙", "司空", "羊舌", "亓官", "公冶",
-                "濮阳", "独月", "南风", "凤栖", "南门", "姬", "闻人", "花怜", "若",
-                "紫", "卿", "微", "清", "易", "月华", "霜", "兰", "岑", "语", "雪",
-                "夜阑", "梦", "洛", "江", "黎", "夜北", "唐", "水", "韩", "庄",
-                "夜雪", "夜凌", "君临", "青冥", "漠然", "林", "青", "岑", "容",
-                "墨", "柏", "安", "晏", "尉", "南", "轩", "竹", "晨", "桓", "晖",
-                "瑾", "溪", "汐", "沐", "玉", "汀", "归", "羽", "颜", "辰", "琦",
-                "芷", "尹", "施", "原", "孟", "尧", "荀", "单", "简", "植", "傅",
-                "司", "钟", "方", "谢"
+            "上官", "慕容", "尉迟", "司徒", "轩辕", "端木", "南宫", "长孙", "百里",
+            "东方", "西门", "独孤", "公孙", "令狐", "宇文", "夏侯", "赫连", "皇甫",
+            "北堂", "安陵", "东篱", "花容", "夜", "柳", "云", "凌", "寒", "龙",
+            "凤", "蓝", "冷", "华", "蓝夜", "叶南", "墨", "君", "月", "子车",
+            "澹台", "钟离", "公羊", "闾丘", "仲孙", "司空", "羊舌", "亓官", "公冶",
+            "濮阳", "独月", "南风", "凤栖", "南门", "姬", "闻人", "花怜", "若",
+            "紫", "卿", "微", "清", "易", "月华", "霜", "兰", "岑", "语", "雪",
+            "夜阑", "梦", "洛", "江", "黎", "夜北", "唐", "水", "韩", "庄",
+            "夜雪", "夜凌", "君临", "青冥", "漠然", "林", "青", "岑", "容",
+            "墨", "柏", "安", "晏", "尉", "南", "轩", "竹", "晨", "桓", "晖",
+            "瑾", "溪", "汐", "沐", "玉", "汀", "归", "羽", "颜", "辰", "琦",
+            "芷", "尹", "施", "原", "孟", "尧", "荀", "单", "简", "植", "傅",
+            "司", "钟", "方", "谢",
+            "赵", "钱", "孙", "李", "周", "吴", "郑", "王", "冯", "陈", "卫", "蒋", "沈", "韩",
+            "杨", "朱", "秦", "许", "何", "吕", "张", "孔", "曹", "严", "华", "金", "魏", "陶",
+            "姜", "谢", "罗", "徐", "林", "范", "方", "唐", "柳", "宋", "元", "萧", "程", "陆",
+            "顾", "楚", "白", "苏", "叶", "萧", "莫", "凌", "寒", "龙", "凤", "蓝", "冷", "华",
+            "唐", "韩", "庄", "青", "安", "晏", "尹", "施", "孟", "荀", "傅", "钟", "方", "谢",
+            "司马", "欧阳", "上官", "慕容", "尉迟", "司徒", "轩辕", "端木", "南宫", "长孙",
+            "百里", "东方", "西门", "独孤", "公孙", "令狐", "宇文", "夏侯", "赫连", "皇甫",
+            "墨", "君", "月", "紫", "卿", "微", "清", "易", "霜", "兰", "语", "雪", "璃",
+            "镜", "弦", "珏", "瑾", "璇", "绯", "霁", "溟", "澈", "归", "羽", "辰", "芷",
+            "风", "花", "江", "河", "湖", "海", "山", "川", "松", "竹", "梅", "菊", "枫",
+            "梧", "泉", "溪", "岚", "雾", "露", "霓", "霰", "星", "辰",
+            "沧", "溟", "无", "绝", "孤", "隐", "斩", "破", "惊", "鸿", "御", "玄", "冥",
+            "烬", "夙", "离",
+            "东篱", "南笙", "西楼", "北冥", "九歌", "长离", "扶摇", "青丘", "凌霄", "重光",
+            "子车", "亓官", "巫马", "拓跋", "叱干", "斛律", "沮渠", "秃发", "万俟", "仆固"
         ];
 
         public static string CommonChineseCharacters { get; } =

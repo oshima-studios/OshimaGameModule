@@ -27,12 +27,13 @@ namespace Oshima.FunGame.WebAPI.Services
             Statics.RunningPlugin?.Controller.WriteLine(title, Milimoe.FunGame.Core.Library.Constant.LogLevel.Debug);
             if (msg is ThirdPartyMessage third)
             {
-                third.Result = content;
+                third.Result = "\r\n" + content.Trim();
                 third.IsCompleted = true;
                 return;
             }
             if (msg.IsGroup)
             {
+                content = "\r\n" + content.Trim();
                 await Service.SendGroupMessageAsync(msg.OpenId, content, msgType, media, msg.Id, msgSeq);
             }
             else
@@ -189,7 +190,7 @@ namespace Oshima.FunGame.WebAPI.Services
                 {
                     await SendAsync(e, "饭给木", @"《饭给木》游戏指令列表（第 5 / 7 页）
 43：任务列表：查看今日任务列表
-44：开始任务 <任务序号>
+44：开始任务/做任务 <任务序号>
 45、任务信息：查看进行中任务的详细信息
 46、任务结算：对进行中的任务进行结算
 47、我的状态：查看主战角色状态
@@ -924,15 +925,17 @@ namespace Oshima.FunGame.WebAPI.Services
                     return result;
                 }
 
-                if (e.Detail.StartsWith("开始任务", StringComparison.CurrentCultureIgnoreCase))
+                if (e.Detail.StartsWith("开始任务", StringComparison.CurrentCultureIgnoreCase) || e.Detail.StartsWith("做任务", StringComparison.CurrentCultureIgnoreCase))
                 {
-                    string detail = e.Detail.Replace("开始任务", "").Trim();
+                    string detail = e.Detail.Replace("开始任务", "").Replace("做任务", "").Trim();
                     if (int.TryParse(detail, out int index))
                     {
-                        string msg = NetworkUtility.JsonDeserialize<string>(Controller.AcceptQuest(uid, index)) ?? "";
-                        if (msg != "")
+                        List<string> msgs = Controller.AcceptQuest(uid, index);
+                        int count = 1;
+                        foreach (string msg in msgs)
                         {
-                            await SendAsync(e, "开始任务", msg);
+                            await SendAsync(e, "开始任务", msg, msgSeq: count++);
+                            await Task.Delay(2000);
                         }
                     }
                     return result;
@@ -941,13 +944,20 @@ namespace Oshima.FunGame.WebAPI.Services
                 if (e.Detail.StartsWith("我的物品", StringComparison.CurrentCultureIgnoreCase))
                 {
                     string detail = e.Detail.Replace("我的物品", "").Trim();
+                    string msg;
                     if (int.TryParse(detail, out int index))
                     {
-                        string msg = NetworkUtility.JsonDeserialize<string>(Controller.GetItemInfoFromInventory(uid, index)) ?? "";
+                        msg = NetworkUtility.JsonDeserialize<string>(Controller.GetItemInfoFromInventory(uid, index)) ?? "";
                         if (msg != "")
                         {
                             await SendAsync(e, "查库存物品", msg);
+                            return result;
                         }
+                    }
+                    msg = NetworkUtility.JsonDeserialize<string>(Controller.GetItemInfoFromInventory_Name(uid, detail)) ?? "";
+                    if (msg != "")
+                    {
+                        await SendAsync(e, "查库存物品", msg);
                     }
                     return result;
                 }
@@ -1757,32 +1767,68 @@ namespace Oshima.FunGame.WebAPI.Services
                     return result;
                 }
 
-                if (e.Detail == "查看社团成员")
+                if (e.Detail.StartsWith("查看社团成员"))
                 {
-                    string msg = NetworkUtility.JsonDeserialize<string>(Controller.ShowClubMemberList(uid, 0)) ?? "";
-                    if (msg != "")
+                    string detail = e.Detail.Replace("查看社团成员", "").Trim();
+                    if (int.TryParse(detail, out int page) && page > 0)
                     {
-                        await SendAsync(e, "社团", "\r\n" + msg);
+                        string msg = NetworkUtility.JsonDeserialize<string>(Controller.ShowClubMemberList(uid, 0, page)) ?? "";
+                        if (msg != "")
+                        {
+                            await SendAsync(e, "社团", "\r\n" + msg);
+                        }
+                    }
+                    else
+                    {
+                        string msg = NetworkUtility.JsonDeserialize<string>(Controller.ShowClubMemberList(uid, 0, 1)) ?? "";
+                        if (msg != "")
+                        {
+                            await SendAsync(e, "社团", "\r\n" + msg);
+                        }
                     }
                     return result;
                 }
 
-                if (e.Detail == "查看社团管理")
+                if (e.Detail.StartsWith("查看社团管理"))
                 {
-                    string msg = NetworkUtility.JsonDeserialize<string>(Controller.ShowClubMemberList(uid, 1)) ?? "";
-                    if (msg != "")
+                    string detail = e.Detail.Replace("查看社团管理", "").Trim();
+                    if (int.TryParse(detail, out int page) && page > 0)
                     {
-                        await SendAsync(e, "社团", "\r\n" + msg);
+                        string msg = NetworkUtility.JsonDeserialize<string>(Controller.ShowClubMemberList(uid, 1, page)) ?? "";
+                        if (msg != "")
+                        {
+                            await SendAsync(e, "社团", "\r\n" + msg);
+                        }
+                    }
+                    else
+                    {
+                        string msg = NetworkUtility.JsonDeserialize<string>(Controller.ShowClubMemberList(uid, 1, 1)) ?? "";
+                        if (msg != "")
+                        {
+                            await SendAsync(e, "社团", "\r\n" + msg);
+                        }
                     }
                     return result;
                 }
 
-                if (e.Detail == "查看申请人列表")
+                if (e.Detail.StartsWith("查看申请人列表"))
                 {
-                    string msg = NetworkUtility.JsonDeserialize<string>(Controller.ShowClubMemberList(uid, 2)) ?? "";
-                    if (msg != "")
+                    string detail = e.Detail.Replace("查看申请人列表", "").Trim();
+                    if (int.TryParse(detail, out int page) && page > 0)
                     {
-                        await SendAsync(e, "社团", "\r\n" + msg);
+                        string msg = NetworkUtility.JsonDeserialize<string>(Controller.ShowClubMemberList(uid, 2, page)) ?? "";
+                        if (msg != "")
+                        {
+                            await SendAsync(e, "社团", "\r\n" + msg);
+                        }
+                    }
+                    else
+                    {
+                        string msg = NetworkUtility.JsonDeserialize<string>(Controller.ShowClubMemberList(uid, 2, 1)) ?? "";
+                        if (msg != "")
+                        {
+                            await SendAsync(e, "社团", "\r\n" + msg);
+                        }
                     }
                     return result;
                 }
@@ -1913,6 +1959,25 @@ namespace Oshima.FunGame.WebAPI.Services
                         {
                             await SendAsync(e, "商店", msg);
                         }
+                    }
+                    return result;
+                }
+
+                if (e.Detail.StartsWith("查地区", StringComparison.CurrentCultureIgnoreCase) || e.Detail.StartsWith("查询地区", StringComparison.CurrentCultureIgnoreCase))
+                {
+                    string detail = e.Detail.Replace("查地区", "").Replace("查询地区", "").Trim();
+                    List<string> msgs = [];
+                    if (int.TryParse(detail, out int cid))
+                    {
+                        msgs = Controller.GetRegion(cid);
+                    }
+                    else
+                    {
+                        msgs = Controller.GetRegion();
+                    }
+                    if (msgs.Count > 0)
+                    {
+                        await SendAsync(e, "查地区", string.Join("\r\n", msgs));
                     }
                     return result;
                 }

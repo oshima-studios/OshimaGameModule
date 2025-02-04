@@ -7,7 +7,7 @@ namespace Oshima.FunGame.OshimaModules.Items
 {
     public class 能量饮料
     {
-        public interface EPBook
+        public interface EPAdd
         {
             public double EP { get; set; }
         }
@@ -27,7 +27,7 @@ namespace Oshima.FunGame.OshimaModules.Items
             {
                 item.Skills.Active.OnSkillCasted([character]);
                 string msg = $"对角色 [ {character} ] 使用 [ {item.Name} ] 成功！";
-                if (item is EPBook hpBook)
+                if (item is EPAdd hpBook)
                 {
                     msg += $"获得了 {hpBook.EP} 点能量值！";
                 }
@@ -60,7 +60,7 @@ namespace Oshima.FunGame.OshimaModules.Items
             if (key != "" && args.TryGetValue(key, out value) && value is int count && targets.Length > 0)
             {
                 string truemsg = $"对角色 [ {targets[0]} ] 使用 {count} 个 [ {item.Name} ] 成功！";
-                if (item is EPBook expBook)
+                if (item is EPAdd expBook)
                 {
                     truemsg += $"获得了 {expBook.EP * count} 点能量值！";
                 }
@@ -70,7 +70,7 @@ namespace Oshima.FunGame.OshimaModules.Items
         }
     }
 
-    public class 能量饮料1 : Item, 能量饮料.EPBook
+    public class 能量饮料1 : Item, 能量饮料.EPAdd
     {
         public override long Id => (long)ConsumableID.能量饮料1;
         public override string Name => "能量饮料";
@@ -90,7 +90,7 @@ namespace Oshima.FunGame.OshimaModules.Items
         }
     }
 
-    public class 能量饮料2 : Item, 能量饮料.EPBook
+    public class 能量饮料2 : Item, 能量饮料.EPAdd
     {
         public override long Id => (long)ConsumableID.能量饮料2;
         public override string Name => "能量饮料 Pro";
@@ -110,7 +110,7 @@ namespace Oshima.FunGame.OshimaModules.Items
         }
     }
     
-    public class 能量饮料3 : Item, 能量饮料.EPBook
+    public class 能量饮料3 : Item, 能量饮料.EPAdd
     {
         public override long Id => (long)ConsumableID.能量饮料3;
         public override string Name => "能量饮料 Pro Max";

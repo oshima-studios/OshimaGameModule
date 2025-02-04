@@ -49,6 +49,9 @@ namespace Oshima.FunGame.OshimaModules
                     (long)ConsumableID.能量饮料1 => new 能量饮料1(),
                     (long)ConsumableID.能量饮料2 => new 能量饮料2(),
                     (long)ConsumableID.能量饮料3 => new 能量饮料3(),
+                    (long)GiftBoxID.年夜饭 => new 年夜饭(),
+                    (long)GiftBoxID.蛇年大吉 => new 蛇年大吉(),
+                    (long)GiftBoxID.新春快乐 => new 新春快乐(),
                     _ => null,
                 };
             };

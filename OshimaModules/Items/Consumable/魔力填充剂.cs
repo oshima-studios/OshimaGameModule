@@ -7,7 +7,7 @@ namespace Oshima.FunGame.OshimaModules.Items
 {
     public class 魔力填充剂
     {
-        public interface MPBook
+        public interface MPRecovery
         {
             public double MP { get; set; }
         }
@@ -27,7 +27,7 @@ namespace Oshima.FunGame.OshimaModules.Items
             {
                 item.Skills.Active.OnSkillCasted([character]);
                 string msg = $"对角色 [ {character} ] 使用 [ {item.Name} ] 成功！";
-                if (item is MPBook hpBook)
+                if (item is MPRecovery hpBook)
                 {
                     msg += $"回复了 {hpBook.MP} 点魔法值！";
                 }
@@ -60,7 +60,7 @@ namespace Oshima.FunGame.OshimaModules.Items
             if (key != "" && args.TryGetValue(key, out value) && value is int count && targets.Length > 0)
             {
                 string truemsg = $"对角色 [ {targets[0]} ] 使用 {count} 个 [ {item.Name} ] 成功！";
-                if (item is MPBook expBook)
+                if (item is MPRecovery expBook)
                 {
                     truemsg += $"回复了 {expBook.MP * count} 点魔法值！";
                 }
@@ -70,7 +70,7 @@ namespace Oshima.FunGame.OshimaModules.Items
         }
     }
 
-    public class 魔力填充剂1 : Item, 魔力填充剂.MPBook
+    public class 魔力填充剂1 : Item, 魔力填充剂.MPRecovery
     {
         public override long Id => (long)ConsumableID.魔力填充剂1;
         public override string Name => "魔力填充剂Ⅰ型";
@@ -90,7 +90,7 @@ namespace Oshima.FunGame.OshimaModules.Items
         }
     }
 
-    public class 魔力填充剂2 : Item, 魔力填充剂.MPBook
+    public class 魔力填充剂2 : Item, 魔力填充剂.MPRecovery
     {
         public override long Id => (long)ConsumableID.魔力填充剂2;
         public override string Name => "魔力填充剂Ⅱ型";
@@ -110,7 +110,7 @@ namespace Oshima.FunGame.OshimaModules.Items
         }
     }
     
-    public class 魔力填充剂3 : Item, 魔力填充剂.MPBook
+    public class 魔力填充剂3 : Item, 魔力填充剂.MPRecovery
     {
         public override long Id => (long)ConsumableID.魔力填充剂3;
         public override string Name => "魔力填充剂Ⅲ型";

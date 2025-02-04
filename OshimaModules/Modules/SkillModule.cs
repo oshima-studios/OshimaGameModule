@@ -70,6 +70,7 @@ namespace Oshima.FunGame.OshimaModules
                     (long)PassiveID.弱者猎手 => new 弱者猎手(),
                     (long)ItemPassiveID.攻击之爪 => new 攻击之爪技能(),
                     (long)ItemActiveID.经验书 => new 经验书技能(),
+                    (long)ItemActiveID.礼包 => new 礼包技能(),
                     _ => null
                 };
             };

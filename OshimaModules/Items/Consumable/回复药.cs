@@ -7,7 +7,7 @@ namespace Oshima.FunGame.OshimaModules.Items
 {
     public class 回复药
     {
-        public interface HPBook
+        public interface HPRecovery
         {
             public double HP { get; set; }
         }
@@ -27,7 +27,7 @@ namespace Oshima.FunGame.OshimaModules.Items
             {
                 item.Skills.Active.OnSkillCasted([character]);
                 string msg = $"对角色 [ {character} ] 使用 [ {item.Name} ] 成功！";
-                if (item is HPBook hpBook)
+                if (item is HPRecovery hpBook)
                 {
                     msg += $"回复了 {hpBook.HP} 点生命值！";
                 }
@@ -60,7 +60,7 @@ namespace Oshima.FunGame.OshimaModules.Items
             if (key != "" && args.TryGetValue(key, out value) && value is int count && targets.Length > 0)
             {
                 string truemsg = $"对角色 [ {targets[0]} ] 使用 {count} 个 [ {item.Name} ] 成功！";
-                if (item is HPBook expBook)
+                if (item is HPRecovery expBook)
                 {
                     truemsg += $"回复了 {expBook.HP * count} 点生命值！";
                 }
@@ -70,7 +70,7 @@ namespace Oshima.FunGame.OshimaModules.Items
         }
     }
 
-    public class 小回复药 : Item, 回复药.HPBook
+    public class 小回复药 : Item, 回复药.HPRecovery
     {
         public override long Id => (long)ConsumableID.小回复药;
         public override string Name => "小回复药";
@@ -90,7 +90,7 @@ namespace Oshima.FunGame.OshimaModules.Items
         }
     }
 
-    public class 中回复药 : Item, 回复药.HPBook
+    public class 中回复药 : Item, 回复药.HPRecovery
     {
         public override long Id => (long)ConsumableID.中回复药;
         public override string Name => "中回复药";
@@ -110,7 +110,7 @@ namespace Oshima.FunGame.OshimaModules.Items
         }
     }
     
-    public class 大回复药 : Item, 回复药.HPBook
+    public class 大回复药 : Item, 回复药.HPRecovery
     {
         public override long Id => (long)ConsumableID.大回复药;
         public override string Name => "大回复药";
