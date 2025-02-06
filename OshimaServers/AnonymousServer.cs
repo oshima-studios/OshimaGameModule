@@ -144,50 +144,60 @@ namespace Oshima.FunGame.OshimaServers
             }, true);
             TaskScheduler.Shared.AddTask("刷新每日任务", new TimeSpan(4, 0, 0), () =>
             {
-                string directoryPath = $@"{AppDomain.CurrentDomain.BaseDirectory}configs/quests";
-                if (Directory.Exists(directoryPath))
+                // 刷新每日任务
+                Task.Run(() =>
                 {
-                    string[] filePaths = Directory.GetFiles(directoryPath);
-                    foreach (string filePath in filePaths)
+                    string directoryPath = $@"{AppDomain.CurrentDomain.BaseDirectory}configs/quests";
+                    if (Directory.Exists(directoryPath))
                     {
-                        string fileName = Path.GetFileNameWithoutExtension(filePath);
-                        EntityModuleConfig<Quest> quests = new("quests", fileName);
-                        quests.Clear();
-                        FunGameService.CheckQuestList(quests);
-                        quests.SaveConfig();
+                        string[] filePaths = Directory.GetFiles(directoryPath);
+                        foreach (string filePath in filePaths)
+                        {
+                            string fileName = Path.GetFileNameWithoutExtension(filePath);
+                            EntityModuleConfig<Quest> quests = new("quests", fileName);
+                            quests.Clear();
+                            FunGameService.CheckQuestList(quests);
+                            quests.SaveConfig();
+                        }
+                        Controller.WriteLine("刷新每日任务");
                     }
-                    Controller.WriteLine("刷新每日任务");
-                }
-                // 刷新签到
-                directoryPath = $@"{AppDomain.CurrentDomain.BaseDirectory}configs/saved";
-                if (Directory.Exists(directoryPath))
+                });
+                Task.Run(() =>
                 {
-                    string[] filePaths = Directory.GetFiles(directoryPath);
-                    foreach (string filePath in filePaths)
+                    // 刷新签到
+                    string directoryPath = $@"{AppDomain.CurrentDomain.BaseDirectory}configs/saved";
+                    if (Directory.Exists(directoryPath))
                     {
-                        string fileName = Path.GetFileNameWithoutExtension(filePath);
-                        PluginConfig pc = new("saved", fileName);
-                        pc.LoadConfig();
-                        pc.Add("signed", false);
-                        pc.SaveConfig();
+                        string[] filePaths = Directory.GetFiles(directoryPath);
+                        foreach (string filePath in filePaths)
+                        {
+                            string fileName = Path.GetFileNameWithoutExtension(filePath);
+                            PluginConfig pc = new("saved", fileName);
+                            pc.LoadConfig();
+                            pc.Add("signed", false);
+                            pc.SaveConfig();
+                        }
+                        Controller.WriteLine("刷新签到");
                     }
-                    Controller.WriteLine("刷新签到");
-                }
-                // 刷新商店
-                directoryPath = $@"{AppDomain.CurrentDomain.BaseDirectory}configs/stores";
-                if (Directory.Exists(directoryPath))
+                });
+                Task.Run(() =>
                 {
-                    string[] filePaths = Directory.GetFiles(directoryPath);
-                    foreach (string filePath in filePaths)
+                    // 刷新商店
+                    string directoryPath = $@"{AppDomain.CurrentDomain.BaseDirectory}configs/stores";
+                    if (Directory.Exists(directoryPath))
                     {
-                        string fileName = Path.GetFileNameWithoutExtension(filePath);
-                        EntityModuleConfig<Store> store = new("stores", fileName);
-                        store.Clear();
-                        FunGameService.CheckDailyStore(store);
-                        store.SaveConfig();
+                        string[] filePaths = Directory.GetFiles(directoryPath);
+                        foreach (string filePath in filePaths)
+                        {
+                            string fileName = Path.GetFileNameWithoutExtension(filePath);
+                            EntityModuleConfig<Store> store = new("stores", fileName);
+                            store.Clear();
+                            FunGameService.CheckDailyStore(store);
+                            store.SaveConfig();
+                        }
+                        Controller.WriteLine("刷新签到");
                     }
-                    Controller.WriteLine("刷新签到");
-                }
+                });
             });
             TaskScheduler.Shared.AddRecurringTask("刷新boss", TimeSpan.FromHours(1), () =>
             {

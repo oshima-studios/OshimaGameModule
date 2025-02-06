@@ -1148,7 +1148,7 @@ namespace Oshima.FunGame.OshimaServers.Service
                         magic.Guid = magicCard.Guid;
                         msg = $"此魔法卡的技能已经添加到未满三个魔法的卡包上。\r\n";
                     }
-                    return $"魔法【{magic.Name}】在此魔法卡包中不存在或是已经升至满级！";
+                    else return $"魔法【{magic.Name}】在此魔法卡包中不存在或是已经升至满级！";
                 }
                 string containMagics = magicCardPack.Description.Split("增加角色属性")[0];
                 magicCardPack.Description = $"包含魔法：{string.Join("，", magicCardPack.Skills.Magics.Select(m => m.Name + (m.Level > 1 ? $" +{m.Level - 1}" : "")))}\r\n" + magicCardPack.Description.Replace(containMagics, "");
@@ -1567,7 +1567,8 @@ namespace Oshima.FunGame.OshimaServers.Service
                             CreditsAward = maxProgress * 80,
                             MaterialsAward = maxProgress / 2 * 1,
                             Awards = items,
-                            AwardsCount = itemsCount
+                            AwardsCount = itemsCount,
+                            Status = QuestState.InProgress
                         };
                     }
 

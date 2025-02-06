@@ -3846,9 +3846,10 @@ namespace Oshima.FunGame.WebAPI.Controllers
                 quests.LoadConfig();
                 if (quests.Count > 0 && quests.Values.FirstOrDefault(q => q.Id == questid) is Quest quest)
                 {
-                    if (quest.Status == QuestState.InProgress)
+                    IEnumerable<Quest> workingQuests = quests.Values.Where(q => q.QuestType != QuestType.Progressive && q.Status == QuestState.InProgress);
+                    if (workingQuests.Any())
                     {
-                        msgs.Add($"你正在进行任务【{quest.Name}】，无法开始新任务！\r\n{quest}");
+                        msgs.Add($"你正在进行任务【{string.Join("，【", workingQuests.Select(q => q.Name))}】，无法开始新任务！\r\n{quest}");
                     }
                     else if (quest.Status == QuestState.Completed)
                     {
