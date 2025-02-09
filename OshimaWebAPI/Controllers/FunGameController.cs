@@ -12,6 +12,7 @@ using Milimoe.FunGame.Core.Library.SQLScript.Entity;
 using Oshima.Core.Configs;
 using Oshima.FunGame.OshimaModules.Characters;
 using Oshima.FunGame.OshimaModules.Items;
+using Oshima.FunGame.OshimaModules.Regions;
 using Oshima.FunGame.OshimaServers.Service;
 
 namespace Oshima.FunGame.WebAPI.Controllers
@@ -719,10 +720,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
                                 return NetworkUtility.JsonSerialize($"你的{General.GameplayEquilibriumConstant.InGameMaterial}不足 {reduce} 呢，无法重随自建角色属性！");
                             }
                             newCustom = new CustomCharacter(FunGameConstant.CustomCharacterId, "");
-                            if (newCustom is CustomCharacter temp)
-                            {
-                                temp.SetPrimaryAttribute();
-                            }
+                            FunGameService.SetCharacterPrimaryAttribute(newCustom);
                             user.LastTime = DateTime.Now;
                             pc.Add("user", user);
                             pc.SaveConfig();
@@ -5083,7 +5081,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
             List<string> regions = [];
             if (index != null)
             {
-                if (FunGameConstant.Regions.FirstOrDefault(kv => kv.Id == index) is Region region)
+                if (FunGameConstant.Regions.FirstOrDefault(kv => kv.Id == index) is OshimaRegion region)
                 {
                     regions.Add(region.ToString());
                 }

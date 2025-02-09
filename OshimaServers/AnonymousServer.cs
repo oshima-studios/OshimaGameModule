@@ -247,7 +247,7 @@ namespace Oshima.FunGame.OshimaServers
                         msg = SCAdd(data);
                         break;
                     case "sclist":
-                        msg = SCList();
+                        msg = SCList(data);
                         break;
                     case "att":
                         break;
@@ -312,13 +312,15 @@ namespace Oshima.FunGame.OshimaServers
             return result;
         }
 
-        public string SCList()
+        public string SCList(Dictionary<string, object> data)
         {
             string result = $"☆--- OSMTV 圣人排行榜 TOP10 ---☆\r\n统计时间：{DateTime.Now.ToString(General.GeneralDateTimeFormatChinese)}\r\n";
 
             SQLHelper? sql = Controller.SQLHelper;
             if (sql != null)
             {
+                long userQQ = Controller.JSON.GetObject<long>(data, "qq");
+                (bool userHas, double userSC, int userTop, string userRemark) = (false, 0, 0, "");
                 sql.Script = "select * from saints order by sc desc";
                 sql.ExecuteDataSet();
                 if (sql.Success && sql.DataSet.Tables.Count > 0)
@@ -327,13 +329,25 @@ namespace Oshima.FunGame.OshimaServers
                     foreach (DataRow dr in sql.DataSet.Tables[0].Rows)
                     {
                         count++;
-                        if (count > 10) break;
                         long qq = Convert.ToInt64(dr["qq"]);
                         double sc = Convert.ToDouble(dr["sc"]);
                         string remark = Convert.ToString(dr["remark"]) ?? "";
+                        if (qq == userQQ)
+                        {
+                            userHas = true;
+                            userSC = sc;
+                            userTop = count;
+                            userRemark = remark;
+                        }
+                        if (count > 10) continue;
                         result += $"{count}. 用户：{qq}，圣人点数：{sc} 分{(remark.Trim() != "" ? $" ({remark})" : "")}\r\n";
                     }
+                    if (userHas)
+                    {
+                        result += $"你的圣人点数为：{userSC} 分{(userRemark.Trim() != "" ? $"（{userRemark}）" : "")}，排在第 {userTop} / {sql.DataSet.Tables[0].Rows.Count} 名。";
+                    }
                 }
+                else result = "圣人榜目前没有任何数据。";
             }
             else result = "无法调用此接口：SQL 服务不可用。";
 

@@ -1,25 +1,25 @@
-﻿using System;
-using Milimoe.FunGame.Core.Api.Utility;
+﻿using Milimoe.FunGame.Core.Api.Utility;
 using Milimoe.FunGame.Core.Entity;
 using Milimoe.FunGame.Core.Library.Constant;
 
-namespace Oshima.FunGame.OshimaModules.Characters
+namespace Oshima.FunGame.OshimaModules.Units
 {
-    public class CustomCharacter : Character
+    public class RegionCharacter : Character
     {
-        public CustomCharacter(long user_id, string name, string firstname = "", string nickname = "") : base()
-        {
-            Id = user_id;
-            Name = name;
-            FirstName = firstname;
-            NickName = nickname;
-            PrimaryAttribute = (PrimaryAttribute)Random.Shared.Next(1, 4);
-            InitialATK = Random.Shared.Next(15, 26);
-            InitialHP = Random.Shared.Next(40, 86);
-            InitialMP = Random.Shared.Next(20, 56);
+        public HashSet<Func<Region, bool>> GenerationPredicates { get; } = [];
 
-            int value = 31;
-            int valueGrowth = 31;
+        public RegionCharacter(long id, string name, params IEnumerable<Func<Region, bool>> predicates)
+        {
+            Id = id;
+            Name = name;
+            NickName = name;
+            PrimaryAttribute = (PrimaryAttribute)Random.Shared.Next(1, 4);
+            InitialATK = Random.Shared.Next(55, 101);
+            InitialHP = Random.Shared.Next(80, 201);
+            InitialMP = Random.Shared.Next(50, 131);
+
+            int value = 61;
+            int valueGrowth = 61;
             for (int i = 0; i < 3; i++)
             {
                 if (value == 0) break;
@@ -44,9 +44,13 @@ namespace Oshima.FunGame.OshimaModules.Characters
                 value -= attribute;
                 valueGrowth -= growth;
             }
-            InitialSPD = Random.Shared.Next(220, 291);
-            InitialHR = Random.Shared.Next(1, 6);
-            InitialMR = Random.Shared.Next(1, 6);
+            InitialSPD = Random.Shared.Next(220, 451);
+            InitialHR = Random.Shared.Next(3, 9);
+            InitialMR = Random.Shared.Next(3, 9);
+            foreach (Func<Region, bool> predicate in predicates)
+            {
+                GenerationPredicates.Add(predicate);
+            }
         }
     }
 }

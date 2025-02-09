@@ -2,6 +2,7 @@
 using Milimoe.FunGame.Core.Library.Constant;
 using Oshima.FunGame.OshimaModules.Effects.OpenEffects;
 using Oshima.FunGame.OshimaModules.Items;
+using Oshima.FunGame.OshimaModules.Regions;
 
 namespace Oshima.FunGame.OshimaServers.Service
 {
@@ -17,11 +18,13 @@ namespace Oshima.FunGame.OshimaServers.Service
         public static List<Skill> Magics { get; } = [];
         public static List<Item> Equipment { get; } = [];
         public static List<Item> Items { get; } = [];
+        public static List<Item> DrawCardItems { get; } = [];
         public static List<Skill> ItemSkills { get; } = [];
         public static List<Item> AllItems { get; } = [];
         public static List<Skill> AllSkills { get; } = [];
         public static Dictionary<long, User> UserIdAndUsername { get; } = [];
         public static ItemType[] ItemCanUsed => [ItemType.Consumable, ItemType.MagicCard, ItemType.SpecialItem, ItemType.GiftBox, ItemType.Others];
+        public static ItemType[] ItemCanNotDrawCard => [ItemType.Collectible, ItemType.QuestItem, ItemType.GiftBox, ItemType.Others];
 
         public static Dictionary<int, Dictionary<string, int>> LevelBreakNeedyList { get; } = new()
         {
@@ -535,187 +538,10 @@ namespace Oshima.FunGame.OshimaServers.Service
             }
         };
 
-        public static List<Region> Regions { get; } = [
-            new Region()
-            {
-                Id = 1,
-                Name = "银辉城",
-                Description = "悬浮在云海中的倒三角金属都市，建筑由星银合金铸造，街道流淌着液态月光。核心区藏有能改写现实法则的「悖论引擎」",
-                Weather = "晴朗",
-                Temperature = 20,
-                Difficulty = RarityType.TwoStar
-            },
-            new Region()
-            {
-                Id = 2,
-                Name = "瑟兰薇歌林海",
-                Description = "树木枝干中流淌荧蓝汁液，春季行走重组地貌，冬季化为水晶雕塑。深处沉睡着被精灵封印的「旋律古龙」",
-                Weather = "多云",
-                Temperature = 15,
-                Difficulty = RarityType.FourStar
-            },
-            new Region()
-            {
-                Id = 3,
-                Name = "赫菲斯托斯之喉",
-                Description = "螺旋向下的火山矿井，底层矿工开采深渊火钻，矿道会突然熔化成通往元素位面的裂缝",
-                Weather = "炎热",
-                Temperature = 45,
-                Difficulty = RarityType.FourStar
-            },
-            new Region()
-            {
-                Id = 4,
-                Name = "永霜裂痕",
-                Description = "冰晶峡谷冻结着不同时代的战争残影，哨塔时钟随机倒转/加速，需服用「时霜药剂」保持神智",
-                Weather = "极寒",
-                Temperature = -25,
-                Difficulty = RarityType.FiveStar
-            },
-            new Region()
-            {
-                Id = 5,
-                Name = "千瞳镜湖",
-                Description = "湖面倒影展现平行时空，潜入会进入重力颠倒的镜像城，湖底布满瞳孔状传送门",
-                Weather = "阴沉",
-                Temperature = 10,
-                Difficulty = RarityType.TwoStar
-            },
-            new Region()
-            {
-                Id = 6,
-                Name = "雷霆王座山脉",
-                Description = "悬浮岩块组成的三维迷宫，最高峰「裁决尖碑」在月圆之夜投射出泰坦调试世界的符文",
-                Weather = "雷暴",
-                Temperature = 5,
-                Difficulty = RarityType.FourStar
-            },
-            new Region()
-            {
-                Id = 7,
-                Name = "流沙时计荒漠",
-                Description = "沙粒蕴含时间魔法，沙丘每小时重组地形，沙暴中会出现海市蜃楼般的「昨日之城」",
-                Weather = "沙尘暴",
-                Temperature = 35,
-                Difficulty = RarityType.ThreeStar
-            },
-            new Region()
-            {
-                Id = 8,
-                Name = "腐萤沼渊",
-                Description = "荧光毒气沼泽，中心生长直径三公里的脑状肉瘤「共生母体」，菌类模仿动物叫声诱捕猎物",
-                Weather = "潮湿",
-                Temperature = 22,
-                Difficulty = RarityType.OneStar
-            },
-            new Region()
-            {
-                Id = 9,
-                Name = "苍穹碎屿",
-                Description = "破碎天穹形成的浮空岛群，「星锚之地」竖立着束缚星空巨兽的引雷柱",
-                Weather = "晴朗",
-                Temperature = 18,
-                Difficulty = RarityType.ThreeStar
-            },
-            new Region()
-            {
-                Id = 10,
-                Name = "齿与血回廊",
-                Description = "自我扩建的活体建筑群，齿轮血管输送液态魔力，「造物车间」会强制改造闯入者",
-                Weather = "阴暗",
-                Temperature = 12,
-                Difficulty = RarityType.FiveStar
-            },
-            new Region()
-            {
-                Id = 11,
-                Name = "穹顶之泪湖",
-                Description = "破碎天穹下的倒影湖泊，折射多维星空，星辉水母群午夜重构水体重力法则",
-                Weather = "星光",
-                Temperature = 16,
-                Difficulty = RarityType.OneStar
-            },
-            new Region()
-            {
-                Id = 12,
-                Name = "齿轮坟场",
-                Description = "堆积上古机械文明的金属荒漠，沙粒为微缩齿轮，构装巨龙在沙暴中游荡",
-                 Weather = "沙尘",
-                Temperature = 30,
-                Difficulty = RarityType.ThreeStar
-            },
-            new Region()
-            {
-                Id = 13,
-                Name = "回音棱镜林",
-                Description = "晶体化红杉储存亡者记忆，荧光孢子引发共感，影狼嚎叫产生空间褶皱",
-                Weather = "雾气",
-                Temperature = 14,
-                Difficulty = RarityType.FourStar
-            },
-            new Region()
-            {
-                Id = 14,
-                Name = "永燃坩埚",
-                Description = "岩浆海上的球形锻造都市，岩浆鱿鱼游弋街道，火山灰培育活体金属苔藓",
-                Weather = "高温",
-                Temperature = 60,
-                Difficulty = RarityType.FiveStar
-            },
-            new Region()
-            {
-                Id = 15,
-                Name = "骨桥深渊",
-                Description = "巨型骸骨形成的呼吸桥梁，幽灵船在桥底虚空航行，骸骨寄生神经蕨类",
-                Weather = "阴森",
-                Temperature = 8,
-                Difficulty = RarityType.ThreeStar
-            },
-            new Region()
-            {
-                Id = 16,
-                Name = "时漏沙漠",
-                Description = "时间碎片组成的流沙领域，时之蝎加速局部时间，沙漏仙人掌分泌时凝液",
-                Weather = "不稳定",
-                Temperature = 38,
-                Difficulty = RarityType.TwoStar
-            },
-            new Region()
-            {
-                Id = 17,
-                Name = "脉轮圣树",
-                Description = "树干直径十公里的螺旋巨树，年轮是立体城市，树液凝结可编程蜜蜡",
-                Weather = "晴朗",
-                Temperature = 24,
-                Difficulty = RarityType.ThreeStar
-            },
-            new Region()
-            {
-                Id = 18,
-                Name = "悲鸣矿脉",
-                Description = "岩层嵌满神经宝石的活体矿山，开采引发山体剧痛，晶簇守卫实体化巡逻",
-                Weather = "幽暗",
-                Temperature = 10,
-                Difficulty = RarityType.FourStar
-            },
-            new Region()
-            {
-                Id = 19,
-                Name = "双生月崖",
-                Description = "撕裂的悬浮山脉，永昼侧栖光鹰，永夜侧绽影玫瑰，跨越界限触发湮灭",
-                Weather = "昼夜交替",
-                Temperature = 15,
-                Difficulty = RarityType.FiveStar
-            },
-            new Region()
-            {
-                Id = 20,
-                Name = "谵妄海市",
-                Description = "需认知干扰剂进入的幻觉城市，思维寄生虫伪装市民，贩卖可食用梦境碎片",
-                Weather = "迷幻",
-                Temperature = 20,
-                Difficulty = RarityType.FourStar
-            }
+        public static List<OshimaRegion> Regions { get; } = [
+            new 银辉城(), new 瑟兰薇歌林海(), new 赫菲斯托斯之喉(), new 永霜裂痕(), new 千瞳镜湖(), new 雷霆王座山脉(), new 流沙时计荒漠(), new 腐萤沼渊(),
+            new 苍穹碎屿(), new 齿与血回廊(), new 穹顶之泪湖(), new 齿轮坟场(), new 回音棱镜林(), new 永燃坩埚(), new 骨桥深渊(), new 时漏沙漠(),
+            new 脉轮圣树(), new 悲鸣矿脉(), new 双生月崖(), new 谵妄海市()
         ];
 
         public static Dictionary<QualityType, double> DrawCardProbabilities { get; } = new()

@@ -7,6 +7,7 @@ using Oshima.Core.Constant;
 using Oshima.FunGame.OshimaModules.Characters;
 using Oshima.FunGame.OshimaModules.Effects.OpenEffects;
 using Oshima.FunGame.OshimaModules.Items;
+using Oshima.FunGame.OshimaModules.Regions;
 using Oshima.FunGame.OshimaModules.Skills;
 
 namespace Oshima.FunGame.OshimaServers.Service
@@ -51,6 +52,13 @@ namespace Oshima.FunGame.OshimaServers.Service
 
             FunGameConstant.AllItems.AddRange(FunGameConstant.Equipment);
             FunGameConstant.AllItems.AddRange(FunGameConstant.Items);
+
+            foreach (OshimaRegion region in FunGameConstant.Regions)
+            {
+                FunGameConstant.AllItems.AddRange(region.Crops.Select(i => i.Copy()));
+            }
+
+            FunGameConstant.DrawCardItems.AddRange(FunGameConstant.AllItems.Where(i => !FunGameConstant.ItemCanNotDrawCard.Contains(i.ItemType)));
 
             Skill?[] activeSkills = [.. FunGameConstant.Equipment.Select(i => i.Skills.Active), .. FunGameConstant.Items.Select(i => i.Skills.Active)];
             foreach (Skill? skill in activeSkills)
@@ -367,6 +375,7 @@ namespace Oshima.FunGame.OshimaServers.Service
             FunGameConstant.SuperSkills.Clear();
             FunGameConstant.PassiveSkills.Clear();
             FunGameConstant.Magics.Clear();
+            FunGameConstant.DrawCardItems.Clear();
             FunGameConstant.AllItems.Clear();
             FunGameConstant.ItemSkills.Clear();
             FunGameConstant.AllSkills.Clear();
@@ -613,7 +622,7 @@ namespace Oshima.FunGame.OshimaServers.Service
                     break;
                     
                 case 7:
-                    Item 物品 = FunGameConstant.Items[Random.Shared.Next(FunGameConstant.Items.Count)].Copy();
+                    Item 物品 = FunGameConstant.DrawCardItems[Random.Shared.Next(FunGameConstant.DrawCardItems.Count)].Copy();
                     SetSellAndTradeTime(物品);
                     user.Inventory.Items.Add(物品);
                     msg += ItemSet.GetQualityTypeName(物品.QualityType) + ItemSet.GetItemTypeName(物品.ItemType) + "【" + 物品.Name + "】！\r\n" + 物品.Description;
@@ -648,7 +657,7 @@ namespace Oshima.FunGame.OshimaServers.Service
             double q = Random.Shared.NextDouble() * 100;
 
             // 根据签到天数调整概率
-            double daysFactor = Math.Min(days * 0.02, 30);
+            double daysFactor = Math.Min(days * 0.03, 30);
             Dictionary<QualityType, double> adjustedProbabilities = new(FunGameConstant.DrawCardProbabilities);
             foreach (QualityType typeTemp in adjustedProbabilities.Keys)
             {
@@ -1371,7 +1380,7 @@ namespace Oshima.FunGame.OshimaServers.Service
                     boss.Skills.Add(super);
                     
                     boss.Recovery();
-                    boss.SetPrimaryAttribute();
+                    SetCharacterPrimaryAttribute(boss);
 
                     Bosses[nowIndex] = boss;
                 }
@@ -1479,24 +1488,26 @@ namespace Oshima.FunGame.OshimaServers.Service
                     QuestType type = (QuestType)Random.Shared.Next(3);
                     long id = quests.Count > 0 ? quests.Values.Max(q => q.Id) + 1 : 1;
 
+                    // 生成任务奖励物品
+                    HashSet<Item> items = [];
+                    Dictionary<string, int> itemsCount = [];
+                    int index = Random.Shared.Next(FunGameConstant.DrawCardItems.Count);
+                    Item item = FunGameConstant.DrawCardItems[index];
+                    items.Add(item);
+                    itemsCount[item.Name] = 1;
+                    index = Random.Shared.Next(FunGameConstant.DrawCardItems.Count);
+                    Item item2 = FunGameConstant.DrawCardItems[index];
+                    items.Add(item2);
+                    if (!itemsCount.TryAdd(item2.Name, 1))
+                    {
+                        itemsCount[item2.Name]++;
+                    }
+
                     Quest quest;
                     if (type == QuestType.Continuous)
                     {
                         string name = FunGameConstant.ContinuousQuestList.Keys.OrderBy(o => Random.Shared.Next()).First();
                         int minutes = Random.Shared.Next(10, 41);
-                        HashSet<Item> items = [];
-                        Dictionary<string, int> itemsCount = [];
-                        int index = Random.Shared.Next(FunGameConstant.AllItems.Count);
-                        Item item = FunGameConstant.AllItems[index];
-                        items.Add(item);
-                        itemsCount[item.Name] = 1;
-                        index = Random.Shared.Next(FunGameConstant.AllItems.Count);
-                        Item item2 = FunGameConstant.AllItems[index];
-                        items.Add(item2);
-                        if (!itemsCount.TryAdd(item2.Name, 1))
-                        {
-                            itemsCount[item2.Name]++;
-                        }
                         quest = new()
                         {
                             Id = id,
@@ -1514,19 +1525,6 @@ namespace Oshima.FunGame.OshimaServers.Service
                     {
                         string name = FunGameConstant.ImmediateQuestList.Keys.OrderBy(o => Random.Shared.Next()).First();
                         int difficulty = Random.Shared.Next(3, 11);
-                        HashSet<Item> items = [];
-                        Dictionary<string, int> itemsCount = [];
-                        int index = Random.Shared.Next(FunGameConstant.AllItems.Count);
-                        Item item = FunGameConstant.AllItems[index];
-                        items.Add(item);
-                        itemsCount[item.Name] = 1;
-                        index = Random.Shared.Next(FunGameConstant.AllItems.Count);
-                        Item item2 = FunGameConstant.AllItems[index];
-                        items.Add(item2);
-                        if (!itemsCount.TryAdd(item2.Name, 1))
-                        {
-                            itemsCount[item2.Name]++;
-                        }
                         quest = new()
                         {
                             Id = id,
@@ -1543,19 +1541,6 @@ namespace Oshima.FunGame.OshimaServers.Service
                     {
                         string name = FunGameConstant.ProgressiveQuestList.Keys.OrderBy(o => Random.Shared.Next()).First();
                         int maxProgress = Random.Shared.Next(3, 11);
-                        HashSet<Item> items = [];
-                        Dictionary<string, int> itemsCount = [];
-                        int index = Random.Shared.Next(FunGameConstant.AllItems.Count);
-                        Item item = FunGameConstant.AllItems[index];
-                        items.Add(item);
-                        itemsCount[item.Name] = 1;
-                        index = Random.Shared.Next(FunGameConstant.AllItems.Count);
-                        Item item2 = FunGameConstant.AllItems[index];
-                        items.Add(item2);
-                        if (!itemsCount.TryAdd(item2.Name, 1))
-                        {
-                            itemsCount[item2.Name]++;
-                        }
                         quest = new()
                         {
                             Id = id,
@@ -1740,6 +1725,30 @@ namespace Oshima.FunGame.OshimaServers.Service
         {
             SQLHelper.Parameters["@AutoKey"] = AutoKey;
             return $"{Milimoe.FunGame.Core.Library.SQLScript.Entity.UserQuery.Select_Users} {Milimoe.FunGame.Core.Library.SQLScript.Constant.Command_Where} {Milimoe.FunGame.Core.Library.SQLScript.Entity.UserQuery.Column_AutoKey} = @AutoKey";
+        }
+
+        public static void SetCharacterPrimaryAttribute(Character character, PrimaryAttribute? value = null)
+        {
+            if (value != null && value.HasValue)
+            {
+                character.PrimaryAttribute = value.Value;
+            }
+            else
+            {
+                double max = Math.Max(Math.Max(character.STR, character.AGI), character.INT);
+                if (max == character.STR)
+                {
+                    character.PrimaryAttribute = PrimaryAttribute.STR;
+                }
+                else if (max == character.AGI)
+                {
+                    character.PrimaryAttribute = PrimaryAttribute.AGI;
+                }
+                else if (max == character.INT)
+                {
+                    character.PrimaryAttribute = PrimaryAttribute.INT;
+                }
+            }
         }
     }
 }

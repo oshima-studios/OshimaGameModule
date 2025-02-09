@@ -182,23 +182,30 @@ namespace Oshima.FunGame.WebAPI.Controllers
         {
             if (msg is null) return "";
 
-            if (await FungameService.Handler(third: msg))
+            bool result = true;
+            string error = "";
+            TaskUtility.NewTask(async () => result = await FungameService.Handler(third: msg)).OnError(e => error = e.ToString());
+
+            int time = 0;
+            int timeout = 8 * 1000;
+            while (true)
             {
-                int time = 0;
-                int timeout = 8 * 1000;
-                while (true)
+                await Task.Delay(200);
+                time += 200;
+                if (time >= timeout)
                 {
-                    await Task.Delay(200);
-                    time += 200;
-                    if (time >= timeout)
-                    {
-                        break;
-                    }
-                    if (msg.IsCompleted)
-                    {
-                        break;
-                    }
+                    break;
                 }
+                if (!result || msg.IsCompleted)
+                {
+                    break;
+                }
+            }
+
+            if (error != "")
+            {
+                if (msg.Result != "") msg.Result += "\r\n";
+                msg.Result += error;
             }
 
             return NetworkUtility.JsonSerialize(msg.Result);
