@@ -1998,7 +1998,7 @@ namespace Oshima.FunGame.WebAPI.Services
                     string msg = "";
                     if (int.TryParse(detail, out int cid))
                     {
-                        msg = Controller.ExploreRegion(cid);
+                        msg = Controller.ExploreRegion(uid, cid);
                         if (msg.Trim() != "")
                         {
                             await SendAsync(e, "探索", msg);

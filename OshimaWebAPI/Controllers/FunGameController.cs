@@ -5113,10 +5113,10 @@ namespace Oshima.FunGame.WebAPI.Controllers
         }
 
         [HttpPost("exploreregion")]
-        public string ExploreRegion([FromQuery] long? uid = null, [FromQuery] int? id = null)
+        public string ExploreRegion([FromQuery] long? uid = null, [FromQuery] long? id = null)
         {
             long userid = uid ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
-            int regionid = id ?? 0;
+            long regionid = id ?? 0;
 
             PluginConfig pc = new("saved", userid.ToString());
             pc.LoadConfig();
