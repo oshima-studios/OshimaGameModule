@@ -55,10 +55,13 @@ namespace Oshima.FunGame.OshimaServers.Service
 
             foreach (OshimaRegion region in FunGameConstant.Regions)
             {
-                FunGameConstant.AllItems.AddRange(region.Crops.Select(i => i.Copy()));
+                List<Item> items = [.. region.Crops.Select(i => i.Copy())];
+                FunGameConstant.ExploreItems.Add(region, items);
             }
 
             FunGameConstant.DrawCardItems.AddRange(FunGameConstant.AllItems.Where(i => !FunGameConstant.ItemCanNotDrawCard.Contains(i.ItemType)));
+
+            FunGameConstant.AllItems.AddRange(FunGameConstant.ExploreItems.Values.SelectMany(list => list));
 
             Skill?[] activeSkills = [.. FunGameConstant.Equipment.Select(i => i.Skills.Active), .. FunGameConstant.Items.Select(i => i.Skills.Active)];
             foreach (Skill? skill in activeSkills)
@@ -376,6 +379,7 @@ namespace Oshima.FunGame.OshimaServers.Service
             FunGameConstant.PassiveSkills.Clear();
             FunGameConstant.Magics.Clear();
             FunGameConstant.DrawCardItems.Clear();
+            FunGameConstant.ExploreItems.Clear();
             FunGameConstant.AllItems.Clear();
             FunGameConstant.ItemSkills.Clear();
             FunGameConstant.AllSkills.Clear();

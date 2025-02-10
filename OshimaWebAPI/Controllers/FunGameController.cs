@@ -5095,8 +5095,13 @@ namespace Oshima.FunGame.WebAPI.Controllers
                 regions.Add($"世界地图：");
                 for (int i = 0; i < FunGameConstant.Regions.Count; i++)
                 {
-                    Region region = FunGameConstant.Regions[i];
-                    regions.Add($"{region.Id}. {region.Name}");
+                    OshimaRegion region = FunGameConstant.Regions[i];
+                    List<Item> crops = [];
+                    if (FunGameConstant.ExploreItems.TryGetValue(region, out List<Item>? list) && list != null)
+                    {
+                        crops = list;
+                    }
+                    regions.Add($"{region.Id}. {region.Name}" + (crops.Count > 0 ? "（作物：" + string.Join("，", crops.Select(i => i.Name)) + "）" : ""));
                 }
                 regions.Add($"提示：使用【查地区+序号】指令来查看指定地区的信息。");
             }
@@ -5105,6 +5110,41 @@ namespace Oshima.FunGame.WebAPI.Controllers
                 regions.Add($"世界地图遇到了问题，暂时无法显示……");
             }
             return regions;
+        }
+
+        [HttpPost("exploreregion")]
+        public string ExploreRegion([FromQuery] long? uid = null, [FromQuery] int? id = null)
+        {
+            long userid = uid ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
+            int regionid = id ?? 0;
+
+            PluginConfig pc = new("saved", userid.ToString());
+            pc.LoadConfig();
+
+            string msg = "";
+            if (pc.Count > 0)
+            {
+                User user = FunGameService.GetUser(pc);
+
+                if (regionid > 0 && regionid <= FunGameConstant.Regions.Count && FunGameConstant.Regions.FirstOrDefault(r => r.Id == regionid) is OshimaRegion region)
+                {
+                    msg = $"开始探索【{region.Name}】，探索时间：{FunGameConstant.ExploreTime} 分钟。（骗你的，其实还没做）";
+                }
+                else
+                {
+                    return $"没有找到与这个序号相对应的地区！";
+                }
+
+                user.LastTime = DateTime.Now;
+                pc.Add("user", user);
+                pc.SaveConfig();
+
+                return msg;
+            }
+            else
+            {
+                return noSaved;
+            }
         }
 
         [HttpGet("reload")]

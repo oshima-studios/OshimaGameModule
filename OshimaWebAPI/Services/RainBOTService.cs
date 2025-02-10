@@ -1982,6 +1982,31 @@ namespace Oshima.FunGame.WebAPI.Services
                     return result;
                 }
 
+                if (e.Detail == "世界地图")
+                {
+                    List<string> msgs = Controller.GetRegion();
+                    if (msgs.Count > 0)
+                    {
+                        await SendAsync(e, "世界地图", string.Join("\r\n", msgs));
+                    }
+                    return result;
+                }
+
+                if (e.Detail.StartsWith("探索", StringComparison.CurrentCultureIgnoreCase) || e.Detail.StartsWith("前往", StringComparison.CurrentCultureIgnoreCase))
+                {
+                    string detail = e.Detail.Replace("探索", "").Replace("前往", "").Trim();
+                    string msg = "";
+                    if (int.TryParse(detail, out int cid))
+                    {
+                        msg = Controller.ExploreRegion(cid);
+                        if (msg.Trim() != "")
+                        {
+                            await SendAsync(e, "探索", msg);
+                        }
+                    }
+                    return result;
+                }
+
                 if (uid == GeneralSettings.Master && e.Detail.StartsWith("重载FunGame", StringComparison.CurrentCultureIgnoreCase))
                 {
                     string msg = NetworkUtility.JsonDeserialize<string>(Controller.Relaod(uid)) ?? "";

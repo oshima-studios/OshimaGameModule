@@ -31,19 +31,19 @@ namespace Oshima.FunGame.OshimaModules.Regions
             if (Characters.Count > 0)
             {
                 builder.AppendLine($"== 头目 ==");
-                builder.AppendLine(string.Join("，", Characters.Select(o => o.Name)));
+                builder.AppendLine(string.Join("，", Characters.Select(c => c.Name)));
             }
 
             if (Units.Count > 0)
             {
                 builder.AppendLine($"== 生物 ==");
-                builder.AppendLine(string.Join("，", Units.Select(o => o.Name)));
+                builder.AppendLine(string.Join("，", Units.Select(u => u.Name)));
             }
 
             if (Crops.Count > 0)
             {
                 builder.AppendLine($"== 作物 ==");
-                builder.AppendLine(string.Join("，", Crops.Select(c => c.Name)));
+                builder.AppendLine(string.Join("，", Crops.Select(i => i.Name + "：" + i.Description + "\"" + i.BackgroundStory + "\"")));
             }
 
             builder.AppendLine($"探索难度：{CharacterSet.GetRarityTypeName(Difficulty)}");
