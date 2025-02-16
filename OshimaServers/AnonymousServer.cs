@@ -275,21 +275,24 @@ namespace Oshima.FunGame.OshimaServers
                 try
                 {
                     long qq = Controller.JSON.GetObject<long>(data, "qq");
+                    long groupid = Controller.JSON.GetObject<long>(data, "groupid");
                     double sc = Controller.JSON.GetObject<double>(data, "sc");
                     sql.NewTransaction();
-                    sql.Script = "select * from saints where qq = @qq";
+                    sql.Script = "select * from saints where qq = @qq and `group` = @group";
                     sql.Parameters.Add("qq", qq);
+                    sql.Parameters.Add("group", groupid);
                     sql.ExecuteDataSet();
-                    sql.Parameters.Add("sc", sc);
-                    sql.Parameters.Add("qq", qq);
                     if (sql.Success)
                     {
-                        sql.Script = "update saints set sc = sc + @sc where qq = @qq";
+                        sql.Script = "update saints set sc = sc + @sc where qq = @qq and `group` = @group";
                     }
                     else
                     {
-                        sql.Script = "insert into saints(qq, sc) values(@qq, @sc)";
+                        sql.Script = "insert into saints(qq, sc, `group`) values(@qq, @sc, @group)";
                     }
+                    sql.Parameters.Add("sc", sc);
+                    sql.Parameters.Add("qq", qq);
+                    sql.Parameters.Add("group", groupid);
                     sql.Execute();
                     if (sql.Success)
                     {
@@ -314,14 +317,25 @@ namespace Oshima.FunGame.OshimaServers
 
         public string SCList(Dictionary<string, object> data)
         {
-            string result = $"☆--- OSMTV 圣人排行榜 TOP10 ---☆\r\n统计时间：{DateTime.Now.ToString(General.GeneralDateTimeFormatChinese)}\r\n";
+            string result = "";
 
             SQLHelper? sql = Controller.SQLHelper;
             if (sql != null)
             {
                 long userQQ = Controller.JSON.GetObject<long>(data, "qq");
                 (bool userHas, double userSC, int userTop, string userRemark) = (false, 0, 0, "");
-                sql.Script = "select * from saints order by sc desc";
+                long groupid = Controller.JSON.GetObject<long>(data, "groupid");
+                bool reverse = Controller.JSON.GetObject<bool>(data, "reverse");
+                if (!reverse)
+                {
+                    result = $"☆--- OSMTV 圣人排行榜 TOP10 ---☆\r\n统计时间：{DateTime.Now.ToString(General.GeneralDateTimeFormatChinese)}\r\n";
+                }
+                else
+                {
+                    result = $"☆--- OSMTV 出生排行榜 TOP10 ---☆\r\n统计时间：{DateTime.Now.ToString(General.GeneralDateTimeFormatChinese)}\r\n";
+                }
+                sql.Script = "select * from saints where `group` = @group order by sc" + (!reverse ? " desc" : "");
+                sql.Parameters.Add("group", groupid);
                 sql.ExecuteDataSet();
                 if (sql.Success && sql.DataSet.Tables.Count > 0)
                 {
@@ -332,6 +346,11 @@ namespace Oshima.FunGame.OshimaServers
                         long qq = Convert.ToInt64(dr["qq"]);
                         double sc = Convert.ToDouble(dr["sc"]);
                         string remark = Convert.ToString(dr["remark"]) ?? "";
+                        if (reverse)
+                        {
+                            sc = -sc;
+                            remark = remark.Replace("+", "-");
+                        }
                         if (qq == userQQ)
                         {
                             userHas = true;
@@ -340,14 +359,37 @@ namespace Oshima.FunGame.OshimaServers
                             userRemark = remark;
                         }
                         if (count > 10) continue;
-                        result += $"{count}. 用户：{qq}，圣人点数：{sc} 分{(remark.Trim() != "" ? $" ({remark})" : "")}\r\n";
+                        if (!reverse)
+                        {
+                            result += $"{count}. 用户：{qq}，圣人点数：{sc} 分{(remark.Trim() != "" ? $" ({remark})" : "")}\r\n";
+                        }
+                        else
+                        {
+                            result += $"{count}. 用户：{qq}，出生点数：{sc} 分{(remark.Trim() != "" ? $" ({remark})" : "")}\r\n";
+                        }
                     }
-                    if (userHas)
+                    if (!reverse && userHas)
                     {
-                        result += $"你的圣人点数为：{userSC} 分{(userRemark.Trim() != "" ? $"（{userRemark}）" : "")}，排在第 {userTop} / {sql.DataSet.Tables[0].Rows.Count} 名。";
+                        result += $"你的圣人点数为：{userSC} 分{(userRemark.Trim() != "" ? $"（{userRemark}）" : "")}，排在第 {userTop} / {sql.DataSet.Tables[0].Rows.Count} 名。\r\n" +
+                            $"本排行榜仅供娱乐，不代表任何官方立场或真实情况";
+                    }
+                    if (reverse && userHas)
+                    {
+                        result += $"你的出生点数为：{userSC} 分{(userRemark.Trim() != "" ? $"（{userRemark}）" : "")}，排在出生榜第 {userTop} / {sql.DataSet.Tables[0].Rows.Count} 名。\r\n" +
+                            $"本排行榜仅供娱乐，不代表任何官方立场或真实情况";
                     }
                 }
-                else result = "圣人榜目前没有任何数据。";
+                else
+                {
+                    if (reverse)
+                    {
+                        result = "出生榜目前没有任何数据。";
+                    }
+                    else
+                    {
+                        result = "圣人榜目前没有任何数据。";
+                    }
+                }
             }
             else result = "无法调用此接口：SQL 服务不可用。";
 
