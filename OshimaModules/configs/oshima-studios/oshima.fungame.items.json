@@ -74,20 +74,20 @@
       ]
     }
   },
-  "风暴步枪": {
+  "风暴枪": {
     "Id": 11546,
-    "Name": "风暴步枪",
+    "Name": "风暴枪",
     "Description": "增加角色 20 点攻击力。",
     "BackgroundStory": "捕捉风暴之力的武器，射速惊人。",
     "ItemType": 1,
-    "WeaponType": 5,
+    "WeaponType": 9,
     "QualityType": 0,
     "Skills": {
       "Active": null,
       "Passives": [
         {
           "Id": 7004,
-          "Name": "风暴步枪",
+          "Name": "风暴枪",
           "SkillType": 3,
           "Effects": [
             {
@@ -199,20 +199,20 @@
       ]
     }
   },
-  "赤焰手枪": {
+  "圣焰裁决": {
     "Id": 11551,
-    "Name": "赤焰手枪",
+    "Name": "圣焰裁决",
     "Description": "增加角色 40 点攻击力。",
-    "BackgroundStory": "能够发射赤焰的手枪，近距离威力极大。",
+    "BackgroundStory": "能够发射赤焰的魔导枪，近距离威力极大。",
     "ItemType": 1,
-    "WeaponType": 4,
+    "WeaponType": 1,
     "QualityType": 1,
     "Skills": {
       "Active": null,
       "Passives": [
         {
           "Id": 7009,
-          "Name": "赤焰手枪",
+          "Name": "圣焰裁决",
           "SkillType": 3,
           "Effects": [
             {
@@ -474,20 +474,20 @@
       ]
     }
   },
-  "冰晶手枪": {
+  "霜月双刃": {
     "Id": 11562,
-    "Name": "冰晶手枪",
+    "Name": "霜月双刃",
     "Description": "增加角色 80 点攻击力。",
-    "BackgroundStory": "由冰晶打造的手枪，子弹带有极寒之力。",
+    "BackgroundStory": "刀身细长，略微弯曲，刀柄末端镶嵌着一颗冰晶石。",
     "ItemType": 1,
-    "WeaponType": 4,
+    "WeaponType": 6,
     "QualityType": 3,
     "Skills": {
       "Active": null,
       "Passives": [
         {
           "Id": 7020,
-          "Name": "冰晶手枪",
+          "Name": "霜月双刃",
           "SkillType": 3,
           "Effects": [
             {
