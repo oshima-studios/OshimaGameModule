@@ -1441,7 +1441,7 @@ namespace Oshima.FunGame.OshimaServers.Service
             }
 
             // 伤害贡献
-            double logDamageContribution = Math.Log(1 + (stats.TotalDamage / (stats.TotalTakenDamage + 1e-6)));
+            double logDamageContribution = Math.Log(1 + (stats.TotalDamage / (stats.TotalTakenDamage + 1)));
 
             // 存活时间贡献
             double liveTimeContribution = Math.Log(1 + (stats.LiveTime / (stats.TotalTakenDamage + 0.01) * 100));
