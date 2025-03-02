@@ -43,26 +43,13 @@ namespace Oshima.FunGame.WebAPI.Services
             }
         }
 
-        public async Task<bool> Handler(GroupAtMessage? groupAt = null, C2CMessage? c2c = null, ThirdPartyMessage? third = null)
+        public async Task<bool> Handler(IBotMessage e)
         {
             bool result = true;
             try
             {
-                IBotMessage? e = null;
                 string openid = "";
                 long uid = 0;
-                if (groupAt != null)
-                {
-                    e = groupAt;
-                }
-                else if (c2c != null)
-                {
-                    e = c2c;
-                }
-                else if (third != null)
-                {
-                    e = third;
-                }
 
                 if (e is null)
                 {
@@ -2017,9 +2004,9 @@ namespace Oshima.FunGame.WebAPI.Services
                     return result;
                 }
             }
-            catch (Exception e)
+            catch (Exception ex)
             {
-                Logger.LogError("Error: {e}", e);
+                Logger.LogError("Error: {ex}", ex);
             }
 
             return false;

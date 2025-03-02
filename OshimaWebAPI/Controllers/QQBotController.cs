@@ -129,7 +129,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
                             //{
                             //    _logger.LogError("上传图片失败：{error}", error);
                             //}
-                            TaskUtility.NewTask(async () => await FungameService.Handler(c2c: c2cMessage));
+                            TaskUtility.NewTask(async () => await FungameService.Handler(c2cMessage));
                         }
                         else
                         {
@@ -150,7 +150,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
                             Logger.LogInformation("收到来自群组 {groupAtMessage.GroupOpenId} 的消息：{groupAtMessage.Content}", groupAtMessage.GroupOpenId, groupAtMessage.Content);
                             // 回复消息
                             //await _service.SendGroupMessageAsync(groupAtMessage.GroupOpenId, $"你发送的消息是：{groupAtMessage.Content}", msgId: groupAtMessage.Id);
-                            TaskUtility.NewTask(async () => await FungameService.Handler(groupAt: groupAtMessage));
+                            TaskUtility.NewTask(async () => await FungameService.Handler(groupAtMessage));
                         }
                         else
                         {
@@ -178,37 +178,18 @@ namespace Oshima.FunGame.WebAPI.Controllers
 
         [Authorize(AuthenticationSchemes = "CustomBearer")]
         [HttpPost("thirdparty")]
-        public async Task<string> ThirdParty([FromBody] ThirdPartyMessage? msg = null)
+        public async Task<IActionResult> ThirdParty([FromBody] ThirdPartyMessage? msg = null)
         {
-            if (msg is null) return "";
+            if (msg is null) return Ok("");
 
-            bool result = true;
-            string error = "";
-            TaskUtility.NewTask(async () => result = await FungameService.Handler(third: msg)).OnError(e => error = e.ToString());
+            bool result = await FungameService.Handler(msg);
 
-            int time = 0;
-            int timeout = 8 * 1000;
-            while (true)
+            if (!result || msg.IsCompleted)
             {
-                await Task.Delay(200);
-                time += 200;
-                if (time >= timeout)
-                {
-                    break;
-                }
-                if (!result || msg.IsCompleted)
-                {
-                    break;
-                }
+                return Ok(msg.Result);
             }
 
-            if (error != "")
-            {
-                if (msg.Result != "") msg.Result += "\r\n";
-                msg.Result += error;
-            }
-
-            return NetworkUtility.JsonSerialize(msg.Result);
+            return Ok("");
         }
     }
 }

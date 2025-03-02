@@ -4900,7 +4900,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
                 pc.SaveConfig();
 
                 e.EventMsg = $"{user.Username}访问每日商店成功";
-                FunGameService.ServerPluginLoader?.OnSucceedOpenStoreEvent(user, e);
+                FunGameService.ServerPluginLoader?.OnAfterOpenStoreEvent(user, e);
 
                 return NetworkUtility.JsonSerialize(msg);
             }

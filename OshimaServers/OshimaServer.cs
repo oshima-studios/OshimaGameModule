@@ -45,17 +45,7 @@ namespace Oshima.FunGame.OshimaServers
 
         public void AfterOpenStoreEvent(object sender, GeneralEventArgs e)
         {
-
-        }
-
-        public void SucceedOpenStoreEvent(object sender, GeneralEventArgs e)
-        {
             if (e.EventMsg != "") Controller.WriteLine(e.EventMsg, Milimoe.FunGame.Core.Library.Constant.LogLevel.Debug);
-        }
-
-        public void FailedOpenStoreEvent(object sender, GeneralEventArgs e)
-        {
-
         }
     }
 }
