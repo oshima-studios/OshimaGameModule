@@ -41,7 +41,6 @@ namespace Oshima.FunGame.WebAPI
             Controller.NewMailSender();
             if (objs.Length > 0 && objs[0] is WebApplicationBuilder builder)
             {
-                builder.Services.AddMemoryCache();
                 builder.Services.AddScoped<QQBotService>();
                 builder.Services.AddScoped<RainBOTService>();
                 builder.Services.AddScoped<FunGameController>();
