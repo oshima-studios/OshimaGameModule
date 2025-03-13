@@ -455,7 +455,7 @@ namespace Oshima.FunGame.OshimaServers
             throw new NotImplementedException();
         }
 
-        public override bool StartServer(string GameModule, Room Room, List<User> Users, IServerModel RoomMasterServerModel, Dictionary<string, IServerModel> ServerModels, params object[] Args)
+        public override bool StartServer(GamingObject obj, params object[] args)
         {
             throw new NotImplementedException();
         }

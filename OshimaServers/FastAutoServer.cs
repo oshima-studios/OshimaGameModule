@@ -90,12 +90,9 @@ namespace Oshima.FunGame.OshimaServers
             return result;
         }
 
-        private readonly struct ModuleServerWorker(Room room, List<User> users, IServerModel roomMaster, Dictionary<string, IServerModel> serverModels)
+        private readonly struct ModuleServerWorker(GamingObject obj)
         {
-            public Room Room { get; } = room;
-            public List<User> Users { get; } = users;
-            public IServerModel RoomMaster { get; } = roomMaster;
-            public Dictionary<string, IServerModel> All { get; } = serverModels;
+            public GamingObject GamingObject { get; } = obj;
             public List<User> ConnectedUser { get; } = [];
             public Dictionary<string, Dictionary<string, object>> UserData { get; } = [];
             public Dictionary<User, Character> PickCharacters { get; } = [];
@@ -103,22 +100,21 @@ namespace Oshima.FunGame.OshimaServers
 
         private ConcurrentDictionary<string, ModuleServerWorker> Workers { get; } = [];
 
-        public override bool StartServer(string GameModule, Room Room, List<User> Users, IServerModel RoomMasterServerModel, Dictionary<string, IServerModel> ServerModels, params object[] Args)
+        public override bool StartServer(GamingObject obj, params object[] args)
         {
             // 因为模组是单例的，需要为这个房间创建一个工作类接收参数，不能直接用本地变量处理
-            ModuleServerWorker worker = new(Room, Users, RoomMasterServerModel, ServerModels);
-            Workers[Room.Roomid] = worker;
-            TaskUtility.NewTask(async () => await StartGame(worker)).OnError(Controller.Error);
+            ModuleServerWorker worker = new(obj);
+            TaskUtility.NewTask(async () => await StartGame(obj, worker)).OnError(Controller.Error);
             return true;
         }
 
-        private async Task StartGame(ModuleServerWorker worker)
+        private async Task StartGame(GamingObject obj, ModuleServerWorker worker)
         {
             try
             {
                 while (true)
                 {
-                    if (worker.ConnectedUser.Count == worker.All.Count)
+                    if (worker.ConnectedUser.Count == obj.All.Count)
                     {
                         break;
                     }
@@ -130,7 +126,7 @@ namespace Oshima.FunGame.OshimaServers
                 Dictionary<string, object> data = [];
 
                 // 抽取角色
-                foreach (User user in worker.Users)
+                foreach (User user in obj.Users)
                 {
                     List<Character> list = [.. Characters.Where(c => !characterPickeds.Contains(c))];
                     Character cr = list[Random.Shared.Next(list.Count - 1)];
@@ -138,7 +134,7 @@ namespace Oshima.FunGame.OshimaServers
                     characterPickeds.Add(cr);
                     characters.Add(user, cr.Copy());
                     Controller.WriteLine(msg);
-                    SendAllGamingMessage(worker, data, msg);
+                    SendAllGamingMessage(obj, data, msg);
                 }
 
                 int clevel = 60;
@@ -167,12 +163,12 @@ namespace Oshima.FunGame.OshimaServers
 
                     FunGameService.AddCharacterSkills(c, 1, slevel, slevel);
 
-                    SendAllGamingMessage(worker, data, c.GetInfo());
+                    SendAllGamingMessage(obj, data, c.GetInfo());
                 }
 
                 ActionQueue actionQueue = new(inGameCharacters, false, (str) =>
                 {
-                    SendAllGamingMessage(worker, data, str);
+                    SendAllGamingMessage(obj, data, str);
                 });
 
                 // 总游戏时长
@@ -189,7 +185,7 @@ namespace Oshima.FunGame.OshimaServers
                 {
                     if (i == 998)
                     {
-                        SendAllGamingMessage(worker, data, $"=== 终局审判 ===");
+                        SendAllGamingMessage(obj, data, $"=== 终局审判 ===");
                         Dictionary<Character, double> 他们的血量百分比 = [];
                         foreach (Character c in inGameCharacters)
                         {
@@ -197,10 +193,10 @@ namespace Oshima.FunGame.OshimaServers
                         }
                         double max = 他们的血量百分比.Values.Max();
                         Character winner = 他们的血量百分比.Keys.Where(c => 他们的血量百分比[c] == max).First();
-                        SendAllGamingMessage(worker, data, "[ " + winner + " ] 成为了天选之人！！");
+                        SendAllGamingMessage(obj, data, "[ " + winner + " ] 成为了天选之人！！");
                         foreach (Character c in inGameCharacters.Where(c => c != winner && c.HP > 0))
                         {
-                            SendAllGamingMessage(worker, data, "[ " + winner + " ] 对 [ " + c + " ] 造成了 99999999999 点真实伤害。");
+                            SendAllGamingMessage(obj, data, "[ " + winner + " ] 对 [ " + c + " ] 造成了 99999999999 点真实伤害。");
                             actionQueue.DeathCalculation(winner, c);
                         }
                         actionQueue.EndGameInfo(winner);
@@ -213,8 +209,8 @@ namespace Oshima.FunGame.OshimaServers
                     // 处理回合
                     if (characterToAct != null)
                     {
-                        SendAllGamingMessage(worker, data, $"=== Round {i++} ===");
-                        SendAllGamingMessage(worker, data, "现在是 [ " + characterToAct + " ] 的回合！");
+                        SendAllGamingMessage(obj, data, $"=== Round {i++} ===");
+                        SendAllGamingMessage(obj, data, "现在是 [ " + characterToAct + " ] 的回合！");
 
                         if (actionQueue.Queue.Count == 0)
                         {
@@ -239,11 +235,11 @@ namespace Oshima.FunGame.OshimaServers
                     }
                 }
 
-                SendAllGamingMessage(worker, data, "--- End ---");
-                SendAllGamingMessage(worker, data, "总游戏时长：" + Calculation.Round2Digits(totalTime));
+                SendAllGamingMessage(obj, data, "--- End ---");
+                SendAllGamingMessage(obj, data, "总游戏时长：" + Calculation.Round2Digits(totalTime));
 
                 // 赛后统计
-                SendAllGamingMessage(worker, data, "=== 伤害排行榜 ===");
+                SendAllGamingMessage(obj, data, "=== 伤害排行榜 ===");
                 int top = inGameCharacters.Count;
                 int count = 1;
                 foreach (Character character in actionQueue.CharacterStatistics.OrderByDescending(d => d.Value.TotalDamage).Select(d => d.Key))
@@ -256,7 +252,7 @@ namespace Oshima.FunGame.OshimaServers
                     builder.AppendLine($"总承受伤害：{stats.TotalTakenDamage} / 总承受物理伤害：{stats.TotalTakenPhysicalDamage} / 总承受魔法伤害：{stats.TotalTakenMagicDamage}");
                     builder.Append($"每秒伤害：{stats.DamagePerSecond} / 每回合伤害：{stats.DamagePerTurn}");
 
-                    SendAllGamingMessage(worker, data, builder.ToString());
+                    SendAllGamingMessage(obj, data, builder.ToString());
 
                     CharacterStatistics? totalStats = CharacterStatistics.Where(kv => kv.Key.GetName() == character.GetName()).Select(kv => kv.Value).FirstOrDefault();
                     if (totalStats != null)
@@ -311,7 +307,7 @@ namespace Oshima.FunGame.OshimaServers
                 for (i = actionQueue.Eliminated.Count - 1; i >= 0; i--)
                 {
                     Character character = actionQueue.Eliminated[i];
-                    SendAllGamingMessage(worker, data, $"=== 角色 [ {character} ] ===\r\n{character.GetInfo()}");
+                    SendAllGamingMessage(obj, data, $"=== 角色 [ {character} ] ===\r\n{character.GetInfo()}");
                 }
 
                 lock (StatsConfig)
@@ -324,13 +320,9 @@ namespace Oshima.FunGame.OshimaServers
                 }
 
                 // 结束
-                await Send(worker.All.Values, SocketMessageType.EndGame, worker.Room, worker.Users);
-                foreach (IServerModel model in worker.All.Values)
-                {
-                    model.NowGamingServer = null;
-                }
+                SendEndGame(obj);
                 worker.ConnectedUser.Clear();
-                Workers.Remove(worker.Room.Roomid, out _);
+                Workers.Remove(obj.Room.Roomid, out _);
             }
             catch (Exception e)
             {
@@ -354,12 +346,12 @@ namespace Oshima.FunGame.OshimaServers
             }
         }
 
-        private void SendAllGamingMessage(ModuleServerWorker worker, Dictionary<string, object> data, string str, bool showmessage = false)
+        private void SendAllGamingMessage(GamingObject obj, Dictionary<string, object> data, string str, bool showmessage = false)
         {
             data.Clear();
             data.Add("msg", str);
             data.Add("showmessage", showmessage);
-            _ = SendGamingMessage(worker.All.Values, GamingType.UpdateInfo, data);
+            _ = SendGamingMessage(obj.All.Values, GamingType.UpdateInfo, data);
         }
 
         public override void AfterLoad(params object[] args)
