@@ -3,7 +3,9 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Milimoe.FunGame.Core.Api.Transmittal;
 using Milimoe.FunGame.Core.Api.Utility;
+using Milimoe.FunGame.Core.Interface;
 using Milimoe.FunGame.Core.Library.Common.Addon;
+using Milimoe.FunGame.Core.Library.Common.Event;
 using Oshima.Core.Configs;
 using Oshima.Core.Constant;
 using Oshima.FunGame.OshimaServers.Service;
@@ -14,7 +16,7 @@ using Oshima.FunGame.WebAPI.Services;
 
 namespace Oshima.FunGame.WebAPI
 {
-    public class OshimaWebAPI : WebAPIPlugin
+    public class OshimaWebAPI : WebAPIPlugin, ILoginEvent
     {
         public override string Name => OshimaGameModuleConstant.WebAPI;
 
@@ -63,6 +65,16 @@ namespace Oshima.FunGame.WebAPI
                 return "APIUser"; 
             }
             return "";
+        }
+
+        public void BeforeLoginEvent(object sender, LoginEventArgs e)
+        {
+            Controller.WriteLine(e.Password);
+        }
+
+        public void AfterLoginEvent(object sender, LoginEventArgs e)
+        {
+
         }
     }
 }

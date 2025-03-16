@@ -1,0 +1,52 @@
+﻿<Window x:Class="Oshima.FunGame.OshimaModes.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="FunGame WPF UI" Height="720" Width="1280">
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="Auto"/>
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
+
+        <!-- 玩家信息区域 -->
+        <ItemsControl Grid.Column="0" ItemsSource="{Binding Players}">
+            <ItemsControl.ItemsPanel>
+                <ItemsPanelTemplate>
+                    <WrapPanel Orientation="Vertical"/>
+                </ItemsPanelTemplate>
+            </ItemsControl.ItemsPanel>
+            <ItemsControl.ItemTemplate>
+                <DataTemplate>
+                    <Border BorderBrush="Black" BorderThickness="1" Margin="5">
+                        <StackPanel>
+                            <TextBlock Text="{Binding PlayerName}" FontWeight="Bold"/>
+                            <Image Source="{Binding PlayerImage}" Width="100" Height="100"/>
+                            <TextBlock Text="{Binding HP}"/>
+                            <TextBlock Text="{Binding MP}"/>
+                            <!-- 其他玩家信息 -->
+                        </StackPanel>
+                    </Border>
+                </DataTemplate>
+            </ItemsControl.ItemTemplate>
+        </ItemsControl>
+
+        <!-- 游戏信息/聊天区域 -->
+        <Grid Grid.Column="1">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+
+            <!-- 游戏信息显示 -->
+            <ScrollViewer Grid.Row="0" VerticalScrollBarVisibility="Auto">
+                <TextBlock x:Name="GameInfoTextBlock" TextWrapping="Wrap"/>
+            </ScrollViewer>
+
+            <!-- 聊天输入框 -->
+            <StackPanel Grid.Row="1" Orientation="Horizontal">
+                <TextBox Width="200" x:Name="ChatInputTextBox" KeyDown="ChatInputTextBox_KeyDown"/>
+                <Button Content="发送" Click="SendButton_Click"/>
+            </StackPanel>
+        </Grid>
+    </Grid>
+</Window>

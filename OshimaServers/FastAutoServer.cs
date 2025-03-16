@@ -104,6 +104,7 @@ namespace Oshima.FunGame.OshimaServers
         {
             // 因为模组是单例的，需要为这个房间创建一个工作类接收参数，不能直接用本地变量处理
             ModuleServerWorker worker = new(obj);
+            Workers[obj.Room.Roomid] = worker;
             TaskUtility.NewTask(async () => await StartGame(obj, worker)).OnError(Controller.Error);
             return true;
         }
