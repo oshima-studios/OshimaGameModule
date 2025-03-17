@@ -56,7 +56,7 @@ namespace Oshima.FunGame.OshimaModules.Items
             Skills.Passives.Add(new 攻击之爪技能(character, this, 50));
         }
     }
-    
+
     public class 攻击之爪技能 : Skill
     {
         public override long Id => (long)ItemPassiveID.攻击之爪;

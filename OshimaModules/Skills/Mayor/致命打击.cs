@@ -25,7 +25,7 @@ namespace Oshima.FunGame.OshimaModules.Skills
         public override long Id => Skill.Id;
         public override string Name => Skill.Name;
         public override string Description => $"暴击伤害提升 70%。";
-        
+
         public override void OnEffectGained(Character character)
         {
             character.ExCritDMG += 0.7;

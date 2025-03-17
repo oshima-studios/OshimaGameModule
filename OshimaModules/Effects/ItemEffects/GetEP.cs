@@ -10,7 +10,7 @@ namespace Oshima.FunGame.OshimaModules.Effects.ItemEffects
         public override string Name => "立即获得能量值";
         public override string Description => $"角色立即获得 {实际获得:0.##} 点能量值。" + (Source != null && Skill.Character != Source ? $"来自：[ {Source} ]" + (Skill.Item != null ? $" 的 [ {Skill.Item.Name} ]" : "") : "");
         public override EffectType EffectType => EffectType.Item;
-        
+
         private readonly double 实际获得 = 0;
 
         public GetEP(Skill skill, Dictionary<string, object> args, Character? source = null) : base(skill, args)

@@ -204,7 +204,7 @@
         /// 立即获得能量值，参数：ep
         /// </summary>
         GetEP = 8705,
-        
+
         /// <summary>
         /// 立即获得经验值，参数：exp
         /// </summary>

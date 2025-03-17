@@ -109,7 +109,7 @@ namespace Oshima.FunGame.OshimaModules.Items
             return 魔力填充剂.OnItemUsed(this, args);
         }
     }
-    
+
     public class 魔力填充剂3 : Item, 魔力填充剂.MPRecovery
     {
         public override long Id => (long)ConsumableID.魔力填充剂3;

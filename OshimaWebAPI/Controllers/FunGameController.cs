@@ -502,7 +502,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
             }
             return NetworkUtility.JsonSerialize("创建存档失败！");
         }
-        
+
         [HttpPost("restoresaved")]
         public string RestoreSaved([FromQuery] long? uid = null)
         {
@@ -634,7 +634,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
                 return NetworkUtility.JsonSerialize(noSaved);
             }
         }
-        
+
         [HttpPost("randomcustom")]
         public string RandomCustomCharacter([FromQuery] long? uid = null, [FromQuery] bool? confirm = null)
         {
@@ -643,7 +643,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
 
             PluginConfig pc = new("saved", userid.ToString());
             pc.LoadConfig();
-            
+
             EntityModuleConfig<Character> emc = new("randomcustom", userid.ToString());
             emc.LoadConfig();
 
@@ -799,7 +799,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
                 return NetworkUtility.JsonSerialize(noSaved);
             }
         }
-        
+
         [HttpPost("inventoryinfo")]
         public string GetInventoryInfo([FromQuery] long? uid = null)
         {
@@ -1010,7 +1010,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
             }
             return list;
         }
-        
+
         [HttpPost("inventoryinfo4")]
         public List<string> GetInventoryInfo4([FromQuery] long? uid = null, [FromQuery] int? page = null, [FromQuery] int? type = null)
         {
@@ -1208,7 +1208,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
                 return NetworkUtility.JsonSerialize(noSaved);
             }
         }
-        
+
         [HttpPost("drawcard")]
         public string DrawCard([FromQuery] long? uid = null)
         {
@@ -1478,7 +1478,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
                 return NetworkUtility.JsonSerialize(e.ToString());
             }
         }
-        
+
         [HttpPost("showcharacterskills")]
         public string GetCharacterSkills([FromQuery] long? uid = null, [FromQuery] int? seq = null)
         {
@@ -1521,7 +1521,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
                 return NetworkUtility.JsonSerialize(e.ToString());
             }
         }
-        
+
         [HttpPost("showcharacteritems")]
         public string GetCharacterItems([FromQuery] long? uid = null, [FromQuery] int? seq = null)
         {
@@ -1600,7 +1600,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
                 return NetworkUtility.JsonSerialize(e.ToString());
             }
         }
-        
+
         [HttpPost("showiteminfoname")]
         public string GetItemInfoFromInventory_Name([FromQuery] long? uid = null, [FromQuery] string? name = null, [FromQuery] int? page = null)
         {
@@ -1711,7 +1711,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
                 return NetworkUtility.JsonSerialize(e.ToString());
             }
         }
-        
+
         [HttpPost("equipitem")]
         public string EquipItem([FromQuery] long? uid = null, [FromQuery] int? c = null, [FromQuery] int? i = null)
         {
@@ -1777,7 +1777,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
                 return NetworkUtility.JsonSerialize(e.ToString());
             }
         }
-        
+
         [HttpPost("unequipitem")]
         public string UnEquipItem([FromQuery] long? uid = null, [FromQuery] int? c = null, [FromQuery] int? i = null)
         {
@@ -1836,7 +1836,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
 
                 PluginConfig pc = new("saved", userid.ToString());
                 pc.LoadConfig();
-                
+
                 PluginConfig pc2 = new("saved", enemyid.ToString());
                 pc2.LoadConfig();
 
@@ -1882,7 +1882,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
                 return [e.ToString()];
             }
         }
-        
+
         [HttpPost("fightcustom2")]
         public List<string> FightCustom2([FromQuery] long? uid = null, [FromQuery] string? name = null, [FromQuery] bool? all = null)
         {
@@ -2040,7 +2040,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
                                     targets.Add(character);
                                 }
                             }
-                            
+
                             if (FunGameService.UseItem(item, user, targets, out string msg))
                             {
                                 user.LastTime = DateTime.Now;
@@ -2069,7 +2069,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
                 return NetworkUtility.JsonSerialize(e.ToString());
             }
         }
-        
+
         [HttpPost("useitem2")]
         public string UseItem2([FromQuery] long? uid = null, [FromQuery] string? name = null, [FromQuery] int? count = null, [FromBody] int[]? characters = null)
         {
@@ -2698,7 +2698,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
                 return NetworkUtility.JsonSerialize(e.ToString());
             }
         }
-        
+
         [HttpPost("decomposeitem3")]
         public string DecomposeItem3([FromQuery] long? uid = null, [FromQuery] int? q = null)
         {
@@ -2883,7 +2883,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
                 return NetworkUtility.JsonSerialize(e.ToString());
             }
         }
-        
+
         [HttpPost("starttraining")]
         public string StartTraining([FromQuery] long? uid = null, [FromQuery] int? c = null)
         {
@@ -2930,7 +2930,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
                 return NetworkUtility.JsonSerialize(e.ToString());
             }
         }
-        
+
         [HttpPost("stoptraining")]
         public string StopTraining([FromQuery] long? uid = null)
         {
@@ -3004,7 +3004,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
                 return NetworkUtility.JsonSerialize(e.ToString());
             }
         }
-        
+
         [HttpPost("gettraininginfo")]
         public string GetTrainingInfo([FromQuery] long? uid = null)
         {
@@ -3098,7 +3098,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
                 return NetworkUtility.JsonSerialize(noSaved);
             }
         }
-        
+
         [HttpPost("skilllevelup")]
         public string SkillLevelUp([FromQuery] long? uid = null, [FromQuery] int? c = null, [FromQuery] string? s = null)
         {
@@ -3435,7 +3435,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
             }
             return bosses;
         }
-        
+
         [HttpPost("fightboss")]
         public List<string> FightBoss([FromQuery] long? uid = null, [FromQuery] int? index = null, [FromQuery] bool? all = null)
         {
@@ -3521,7 +3521,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
                         return NetworkUtility.JsonSerialize($"小队人数已满 4 人，无法继续添加角色！当前小队角色如下：\r\n" +
                             string.Join("\r\n", user.Inventory.Characters.Where(c => user.Inventory.Squad.Contains(c.Id))));
                     }
-                    
+
                     if (user.Inventory.Squad.Contains(character.Id))
                     {
                         return NetworkUtility.JsonSerialize($"此角色已经在小队中了！");
@@ -3544,7 +3544,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
                 return NetworkUtility.JsonSerialize(e.ToString());
             }
         }
-        
+
         [HttpPost("removesquad")]
         public string RemoveSquad([FromQuery] long? uid = null, [FromQuery] int? c = null)
         {
@@ -3639,7 +3639,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
                 return NetworkUtility.JsonSerialize(e.ToString());
             }
         }
-        
+
         [HttpPost("clearsquad")]
         public string ClearSquad([FromQuery] long? uid = null, [FromBody] int[]? c = null)
         {
@@ -3671,7 +3671,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
                 return NetworkUtility.JsonSerialize(e.ToString());
             }
         }
-        
+
         [HttpPost("showsquad")]
         public string ShowSquad([FromQuery] long? uid = null)
         {
@@ -3788,7 +3788,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
                 return NetworkUtility.JsonSerialize(noSaved);
             }
         }
-        
+
         [HttpPost("checkworkingquest")]
         public string CheckWorkingQuest([FromQuery] long? uid = null)
         {
@@ -3825,7 +3825,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
                 return NetworkUtility.JsonSerialize(noSaved);
             }
         }
-        
+
         [HttpPost("acceptquest")]
         public List<string> AcceptQuest([FromQuery] long? uid = null, [FromQuery] int? id = null)
         {
@@ -3930,12 +3930,12 @@ namespace Oshima.FunGame.WebAPI.Controllers
                 return NetworkUtility.JsonSerialize(noSaved);
             }
         }
-        
+
         [HttpPost("showmaincharacterorsquadstatus")]
         public string ShowMainCharacterOrSquadStatus([FromQuery] long? uid = null, [FromQuery] bool? squad = null)
         {
             long userid = uid ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
-            bool showSquad = squad ?? false; 
+            bool showSquad = squad ?? false;
 
             PluginConfig pc = new("saved", userid.ToString());
             pc.LoadConfig();
@@ -4016,7 +4016,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
                 return NetworkUtility.JsonSerialize(noSaved);
             }
         }
-        
+
         [HttpPost("joinclub")]
         public string JoinClub([FromQuery] long? uid = null, [FromQuery] long? id = null)
         {
@@ -4064,7 +4064,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
                 }
                 emc.Add("club", club);
                 emc.SaveConfig();
-                
+
                 user.LastTime = DateTime.Now;
                 pc.Add("user", user);
                 pc.SaveConfig();
@@ -4075,7 +4075,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
                 return NetworkUtility.JsonSerialize(noSaved);
             }
         }
-        
+
         [HttpPost("quitclub")]
         public string QuitClub([FromQuery] long? uid = null)
         {
@@ -4119,7 +4119,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
                 club.MemberJoinTime.Remove(userid);
                 emc.Add("club", club);
                 emc.SaveConfig();
-                
+
                 string msg = $"退出社团 [ {club.Name} ] 成功！";
                 user.LastTime = DateTime.Now;
                 pc.Add("user", user);
@@ -4132,7 +4132,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
                 return NetworkUtility.JsonSerialize(noSaved);
             }
         }
-        
+
         [HttpPost("createclub")]
         public string CreateClub([FromQuery] long? uid = null, [FromQuery] bool? @public = null, [FromQuery] string? prefix = null)
         {
@@ -4196,7 +4196,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
                 emc.LoadConfig();
                 emc.Add("club", club);
                 emc.SaveConfig();
-                
+
                 string msg = $"创建社团 [ {club.Name} ] （编号 {clubid}）成功！";
                 user.LastTime = DateTime.Now;
                 pc.Add("user", user);
@@ -4209,7 +4209,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
                 return NetworkUtility.JsonSerialize(noSaved);
             }
         }
-        
+
         [HttpPost("showclubinfo")]
         public string ShowClubInfo([FromQuery] long? uid = null)
         {
@@ -4276,7 +4276,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
                 return NetworkUtility.JsonSerialize(noSaved);
             }
         }
-        
+
         [HttpPost("showclubmemberlist")]
         public string ShowClubMemberList([FromQuery] long? uid = null, [FromQuery] int? type = null, [FromQuery] int? page = null)
         {
@@ -4962,7 +4962,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
                 return NetworkUtility.JsonSerialize(noSaved);
             }
         }
-        
+
         [HttpPost("dailystoreshowinfo")]
         public string DailyStoreShowInfo([FromQuery] long? uid = null, [FromQuery] long? id = null)
         {

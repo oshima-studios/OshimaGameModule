@@ -26,7 +26,7 @@ namespace Oshima.FunGame.OshimaModules.Skills
         public override long Id => Skill.Id;
         public override string Name => Skill.Name;
         public override string Description => $"造成魔法伤害时有 35% 几率使敌人眩晕 1 回合。";
-        
+
         public override void AfterDamageCalculation(Character character, Character enemy, double damage, bool isNormalAttack, bool isMagicDamage, MagicType magicType, DamageResult damageResult)
         {
             if (character == Skill.Character && isMagicDamage && damageResult != DamageResult.Evaded && new Random().NextDouble() < 0.35)

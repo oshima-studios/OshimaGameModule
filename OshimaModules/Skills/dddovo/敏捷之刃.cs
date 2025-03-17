@@ -25,7 +25,7 @@ namespace Oshima.FunGame.OshimaModules.Skills
         public override long Id => Skill.Id;
         public override string Name => Skill.Name;
         public override string Description => $"每次普通攻击都将附带基于 {敏捷系数 * 100:0.##}% 敏捷 [ {敏捷伤害} ] 的魔法伤害。";
-        
+
         private double 敏捷伤害 => 敏捷系数 * Skill.Character?.AGI ?? 0;
         private readonly double 敏捷系数 = 2.5;
         private bool 是否是嵌套伤害 = false;

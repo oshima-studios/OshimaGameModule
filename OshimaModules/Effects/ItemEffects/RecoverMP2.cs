@@ -10,7 +10,7 @@ namespace Oshima.FunGame.OshimaModules.Effects.ItemEffects
         public override string Name => "立即回复魔法值";
         public override string Description => $"立即回复角色 {回复比例 * 100:0.##}% [ {实际回复:0.##} ] 点魔法值。" + (Source != null && Skill.Character != Source ? $"来自：[ {Source} ]" + (Skill.Item != null ? $" 的 [ {Skill.Item.Name} ]" : "") : "");
         public override EffectType EffectType => EffectType.Item;
-        
+
         private double 实际回复 => 回复比例 * (Skill.Character?.MaxMP ?? 0);
         private readonly double 回复比例 = 0;
 

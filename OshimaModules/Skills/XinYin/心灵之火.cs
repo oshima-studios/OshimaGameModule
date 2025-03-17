@@ -26,7 +26,7 @@ namespace Oshima.FunGame.OshimaModules.Skills
         public override string Name => Skill.Name;
         public override string Description => $"普通攻击硬直时间减少 20%。每次使用普通攻击时，额外再发动一次普通攻击，伤害特效可叠加，冷却 {基础冷却时间:0.##} 时间。" +
             (冷却时间 > 0 ? $"（正在冷却：剩余 {冷却时间:0.##} 时间）" : "");
-        
+
         public double 冷却时间 { get; set; } = 0;
         public double 基础冷却时间 { get; set; } = 20;
         private bool 是否是嵌套普通攻击 = false;

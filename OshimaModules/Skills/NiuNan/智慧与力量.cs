@@ -1,5 +1,4 @@
 ﻿using Milimoe.FunGame.Core.Entity;
-using Milimoe.FunGame.Core.Interface.Entity;
 using Milimoe.FunGame.Core.Library.Constant;
 
 namespace Oshima.FunGame.OshimaModules.Skills
@@ -27,7 +26,7 @@ namespace Oshima.FunGame.OshimaModules.Skills
         public override string Name => Skill.Name;
         public override string Description => $"当生命值低于 30% 时，进入力量模式，核心属性转为力量，将所有基础智力转化为额外力量；当生命值高于或等于 30% 时，进入智力模式，核心属性转为智力，还原所有基础智力。力量模式下，造成伤害必定暴击；智力模式下，获得 15% 闪避率和 15% 魔法抗性。" +
             (Skill.Character != null ? "（当前模式：" + CharacterSet.GetPrimaryAttributeName(Skill.Character.PrimaryAttribute) + "）" : "");
-        
+
         private double 交换的基础智力 = 0;
         private double 实际增加闪避率 = 0.15;
         private double 实际增加魔法抗性 = 0.15;

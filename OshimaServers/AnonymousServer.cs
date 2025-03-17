@@ -407,7 +407,7 @@ namespace Oshima.FunGame.OshimaServers
 
             return result.Trim();
         }
-        
+
         public string SCRecord(Dictionary<string, object> data)
         {
             string result = "";
@@ -433,7 +433,7 @@ namespace Oshima.FunGame.OshimaServers
                         string remark = Convert.ToString(dr["remark"]) ?? "";
                         string record = Convert.ToString(dr["record"]) ?? "";
                         result += $"用户：{qq}，圣人点数：{sc} 分{(remark.Trim() != "" ? $" ({remark})" : "")}，排在圣人榜第 {index} / {sql.DataSet.Tables[0].Rows.Count} 名。\r\n" +
-                            $"{(record != "" ? "显示近期点数变动信息：\r\n" + record + "\r\n": "")}本系统仅供娱乐，不代表任何官方立场或真实情况。";
+                            $"{(record != "" ? "显示近期点数变动信息：\r\n" + record + "\r\n" : "")}本系统仅供娱乐，不代表任何官方立场或真实情况。";
                     }
                     else
                     {

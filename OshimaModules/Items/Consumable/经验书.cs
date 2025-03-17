@@ -109,7 +109,7 @@ namespace Oshima.FunGame.OshimaModules.Items
             return 经验书.OnItemUsed(this, args);
         }
     }
-    
+
     public class 大经验书 : Item, 经验书.EXPBook
     {
         public override long Id => (long)ConsumableID.大经验书;

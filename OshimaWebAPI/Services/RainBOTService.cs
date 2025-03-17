@@ -187,7 +187,7 @@ namespace Oshima.FunGame.WebAPI.Services
 51、清空小队
 发送【帮助6】查看第 6 页");
                 }
-                
+
                 if (e.Detail == "帮助6")
                 {
                     await SendAsync(e, "饭给木", @"《饭给木》游戏指令列表（第 6 / 7 页）
@@ -205,7 +205,7 @@ namespace Oshima.FunGame.WebAPI.Services
 62、社团设置 <设置项> <{参数...}>
 发送【帮助7】查看第 7 页");
                 }
-                
+
                 if (e.Detail == "帮助7")
                 {
                     await SendAsync(e, "饭给木", @"《饭给木》游戏指令列表（第 7 / 7 页）
@@ -1935,7 +1935,7 @@ namespace Oshima.FunGame.WebAPI.Services
                     }
                     return result;
                 }
-                
+
                 if (e.Detail.StartsWith("商店查看", StringComparison.CurrentCultureIgnoreCase))
                 {
                     string detail = e.Detail.Replace("商店查看", "").Trim();

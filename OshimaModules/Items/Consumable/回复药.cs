@@ -109,7 +109,7 @@ namespace Oshima.FunGame.OshimaModules.Items
             return 回复药.OnItemUsed(this, args);
         }
     }
-    
+
     public class 大回复药 : Item, 回复药.HPRecovery
     {
         public override long Id => (long)ConsumableID.大回复药;

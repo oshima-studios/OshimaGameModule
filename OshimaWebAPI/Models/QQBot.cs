@@ -83,7 +83,7 @@ namespace Oshima.FunGame.WebAPI.Models
         public string OpenId { get; }
         public string AuthorOpenId { get; }
     }
-    
+
     public class ThirdPartyMessage : IBotMessage
     {
         [JsonPropertyName("id")]

@@ -25,7 +25,7 @@ namespace Oshima.FunGame.OshimaModules.Skills
         public override long Id => Skill.Id;
         public override string Name => Skill.Name;
         public override string Description => $"每时间提升 {伤害提升 * 100:0.##}% 所有伤害，无上限，但受到伤害时效果清零。" + (累计伤害 > 0 ? $"（当前总提升：{累计伤害 * 100:0.##}%）" : "");
-        
+
         private readonly double 伤害提升 = 0.03;
         private double 累计伤害 = 0;
 

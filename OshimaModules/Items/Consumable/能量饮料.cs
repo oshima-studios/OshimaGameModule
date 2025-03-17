@@ -109,7 +109,7 @@ namespace Oshima.FunGame.OshimaModules.Items
             return 能量饮料.OnItemUsed(this, args);
         }
     }
-    
+
     public class 能量饮料3 : Item, 能量饮料.EPAdd
     {
         public override long Id => (long)ConsumableID.能量饮料3;

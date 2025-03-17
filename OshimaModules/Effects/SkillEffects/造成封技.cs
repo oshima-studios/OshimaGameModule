@@ -8,7 +8,7 @@ namespace Oshima.FunGame.OshimaModules.Effects.SkillEffects
         public override long Id => Skill.Id;
         public override string Name => Skill.Name;
         public override string Description => $"对目标{(Skill.CanSelectTargetCount > 1 ? $"至多 {Skill.CanSelectTargetCount} 个" : "")}敌人造成封技 {封技时间}，无法使用技能（魔法、战技和爆发技），并打断当前施法。";
-        
+
         private string 封技时间 => _durative && _duration > 0 ? 实际封技时间 + " 时间" : (!_durative && _durationTurn > 0 ? 实际封技时间 + " 回合" : "0 时间");
         private double 实际封技时间 => _durative && _duration > 0 ? _duration + _levelGrowth * (Level - 1) : (!_durative && _durationTurn > 0 ? _durationTurn + _levelGrowth * (Level - 1) : 0);
         private readonly bool _durative;

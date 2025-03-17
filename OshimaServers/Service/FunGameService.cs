@@ -527,7 +527,7 @@ namespace Oshima.FunGame.OshimaServers.Service
                     user.Inventory.Squad.Add(id);
                 }
             }
-            
+
             foreach (long cid in training.Keys)
             {
                 if (user.Inventory.Characters.FirstOrDefault(c => c.Id == cid) is Character t)
@@ -624,7 +624,7 @@ namespace Oshima.FunGame.OshimaServers.Service
                     user.Inventory.Items.Add(mfk);
                     msg += ItemSet.GetQualityTypeName(mfk.QualityType) + ItemSet.GetItemTypeName(mfk.ItemType) + "【" + mfk.Name + "】！\r\n" + mfk.Description;
                     break;
-                    
+
                 case 7:
                     Item 物品 = FunGameConstant.DrawCardItems[Random.Shared.Next(FunGameConstant.DrawCardItems.Count)].Copy();
                     SetSellAndTradeTime(物品);
@@ -650,7 +650,7 @@ namespace Oshima.FunGame.OshimaServers.Service
 
         public static string GetSignInResult(User user, int days)
         {
-            string msg = $"签到成功，你已连续签到 {days +1} 天！\r\n本次签到获得：";
+            string msg = $"签到成功，你已连续签到 {days + 1} 天！\r\n本次签到获得：";
             int currency = Random.Shared.Next(1000, 3000) + 10 * days;
             msg += $"{currency} {General.GameplayEquilibriumConstant.InGameCurrency} 和 ";
             int material = Random.Shared.Next(5, 15) + days / 7;
@@ -1006,7 +1006,7 @@ namespace Oshima.FunGame.OshimaServers.Service
             }
             return result;
         }
-        
+
         public static bool UseItems(IEnumerable<Item> items, User user, IEnumerable<Character> targets, List<string> msgs)
         {
             Dictionary<string, object> args = new()
@@ -1382,7 +1382,7 @@ namespace Oshima.FunGame.OshimaServers.Service
                     super.Character = boss;
                     super.Level = sLevel;
                     boss.Skills.Add(super);
-                    
+
                     boss.Recovery();
                     SetCharacterPrimaryAttribute(boss);
 
