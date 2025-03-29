@@ -29,15 +29,10 @@
 	</ItemGroup>
 
 	<ItemGroup>
+		<ProjectReference Include="..\..\FunGame.Core\FunGame.Core.csproj" />
 		<ProjectReference Include="..\OshimaCore\OshimaCore.csproj" />
 		<ProjectReference Include="..\OshimaModules\OshimaModules.csproj" />
 		<ProjectReference Include="..\OshimaServers\OshimaServers.csproj" />
-	</ItemGroup>
-
-	<ItemGroup>
-	  <Reference Include="FunGame.Core">
-	    <HintPath>..\..\FunGame.Core\bin\Debug\net9.0\FunGame.Core.dll</HintPath>
-	  </Reference>
 	</ItemGroup>
 
 </Project>

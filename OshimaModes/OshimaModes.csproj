@@ -21,17 +21,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\FunGame.Core\FunGame.Core.csproj" />
+    <ProjectReference Include="..\..\FunGame.Desktop\FunGame.Desktop\FunGame.Desktop.csproj" />
     <ProjectReference Include="..\OshimaMaps\OshimaMaps.csproj" />
     <ProjectReference Include="..\OshimaModules\OshimaModules.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Reference Include="FunGame.Core">
-      <HintPath>..\..\FunGame.Core\bin\Debug\net9.0\FunGame.Core.dll</HintPath>
-    </Reference>
-    <Reference Include="FunGame.Desktop">
-      <HintPath>..\..\FunGame.Desktop\bin\Debug\net8.0-windows\FunGame.Desktop.dll</HintPath>
-    </Reference>
   </ItemGroup>
 
   <ItemGroup>
