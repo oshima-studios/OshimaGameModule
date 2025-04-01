@@ -143,10 +143,10 @@ namespace Oshima.FunGame.WebAPI
                                     Description = (string)dr[GoodsQuery.Column_Description],
                                     Stock = Convert.ToInt32(dr[GoodsQuery.Column_Stock])
                                 };
-                                Item item = Factory.OpenFactory.GetInstance<Item>((long)dr[GoodItemsQuery.Column_ItemId], "", []);
+                                Item item = Factory.OpenFactory.GetInstance<Item>((long)dr[GoodsItemsQuery.Column_ItemId], "", []);
                                 goods.Items.Add(item);
-                                string currency = (string)dr[GoodPricesQuery.Column_Currency];
-                                double price = (double)dr[GoodPricesQuery.Column_Price];
+                                string currency = (string)dr[GoodsPricesQuery.Column_Currency];
+                                double price = (double)dr[GoodsPricesQuery.Column_Price];
                                 goods.Prices.Add(currency, price);
 
                                 storeTemp.Goods.Add(goods.Id, goods);
@@ -185,10 +185,10 @@ namespace Oshima.FunGame.WebAPI
                     Description = (string)dr[GoodsQuery.Column_Description],
                     Stock = Convert.ToInt32(dr[GoodsQuery.Column_Stock])
                 };
-                Item item = Factory.OpenFactory.GetInstance<Item>((long)dr[GoodItemsQuery.Column_ItemId], "", []);
+                Item item = Factory.OpenFactory.GetInstance<Item>((long)dr[GoodsItemsQuery.Column_ItemId], "", []);
                 goods.Items.Add(item);
-                string currency = (string)dr[GoodPricesQuery.Column_Currency];
-                double price = (double)dr[GoodPricesQuery.Column_Price];
+                string currency = (string)dr[GoodsPricesQuery.Column_Currency];
+                double price = (double)dr[GoodsPricesQuery.Column_Price];
                 goods.Prices.Add(currency, price);
                 list.Add(goods);
             }
