@@ -1,4 +1,3 @@
-using System.Data;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
 using Milimoe.FunGame.Core.Api.Transmittal;
@@ -7,14 +6,16 @@ using Milimoe.FunGame.Core.Entity;
 using Milimoe.FunGame.Core.Interface;
 using Milimoe.FunGame.Core.Library.Common.Addon;
 using Milimoe.FunGame.Core.Library.Common.Event;
-using Milimoe.FunGame.Core.Library.SQLScript.Entity;
 using Oshima.Core.Configs;
 using Oshima.Core.Constant;
+using Oshima.FunGame.OshimaModules.Characters;
+using Oshima.FunGame.OshimaModules.Items;
 using Oshima.FunGame.OshimaServers.Service;
 using Oshima.FunGame.WebAPI.Constant;
 using Oshima.FunGame.WebAPI.Controllers;
 using Oshima.FunGame.WebAPI.Models;
 using Oshima.FunGame.WebAPI.Services;
+using ProjectRedbud.FunGame.SQLQueryExtension;
 
 namespace Oshima.FunGame.WebAPI
 {
@@ -34,194 +35,133 @@ namespace Oshima.FunGame.WebAPI
             {
                 //FunGameController controller = new(new Logger<FunGameController>(new LoggerFactory()));
                 //Controller.WriteLine(Controller.JSON.GetObject<string>(controller.ShowDailyStore(1)) ?? "test");
+            }
 
+            if (input == "testuser")
+            {
                 using SQLHelper? sql = Controller.GetSQLHelper();
                 if (sql != null)
                 {
-                    sql.NewTransaction();
                     try
                     {
-                        //sql.Execute(StoreQuery.Insert_Store(sql, "测试商店1", null, null));
-                        //sql.Execute(GoodsQuery.Insert_Goods(sql, "测试商品1", "测试商品描述1", 110));
-                        //sql.Execute(GoodsQuery.Insert_Goods(sql, "测试商品2", "测试商品描述2", 120));
-                        //sql.Execute(GoodsQuery.Insert_Goods(sql, "测试商品3", "测试商品描述3", 130));
-                        //sql.Execute(StoreGoodsQuery.Insert_StoreGoods(sql, 1, 1));
-                        //sql.Execute(StoreGoodsQuery.Insert_StoreGoods(sql, 1, 2));
-                        //sql.Execute(StoreGoodsQuery.Insert_StoreGoods(sql, 1, 3));
-                        //sql.Execute(GoodItemsQuery.Insert_GoodItem(sql, 1, (long)AccessoryID.攻击之爪50));
-                        //sql.Execute(GoodItemsQuery.Insert_GoodItem(sql, 2, (long)ConsumableID.小经验书));
-                        //sql.Execute(GoodItemsQuery.Insert_GoodItem(sql, 3, (long)SpecialItemID.技能卷轴));
-                        //sql.Execute(GoodPricesQuery.Insert_GoodPrice(sql, 1, General.GameplayEquilibriumConstant.InGameCurrency, 110));
-                        //sql.Execute(GoodPricesQuery.Insert_GoodPrice(sql, 2, General.GameplayEquilibriumConstant.InGameCurrency, 120));
-                        //sql.Execute(GoodPricesQuery.Insert_GoodPrice(sql, 3, General.GameplayEquilibriumConstant.InGameCurrency, 130));
-                        
-                        //sql.Execute(StoreQuery.Insert_Store(sql, "测试商店2", null, null));
-                        //sql.Execute(GoodsQuery.Insert_Goods(sql, "测试商品4", "测试商品描述4", 111));
-                        //sql.Execute(GoodsQuery.Insert_Goods(sql, "测试商品5", "测试商品描述5", 122));
-                        //sql.Execute(GoodsQuery.Insert_Goods(sql, "测试商品6", "测试商品描述6", 133));
-                        //sql.Execute(StoreGoodsQuery.Insert_StoreGoods(sql, 2, 4));
-                        //sql.Execute(StoreGoodsQuery.Insert_StoreGoods(sql, 2, 5));
-                        //sql.Execute(StoreGoodsQuery.Insert_StoreGoods(sql, 2, 6));
-                        //sql.Execute(GoodItemsQuery.Insert_GoodItem(sql, 4, (long)AccessoryID.攻击之爪20));
-                        //sql.Execute(GoodItemsQuery.Insert_GoodItem(sql, 5, (long)ConsumableID.中经验书));
-                        //sql.Execute(GoodItemsQuery.Insert_GoodItem(sql, 6, (long)SpecialItemID.智慧之果));
-                        //sql.Execute(GoodPricesQuery.Insert_GoodPrice(sql, 4, General.GameplayEquilibriumConstant.InGameCurrency, 111));
-                        //sql.Execute(GoodPricesQuery.Insert_GoodPrice(sql, 5, General.GameplayEquilibriumConstant.InGameCurrency, 122));
-                        //sql.Execute(GoodPricesQuery.Insert_GoodPrice(sql, 6, General.GameplayEquilibriumConstant.InGameCurrency, 133));
+                        sql.NewTransaction();
 
-                        // 单一商店测试
+                        // 注册用户
+                        sql.RegisterUser("un", "pw", "1@2.3", "");
+                        User? user = sql.GetUserByUsernameAndPassword("un", "pw");
 
-                        Store store = new("");
-                        sql.ExecuteDataSet(StoreQuery.Select_StoreById(sql, 1));
-                        if (sql.Success)
+                        if (user != null)
                         {
-                            DataRow dr = sql.DataSet.Tables[0].Rows[0];
-                            store.Id = (long)dr[StoreQuery.Column_Id];
-                            store.Name = (string)dr[StoreQuery.Column_StoreName];
-                            if (dr[StoreQuery.Column_StartTime] != DBNull.Value)
+                            Controller.WriteLine($"User found: ID = {user.Id}, Username = {user.Username}, Email = {user.Email}");
+
+                            // 测试更新密码
+                            string newPassword = "new_pw";
+                            sql.UpdatePassword("un", newPassword);
+                            User? updatedUser = sql.GetUserByUsernameAndPassword("un", newPassword);
+
+                            if (updatedUser != null)
                             {
-                                store.StartTime = (DateTime)dr[StoreQuery.Column_StartTime];
+                                Controller.WriteLine($"Password updated successfully for user: {updatedUser.Username}");
                             }
-                            if (dr[StoreQuery.Column_EndTime] != DBNull.Value)
+                            else
                             {
-                                store.EndTime = (DateTime)dr[StoreQuery.Column_EndTime];
+                                Controller.WriteLine("Failed to update password.");
                             }
-                        }
 
-                        List<Goods> goodsList = [];
+                            // 测试更新游戏时间
+                            int gameTimeToAdd = 60; // 分钟
+                            sql.UpdateGameTime("un", gameTimeToAdd);
+                            User? gameTimeUser = sql.GetUserByUsernameAndPassword("un", newPassword); // 注意：密码已更新
 
-                        sql.ExecuteDataSet(GoodsQuery.Select_AllGoodsWithItemAndPrice(sql, 1));
-                        if (sql.Success)
-                        {
-                            goodsList.AddRange(GetGoods(sql.DataSet));
-                        }
-                        DataSet ds2 = sql.ExecuteDataSet(GoodsQuery.Select_AllGoodsWithItemAndPrice(sql, 2));
-                        if (sql.Success)
-                        {
-                            goodsList.AddRange(GetGoods(sql.DataSet));
-                        }
-                        DataSet ds3 = sql.ExecuteDataSet(GoodsQuery.Select_AllGoodsWithItemAndPrice(sql, 3));
-                        if (sql.Success)
-                        {
-                            goodsList.AddRange(GetGoods(sql.DataSet));
-                        }
-                        foreach (Goods goods in goodsList)
-                        {
-                            store.Goods.Add(goods.Id, goods);
-                        }
-
-                        Controller.WriteLine(store.ToString());
-
-                        // 所有商店测试
-
-                        List<Store> stores = [];
-
-                        sql.ExecuteDataSet(StoreQuery.Select_AllGoodsInStore(sql));
-                        if (sql.Success)
-                        {
-                            DataSet ds = sql.DataSet;
-                            foreach (DataRow dr in ds.Tables[0].Rows)
+                            if (gameTimeUser != null)
                             {
-                                Store storeTemp = new("")
+                                Controller.WriteLine($"Game time updated successfully. New game time: {gameTimeUser.GameTime} minutes");
+                            }
+                            else
+                            {
+                                Controller.WriteLine("Failed to update game time.");
+                            }
+
+                            // 测试加载库存
+                            if (sql.LoadInventory(user))
+                            {
+                                Controller.WriteLine($"Inventory loaded successfully for user: {user.Username}");
+                                Controller.WriteLine($"Inventory Name: {user.Inventory.Name}, Credits: {user.Inventory.Credits}, Materials: {user.Inventory.Materials}");
+
+                                // 测试更新库存 Credits
+                                double newCredits = 100.50;
+                                sql.UpdateInventoryCredits(user.Id, newCredits);
+                                sql.LoadInventory(user); // 重新加载库存
+
+                                if (user.Inventory.Credits == (double)newCredits)
                                 {
-                                    Id = (long)dr["StoreId"],
-                                    Name = (string)dr[StoreQuery.Column_StoreName]
-                                };
-                                if (stores.FirstOrDefault(s => s.Id == storeTemp.Id) is Store store2)
-                                {
-                                    storeTemp = store2;
+                                    Controller.WriteLine($"Credits updated successfully. New credits: {user.Inventory.Credits}");
                                 }
                                 else
                                 {
-                                    stores.Add(storeTemp);
+                                    Controller.WriteLine("Failed to update credits.");
                                 }
 
-                                Goods goods = new()
-                                {
-                                    Id = (long)dr["GoodsId"],
-                                    Name = (string)dr["GoodsName"],
-                                    Description = (string)dr[GoodsQuery.Column_Description],
-                                    Stock = Convert.ToInt32(dr[GoodsQuery.Column_Stock])
-                                };
-                                Item item = Factory.OpenFactory.GetInstance<Item>((long)dr[GoodsItemsQuery.Column_ItemId], "", []);
-                                goods.Items.Add(item);
-                                string currency = (string)dr[GoodsPricesQuery.Column_Currency];
-                                double price = (double)dr[GoodsPricesQuery.Column_Price];
-                                goods.Prices.Add(currency, price);
+                                // 测试更新库存 Materials
+                                double newMaterials = 50.75;
+                                sql.UpdateInventoryMaterials(user.Id, newMaterials);
+                                sql.LoadInventory(user); // 重新加载库存
 
-                                storeTemp.Goods.Add(goods.Id, goods);
+                                if (user.Inventory.Materials == (double)newMaterials)
+                                {
+                                    Controller.WriteLine($"Materials updated successfully. New materials: {user.Inventory.Materials}");
+                                }
+                                else
+                                {
+                                    Controller.WriteLine("Failed to update materials.");
+                                }
+
+                                // 测试角色
+                                Character character = new OshimaShiya();
+                                user.Inventory.Characters.Add(character);
+
+                                // 测试物品
+                                Item item = new 攻击之爪50();
+                                user.Inventory.Items.Add(item);
+
+                                sql.UpdateInventory(user.Inventory); // 更新库存
+
+                                sql.LoadInventory(user); // 重新加载库存
+                                if (user.Inventory.Characters.Count > 0 && user.Inventory.Items.Count > 0)
+                                {
+                                    Controller.WriteLine($"Characters and Items updated successfully.");
+                                }
+                                else
+                                {
+                                    Controller.WriteLine("Failed to update characters and items.");
+                                }
+
+                            }
+                            else
+                            {
+                                Controller.WriteLine("Failed to load inventory.");
                             }
                         }
-
-                        foreach (Store store2 in stores)
+                        else
                         {
-                            Controller.WriteLine(store2.ToString());
+                            Controller.WriteLine("User not found");
                         }
                     }
                     catch (Exception e)
                     {
-                        sql.Rollback();
                         Controller.Error(e);
                     }
                     finally
                     {
-                        sql.Commit();
+                        sql.Rollback();
+                        Controller.WriteLine("Transaction rolled back in finally block.");
                     }
                 }
-            }
-        }
-
-        private List<Goods> GetGoods(DataSet ds)
-        {
-            DataSetToString(ds);
-            List<Goods> list = [];
-
-            foreach (DataRow dr in ds.Tables[0].Rows)
-            {
-                Goods goods = new()
+                else
                 {
-                    Id = (long)dr[GoodsQuery.Column_Id],
-                    Name = (string)dr[GoodsQuery.Column_Name],
-                    Description = (string)dr[GoodsQuery.Column_Description],
-                    Stock = Convert.ToInt32(dr[GoodsQuery.Column_Stock])
-                };
-                Item item = Factory.OpenFactory.GetInstance<Item>((long)dr[GoodsItemsQuery.Column_ItemId], "", []);
-                goods.Items.Add(item);
-                string currency = (string)dr[GoodsPricesQuery.Column_Currency];
-                double price = (double)dr[GoodsPricesQuery.Column_Price];
-                goods.Prices.Add(currency, price);
-                list.Add(goods);
-            }
-
-            return list;
-        }
-
-        private string DataSetToString(DataSet ds)
-        {
-            if (ds == null || ds.Tables.Count == 0)
-            {
-                return "DataSet is null or empty.";
-            }
-
-            string result = "";
-            foreach (DataTable table in ds.Tables)
-            {
-                result += $"Table Name: {table.TableName}\n";
-                foreach (DataColumn column in table.Columns)
-                {
-                    result += $"{column.ColumnName}\t";
-                }
-                result += "\n";
-                foreach (DataRow row in table.Rows)
-                {
-                    foreach (object? item in row.ItemArray)
-                    {
-                        result += $"{item}\t";
-                    }
-                    result += "\n";
+                    Controller.WriteLine("SQLHelper is null.");
                 }
             }
-            return result;
         }
 
         public override void AfterLoad(WebAPIPluginLoader loader, params object[] objs)

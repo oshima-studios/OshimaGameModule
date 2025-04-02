@@ -30,6 +30,7 @@
 
 	<ItemGroup>
 		<ProjectReference Include="..\..\FunGame.Core\FunGame.Core.csproj" />
+		<ProjectReference Include="..\..\FunGame.Extension\FunGame.SQLQueryExtension\FunGame.SQLQueryExtension.csproj" />
 		<ProjectReference Include="..\OshimaCore\OshimaCore.csproj" />
 		<ProjectReference Include="..\OshimaModules\OshimaModules.csproj" />
 		<ProjectReference Include="..\OshimaServers\OshimaServers.csproj" />
