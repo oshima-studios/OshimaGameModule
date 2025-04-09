@@ -32,6 +32,7 @@ namespace Oshima.FunGame.OshimaServers.Service
 
                 // 创建顺序表并排序
                 ActionQueue actionQueue = new(characters, false, WriteLine);
+                actionQueue.SetCharactersToAIControl(false, characters);
                 if (PrintOut) Console.WriteLine();
 
                 // 总游戏时长
@@ -283,6 +284,7 @@ namespace Oshima.FunGame.OshimaServers.Service
                         MaxRespawnTimes = maxRespawnTimes,
                         MaxScoreToWin = maxScoreToWin
                     };
+                    actionQueue.SetCharactersToAIControl(false, characters);
                     if (PrintOut) Console.WriteLine();
 
                     // 总游戏时长
