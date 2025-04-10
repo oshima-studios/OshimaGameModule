@@ -199,9 +199,9 @@ namespace Oshima.FunGame.OshimaServers
                         foreach (Character c in inGameCharacters.Where(c => c != winner && c.HP > 0))
                         {
                             SendAllGamingMessage(obj, data, "[ " + winner + " ] 对 [ " + c + " ] 造成了 99999999999 点真实伤害。");
-                            actionQueue.DeathCalculation(winner, c);
+                            await actionQueue.DeathCalculationAsync(winner, c);
                         }
-                        actionQueue.EndGameInfo(winner);
+                        await actionQueue.EndGameInfo(winner);
                         break;
                     }
 
@@ -219,7 +219,7 @@ namespace Oshima.FunGame.OshimaServers
                             break;
                         }
 
-                        bool isGameEnd = actionQueue.ProcessTurn(characterToAct);
+                        bool isGameEnd = await actionQueue.ProcessTurnAsync(characterToAct);
                         if (isGameEnd)
                         {
                             break;
@@ -229,7 +229,7 @@ namespace Oshima.FunGame.OshimaServers
                     }
 
                     // 模拟时间流逝
-                    totalTime += actionQueue.TimeLapse();
+                    totalTime += await actionQueue.TimeLapse();
 
                     if (actionQueue.Eliminated.Count > deaths)
                     {

@@ -53,7 +53,7 @@ namespace Oshima.FunGame.OshimaServers.Service
             }
         }
 
-        public static List<string> StartSimulationGame(bool printout, bool isWeb = false, bool isTeam = false, bool deathMatchRoundDetail = false)
+        public static async Task<List<string>> StartSimulationGame(bool printout, bool isWeb = false, bool isTeam = false, bool deathMatchRoundDetail = false)
         {
             PrintOut = printout;
             IsWeb = isWeb;
@@ -76,7 +76,7 @@ namespace Oshima.FunGame.OshimaServers.Service
                 // M = 5, W = 0, P1 = 0, P3 = 2
                 // M = 5, W = 1, P1 = 0, P3 = 0
 
-                List<Character> list = new(FunGameConstant.Characters);
+                List<Character> list = [.. FunGameConstant.Characters];
 
                 if (list.Count > 11)
                 {
@@ -167,6 +167,7 @@ namespace Oshima.FunGame.OshimaServers.Service
                     // 因赋予了装备，所以清除排序重新排
                     actionQueue.ClearQueue();
                     actionQueue.InitCharacterQueue(characters);
+                    actionQueue.SetCharactersToAIControl(false, characters);
                     if (PrintOut) Console.WriteLine();
 
                     // 团队模式
@@ -239,9 +240,9 @@ namespace Oshima.FunGame.OshimaServers.Service
                                 foreach (Character c in characters.Where(c => c != winner && c.HP > 0))
                                 {
                                     WriteLine("[ " + winner + " ] 对 [ " + c + " ] 造成了 99999999999 点真实伤害。");
-                                    actionQueue.DeathCalculation(winner, c);
+                                    await actionQueue.DeathCalculationAsync(winner, c);
                                 }
-                                actionQueue.EndGameInfo(winner);
+                                await actionQueue.EndGameInfo(winner);
                                 result.Add(Msg);
                                 break;
                             }
@@ -257,7 +258,7 @@ namespace Oshima.FunGame.OshimaServers.Service
                             List<Skill> skillRewards = [];
                             if (roundRewards.TryGetValue(i, out List<Skill>? effectList) && effectList != null)
                             {
-                                skillRewards = new(effectList);
+                                skillRewards = [.. effectList];
                             }
 
                             WriteLine($"=== Round {i++} ===");
@@ -298,7 +299,7 @@ namespace Oshima.FunGame.OshimaServers.Service
                                 }
                             }
 
-                            bool isGameEnd = actionQueue.ProcessTurn(characterToAct);
+                            bool isGameEnd = await actionQueue.ProcessTurnAsync(characterToAct);
 
                             if (realSkillRewards.Count > 0)
                             {
@@ -336,7 +337,7 @@ namespace Oshima.FunGame.OshimaServers.Service
                         }
 
                         // 模拟时间流逝
-                        double timeLapse = actionQueue.TimeLapse();
+                        double timeLapse = await actionQueue.TimeLapse();
                         totalTime += timeLapse;
                         下一次空投 -= timeLapse;
 
@@ -589,10 +590,10 @@ namespace Oshima.FunGame.OshimaServers.Service
         {
             foreach (Character character in queue.Queue)
             {
-                Item[] 武器 = FunGameConstant.Equipment.Where(i => i.Id.ToString().StartsWith("11") && (int)i.QualityType == wQuality).ToArray();
-                Item[] 防具 = FunGameConstant.Equipment.Where(i => i.Id.ToString().StartsWith("12") && (int)i.QualityType == aQuality).ToArray();
-                Item[] 鞋子 = FunGameConstant.Equipment.Where(i => i.Id.ToString().StartsWith("13") && (int)i.QualityType == sQuality).ToArray();
-                Item[] 饰品 = FunGameConstant.Equipment.Where(i => i.Id.ToString().StartsWith("14") && (int)i.QualityType == acQuality).ToArray();
+                Item[] 武器 = [.. FunGameConstant.Equipment.Where(i => i.Id.ToString().StartsWith("11") && (int)i.QualityType == wQuality)];
+                Item[] 防具 = [.. FunGameConstant.Equipment.Where(i => i.Id.ToString().StartsWith("12") && (int)i.QualityType == aQuality)];
+                Item[] 鞋子 = [.. FunGameConstant.Equipment.Where(i => i.Id.ToString().StartsWith("13") && (int)i.QualityType == sQuality)];
+                Item[] 饰品 = [.. FunGameConstant.Equipment.Where(i => i.Id.ToString().StartsWith("14") && (int)i.QualityType == acQuality)];
                 Item? a = null, b = null, c = null, d = null;
                 if (武器.Length > 0)
                 {

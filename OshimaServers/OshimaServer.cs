@@ -18,11 +18,11 @@ namespace Oshima.FunGame.OshimaServers
 
         public override string Author => OshimaGameModuleConstant.Author;
 
-        public override void ProcessInput(string input)
+        public override async void ProcessInput(string input)
         {
             if (input == "fungametest")
             {
-                FunGameSimulation.StartSimulationGame(true, true);
+                await FunGameSimulation.StartSimulationGame(true, true);
             }
             // OSM指令
             if (input.StartsWith(".osm", StringComparison.CurrentCultureIgnoreCase))

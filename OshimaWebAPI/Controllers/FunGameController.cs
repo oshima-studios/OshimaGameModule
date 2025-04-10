@@ -31,12 +31,12 @@ namespace Oshima.FunGame.WebAPI.Controllers
 
         [AllowAnonymous]
         [HttpGet("test")]
-        public List<string> GetTest([FromQuery] bool? isweb = null, [FromQuery] bool? isteam = null, [FromQuery] bool? showall = null)
+        public async Task<List<string>> GetTest([FromQuery] bool? isweb = null, [FromQuery] bool? isteam = null, [FromQuery] bool? showall = null)
         {
             bool web = isweb ?? true;
             bool team = isteam ?? false;
             bool all = showall ?? false;
-            return FunGameSimulation.StartSimulationGame(false, web, team, all);
+            return await FunGameSimulation.StartSimulationGame(false, web, team, all);
         }
 
         [AllowAnonymous]
@@ -50,7 +50,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
                 {
                     StringBuilder builder = new();
 
-                    builder.AppendLine(character.ToString());
+                    builder.AppendLine(character.ToStringWithLevelWithOutUser());
                     builder.AppendLine($"总计造成伤害：{stats.TotalDamage:0.##} / 场均：{stats.AvgDamage:0.##}");
                     builder.AppendLine($"总计造成物理伤害：{stats.TotalPhysicalDamage:0.##} / 场均：{stats.AvgPhysicalDamage:0.##}");
                     builder.AppendLine($"总计造成魔法伤害：{stats.TotalMagicDamage:0.##} / 场均：{stats.AvgMagicDamage:0.##}");
@@ -105,7 +105,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
                 {
                     StringBuilder builder = new();
 
-                    builder.AppendLine(character.ToString());
+                    builder.AppendLine(character.ToStringWithLevelWithOutUser());
                     builder.AppendLine($"总计造成伤害：{stats.TotalDamage:0.##} / 场均：{stats.AvgDamage:0.##}");
                     builder.AppendLine($"总计造成物理伤害：{stats.TotalPhysicalDamage:0.##} / 场均：{stats.AvgPhysicalDamage:0.##}");
                     builder.AppendLine($"总计造成魔法伤害：{stats.TotalMagicDamage:0.##} / 场均：{stats.AvgMagicDamage:0.##}");
@@ -157,7 +157,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
                 {
                     StringBuilder builder = new();
                     CharacterStatistics stats = FunGameSimulation.TeamCharacterStatistics[character];
-                    builder.AppendLine(character.ToString());
+                    builder.AppendLine(character.ToStringWithLevelWithOutUser());
                     builder.AppendLine($"总计参赛数：{stats.Plays}");
                     builder.AppendLine($"总计冠军数：{stats.Wins}");
                     builder.AppendLine($"胜率：{stats.Winrates * 100:0.##}%");
@@ -175,7 +175,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
                 {
                     StringBuilder builder = new();
                     CharacterStatistics stats = FunGameSimulation.CharacterStatistics[character];
-                    builder.AppendLine(character.ToString());
+                    builder.AppendLine(character.ToStringWithLevelWithOutUser());
                     builder.AppendLine($"总计参赛数：{stats.Plays}");
                     builder.AppendLine($"总计冠军数：{stats.Wins}");
                     builder.AppendLine($"胜率：{stats.Winrates * 100:0.##}%");
@@ -202,7 +202,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
                 {
                     StringBuilder builder = new();
                     CharacterStatistics stats = FunGameSimulation.TeamCharacterStatistics[character];
-                    builder.AppendLine(character.ToString());
+                    builder.AppendLine(character.ToStringWithLevelWithOutUser());
                     builder.AppendLine($"总计参赛数：{stats.Plays}");
                     builder.AppendLine($"总计冠军数：{stats.Wins}");
                     builder.AppendLine($"胜率：{stats.Winrates * 100:0.##}%");
@@ -220,7 +220,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
                 {
                     StringBuilder builder = new();
                     CharacterStatistics stats = FunGameSimulation.CharacterStatistics[character];
-                    builder.AppendLine(character.ToString());
+                    builder.AppendLine(character.ToStringWithLevelWithOutUser());
                     builder.AppendLine($"总计参赛数：{stats.Plays}");
                     builder.AppendLine($"总计冠军数：{stats.Wins}");
                     builder.AppendLine($"胜率：{stats.Winrates * 100:0.##}%");
@@ -528,7 +528,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
             //{
             //    return NetworkUtility.JsonSerialize(noSaved);
             //}
-            return NetworkUtility.JsonSerialize($"此功能维护中。");
+            return NetworkUtility.JsonSerialize($"无法还原用户 {uid} 的存档，此功能维护中。");
         }
 
         [HttpPost("showsaved")]
@@ -1826,7 +1826,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
         }
 
         [HttpPost("fightcustom")]
-        public List<string> FightCustom([FromQuery] long? uid = null, [FromQuery] long? eqq = null, [FromQuery] bool? all = null)
+        public async Task<List<string>> FightCustom([FromQuery] long? uid = null, [FromQuery] long? eqq = null, [FromQuery] bool? all = null)
         {
             try
             {
@@ -1870,7 +1870,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
                 {
                     user1.Inventory.MainCharacter.Recovery(EP: 200);
                     user2.Inventory.MainCharacter.Recovery(EP: 200);
-                    return FunGameActionQueue.NewAndStartGame([user1.Inventory.MainCharacter, user2.Inventory.MainCharacter], false, false, false, false, showAllRound);
+                    return await FunGameActionQueue.NewAndStartGame([user1.Inventory.MainCharacter, user2.Inventory.MainCharacter], false, false, false, false, showAllRound);
                 }
                 else
                 {
@@ -1884,7 +1884,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
         }
 
         [HttpPost("fightcustom2")]
-        public List<string> FightCustom2([FromQuery] long? uid = null, [FromQuery] string? name = null, [FromQuery] bool? all = null)
+        public async Task<List<string>> FightCustom2([FromQuery] long? uid = null, [FromQuery] string? name = null, [FromQuery] bool? all = null)
         {
             try
             {
@@ -1895,7 +1895,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
                     {
                         return [$"找不到此昵称对应的玩家！"];
                     }
-                    return FightCustom(uid, enemyid, all);
+                    return await FightCustom(uid, enemyid, all);
                 }
                 return [$"决斗发起失败！"];
             }
@@ -1906,7 +1906,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
         }
 
         [HttpPost("fightcustomteam")]
-        public List<string> FightCustomTeam([FromQuery] long? uid = null, [FromQuery] long? eqq = null, [FromQuery] bool? all = null)
+        public async Task<List<string>> FightCustomTeam([FromQuery] long? uid = null, [FromQuery] long? eqq = null, [FromQuery] bool? all = null)
         {
             try
             {
@@ -1968,7 +1968,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
                     }
                     Team team1 = new($"{user1.Username}的小队", squad1);
                     Team team2 = new($"{user2.Username}的小队" + (userid == enemyid ? "2" : ""), squad2);
-                    return FunGameActionQueue.NewAndStartTeamGame([team1, team2], 0, 0, false, false, false, false, showAllRound);
+                    return await FunGameActionQueue.NewAndStartTeamGame([team1, team2], 0, 0, false, false, false, false, showAllRound);
                 }
                 else
                 {
@@ -1982,7 +1982,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
         }
 
         [HttpPost("fightcustomteam2")]
-        public List<string> FightCustomTeam2([FromQuery] long? uid = null, [FromQuery] string? name = null, [FromQuery] bool? all = null)
+        public async Task<List<string>> FightCustomTeam2([FromQuery] long? uid = null, [FromQuery] string? name = null, [FromQuery] bool? all = null)
         {
             try
             {
@@ -1993,7 +1993,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
                     {
                         return [$"找不到此昵称对应的玩家！"];
                     }
-                    return FightCustomTeam(uid, enemyid, all);
+                    return await FightCustomTeam(uid, enemyid, all);
                 }
                 return [$"决斗发起失败！"];
             }
@@ -3437,7 +3437,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
         }
 
         [HttpPost("fightboss")]
-        public List<string> FightBoss([FromQuery] long? uid = null, [FromQuery] int? index = null, [FromQuery] bool? all = null)
+        public async Task<List<string>> FightBoss([FromQuery] long? uid = null, [FromQuery] int? index = null, [FromQuery] bool? all = null)
         {
             long userid = uid ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
             int bossIndex = index ?? 0;
@@ -3458,7 +3458,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
                     }
 
                     Character boss2 = CharacterBuilder.Build(boss, false, true, null, FunGameConstant.AllItems, FunGameConstant.AllSkills, false);
-                    List<string> msgs = FunGameActionQueue.NewAndStartGame([user.Inventory.MainCharacter, boss2], false, false, false, false, showAllRound);
+                    List<string> msgs = await FunGameActionQueue.NewAndStartGame([user.Inventory.MainCharacter, boss2], false, false, false, false, showAllRound);
 
                     if (boss2.HP <= 0)
                     {
@@ -3700,7 +3700,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
         }
 
         [HttpPost("fightbossteam")]
-        public List<string> FightBossTeam([FromQuery] long? uid = null, [FromQuery] int? index = null, [FromQuery] bool? all = null)
+        public async Task<List<string>> FightBossTeam([FromQuery] long? uid = null, [FromQuery] int? index = null, [FromQuery] bool? all = null)
         {
             long userid = uid ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
             int bossIndex = index ?? 0;
@@ -3727,7 +3727,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
                     Character boss2 = CharacterBuilder.Build(boss, false, true, null, FunGameConstant.AllItems, FunGameConstant.AllSkills, false);
                     Team team1 = new($"{user.Username}的小队", squad);
                     Team team2 = new($"Boss", [boss2]);
-                    List<string> msgs = FunGameActionQueue.NewAndStartTeamGame([team1, team2], showAllRound: showAllRound);
+                    List<string> msgs = await FunGameActionQueue.NewAndStartTeamGame([team1, team2], showAllRound: showAllRound);
 
                     if (boss2.HP <= 0)
                     {
@@ -4694,7 +4694,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
             if (pc.Count > 0)
             {
                 User user = FunGameService.GetUser(pc);
-                string msg = "";
+                string msg;
 
                 if (pc.TryGetValue("club", out object? value) && long.TryParse(value.ToString(), out long userClub) && userClub != 0)
                 {
@@ -5039,7 +5039,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
                     List<long> list = [];
                     if (pc2.TryGetValue(itemName, out object? value) && value is List<long> tempList)
                     {
-                        list = new(tempList);
+                        list = [.. tempList];
                     }
 
                     if (list.Contains(user.Id))

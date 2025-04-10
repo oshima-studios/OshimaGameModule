@@ -16,7 +16,7 @@ namespace Oshima.FunGame.OshimaServers.Service
 
         private string _msg = "";
 
-        public List<string> StartGame(List<Character> characters, bool printout = false, bool isWeb = false, bool deathMatchRoundDetail = false, bool showRoundEndDetail = false, bool showAllRound = false)
+        public async Task<List<string>> StartGame(List<Character> characters, bool printout = false, bool isWeb = false, bool deathMatchRoundDetail = false, bool showRoundEndDetail = false, bool showAllRound = false)
         {
             Result.Clear();
             PrintOut = printout;
@@ -69,9 +69,9 @@ namespace Oshima.FunGame.OshimaServers.Service
                         foreach (Character c in characters.Where(c => c != winner && c.HP > 0))
                         {
                             WriteLine("[ " + winner + " ] 对 [ " + c + " ] 造成了 99999999999 点真实伤害。");
-                            actionQueue.DeathCalculation(winner, c);
+                            await actionQueue.DeathCalculationAsync(winner, c);
                         }
-                        actionQueue.EndGameInfo(winner);
+                        await actionQueue.EndGameInfo(winner);
                         Result.Add(_msg);
                         break;
                     }
@@ -86,7 +86,7 @@ namespace Oshima.FunGame.OshimaServers.Service
                         List<Skill> skillRewards = [];
                         if (roundRewards.TryGetValue(i, out List<Skill>? effectList) && effectList != null)
                         {
-                            skillRewards = new(effectList);
+                            skillRewards = [.. effectList];
                         }
 
                         WriteLine($"=== Round {i++} ===");
@@ -127,7 +127,7 @@ namespace Oshima.FunGame.OshimaServers.Service
                             }
                         }
 
-                        bool isGameEnd = actionQueue.ProcessTurn(characterToAct);
+                        bool isGameEnd = await actionQueue.ProcessTurnAsync(characterToAct);
 
                         if (realSkillRewards.Count > 0)
                         {
@@ -172,7 +172,7 @@ namespace Oshima.FunGame.OshimaServers.Service
                     }
 
                     // 模拟时间流逝
-                    double timeLapse = actionQueue.TimeLapse();
+                    double timeLapse = await actionQueue.TimeLapse();
                     totalTime += timeLapse;
 
                     if (roundMsg != "")
@@ -260,7 +260,7 @@ namespace Oshima.FunGame.OshimaServers.Service
             }
         }
 
-        public List<string> StartTeamGame(List<Team> teams, int maxRespawnTimes = 0, int maxScoreToWin = 0, bool printout = false, bool isWeb = false, bool deathMatchRoundDetail = false, bool showRoundEndDetail = false, bool showAllRound = false)
+        public async Task<List<string>> StartTeamGame(List<Team> teams, int maxRespawnTimes = 0, int maxScoreToWin = 0, bool printout = false, bool isWeb = false, bool deathMatchRoundDetail = false, bool showRoundEndDetail = false, bool showAllRound = false)
         {
             Result.Clear();
             PrintOut = printout;
@@ -330,7 +330,7 @@ namespace Oshima.FunGame.OshimaServers.Service
                             List<Skill> skillRewards = [];
                             if (roundRewards.TryGetValue(i, out List<Skill>? effectList) && effectList != null)
                             {
-                                skillRewards = new(effectList);
+                                skillRewards = [.. effectList];
                             }
 
                             WriteLine($"=== Round {i++} ===");
@@ -371,7 +371,7 @@ namespace Oshima.FunGame.OshimaServers.Service
                                 }
                             }
 
-                            bool isGameEnd = actionQueue.ProcessTurn(characterToAct);
+                            bool isGameEnd = await actionQueue.ProcessTurnAsync(characterToAct);
 
                             if (realSkillRewards.Count > 0)
                             {
@@ -419,7 +419,7 @@ namespace Oshima.FunGame.OshimaServers.Service
                         }
 
                         // 模拟时间流逝
-                        double timeLapse = actionQueue.TimeLapse();
+                        double timeLapse = await actionQueue.TimeLapse();
                         totalTime += timeLapse;
 
                         if (roundMsg != "")
@@ -494,14 +494,14 @@ namespace Oshima.FunGame.OshimaServers.Service
             if (PrintOut) Console.WriteLine(str);
         }
 
-        public static List<string> NewAndStartGame(List<Character> characters, bool printout = false, bool isWeb = false, bool deathMatchRoundDetail = false, bool showRoundEndDetail = false, bool showAllRound = false)
+        public static async Task<List<string>> NewAndStartGame(List<Character> characters, bool printout = false, bool isWeb = false, bool deathMatchRoundDetail = false, bool showRoundEndDetail = false, bool showAllRound = false)
         {
-            return new FunGameActionQueue().StartGame(characters, printout, isWeb, deathMatchRoundDetail, showRoundEndDetail, showAllRound);
+            return await new FunGameActionQueue().StartGame(characters, printout, isWeb, deathMatchRoundDetail, showRoundEndDetail, showAllRound);
         }
 
-        public static List<string> NewAndStartTeamGame(List<Team> teams, int maxRespawnTimes = 0, int maxScoreToWin = 0, bool printout = false, bool isWeb = false, bool deathMatchRoundDetail = false, bool showRoundEndDetail = false, bool showAllRound = false)
+        public static async Task<List<string>> NewAndStartTeamGame(List<Team> teams, int maxRespawnTimes = 0, int maxScoreToWin = 0, bool printout = false, bool isWeb = false, bool deathMatchRoundDetail = false, bool showRoundEndDetail = false, bool showAllRound = false)
         {
-            return new FunGameActionQueue().StartTeamGame(teams, maxRespawnTimes, maxScoreToWin, printout, isWeb, deathMatchRoundDetail, showRoundEndDetail, showAllRound);
+            return await new FunGameActionQueue().StartTeamGame(teams, maxRespawnTimes, maxScoreToWin, printout, isWeb, deathMatchRoundDetail, showRoundEndDetail, showAllRound);
         }
     }
 }

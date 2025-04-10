@@ -220,7 +220,7 @@ namespace Oshima.FunGame.WebAPI.Services
                     if (!FunGameSimulation)
                     {
                         FunGameSimulation = true;
-                        List<string> msgs = Controller.GetTest(false);
+                        List<string> msgs = await Controller.GetTest(false);
                         List<string> real = [];
                         int remain = 7;
                         string merge = "";
@@ -268,7 +268,7 @@ namespace Oshima.FunGame.WebAPI.Services
                     if (!FunGameSimulation)
                     {
                         FunGameSimulation = true;
-                        List<string> msgs = Controller.GetTest(false, true);
+                        List<string> msgs = await Controller.GetTest(false, true);
                         List<string> real = [];
                         if (msgs.Count > 0)
                         {
@@ -1346,11 +1346,11 @@ namespace Oshima.FunGame.WebAPI.Services
                     List<string> msgs = [];
                     if (long.TryParse(detail.Trim(), out long eqq))
                     {
-                        msgs = Controller.FightCustom(uid, eqq, true);
+                        msgs = await Controller.FightCustom(uid, eqq, true);
                     }
                     else
                     {
-                        msgs = Controller.FightCustom2(uid, detail.Trim(), true);
+                        msgs = await Controller.FightCustom2(uid, detail.Trim(), true);
                     }
                     List<string> real = [];
                     if (msgs.Count >= 2)
@@ -1404,11 +1404,11 @@ namespace Oshima.FunGame.WebAPI.Services
                     List<string> msgs = [];
                     if (long.TryParse(detail.Trim(), out long eqq))
                     {
-                        msgs = Controller.FightCustom(uid, eqq, false);
+                        msgs = await Controller.FightCustom(uid, eqq, false);
                     }
                     else
                     {
-                        msgs = Controller.FightCustom2(uid, detail.Trim(), false);
+                        msgs = await Controller.FightCustom2(uid, detail.Trim(), false);
                     }
                     List<string> real = [];
                     if (msgs.Count > 2)
@@ -1455,11 +1455,11 @@ namespace Oshima.FunGame.WebAPI.Services
                     List<string> msgs = [];
                     if (long.TryParse(detail.Trim(), out long eqq))
                     {
-                        msgs = Controller.FightCustomTeam(uid, eqq, true);
+                        msgs = await Controller.FightCustomTeam(uid, eqq, true);
                     }
                     else
                     {
-                        msgs = Controller.FightCustomTeam2(uid, detail.Trim(), true);
+                        msgs = await Controller.FightCustomTeam2(uid, detail.Trim(), true);
                     }
                     List<string> real = [];
                     if (msgs.Count >= 3)
@@ -1533,7 +1533,7 @@ namespace Oshima.FunGame.WebAPI.Services
                     List<string> msgs = [];
                     if (int.TryParse(detail.Trim(), out int index))
                     {
-                        msgs = Controller.FightBossTeam(uid, index, true);
+                        msgs = await Controller.FightBossTeam(uid, index, true);
                         List<string> real = [];
                         if (msgs.Count >= 3)
                         {
@@ -1592,7 +1592,7 @@ namespace Oshima.FunGame.WebAPI.Services
                     List<string> msgs = [];
                     if (int.TryParse(detail.Trim(), out int index))
                     {
-                        msgs = Controller.FightBoss(uid, index, true);
+                        msgs = await Controller.FightBoss(uid, index, true);
                         List<string> real = [];
                         if (msgs.Count >= 3)
                         {
