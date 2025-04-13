@@ -14,7 +14,7 @@ namespace Oshima.FunGame.OshimaModules.Skills
             Effects.Add(new 枯竭打击特效(this));
         }
 
-        public override IEnumerable<Effect> AddInactiveEffectToCharacter()
+        public override IEnumerable<Effect> AddPassiveEffectToCharacter()
         {
             return Effects;
         }

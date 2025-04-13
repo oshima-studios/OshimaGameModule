@@ -74,7 +74,7 @@ namespace Oshima.FunGame.OshimaModules.Items
             Effects.Add(new ExATK(this, values, character));
         }
 
-        public override IEnumerable<Effect> AddInactiveEffectToCharacter()
+        public override IEnumerable<Effect> AddPassiveEffectToCharacter()
         {
             return Effects;
         }

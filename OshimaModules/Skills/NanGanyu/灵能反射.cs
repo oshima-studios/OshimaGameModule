@@ -14,7 +14,7 @@ namespace Oshima.FunGame.OshimaModules.Skills
             Effects.Add(new 灵能反射特效(this));
         }
 
-        public override IEnumerable<Effect> AddInactiveEffectToCharacter()
+        public override IEnumerable<Effect> AddPassiveEffectToCharacter()
         {
             return Effects;
         }

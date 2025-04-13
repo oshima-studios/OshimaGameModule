@@ -19,7 +19,7 @@ namespace Oshima.FunGame.OshimaModules.Skills
             }));
         }
 
-        public override IEnumerable<Effect> AddInactiveEffectToCharacter()
+        public override IEnumerable<Effect> AddPassiveEffectToCharacter()
         {
             return Effects;
         }

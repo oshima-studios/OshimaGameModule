@@ -21,8 +21,11 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Page Include="App.xaml" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\..\FunGame.Core\FunGame.Core.csproj" />
-    <ProjectReference Include="..\..\FunGame.Desktop\FunGame.Desktop\FunGame.Desktop.csproj" />
     <ProjectReference Include="..\OshimaMaps\OshimaMaps.csproj" />
     <ProjectReference Include="..\OshimaModules\OshimaModules.csproj" />
   </ItemGroup>

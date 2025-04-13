@@ -6,6 +6,7 @@ using Milimoe.FunGame.Core.Library.Common.Event;
 using Milimoe.FunGame.Core.Library.Constant;
 using Milimoe.FunGame.Core.Model;
 using Oshima.Core.Constant;
+using Application = System.Windows.Application;
 
 namespace Oshima.FunGame.OshimaModes
 {
@@ -37,18 +38,40 @@ namespace Oshima.FunGame.OshimaModes
 
         public override void StartUI(params object[] args)
         {
-            if (Application.MessageLoop)
+            try
             {
-                FastAutoUI f = new();
-                f.Invoke(f.Show);
+                // 确保在 UI 线程执行
+                if (Application.Current != null)
+                {
+                    Application.Current.Dispatcher.Invoke(() =>
+                    {
+                        try
+                        {
+                            MainWindow mainWindow = new();
+                            mainWindow.Closed += (s, e) =>
+                            {
+                                Controller.WriteLine("MainWindow closed");
+                            };
+                            mainWindow.Show();
+                        }
+                        catch (Exception ex)
+                        {
+                            Controller.Error(ex);
+                            throw;
+                        }
+                    });
+                }
+                else
+                {
+                    throw new InvalidOperationException("WPF Application not initialized.");
+                }
             }
-            else
+            catch (Exception ex)
             {
-                ApplicationConfiguration.Initialize();
-                Application.Run(new FastAutoUI());
+                Controller.Error(ex);
+                throw;
             }
         }
-
 
         public void GamingUpdateInfoEvent(object sender, GamingEventArgs e, Dictionary<string, object> data)
         {

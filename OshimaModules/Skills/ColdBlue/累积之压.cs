@@ -15,7 +15,7 @@ namespace Oshima.FunGame.OshimaModules.Skills
             Effects.Add(new 累积之压特效(this));
         }
 
-        public override IEnumerable<Effect> AddInactiveEffectToCharacter()
+        public override IEnumerable<Effect> AddPassiveEffectToCharacter()
         {
             return Effects;
         }

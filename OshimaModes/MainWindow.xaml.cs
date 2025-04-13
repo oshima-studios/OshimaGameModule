@@ -1,37 +1,60 @@
 ﻿using System.Windows;
-using System.Windows.Input;
+using System.Windows.Controls;
 
 namespace Oshima.FunGame.OshimaModes
 {
-    /// <summary>
-    /// MainWindow.xaml 的交互逻辑
-    /// </summary>
     public partial class MainWindow : Window
     {
-        private MainWindowViewModel ViewModel;
-
         public MainWindow()
         {
             InitializeComponent();
-            ViewModel = new MainWindowViewModel();
-            DataContext = ViewModel;
-            Show();
+            AddPlayers(7); // 初始化时添加7个玩家
         }
 
-        private void SendButton_Click(object sender, RoutedEventArgs e)
+        // 动态添加玩家格子
+        private void AddPlayers(int playerCount)
         {
-            // 发送聊天消息的逻辑
-            string message = ChatInputTextBox.Text;
-            ViewModel.GameInfoText += $"You: {message}\n";
-            ChatInputTextBox.Clear();
-        }
+            int leftIndex = 0;  // 左侧奇数玩家计数器
+            int rightIndex = 0; // 右侧偶数玩家计数器
 
-        private void ChatInputTextBox_KeyDown(object sender, System.Windows.Input.KeyEventArgs e)
-        {
-            if (e.Key == Key.Enter)
+            for (int i = 1; i <= playerCount; i++)
             {
-                SendButton_Click(sender, null);
+                // 使用 CharacterStatus 控件表示玩家
+                CharacterStatus playerSlot = new();
+
+                if (i % 2 == 1) // 奇数玩家，左侧
+                {
+                    AddToLeftPanel(playerSlot, leftIndex);
+                    leftIndex++;
+                }
+                else // 偶数玩家，右侧
+                {
+                    AddToRightPanel(playerSlot, rightIndex);
+                    rightIndex++;
+                }
             }
+        }
+
+        // 添加奇数玩家到左侧 Grid
+        private void AddToLeftPanel(CharacterStatus control, int index)
+        {
+            int col = index / 3; // 每列容纳3个玩家
+            int row = index % 3; // 行号从0到2
+
+            Grid.SetColumn(control, col);
+            Grid.SetRow(control, row);
+            leftTableLayoutPanel.Children.Add(control);
+        }
+
+        // 添加偶数玩家到右侧 Grid
+        private void AddToRightPanel(CharacterStatus control, int index)
+        {
+            int col = (index >= 3) ? 0 : 1; // 超过3位玩家的偶数编号在第一列，否则在第二列
+            int row = index % 3; // 行号从0到2
+
+            Grid.SetColumn(control, col);
+            Grid.SetRow(control, row);
+            rightTableLayoutPanel.Children.Add(control);
         }
     }
 }
