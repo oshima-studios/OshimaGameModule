@@ -34,7 +34,7 @@ namespace Oshima.FunGame.OshimaModules.Skills
             if (Skill.Character != null) WriteLine($"[ {Skill.Character} ] 发动了META马专属被动！本次获得了 {baseEP:0.##} 能量！");
         }
 
-        public override void OnTurnStart(Character character)
+        public override void OnTurnStart(Character character, List<Character> enemys, List<Character> teammates, List<Skill> skills, List<Item> items)
         {
             if (character.EP < 200)
             {

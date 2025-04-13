@@ -12,8 +12,8 @@ namespace Oshima.FunGame.OshimaModules.Skills
         public override double CD => 55 - 3 * (Level - 1);
         public override double HardnessTime { get; set; } = 25;
         public override string Slogan => "从深渊引爆力量，世界将为之颤抖！！！！";
-        public override bool CanSelectSelf => true;
-        public override bool CanSelectEnemy => false;
+        public override bool CanSelectSelf => false;
+        public override bool CanSelectEnemy => true;
 
         public 能量毁灭(Character? character = null) : base(SkillType.SuperSkill, character)
         {
@@ -23,6 +23,14 @@ namespace Oshima.FunGame.OshimaModules.Skills
         public override List<Character> SelectTargets(Character caster, List<Character> enemys, List<Character> teammates)
         {
             return [.. enemys];
+        }
+
+        public override void OnTurnStart(Character character, List<Character> enemys, List<Character> teammates, List<Skill> skills, List<Item> items)
+        {
+            if (Character == character)
+            {
+                CanSelectTargetCount = enemys.Count;
+            }
         }
     }
 
