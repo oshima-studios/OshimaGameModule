@@ -221,7 +221,7 @@ namespace Oshima.FunGame.OshimaServers.Service
             }
         };
 
-        public static Dictionary<EffectID, Dictionary<string, object>> RoundRewards { get; } = new()
+        public static Dictionary<EffectID, Dictionary<string, object>> RoundRewards => new()
         {
             {
                 EffectID.ExATK,

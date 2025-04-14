@@ -213,7 +213,18 @@ namespace Oshima.FunGame.OshimaServers.Service
                     int maxRound = isTeam ? 9999 : 999;
 
                     // 随机回合奖励
-                    Dictionary<int, List<Skill>> roundRewards = FunGameService.GenerateRoundRewards(maxRound);
+                    Dictionary<long, bool> effects = [];
+                    foreach (EffectID id in FunGameConstant.RoundRewards.Keys)
+                    {
+                        long effectID = (long)id;
+                        bool isActive = false;
+                        if (effectID > (long)EffectID.Active_Start)
+                        {
+                            isActive = true;
+                        }
+                        effects.Add(effectID, isActive);
+                    }
+                    actionQueue.InitRoundRewards(maxRound, 1, effects, id => FunGameConstant.RoundRewards[(EffectID)id]);
 
                     int i = 1;
                     while (i < maxRound)
@@ -254,66 +265,10 @@ namespace Oshima.FunGame.OshimaServers.Service
                         // 处理回合
                         if (characterToAct != null)
                         {
-                            // 获取回合奖励
-                            List<Skill> skillRewards = [];
-                            if (roundRewards.TryGetValue(i, out List<Skill>? effectList) && effectList != null)
-                            {
-                                skillRewards = [.. effectList];
-                            }
-
                             WriteLine($"=== Round {i++} ===");
                             WriteLine("现在是 [ " + characterToAct + (isTeam ? "（" + (actionQueue.GetTeam(characterToAct)?.Name ?? "") + "）" : "") + " ] 的回合！");
 
-                            // 实际的回合奖励
-                            List<Skill> realSkillRewards = [];
-                            if (skillRewards.Count > 0)
-                            {
-                                foreach (Skill skill in skillRewards)
-                                {
-                                    Dictionary<string, object> effectArgs = [];
-                                    if (FunGameConstant.RoundRewards.TryGetValue((EffectID)skill.Id, out Dictionary<string, object>? dict) && dict != null)
-                                    {
-                                        effectArgs = new(dict);
-                                    }
-                                    Dictionary<string, object> args = new()
-                                    {
-                                        { "skill", skill },
-                                        { "values", effectArgs }
-                                    };
-                                    skill.GamingQueue = actionQueue;
-                                    skill.Effects.Add(Factory.OpenFactory.GetInstance<Effect>(skill.Id, "", args));
-                                    skill.Character = characterToAct;
-                                    skill.Level = 1;
-                                    actionQueue.LastRound.RoundRewards.Add(skill);
-                                    WriteLine($"[ {characterToAct} ] 获得了回合奖励！{skill.Description}".Trim());
-                                    if (skill.IsActive)
-                                    {
-                                        actionQueue.LastRound.Targets.Add(characterToAct);
-                                        skill.OnSkillCasted(actionQueue, characterToAct, [characterToAct]);
-                                    }
-                                    else
-                                    {
-                                        characterToAct.Skills.Add(skill);
-                                        realSkillRewards.Add(skill);
-                                    }
-                                }
-                            }
-
                             bool isGameEnd = await actionQueue.ProcessTurnAsync(characterToAct);
-
-                            if (realSkillRewards.Count > 0)
-                            {
-                                foreach (Skill skill in realSkillRewards)
-                                {
-                                    foreach (Effect e in skill.Effects)
-                                    {
-                                        e.OnEffectLost(characterToAct);
-                                        characterToAct.Effects.Remove(e);
-                                    }
-                                    characterToAct.Skills.Remove(skill);
-                                    skill.Character = null;
-                                }
-                            }
 
                             if (isGameEnd)
                             {
