@@ -24,12 +24,21 @@ namespace Oshima.FunGame.OshimaModules.Skills
     {
         public override long Id => Skill.Id;
         public override string Name => Skill.Name;
-        public override string Description => $"普通攻击硬直时间减少 20%。每次使用普通攻击时，额外再发动一次普通攻击，伤害特效可叠加，冷却 {基础冷却时间:0.##} 时间。" +
-            (冷却时间 > 0 ? $"（正在冷却：剩余 {冷却时间:0.##} 时间）" : "");
+        public override string Description => $"普通攻击硬直时间减少 20%。每次使用普通攻击时，额外再发动一次普通攻击，伤害特效可叠加，但伤害折减一半，冷却 {基础冷却时间:0.##} {GameplayEquilibriumConstant.InGameTime}。" +
+            (冷却时间 > 0 ? $"（正在冷却：剩余 {冷却时间:0.##} {GameplayEquilibriumConstant.InGameTime}）" : "");
 
         public double 冷却时间 { get; set; } = 0;
-        public double 基础冷却时间 { get; set; } = 20;
+        public double 基础冷却时间 { get; set; } = 12;
         private bool 是否是嵌套普通攻击 = false;
+
+        public override double AlterActualDamageAfterCalculation(Character character, Character enemy, double damage, bool isNormalAttack, bool isMagicDamage, MagicType magicType, DamageResult damageResult, ref bool isEvaded, Dictionary<Effect, double> totalDamageBonus)
+        {
+            if (character == Skill.Character && 是否是嵌套普通攻击 && isNormalAttack && damage > 0)
+            {
+                return -(damage / 2);
+            }
+            return 0;
+        }
 
         public override void AfterDamageCalculation(Character character, Character enemy, double damage, bool isNormalAttack, bool isMagicDamage, MagicType magicType, DamageResult damageResult)
         {

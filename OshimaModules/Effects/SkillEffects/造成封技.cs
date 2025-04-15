@@ -9,7 +9,7 @@ namespace Oshima.FunGame.OshimaModules.Effects.SkillEffects
         public override string Name => Skill.Name;
         public override string Description => $"对目标{(Skill.CanSelectTargetCount > 1 ? $"至多 {Skill.CanSelectTargetCount} 个" : "")}敌人造成封技 {封技时间}，无法使用技能（魔法、战技和爆发技），并打断当前施法。";
 
-        private string 封技时间 => _durative && _duration > 0 ? 实际封技时间 + " 时间" : (!_durative && _durationTurn > 0 ? 实际封技时间 + " 回合" : "0 时间");
+        private string 封技时间 => _durative && _duration > 0 ? 实际封技时间 + $" {GameplayEquilibriumConstant.InGameTime}" : (!_durative && _durationTurn > 0 ? 实际封技时间 + " 回合" : $"0 {GameplayEquilibriumConstant.InGameTime}");
         private double 实际封技时间 => _durative && _duration > 0 ? _duration + _levelGrowth * (Level - 1) : (!_durative && _durationTurn > 0 ? _durationTurn + _levelGrowth * (Level - 1) : 0);
         private readonly bool _durative;
         private readonly double _duration;
@@ -29,7 +29,7 @@ namespace Oshima.FunGame.OshimaModules.Effects.SkillEffects
         {
             foreach (Character enemy in targets)
             {
-                WriteLine($"[ {caster} ] 对 [ {enemy} ] 造成了封技和施法解除！持续时间：{封技时间}！");
+                WriteLine($"[ {caster} ] 对 [ {enemy} ] 造成了封技和施法解除！持续时间：{封技时间} {GameplayEquilibriumConstant.InGameTime}！");
                 封技 e = new(Skill, caster, false, 0, 1);
                 enemy.Effects.Add(e);
                 e.OnEffectGained(enemy);

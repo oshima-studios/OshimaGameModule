@@ -25,11 +25,25 @@ namespace Oshima.FunGame.OshimaModules.Skills
     {
         public override long Id => Skill.Id;
         public override string Name => Skill.Name;
-        public override string Description => $"造成魔法伤害时有 35% 几率使敌人眩晕 1 回合。";
+        public override string Description => $"对处于完全行动不能状态的敌人额外造成 {系数 * 100:0.##}% 力量 [ {伤害加成:0.##} ] 点伤害；造成魔法伤害时使敌人眩晕 1 回合，冷却 {基础冷却时间:0.##} {GameplayEquilibriumConstant.InGameTime}。" +
+            (冷却时间 > 0 ? $"（正在冷却：剩余 {冷却时间:0.##} {GameplayEquilibriumConstant.InGameTime}）" : "");
+        public double 冷却时间 { get; set; } = 0;
+        public double 基础冷却时间 { get; set; } = 10;
+        private double 系数 => 1.2 * (1 + 0.4 * (Skill.Level - 1));
+        private double 伤害加成 => 系数 * Skill.Character?.STR ?? 0;
+
+        public override double AlterExpectedDamageBeforeCalculation(Character character, Character enemy, double damage, bool isNormalAttack, bool isMagicDamage, MagicType magicType, Dictionary<Effect, double> totalDamageBonus)
+        {
+            if (character == Skill.Character && enemy.CharacterState == CharacterState.NotActionable)
+            {
+                return 伤害加成;
+            }
+            return 0;
+        }
 
         public override void AfterDamageCalculation(Character character, Character enemy, double damage, bool isNormalAttack, bool isMagicDamage, MagicType magicType, DamageResult damageResult)
         {
-            if (character == Skill.Character && isMagicDamage && damageResult != DamageResult.Evaded && new Random().NextDouble() < 0.35)
+            if (character == Skill.Character && isMagicDamage && 冷却时间 == 0 && damageResult != DamageResult.Evaded && new Random().NextDouble() < 0.35)
             {
                 IEnumerable<Effect> effects = enemy.Effects.Where(e => e is 眩晕 && e.Skill == Skill);
                 if (effects.Any())
@@ -43,6 +57,19 @@ namespace Oshima.FunGame.OshimaModules.Skills
                     e.OnEffectGained(enemy);
                 }
                 WriteLine($"[ {character} ] 的魔法伤害触发了魔法震荡，[ {enemy} ] 被眩晕了！");
+                冷却时间 = 基础冷却时间;
+            }
+        }
+
+        public override void OnTimeElapsed(Character character, double elapsed)
+        {
+            if (冷却时间 > 0)
+            {
+                冷却时间 -= elapsed;
+                if (冷却时间 <= 0)
+                {
+                    冷却时间 = 0;
+                }
             }
         }
     }

@@ -708,7 +708,7 @@
     "Description": "增加角色 85 点攻击力和 25% 暴击伤害。",
     "BackgroundStory": "一环荆棘与花朵交织的暗器，美丽而致命，象征着爱与痛的纠缠。",
     "ItemType": 1,
-    "WeaponType": 9,
+    "WeaponType": 11,
     "QualityType": 4,
     "Skills": {
       "Active": null,
@@ -722,6 +722,35 @@
               "Id": 8032,
               "exatk": 85,
               "excrd": 0.25
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "金箍棒": {
+    "Id": 11572,
+    "Name": "金箍棒",
+    "Description": "增加角色 85 点攻击力。克敌机先：普通攻击有 80% 概率无视闪避。",
+    "BackgroundStory": "天河定底神珍棒，棒名如意世间高。",
+    "ItemType": 1,
+    "WeaponType": 9,
+    "QualityType": 4,
+    "Skills": {
+      "Active": null,
+      "Passives": [
+        {
+          "Id": 7030,
+          "Name": "金箍棒",
+          "SkillType": 3,
+          "Effects": [
+            {
+              "Id": 8001,
+              "exatk": 85
+            },
+            {
+              "Id": 8033,
+              "p": 0.8
             }
           ]
         }
@@ -837,7 +866,7 @@
   "炼狱战铠": {
     "Id": 12505,
     "Name": "炼狱战铠",
-    "Description": "增加角色 40 点物理护甲，增加角色 5 点每时间生命回复。",
+    "Description": "增加角色 40 点物理护甲，增加角色 5 点每秒生命回复。",
     "BackgroundStory": "在无尽战火中锻造而成，具有极高的防御力。",
     "ItemType": 2,
     "WeaponType": 0,
@@ -1119,7 +1148,7 @@
   "辉煌光环": {
     "Id": 14504,
     "Name": "辉煌光环",
-    "Description": "增加角色 80 点最大魔法值和 2 点每时间魔法回复。",
+    "Description": "增加角色 80 点最大魔法值和 2 点每秒魔法回复。",
     "BackgroundStory": "流光溢彩的光环。",
     "ItemType": 4,
     "WeaponType": 0,
@@ -1239,7 +1268,7 @@
   "精灵之戒": {
     "Id": 14508,
     "Name": "精灵之戒",
-    "Description": "增加角色 5 点每时间魔法回复，并增加角色 8 点智力。",
+    "Description": "增加角色 5 点每秒魔法回复，并增加角色 8 点智力。",
     "BackgroundStory": "这枚戒指由精灵制成，能够帮助法师更快地恢复法力。",
     "ItemType": 4,
     "WeaponType": 0,
@@ -1268,7 +1297,7 @@
   "暗影项链": {
     "Id": 14509,
     "Name": "暗影项链",
-    "Description": "增加角色 15 点敏捷和 3 点每时间生命回复。",
+    "Description": "增加角色 15 点敏捷和 3 点每秒生命回复。",
     "BackgroundStory": "项链蕴含着黑暗的力量，让佩戴者更具敏捷性。",
     "ItemType": 4,
     "WeaponType": 0,
@@ -1414,7 +1443,7 @@
   "白月光的玉佩": {
     "Id": 14514,
     "Name": "白月光的玉佩",
-    "Description": "增加角色 10% 魔法抗性，4 点每时间魔法回复和 5% 冷却缩减。",
+    "Description": "增加角色 10% 魔法抗性，4 点每秒魔法回复和 5% 冷却缩减。",
     "BackgroundStory": "据说每个总裁都有一个救命恩人，还有一个冒充救命恩人的人。",
     "ItemType": 4,
     "WeaponType": 0,

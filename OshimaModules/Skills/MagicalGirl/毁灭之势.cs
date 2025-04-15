@@ -24,10 +24,12 @@ namespace Oshima.FunGame.OshimaModules.Skills
     {
         public override long Id => Skill.Id;
         public override string Name => Skill.Name;
-        public override string Description => $"每时间提升 {伤害提升 * 100:0.##}% 所有伤害，无上限，但受到伤害时效果清零。" + (累计伤害 > 0 ? $"（当前总提升：{累计伤害 * 100:0.##}%）" : "");
+        public override string Description => $"每经过 {时间流逝} {GameplayEquilibriumConstant.InGameTime}，提升 {伤害提升 * 100:0.##}% 所有伤害，无上限，但是受到伤害时清零。（下一次提升在：{下一次提升:0.##} {GameplayEquilibriumConstant.InGameTime}后{(累计伤害 > 0 ? $"，当前总提升：{累计伤害 * 100:0.##}%" : "")}）";
 
-        private readonly double 伤害提升 = 0.03;
+        private readonly double 时间流逝 = 7;
+        private readonly double 伤害提升 = 0.21;
         private double 累计伤害 = 0;
+        private double 下一次提升 = 7;
 
         public override double AlterActualDamageAfterCalculation(Character character, Character enemy, double damage, bool isNormalAttack, bool isMagicDamage, MagicType magicType, DamageResult damageResult, ref bool isEvaded, Dictionary<Effect, double> totalDamageBonus)
         {
@@ -52,8 +54,13 @@ namespace Oshima.FunGame.OshimaModules.Skills
         {
             if (GamingQueue != null)
             {
-                累计伤害 += 伤害提升 * eapsed;
-                WriteLine($"[ {character} ] 的 [ {Name} ] 效果增加了，当前总提升：{累计伤害 * 100:0.##}%。");
+                下一次提升 -= eapsed;
+                if (下一次提升 <= 0)
+                {
+                    累计伤害 += 伤害提升;
+                    下一次提升 += 时间流逝;
+                    WriteLine($"[ {character} ] 的 [ {Name} ] 效果增加了，当前总提升：{累计伤害 * 100:0.##}%。");
+                }
             }
         }
     }

@@ -50,7 +50,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
                 {
                     StringBuilder builder = new();
 
-                    builder.AppendLine(character.ToStringWithLevelWithOutUser());
+                    builder.AppendLine(character.ToStringWithOutUser());
                     builder.AppendLine($"总计造成伤害：{stats.TotalDamage:0.##} / 场均：{stats.AvgDamage:0.##}");
                     builder.AppendLine($"总计造成物理伤害：{stats.TotalPhysicalDamage:0.##} / 场均：{stats.AvgPhysicalDamage:0.##}");
                     builder.AppendLine($"总计造成魔法伤害：{stats.TotalMagicDamage:0.##} / 场均：{stats.AvgMagicDamage:0.##}");
@@ -105,7 +105,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
                 {
                     StringBuilder builder = new();
 
-                    builder.AppendLine(character.ToStringWithLevelWithOutUser());
+                    builder.AppendLine(character.ToStringWithOutUser());
                     builder.AppendLine($"总计造成伤害：{stats.TotalDamage:0.##} / 场均：{stats.AvgDamage:0.##}");
                     builder.AppendLine($"总计造成物理伤害：{stats.TotalPhysicalDamage:0.##} / 场均：{stats.AvgPhysicalDamage:0.##}");
                     builder.AppendLine($"总计造成魔法伤害：{stats.TotalMagicDamage:0.##} / 场均：{stats.AvgMagicDamage:0.##}");
@@ -157,7 +157,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
                 {
                     StringBuilder builder = new();
                     CharacterStatistics stats = FunGameSimulation.TeamCharacterStatistics[character];
-                    builder.AppendLine(character.ToStringWithLevelWithOutUser());
+                    builder.AppendLine(character.ToStringWithOutUser());
                     builder.AppendLine($"总计参赛数：{stats.Plays}");
                     builder.AppendLine($"总计冠军数：{stats.Wins}");
                     builder.AppendLine($"胜率：{stats.Winrates * 100:0.##}%");
@@ -175,7 +175,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
                 {
                     StringBuilder builder = new();
                     CharacterStatistics stats = FunGameSimulation.CharacterStatistics[character];
-                    builder.AppendLine(character.ToStringWithLevelWithOutUser());
+                    builder.AppendLine(character.ToStringWithOutUser());
                     builder.AppendLine($"总计参赛数：{stats.Plays}");
                     builder.AppendLine($"总计冠军数：{stats.Wins}");
                     builder.AppendLine($"胜率：{stats.Winrates * 100:0.##}%");
@@ -202,7 +202,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
                 {
                     StringBuilder builder = new();
                     CharacterStatistics stats = FunGameSimulation.TeamCharacterStatistics[character];
-                    builder.AppendLine(character.ToStringWithLevelWithOutUser());
+                    builder.AppendLine(character.ToStringWithOutUser());
                     builder.AppendLine($"总计参赛数：{stats.Plays}");
                     builder.AppendLine($"总计冠军数：{stats.Wins}");
                     builder.AppendLine($"胜率：{stats.Winrates * 100:0.##}%");
@@ -220,7 +220,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
                 {
                     StringBuilder builder = new();
                     CharacterStatistics stats = FunGameSimulation.CharacterStatistics[character];
-                    builder.AppendLine(character.ToStringWithLevelWithOutUser());
+                    builder.AppendLine(character.ToStringWithOutUser());
                     builder.AppendLine($"总计参赛数：{stats.Plays}");
                     builder.AppendLine($"总计冠军数：{stats.Wins}");
                     builder.AppendLine($"胜率：{stats.Winrates * 100:0.##}%");

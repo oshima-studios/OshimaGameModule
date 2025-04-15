@@ -22,7 +22,7 @@ namespace Oshima.FunGame.OshimaModules.Items
     {
         public override long Id => 5999;
         public override string Name => "独奏弓";
-        public override string Description => $"增加角色 {攻击力加成:0.##} 点攻击力，减少普通攻击 {硬直时间减少:0.##} 硬直时间。";
+        public override string Description => $"增加角色 {攻击力加成:0.##} 点攻击力，减少普通攻击 {硬直时间减少:0.##} {GameplayEquilibriumConstant.InGameTime}硬直时间。";
 
         private readonly double 攻击力加成 = 80;
         private readonly double 硬直时间减少 = 2;

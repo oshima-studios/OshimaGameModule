@@ -24,7 +24,7 @@ namespace Oshima.FunGame.OshimaModules.Skills
     {
         public override long Id => Skill.Id;
         public override string Name => Skill.Name;
-        public override string Description => $"进入不可选中状态，获得 100 行动速度，提高 8% 暴击率，持续 {Duration:0.##} 时间。破隐一击：在持续时间内，首次造成伤害会附加 {系数 * 100:0.##}% 敏捷 [ {伤害加成:0.##} ] 的强化伤害，并解除不可选中状态。";
+        public override string Description => $"进入不可选中状态，获得 100 行动速度，提高 8% 暴击率，持续 {Duration:0.##} {GameplayEquilibriumConstant.InGameTime}。破隐一击：在持续时间内，首次造成伤害会附加 {系数 * 100:0.##}% 敏捷 [ {伤害加成:0.##} ] 的强化伤害，并解除不可选中状态。";
         public override bool Durative => true;
         public override double Duration => 12 + (1 * (Level - 1));
 

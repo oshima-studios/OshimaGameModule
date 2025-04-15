@@ -12,7 +12,7 @@ namespace Oshima.FunGame.OshimaModules.Effects.SkillEffects
         private double SPD => Level > 0 ? Math.Abs(基础数值速度 + 基础速度等级成长 * (Level - 1)) : Math.Abs(基础数值速度);
         private double 基础数值速度 { get; set; } = 65;
         private double 基础速度等级成长 { get; set; } = 25;
-        private string 持续时间 => _durative && _duration > 0 ? _duration + " 时间" : (!_durative && _durationTurn > 0 ? _durationTurn + " 回合" : "0 时间");
+        private string 持续时间 => _durative && _duration > 0 ? _duration + $" {GameplayEquilibriumConstant.InGameTime}" : (!_durative && _durationTurn > 0 ? _durationTurn + " 回合" : $"0 {GameplayEquilibriumConstant.InGameTime}");
         private readonly bool _durative;
         private readonly double _duration;
         private readonly int _durationTurn;
@@ -31,7 +31,7 @@ namespace Oshima.FunGame.OshimaModules.Effects.SkillEffects
         {
             foreach (Character target in targets)
             {
-                WriteLine($"[ {target} ] 的行动速度提升了 {SPD:0.##} ！持续时间：{持续时间}！");
+                WriteLine($"[ {target} ] 的行动速度提升了 {SPD:0.##} ！持续时间：{持续时间} {GameplayEquilibriumConstant.InGameTime}！");
                 ExSPD e = new(Skill, new Dictionary<string, object>()
                 {
                     { "exspd", SPD }

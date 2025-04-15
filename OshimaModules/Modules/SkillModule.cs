@@ -1,5 +1,6 @@
 ﻿using Milimoe.FunGame.Core.Api.Utility;
 using Milimoe.FunGame.Core.Entity;
+using Milimoe.FunGame.Core.Library.Constant;
 using Oshima.Core.Constant;
 using Oshima.FunGame.OshimaModules.Effects.ItemEffects;
 using Oshima.FunGame.OshimaModules.Effects.OpenEffects;
@@ -21,6 +22,11 @@ namespace Oshima.FunGame.OshimaModules
             {
                 return Factory.GetGameModuleInstances<Skill>(OshimaGameModuleConstant.General, OshimaGameModuleConstant.Skill);
             }
+        }
+
+        protected override void AfterLoad()
+        {
+            General.GameplayEquilibriumConstant.InGameTime = "秒";
         }
 
         protected override Factory.EntityFactoryDelegate<Skill> SkillFactory()
@@ -116,6 +122,7 @@ namespace Oshima.FunGame.OshimaModules
                         EffectID.ExMaxHP2 => new ExMaxHP2(skill, dict),
                         EffectID.ExMaxMP2 => new ExMaxMP2(skill, dict),
                         EffectID.DynamicsEffect => new DynamicsEffect(skill, dict),
+                        EffectID.IgnoreEvade => new IgnoreEvade(skill, dict),
                         EffectID.RecoverHP => new RecoverHP(skill, dict),
                         EffectID.RecoverMP => new RecoverMP(skill, dict),
                         EffectID.RecoverHP2 => new RecoverHP2(skill, dict),

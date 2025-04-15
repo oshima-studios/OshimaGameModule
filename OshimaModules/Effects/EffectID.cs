@@ -171,6 +171,11 @@
         DynamicsEffect = 8032,
 
         /// <summary>
+        /// 无视闪避率，参数：p
+        /// </summary>
+        IgnoreEvade = 8033,
+
+        /// <summary>
         /// 被动特效终点
         /// </summary>
         Passive_End = 8699,

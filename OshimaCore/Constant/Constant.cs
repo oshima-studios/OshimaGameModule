@@ -1,4 +1,5 @@
 ﻿using Milimoe.FunGame.Core.Library.Common.Addon;
+using Milimoe.FunGame.Core.Model;
 
 namespace Oshima.Core.Constant
 {
@@ -23,5 +24,10 @@ namespace Oshima.Core.Constant
         private static readonly string[] Skills = [Skill];
         private static readonly string[] Items = [Item];
         public static GameModuleDepend GameModuleDepend { get; } = new(Maps, Characters, Skills, Items);
+
+        public static EquilibriumConstant GameplayEquilibriumConstant { get; } = new()
+        {
+            InGameTime = "秒"
+        };
     }
 }

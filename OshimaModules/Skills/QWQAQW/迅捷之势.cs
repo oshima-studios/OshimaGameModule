@@ -24,7 +24,7 @@ namespace Oshima.FunGame.OshimaModules.Skills
     {
         public override long Id => Skill.Id;
         public override string Name => Skill.Name;
-        public override string Description => $"{Duration:0.##} 时间内，提升自身 25% 物理伤害减免和魔法抗性，普通攻击转为魔法伤害，且硬直时间减少 30%，并基于 {智力系数 * 100:0.##}% 智力 [ {智力加成:0.##} ] 强化普通攻击伤害。";
+        public override string Description => $"{Duration:0.##} {GameplayEquilibriumConstant.InGameTime}内，提升自身 25% 物理伤害减免和魔法抗性，普通攻击转为魔法伤害，且硬直时间减少 30%，并基于 {智力系数 * 100:0.##}% 智力 [ {智力加成:0.##} ] 强化普通攻击伤害。";
         public override bool Durative => true;
         public override double Duration => 40;
 

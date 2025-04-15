@@ -24,7 +24,7 @@ namespace Oshima.FunGame.OshimaModules.Skills
     {
         public override long Id => Skill.Id;
         public override string Name => Skill.Name;
-        public override string Description => $"敏捷提高 20%，然后将目前的力量补充到与敏捷持平，持续 {Duration:0.##} 时间。";
+        public override string Description => $"敏捷提高 20%，然后将目前的力量补充到与敏捷持平，持续 {Duration:0.##} {GameplayEquilibriumConstant.InGameTime}。";
         public override bool Durative => true;
         public override double Duration => 30;
 

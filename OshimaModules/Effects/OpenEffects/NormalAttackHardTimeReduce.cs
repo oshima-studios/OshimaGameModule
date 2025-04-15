@@ -7,7 +7,7 @@ namespace Oshima.FunGame.OshimaModules.Effects.OpenEffects
     {
         public override long Id => (long)EffectID.NormalAttackHardTimeReduce;
         public override string Name => Skill.Name;
-        public override string Description => $"减少角色的普通攻击 {实际硬直时间减少:0.##} 硬直时间。" + (Source != null && Skill.Character != Source ? $"来自：[ {Source} ]" + (Skill.Item != null ? $" 的 [ {Skill.Item.Name} ]" : "") : "");
+        public override string Description => $"减少角色的普通攻击 {实际硬直时间减少:0.##} {GameplayEquilibriumConstant.InGameTime}硬直时间。" + (Source != null && Skill.Character != Source ? $"来自：[ {Source} ]" + (Skill.Item != null ? $" 的 [ {Skill.Item.Name} ]" : "") : "");
         public override EffectType EffectType => EffectType.Item;
 
         private readonly double 实际硬直时间减少 = 0;

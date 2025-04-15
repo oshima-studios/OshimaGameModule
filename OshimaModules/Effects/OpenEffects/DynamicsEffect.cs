@@ -142,7 +142,7 @@ namespace Oshima.FunGame.OshimaModules.Effects.OpenEffects
                                 }
                             }
                             RealDynamicsValues["shtr"] = shtr;
-                            Descriptions.Add($"减少角色的所有主动技能 {shtr:0.##} 硬直时间。");
+                            Descriptions.Add($"减少角色的所有主动技能 {shtr:0.##} {GameplayEquilibriumConstant.InGameTime}硬直时间。");
                         }
                         break;
                     case "nahtr":
@@ -157,7 +157,7 @@ namespace Oshima.FunGame.OshimaModules.Effects.OpenEffects
                                 character.NormalAttack.HardnessTime += nahtr;
                             }
                             RealDynamicsValues["nahtr"] = nahtr;
-                            Descriptions.Add($"减少角色的普通攻击 {nahtr:0.##} 硬直时间。");
+                            Descriptions.Add($"减少角色的普通攻击 {nahtr:0.##} {GameplayEquilibriumConstant.InGameTime}硬直时间。");
                         }
                         break;
                     case "exacc":
