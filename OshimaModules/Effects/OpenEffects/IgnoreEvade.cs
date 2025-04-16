@@ -17,7 +17,7 @@ namespace Oshima.FunGame.OshimaModules.Effects.OpenEffects
         {
             if (actor == Skill.Character)
             {
-                WriteLine($"[ {actor} ] 的普通攻击无视了 [ {enemy} ] 的闪避！");
+                if (GamingQueue != null) WriteLine($"[ {actor} ] 的普通攻击无视了 [ {enemy} ] 的闪避！");
                 return false;
             }
             return true;

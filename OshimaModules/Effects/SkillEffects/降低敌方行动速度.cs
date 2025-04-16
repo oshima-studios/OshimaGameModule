@@ -31,7 +31,7 @@ namespace Oshima.FunGame.OshimaModules.Effects.SkillEffects
         {
             foreach (Character target in targets)
             {
-                WriteLine($"[ {target} ] 的行动速度降低了 {SPD:0.##} ！持续时间：{持续时间} {GameplayEquilibriumConstant.InGameTime}！");
+                WriteLine($"[ {target} ] 的行动速度降低了 {-SPD:0.##} ！持续时间：{持续时间} {GameplayEquilibriumConstant.InGameTime}！");
                 ExSPD e = new(Skill, new Dictionary<string, object>()
                 {
                     { "exspd", SPD }

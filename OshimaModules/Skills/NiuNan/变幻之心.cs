@@ -9,8 +9,8 @@ namespace Oshima.FunGame.OshimaModules.Skills
         public override string Name => "变幻之心";
         public override string Description => Effects.Count > 0 ? Effects.First().Description : "";
         public override double EPCost => 100;
-        public override double CD => 30;
-        public override double HardnessTime { get; set; } = 10;
+        public override double CD => 20;
+        public override double HardnessTime { get; set; } = 3;
         public override bool CanSelectSelf => true;
         public override bool CanSelectEnemy => false;
 
@@ -27,7 +27,7 @@ namespace Oshima.FunGame.OshimaModules.Skills
         public override string Description => $"检查 [ 智慧与力量 ] 的模式。在力量模式下，立即回复 {生命值回复 * 100:0.##}% 生命值；智力模式下，下一次魔法伤害提升 {伤害提升 * 100:0.##}%。";
 
         private double 生命值回复 => 0.25 + 0.03 * (Level - 1);
-        private double 伤害提升 => 0.55 + 0.25 * (Level - 1);
+        private double 伤害提升 => 0.6 + 0.4 * (Level - 1);
 
         public override void OnEffectGained(Character character)
         {

@@ -27,7 +27,7 @@ namespace Oshima.FunGame.OshimaModules.Skills
         public override string Name => Skill.Name;
         public override string Description => $"造成伤害时会标记目标，攻击具有标记的敌人将对其造成眩晕 1 回合，并回收标记，额外对该角色造成 {系数 * 100:0.##}% 最大生命值的物理伤害。";
 
-        public double 系数 { get; set; } = 0.16;
+        public double 系数 { get; set; } = 0.12;
         private bool 是否是嵌套伤害 = false;
 
         public override void AfterDamageCalculation(Character character, Character enemy, double damage, bool isNormalAttack, bool isMagicDamage, MagicType magicType, DamageResult damageResult)

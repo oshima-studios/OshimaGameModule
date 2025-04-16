@@ -24,7 +24,7 @@ namespace Oshima.FunGame.OshimaModules.Skills
     {
         public override long Id => Skill.Id;
         public override string Name => Skill.Name;
-        public override string Description => $"每经过 {时间流逝} {GameplayEquilibriumConstant.InGameTime}，提升 {伤害提升 * 100:0.##}% 所有伤害，无上限，但是受到伤害时清零。（下一次提升在：{下一次提升:0.##} {GameplayEquilibriumConstant.InGameTime}后{(累计伤害 > 0 ? $"，当前总提升：{累计伤害 * 100:0.##}%" : "")}）";
+        public override string Description => $"每经过 {时间流逝} {GameplayEquilibriumConstant.InGameTime}，提升 {伤害提升 * 100:0.##}% 所有伤害，无上限。受到伤害时清零；造成伤害后，累计提升减少总量的 30%。（下一次提升在：{下一次提升:0.##} {GameplayEquilibriumConstant.InGameTime}后{(累计伤害 > 0 ? $"，当前总提升：{累计伤害 * 100:0.##}%" : "")}）";
 
         private readonly double 时间流逝 = 7;
         private readonly double 伤害提升 = 0.21;
@@ -43,7 +43,8 @@ namespace Oshima.FunGame.OshimaModules.Skills
                 if (character == Skill.Character)
                 {
                     double 实际伤害提升 = damage * 累计伤害;
-                    if (实际伤害提升 > 0) WriteLine($"[ {character} ] 的伤害提升了 {实际伤害提升:0.##} 点！");
+                    if (实际伤害提升 > 0) WriteLine($"[ {character} ] 的伤害提升了 {累计伤害 * 100:0.##}% [ {实际伤害提升:0.##} ] 点！");
+                    累计伤害 *= 0.7;
                     return 实际伤害提升;
                 }
             }

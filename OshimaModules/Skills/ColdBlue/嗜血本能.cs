@@ -29,8 +29,8 @@ namespace Oshima.FunGame.OshimaModules.Skills
         public override bool Durative => true;
         public override double Duration => 25;
 
-        private static double 吸血 => 0.3;
-        private double 最大生命值伤害 => 0.02 * Level;
+        private static double 吸血 => 0.2;
+        private double 最大生命值伤害 => 0.015 * Level;
 
         public override void OnEffectGained(Character character)
         {

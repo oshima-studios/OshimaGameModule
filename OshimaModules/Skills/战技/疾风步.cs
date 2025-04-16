@@ -40,6 +40,7 @@ namespace Oshima.FunGame.OshimaModules.Skills
             character.UpdateCharacterState();
             character.ExSPD += 100;
             character.ExCritRate += 0.08;
+            GamingQueue?.InterruptCastingAsync(character);
         }
 
         public override void OnEffectLost(Character character)

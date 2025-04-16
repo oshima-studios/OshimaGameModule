@@ -25,16 +25,21 @@ namespace Oshima.FunGame.OshimaModules.Skills
     {
         public override long Id => Skill.Id;
         public override string Name => Skill.Name;
-        public override string Description => $"对处于完全行动不能状态的敌人额外造成 {系数 * 100:0.##}% 力量 [ {伤害加成:0.##} ] 点伤害；造成魔法伤害时使敌人眩晕 1 回合，冷却 {基础冷却时间:0.##} {GameplayEquilibriumConstant.InGameTime}。" +
+        public override string Description => $"对处于完全行动不能、行动受限、战斗不能、技能受限、攻击受限状态的敌人额外造成 {系数 * 100:0.##}% 力量 [ {伤害加成:0.##} ] 点伤害；造成魔法伤害时使敌人眩晕 1 回合，冷却 {基础冷却时间:0.##} {GameplayEquilibriumConstant.InGameTime}。" +
             (冷却时间 > 0 ? $"（正在冷却：剩余 {冷却时间:0.##} {GameplayEquilibriumConstant.InGameTime}）" : "");
         public double 冷却时间 { get; set; } = 0;
         public double 基础冷却时间 { get; set; } = 10;
-        private double 系数 => 1.2 * (1 + 0.4 * (Skill.Level - 1));
+        private static double 系数 => 4;
         private double 伤害加成 => 系数 * Skill.Character?.STR ?? 0;
 
         public override double AlterExpectedDamageBeforeCalculation(Character character, Character enemy, double damage, bool isNormalAttack, bool isMagicDamage, MagicType magicType, Dictionary<Effect, double> totalDamageBonus)
         {
-            if (character == Skill.Character && enemy.CharacterState == CharacterState.NotActionable)
+            if (character == Skill.Character && (
+                enemy.CharacterState == CharacterState.NotActionable ||
+                enemy.CharacterState == CharacterState.ActionRestricted ||
+                enemy.CharacterState == CharacterState.BattleRestricted ||
+                enemy.CharacterState == CharacterState.SkillRestricted ||
+                enemy.CharacterState == CharacterState.AttackRestricted))
             {
                 return 伤害加成;
             }
@@ -43,7 +48,7 @@ namespace Oshima.FunGame.OshimaModules.Skills
 
         public override void AfterDamageCalculation(Character character, Character enemy, double damage, bool isNormalAttack, bool isMagicDamage, MagicType magicType, DamageResult damageResult)
         {
-            if (character == Skill.Character && isMagicDamage && 冷却时间 == 0 && damageResult != DamageResult.Evaded && new Random().NextDouble() < 0.35)
+            if (character == Skill.Character && isMagicDamage && 冷却时间 == 0 && damageResult != DamageResult.Evaded)
             {
                 IEnumerable<Effect> effects = enemy.Effects.Where(e => e is 眩晕 && e.Skill == Skill);
                 if (effects.Any())
