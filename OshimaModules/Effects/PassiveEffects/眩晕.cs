@@ -32,15 +32,13 @@ namespace Oshima.FunGame.OshimaModules.Effects.PassiveEffects
         {
             if (_durative) RemainDuration = Duration;
             else RemainDurationTurn = DurationTurn;
-            character.CharacterEffectStates.Add(this, [CharacterState.NotActionable]);
-            character.UpdateCharacterState();
+            AddEffectStatesToCharacter(character, [CharacterState.NotActionable]);
             InterruptCasting(character, Source);
         }
 
         public override void OnEffectLost(Character character)
         {
-            character.CharacterEffectStates.Remove(this);
-            character.UpdateCharacterState();
+            RemoveEffectStatesFromCharacter(character);
         }
     }
 }

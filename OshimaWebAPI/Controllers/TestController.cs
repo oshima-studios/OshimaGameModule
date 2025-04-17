@@ -1,4 +1,5 @@
 ﻿using System.Globalization;
+using System.Security.Cryptography;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Milimoe.FunGame.Core.Api.Transmittal;
@@ -21,6 +22,35 @@ namespace Oshima.FunGame.WebAPI.Controllers
         public string UseHMACSHA512(string msg, string key)
         {
             return msg.Encrypt(key);
+        }
+        
+        [HttpGet("gethmacsha256")]
+        public string UseHMACSHA256(string msg, string key)
+        {
+            return Encryption.HmacSha256(msg, key);
+        }
+        
+        [HttpGet("getrsa")]
+        public string GetRSA(string msg, string key)
+        {
+            return Encryption.RSADecrypt(msg, key);
+        }
+        
+        [HttpGet("setrsa")]
+        public string SetRSA(string msg, string key)
+        {
+            return Encryption.RSAEncrypt(msg, key);
+        }
+        
+        /// <summary>
+        /// 1: public, 2: private
+        /// </summary>
+        /// <returns></returns>
+        [HttpGet("getxml")]
+        public string[] GetRSAXMLString()
+        {
+            using RSACryptoServiceProvider rsa = new();
+            return [rsa.ToXmlString(false), rsa.ToXmlString(true)];
         }
 
         [HttpGet("getlastlogintime")]

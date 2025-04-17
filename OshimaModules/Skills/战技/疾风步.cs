@@ -36,8 +36,7 @@ namespace Oshima.FunGame.OshimaModules.Skills
         public override void OnEffectGained(Character character)
         {
             Skill.IsInEffect = true;
-            character.CharacterEffectTypes.Add(this, [EffectType.Unselectable]);
-            character.UpdateCharacterState();
+            AddEffectTypeToCharacter(character, [EffectType.Unselectable]);
             character.ExSPD += 100;
             character.ExCritRate += 0.08;
             GamingQueue?.InterruptCastingAsync(character);
@@ -49,8 +48,7 @@ namespace Oshima.FunGame.OshimaModules.Skills
             if (!破隐一击)
             {
                 // 在没有打出破隐一击的情况下，恢复角色状态
-                character.CharacterEffectTypes.Remove(this);
-                character.UpdateCharacterState();
+                RemoveEffectTypesFromCharacter(character);
             }
             character.ExSPD -= 100;
             character.ExCritRate -= 0.08;
@@ -62,8 +60,7 @@ namespace Oshima.FunGame.OshimaModules.Skills
             {
                 首次伤害 = false;
                 破隐一击 = true;
-                character.CharacterEffectTypes.Remove(this);
-                character.UpdateCharacterState();
+                RemoveEffectTypesFromCharacter(character);
                 double d = 伤害加成;
                 WriteLine($"[ {character} ] 触发了疾风步破隐一击，获得了 [ {d:0.##} ] 点伤害加成！");
                 return d;
