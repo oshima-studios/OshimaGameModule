@@ -995,6 +995,10 @@ namespace Oshima.FunGame.OshimaServers.Service
                 { "targets", targets.ToArray() }
             };
             bool result = item.UseItem(args);
+            if (item.EntityState == EntityState.Deleted)
+            {
+                user.Inventory.Items.Remove(item);
+            }
             string key = args.Keys.FirstOrDefault(s => s.Equals("msg", StringComparison.CurrentCultureIgnoreCase)) ?? "";
             if (key != "" && args.TryGetValue(key, out object? value) && value is string str)
             {
@@ -1029,6 +1033,10 @@ namespace Oshima.FunGame.OshimaServers.Service
                         result = false;
                     }
                     bool tempResult = item.UseItem(args);
+                    if (item.EntityState == EntityState.Deleted)
+                    {
+                        user.Inventory.Items.Remove(item);
+                    }
                     string tempStr = "";
                     string key = args.Keys.FirstOrDefault(s => s.Equals("msg", StringComparison.CurrentCultureIgnoreCase)) ?? "";
                     if (key != "" && args.TryGetValue(key, out object? value) && value is string str)
