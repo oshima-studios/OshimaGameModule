@@ -88,7 +88,7 @@ namespace Oshima.FunGame.OshimaServers.Service
                     }
 
                     // 检查是否有角色可以行动
-                    Character? characterToAct = actionQueue.NextCharacter();
+                    Character? characterToAct = await actionQueue.NextCharacterAsync();
 
                     // 处理回合
                     if (characterToAct != null)
@@ -288,7 +288,7 @@ namespace Oshima.FunGame.OshimaServers.Service
                         }
 
                         // 检查是否有角色可以行动
-                        Character? characterToAct = actionQueue.NextCharacter();
+                        Character? characterToAct = await actionQueue.NextCharacterAsync();
 
                         // 处理回合
                         if (characterToAct != null)
