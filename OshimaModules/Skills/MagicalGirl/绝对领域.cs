@@ -8,6 +8,7 @@ namespace Oshima.FunGame.OshimaModules.Skills
         public override long Id => (long)SuperSkillID.绝对领域;
         public override string Name => "绝对领域";
         public override string Description => Effects.Count > 0 ? Effects.First().Description : "";
+        public override string DispelDescription => Effects.Count > 0 ? Effects.First().DispelDescription : "";
         public override double EPCost => Math.Max(100, Character?.EP ?? 100);
         public override double CD => 60;
         public override double HardnessTime { get; set; } = 5;
@@ -24,9 +25,11 @@ namespace Oshima.FunGame.OshimaModules.Skills
     {
         public override long Id => Skill.Id;
         public override string Name => Skill.Name;
-        public override string Description => $"{Duration:0.##} {GameplayEquilibriumConstant.InGameTime}内无法受到任何伤害，且敏捷提升 {系数 * 100:0.##}% [ {敏捷提升:0.##} ]。此技能会消耗至少 100 点能量。";
+        public override string Description => $"{Duration:0.##} {GameplayEquilibriumConstant.InGameTime}内无法受到任何伤害，且敏捷提升 {系数 * 100:0.##}% [ {敏捷提升:0.##} ]。此技能会消耗至少 100 点能量，每额外消耗 10 能量，持续时间提升 1 {GameplayEquilibriumConstant.InGameTime}。";
         public override bool Durative => true;
-        public override double Duration => 13 + 释放时的能量值 * 0.03;
+        public override double Duration => 释放时的能量值 >= 100 ? 13 + (释放时的能量值 - 100) * 0.1 : 14;
+        public override DispelType DispelType => DispelType.DurativeStrong;
+        public override DispelledType DispelledType => DispelledType.CannotBeDispelled;
 
         private double 系数 => 0.2 + 0.015 * (Level - 1);
         private double 敏捷提升 => 系数 * Skill.Character?.BaseAGI ?? 0;
