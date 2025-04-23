@@ -28,7 +28,6 @@ namespace Oshima.FunGame.OshimaModules.Skills
         public override string Description => $"{Duration:0.##} {GameplayEquilibriumConstant.InGameTime}内无法受到任何伤害，且敏捷提升 {系数 * 100:0.##}% [ {敏捷提升:0.##} ]。此技能会消耗至少 100 点能量，每额外消耗 10 能量，持续时间提升 1 {GameplayEquilibriumConstant.InGameTime}。";
         public override bool Durative => true;
         public override double Duration => 释放时的能量值 >= 100 ? 13 + (释放时的能量值 - 100) * 0.1 : 14;
-        public override DispelType DispelType => DispelType.DurativeStrong;
         public override DispelledType DispelledType => DispelledType.CannotBeDispelled;
 
         private double 系数 => 0.2 + 0.015 * (Level - 1);

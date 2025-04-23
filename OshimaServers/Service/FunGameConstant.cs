@@ -139,7 +139,8 @@ namespace Oshima.FunGame.OshimaServers.Service
                     { General.GameplayEquilibriumConstant.InGameMaterial, 210 },
                     { nameof(技能卷轴), 6 },
                     { nameof(智慧之果), 6 },
-                    { nameof(奥术符文), 2 }
+                    { nameof(奥术符文), 2 },
+                    { nameof(混沌之核), 1 }
                 }
             }
         };

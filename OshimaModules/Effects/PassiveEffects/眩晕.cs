@@ -9,6 +9,7 @@ namespace Oshima.FunGame.OshimaModules.Effects.PassiveEffects
         public override string Name => "眩晕";
         public override string Description => $"此角色被眩晕了，不能行动。来自：[ {Source} ] 的 [ {Skill.Name} ]";
         public override EffectType EffectType => EffectType.Stun;
+        public override DispelledType DispelledType => DispelledType.Strong;
         public override Character Source => _sourceCharacter;
         public override bool Durative => _durative;
         public override double Duration => _duration;

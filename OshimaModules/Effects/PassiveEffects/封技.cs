@@ -9,6 +9,7 @@ namespace Oshima.FunGame.OshimaModules.Effects.PassiveEffects
         public override string Name => "封技";
         public override string Description => $"此角色被封技了，不能使用技能（魔法、战技和爆发技）。来自：[ {Source} ] 的 [ {Skill.Name} ]";
         public override EffectType EffectType => EffectType.Silence;
+        public override DispelledType DispelledType => DispelledType.Strong;
         public override Character Source => _sourceCharacter;
         public override bool Durative => _durative;
         public override double Duration => _duration;

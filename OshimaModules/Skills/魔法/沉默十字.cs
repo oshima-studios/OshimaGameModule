@@ -9,6 +9,7 @@ namespace Oshima.FunGame.OshimaModules.Skills
         public override long Id => (long)MagicID.沉默十字;
         public override string Name => "沉默十字";
         public override string Description => Effects.Count > 0 ? string.Join("\r\n", Effects.Select(e => e.Description)) : "";
+        public override string DispelDescription => Effects.Count > 0 ? Effects.First().DispelDescription : "";
         public override double MPCost
         {
             get

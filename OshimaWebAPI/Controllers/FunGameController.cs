@@ -59,9 +59,11 @@ namespace Oshima.FunGame.WebAPI.Controllers
                     builder.AppendLine($"总计承受物理伤害：{stats.TotalTakenPhysicalDamage:0.##} / 场均：{stats.AvgTakenPhysicalDamage:0.##}");
                     builder.AppendLine($"总计承受魔法伤害：{stats.TotalTakenMagicDamage:0.##} / 场均：{stats.AvgTakenMagicDamage:0.##}");
                     builder.AppendLine($"总计承受真实伤害：{stats.TotalTakenRealDamage:0.##} / 场均：{stats.AvgTakenRealDamage:0.##}");
+                    builder.AppendLine($"总计治疗：{stats.TotalHeal:0.##} / 场均：{stats.AvgHeal:0.##}");
                     builder.AppendLine($"总计存活回合数：{stats.LiveRound} / 场均：{stats.AvgLiveRound}");
                     builder.AppendLine($"总计行动回合数：{stats.ActionTurn} / 场均：{stats.AvgActionTurn}");
                     builder.AppendLine($"总计存活时长：{stats.LiveTime:0.##} / 场均：{stats.AvgLiveTime:0.##}");
+                    builder.AppendLine($"总计控制时长：{stats.ControlTime:0.##} / 场均：{stats.AvgControlTime:0.##}");
                     builder.AppendLine($"总计赚取金钱：{stats.TotalEarnedMoney} / 场均：{stats.AvgEarnedMoney}");
                     builder.AppendLine($"每回合伤害：{stats.DamagePerRound:0.##}");
                     builder.AppendLine($"每行动回合伤害：{stats.DamagePerTurn:0.##}");
@@ -114,9 +116,11 @@ namespace Oshima.FunGame.WebAPI.Controllers
                     builder.AppendLine($"总计承受物理伤害：{stats.TotalTakenPhysicalDamage:0.##} / 场均：{stats.AvgTakenPhysicalDamage:0.##}");
                     builder.AppendLine($"总计承受魔法伤害：{stats.TotalTakenMagicDamage:0.##} / 场均：{stats.AvgTakenMagicDamage:0.##}");
                     builder.AppendLine($"总计承受真实伤害：{stats.TotalTakenRealDamage:0.##} / 场均：{stats.AvgTakenRealDamage:0.##}");
+                    builder.AppendLine($"总计治疗：{stats.TotalHeal:0.##} / 场均：{stats.AvgHeal:0.##}");
                     builder.AppendLine($"总计存活回合数：{stats.LiveRound} / 场均：{stats.AvgLiveRound}");
                     builder.AppendLine($"总计行动回合数：{stats.ActionTurn} / 场均：{stats.AvgActionTurn}");
                     builder.AppendLine($"总计存活时长：{stats.LiveTime:0.##} / 场均：{stats.AvgLiveTime:0.##}");
+                    builder.AppendLine($"总计控制时长：{stats.ControlTime:0.##} / 场均：{stats.AvgControlTime:0.##}");
                     builder.AppendLine($"总计赚取金钱：{stats.TotalEarnedMoney} / 场均：{stats.AvgEarnedMoney}");
                     builder.AppendLine($"每回合伤害：{stats.DamagePerRound:0.##}");
                     builder.AppendLine($"每行动回合伤害：{stats.DamagePerTurn:0.##}");
