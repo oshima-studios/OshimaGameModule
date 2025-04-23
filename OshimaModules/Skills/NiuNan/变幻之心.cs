@@ -1,4 +1,5 @@
 ﻿using Milimoe.FunGame.Core.Entity;
+using Milimoe.FunGame.Core.Interface.Entity;
 using Milimoe.FunGame.Core.Library.Constant;
 
 namespace Oshima.FunGame.OshimaModules.Skills
@@ -61,8 +62,7 @@ namespace Oshima.FunGame.OshimaModules.Skills
                 if (caster.PrimaryAttribute == PrimaryAttribute.STR)
                 {
                     double 回复的生命 = 生命值回复 * caster.MaxHP;
-                    caster.HP += 回复的生命;
-                    WriteLine($"[ {caster} ] 回复了 {回复的生命:0.##} 点生命值！");
+                    HealToTarget(caster, caster, 回复的生命);
                 }
                 else if (caster.PrimaryAttribute == PrimaryAttribute.INT)
                 {

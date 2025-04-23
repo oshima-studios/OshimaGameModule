@@ -33,8 +33,7 @@ namespace Oshima.FunGame.OshimaModules.Skills
             if (character == Skill.Character && damageResult != DamageResult.Evaded && character.HP < character.MaxHP)
             {
                 double 实际吸血 = 0.4 * damage;
-                character.HP += 实际吸血;
-                WriteLine($"[ {character} ] 回复了 {实际吸血:0.##} 点生命值！");
+                HealToTarget(character, character, 实际吸血);
             }
         }
 
