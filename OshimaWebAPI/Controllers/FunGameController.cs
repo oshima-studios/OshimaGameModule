@@ -150,7 +150,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
 
         [AllowAnonymous]
         [HttpGet("winraterank")]
-        public string GetWinrateRank([FromQuery] bool? isteam = null)
+        public List<string> GetWinrateRank([FromQuery] bool? isteam = null)
         {
             bool team = isteam ?? false;
             if (team)
@@ -169,7 +169,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
                     builder.AppendLine($"MVP次数：{stats.MVPs}");
                     strings.Add(builder.ToString());
                 }
-                return NetworkUtility.JsonSerialize(strings);
+                return strings;
             }
             else
             {
@@ -189,7 +189,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
                     builder.AppendLine($"MVP次数：{stats.MVPs}");
                     strings.Add(builder.ToString());
                 }
-                return NetworkUtility.JsonSerialize(strings);
+                return strings;
             }
         }
 

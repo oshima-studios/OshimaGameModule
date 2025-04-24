@@ -48,32 +48,33 @@ namespace Oshima.FunGame.WebAPI.Services
             bool result = true;
             try
             {
-                string openid = "";
-                long uid = 0;
-
                 if (e is null)
                 {
                     return false;
                 }
 
                 string isGroup = e.IsGroup ? "群聊" : "私聊";
+                string openid = e.AuthorOpenId;
+                long uid = 0;
 
-                openid = e.AuthorOpenId;
-                if (MemoryCache.TryGetValue(openid, out object? value) && value is long uidTemp)
+                if (openid != "")
                 {
-                    uid = uidTemp;
-                }
-                else
-                {
-                    using SQLHelper? sql = Factory.OpenFactory.GetSQLHelper();
-                    if (sql != null)
+                    if (MemoryCache.TryGetValue(openid, out object? value) && value is long uidTemp)
                     {
-                        sql.ExecuteDataSet(FunGameService.Select_CheckAutoKey(sql, openid));
-                        if (sql.Success)
+                        uid = uidTemp;
+                    }
+                    else
+                    {
+                        using SQLHelper? sql = Factory.OpenFactory.GetSQLHelper();
+                        if (sql != null)
                         {
-                            User user = Factory.GetUser(sql.DataSet);
-                            uid = user.Id;
-                            MemoryCache.Set(openid, uid, TimeSpan.FromMinutes(10));
+                            sql.ExecuteDataSet(FunGameService.Select_CheckAutoKey(sql, openid));
+                            if (sql.Success)
+                            {
+                                User user = Factory.GetUser(sql.DataSet);
+                                uid = user.Id;
+                                MemoryCache.Set(openid, uid, TimeSpan.FromMinutes(10));
+                            }
                         }
                     }
                 }
@@ -345,20 +346,20 @@ namespace Oshima.FunGame.WebAPI.Services
 
                 if (e.Detail.StartsWith("查个人胜率", StringComparison.CurrentCultureIgnoreCase))
                 {
-                    string msg = NetworkUtility.JsonDeserialize<string>(Controller.GetWinrateRank(false)) ?? "";
-                    if (msg.Length > 0)
+                    List<string> msgs = Controller.GetWinrateRank();
+                    if (msgs.Count > 0)
                     {
-                        await SendAsync(e, "查个人胜率", string.Join("\r\n\r\n", msg));
+                        await SendAsync(e, "查个人胜率", string.Join("\r\n\r\n", msgs));
                     }
                     return result;
                 }
 
                 if (e.Detail.StartsWith("查团队胜率", StringComparison.CurrentCultureIgnoreCase))
                 {
-                    string msg = NetworkUtility.JsonDeserialize<string>(Controller.GetWinrateRank(true)) ?? "";
-                    if (msg.Length > 0)
+                    List<string> msgs = Controller.GetWinrateRank(true);
+                    if (msgs.Count > 0)
                     {
-                        await SendAsync(e, "查团队胜率", string.Join("\r\n\r\n", msg));
+                        await SendAsync(e, "查团队胜率", string.Join("\r\n\r\n", msgs));
                     }
                     return result;
                 }
