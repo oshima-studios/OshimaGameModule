@@ -252,7 +252,7 @@
   "炽炎剑": {
     "Id": 11553,
     "Name": "炽炎剑",
-    "Description": "增加角色 60 点攻击力。",
+    "Description": "增加角色 65 点攻击力。",
     "BackgroundStory": "这把剑燃烧着永恒的火焰，传说可以焚尽一切。",
     "ItemType": 1,
     "WeaponType": 1,
@@ -267,7 +267,7 @@
           "Effects": [
             {
               "Id": 8001,
-              "exatk": 60
+              "exatk": 65
             }
           ]
         }
@@ -277,7 +277,7 @@
   "狂风弓": {
     "Id": 11554,
     "Name": "狂风弓",
-    "Description": "增加角色 60 点攻击力。",
+    "Description": "增加角色 65 点攻击力。",
     "BackgroundStory": "每次射击都能引发狂风，传说它由风神亲手打造。",
     "ItemType": 1,
     "WeaponType": 3,
@@ -292,7 +292,7 @@
           "Effects": [
             {
               "Id": 8001,
-              "exatk": 60
+              "exatk": 65
             }
           ]
         }
@@ -302,7 +302,7 @@
   "破晓枪": {
     "Id": 11555,
     "Name": "破晓枪",
-    "Description": "增加角色 60 点攻击力。",
+    "Description": "增加角色 65 点攻击力。",
     "BackgroundStory": "在破晓时分，这把长枪能够穿透任何黑暗。",
     "ItemType": 1,
     "WeaponType": 9,
@@ -317,7 +317,7 @@
           "Effects": [
             {
               "Id": 8001,
-              "exatk": 60
+              "exatk": 65
             }
           ]
         }
@@ -327,7 +327,7 @@
   "幽冥匕首": {
     "Id": 11556,
     "Name": "幽冥匕首",
-    "Description": "增加角色 60 点攻击力。",
+    "Description": "增加角色 65 点攻击力。",
     "BackgroundStory": "这对匕首闪烁着死亡的光芒，专为刺客所用。",
     "ItemType": 1,
     "WeaponType": 6,
@@ -342,7 +342,7 @@
           "Effects": [
             {
               "Id": 8001,
-              "exatk": 60
+              "exatk": 65
             }
           ]
         }
@@ -352,7 +352,7 @@
   "天雷杖": {
     "Id": 11557,
     "Name": "天雷杖",
-    "Description": "增加角色 60 点攻击力。",
+    "Description": "增加角色 65 点攻击力。",
     "BackgroundStory": "召唤天雷的法杖，拥有毁天灭地的力量。",
     "ItemType": 1,
     "WeaponType": 8,
@@ -367,7 +367,7 @@
           "Effects": [
             {
               "Id": 8001,
-              "exatk": 60
+              "exatk": 65
             }
           ]
         }
@@ -377,7 +377,7 @@
   "飞雷剑": {
     "Id": 11558,
     "Name": "飞雷剑",
-    "Description": "增加角色 80 点攻击力。",
+    "Description": "增加角色 95 点攻击力。",
     "BackgroundStory": "此剑驾驭飞雷之力，能引发猛烈的雷击。",
     "ItemType": 1,
     "WeaponType": 1,
@@ -392,7 +392,7 @@
           "Effects": [
             {
               "Id": 8001,
-              "exatk": 80
+              "exatk": 95
             }
           ]
         }
@@ -402,7 +402,7 @@
   "烈焰法杖": {
     "Id": 11559,
     "Name": "烈焰法杖",
-    "Description": "增加角色 80 点攻击力。",
+    "Description": "增加角色 95 点攻击力。",
     "BackgroundStory": "法杖中燃烧着不灭的火焰，象征着无尽的力量。",
     "ItemType": 1,
     "WeaponType": 8,
@@ -417,7 +417,7 @@
           "Effects": [
             {
               "Id": 8001,
-              "exatk": 80
+              "exatk": 95
             }
           ]
         }
@@ -427,7 +427,7 @@
   "龙骨枪": {
     "Id": 11560,
     "Name": "龙骨枪",
-    "Description": "增加角色 80 点攻击力。",
+    "Description": "增加角色 95 点攻击力。",
     "BackgroundStory": "由远古龙骨制成的长柄武器，坚不可摧。",
     "ItemType": 1,
     "WeaponType": 9,
@@ -442,7 +442,7 @@
           "Effects": [
             {
               "Id": 8001,
-              "exatk": 80
+              "exatk": 95
             }
           ]
         }
@@ -452,7 +452,7 @@
   "疾风双刀": {
     "Id": 11561,
     "Name": "疾风双刀",
-    "Description": "增加角色 80 点攻击力。",
+    "Description": "增加角色 95 点攻击力。",
     "BackgroundStory": "双持短刀，速度如疾风般迅捷。",
     "ItemType": 1,
     "WeaponType": 6,
@@ -467,7 +467,7 @@
           "Effects": [
             {
               "Id": 8001,
-              "exatk": 80
+              "exatk": 95
             }
           ]
         }
@@ -477,7 +477,7 @@
   "霜月双刃": {
     "Id": 11562,
     "Name": "霜月双刃",
-    "Description": "增加角色 80 点攻击力。",
+    "Description": "增加角色 95 点攻击力。",
     "BackgroundStory": "刀身细长，略微弯曲，刀柄末端镶嵌着一颗冰晶石。",
     "ItemType": 1,
     "WeaponType": 6,
@@ -492,7 +492,7 @@
           "Effects": [
             {
               "Id": 8001,
-              "exatk": 80
+              "exatk": 95
             }
           ]
         }
@@ -501,7 +501,7 @@
   },
   "影刃": {
     "Id": 11563,
-    "Description": "增加角色 105 点攻击力。",
+    "Description": "增加角色 130 点攻击力。",
     "Name": "影刃",
     "BackgroundStory": "藏于黑暗中的锋利刀刃，只在敌人未察觉时现身。",
     "ItemType": 1,
@@ -517,7 +517,7 @@
           "Effects": [
             {
               "Id": 8001,
-              "exatk": 105
+              "exatk": 130
             }
           ]
         }
@@ -527,7 +527,7 @@
   "寒霜之弓": {
     "Id": 11564,
     "Name": "寒霜之弓",
-    "Description": "增加角色 105 点攻击力。",
+    "Description": "增加角色 130 点攻击力。",
     "BackgroundStory": "弓弦上凝聚寒霜，箭矢能冻结一切。",
     "ItemType": 1,
     "WeaponType": 3,
@@ -542,7 +542,7 @@
           "Effects": [
             {
               "Id": 8001,
-              "exatk": 105
+              "exatk": 130
             }
           ]
         }
@@ -552,7 +552,7 @@
   "雷鸣战斧": {
     "Id": 11565,
     "Name": "雷鸣战斧",
-    "Description": "增加角色 105 点攻击力。",
+    "Description": "增加角色 130 点攻击力。",
     "BackgroundStory": "携带雷电之力的巨斧，一击之下，雷声轰鸣。",
     "ItemType": 1,
     "WeaponType": 2,
@@ -567,7 +567,7 @@
           "Effects": [
             {
               "Id": 8001,
-              "exatk": 105
+              "exatk": 130
             }
           ]
         }
@@ -577,7 +577,7 @@
   "狂怒拳套": {
     "Id": 11566,
     "Name": "狂怒拳套",
-    "Description": "增加角色 105 点攻击力。",
+    "Description": "增加角色 130 点攻击力。",
     "BackgroundStory": "拳套内的力量能激发佩戴者的狂怒，造成大量伤害。",
     "ItemType": 1,
     "WeaponType": 10,
@@ -592,7 +592,7 @@
           "Effects": [
             {
               "Id": 8001,
-              "exatk": 105
+              "exatk": 130
             }
           ]
         }
@@ -602,7 +602,7 @@
   "星辰法器": {
     "Id": 11567,
     "Name": "星辰法器",
-    "Description": "增加角色 105 点攻击力。",
+    "Description": "增加角色 130 点攻击力。",
     "BackgroundStory": "法器中蕴含着星辰之力，每一次攻击都如天外陨石降临。",
     "ItemType": 1,
     "WeaponType": 7,
@@ -617,7 +617,7 @@
           "Effects": [
             {
               "Id": 8001,
-              "exatk": 105
+              "exatk": 130
             }
           ]
         }
@@ -731,7 +731,7 @@
   "金箍棒": {
     "Id": 11572,
     "Name": "金箍棒",
-    "Description": "增加角色 85 点攻击力。克敌机先：普通攻击有 80% 概率无视闪避。",
+    "Description": "增加角色 85 点攻击力。克敌机先：普通攻击有 60% 概率无视闪避。",
     "BackgroundStory": "天河定底神珍棒，棒名如意世间高。",
     "ItemType": 1,
     "WeaponType": 9,
@@ -750,7 +750,7 @@
             },
             {
               "Id": 8033,
-              "p": 0.8
+              "p": 0.6
             }
           ]
         }
