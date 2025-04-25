@@ -9,7 +9,7 @@ namespace Oshima.FunGame.OshimaModules.Effects.ItemEffects
         public override long Id => (long)EffectID.RecoverHP2;
         public override string Name => "立即回复生命值";
         public override string Description => $"立即回复角色 {回复比例 * 100:0.##}% [ {实际回复:0.##} ] 点生命值（不可用于复活）。" + (Source != null && Skill.Character != Source ? $"来自：[ {Source} ]" + (Skill.Item != null ? $" 的 [ {Skill.Item.Name} ]" : "") : "");
-        public override EffectType EffectType => EffectType.Item;
+        public override EffectType EffectType { get; set; } = EffectType.Item;
 
         private double 实际回复 => 回复比例 * (Skill.Character?.MaxHP ?? 0);
         private readonly double 回复比例 = 0;

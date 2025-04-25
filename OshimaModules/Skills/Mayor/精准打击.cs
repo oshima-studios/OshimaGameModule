@@ -8,6 +8,7 @@ namespace Oshima.FunGame.OshimaModules.Skills
         public override long Id => (long)SuperSkillID.精准打击;
         public override string Name => "精准打击";
         public override string Description => Effects.Count > 0 ? Effects.First().Description : "";
+        public override string DispelDescription => Effects.Count > 0 ? Effects.First().DispelDescription : "";
         public override double EPCost => 100;
         public override double CD => 40 - 1 * (Level - 1);
         public override double HardnessTime { get; set; } = 8;
@@ -27,6 +28,7 @@ namespace Oshima.FunGame.OshimaModules.Skills
         public override string Description => $"30 {GameplayEquilibriumConstant.InGameTime}内暴击率提升 {暴击率提升 * 100:0.##}%，暴击伤害提升 {暴击伤害提升 * 100:0.##}%，物理穿透提升 {物理穿透提升 * 100:0.##}%。";
         public override bool Durative => true;
         public override double Duration => 30;
+        public override DispelledType DispelledType => DispelledType.CannotBeDispelled;
 
         private double 暴击率提升 => 0.2 + 0.03 * (Level - 1);
         private double 暴击伤害提升 => 0.8 + 0.04 * (Level - 1);
@@ -64,6 +66,7 @@ namespace Oshima.FunGame.OshimaModules.Skills
                 caster.Effects.Add(this);
                 OnEffectGained(caster);
             }
+            GamingQueue?.LastRound.Effects.TryAdd(caster, [EffectType.CritBoost, EffectType.PenetrationBoost]);
         }
     }
 }

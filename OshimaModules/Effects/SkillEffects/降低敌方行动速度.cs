@@ -1,4 +1,5 @@
 ﻿using Milimoe.FunGame.Core.Entity;
+using Milimoe.FunGame.Core.Library.Constant;
 using Oshima.FunGame.OshimaModules.Effects.OpenEffects;
 
 namespace Oshima.FunGame.OshimaModules.Effects.SkillEffects
@@ -43,7 +44,8 @@ namespace Oshima.FunGame.OshimaModules.Effects.SkillEffects
                 };
                 target.Effects.Add(e);
                 e.OnEffectGained(target);
-                GamingQueue?.LastRound.Effects.TryAdd(target, e.EffectType);
+                e.EffectType = EffectType.Slow;
+                GamingQueue?.LastRound.Effects.TryAdd(target, [e.EffectType]);
             }
         }
     }

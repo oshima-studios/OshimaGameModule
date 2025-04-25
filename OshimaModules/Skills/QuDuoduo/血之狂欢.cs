@@ -8,6 +8,7 @@ namespace Oshima.FunGame.OshimaModules.Skills
         public override long Id => (long)SuperSkillID.血之狂欢;
         public override string Name => "血之狂欢";
         public override string Description => Effects.Count > 0 ? Effects.First().Description : "";
+        public override string DispelDescription => Effects.Count > 0 ? Effects.First().DispelDescription : "";
         public override double EPCost => 100;
         public override double CD => 45;
         public override double HardnessTime { get; set; } = 7;
@@ -27,6 +28,7 @@ namespace Oshima.FunGame.OshimaModules.Skills
         public override string Description => $"获得 40% 吸血，持续 {Duration:0.##} {GameplayEquilibriumConstant.InGameTime}。";
         public override bool Durative => true;
         public override double Duration => 30;
+        public override DispelledType DispelledType => DispelledType.CannotBeDispelled;
 
         public override void AfterDamageCalculation(Character character, Character enemy, double damage, bool isNormalAttack, bool isMagicDamage, MagicType magicType, DamageResult damageResult)
         {
@@ -45,6 +47,7 @@ namespace Oshima.FunGame.OshimaModules.Skills
                 caster.Effects.Add(this);
                 OnEffectGained(caster);
             }
+            GamingQueue?.LastRound.Effects.TryAdd(caster, [EffectType.Lifesteal]);
         }
     }
 }

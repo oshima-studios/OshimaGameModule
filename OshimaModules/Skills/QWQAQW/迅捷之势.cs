@@ -8,6 +8,7 @@ namespace Oshima.FunGame.OshimaModules.Skills
         public override long Id => (long)SuperSkillID.迅捷之势;
         public override string Name => "迅捷之势";
         public override string Description => Effects.Count > 0 ? Effects.First().Description : "";
+        public override string DispelDescription => Effects.Count > 0 ? Effects.First().DispelDescription : "";
         public override double EPCost => 100;
         public override double CD => 60 - 2 * (Level - 1);
         public override double HardnessTime { get; set; } = 15;
@@ -27,6 +28,7 @@ namespace Oshima.FunGame.OshimaModules.Skills
         public override string Description => $"{Duration:0.##} {GameplayEquilibriumConstant.InGameTime}内，提升自身 25% 物理伤害减免和魔法抗性，普通攻击转为魔法伤害，且硬直时间减少 30%，并基于 {智力系数 * 100:0.##}% 智力 [ {智力加成:0.##} ] 强化普通攻击伤害。";
         public override bool Durative => true;
         public override double Duration => 40;
+        public override DispelledType DispelledType => DispelledType.CannotBeDispelled;
 
         private double 智力系数 => 1.4 + 0.4 * (Level - 1);
         private double 智力加成 => 智力系数 * Skill.Character?.INT ?? 0;
@@ -77,6 +79,7 @@ namespace Oshima.FunGame.OshimaModules.Skills
                 caster.Effects.Add(this);
                 OnEffectGained(caster);
             }
+            GamingQueue?.LastRound.Effects.TryAdd(caster, [EffectType.DamageBoost, EffectType.Haste, EffectType.DefenseBoost]);
         }
     }
 }

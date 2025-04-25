@@ -8,6 +8,7 @@ namespace Oshima.FunGame.OshimaModules.Skills
         public override long Id => (long)SuperSkillID.力量爆发;
         public override string Name => "力量爆发";
         public override string Description => Effects.Count > 0 ? Effects.First().Description : "";
+        public override string DispelDescription => Effects.Count > 0 ? Effects.First().DispelDescription : "";
         public override double EPCost => 100;
         public override double CD => 55;
         public override double HardnessTime { get; set; } = 0;
@@ -27,6 +28,7 @@ namespace Oshima.FunGame.OshimaModules.Skills
         public override string Description => $"获得 135% 力量 [ {攻击力加成:0.##} ] 的攻击力加成，但每次攻击都会损失 9% 当前生命值 [ {当前生命值:0.##} ]，持续 {Duration:0.##} {GameplayEquilibriumConstant.InGameTime}。";
         public override bool Durative => true;
         public override double Duration => 10 + 1 * (Level - 1);
+        public override DispelledType DispelledType => DispelledType.CannotBeDispelled;
 
         private double 攻击力加成 => Skill.Character?.STR * 1.35 ?? 0;
         private double 当前生命值 => Skill.Character?.HP * 0.09 ?? 0;
@@ -64,6 +66,7 @@ namespace Oshima.FunGame.OshimaModules.Skills
                 caster.Effects.Add(this);
                 OnEffectGained(caster);
             }
+            GamingQueue?.LastRound.Effects.TryAdd(caster, [EffectType.DamageBoost]);
         }
     }
 }

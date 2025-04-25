@@ -32,10 +32,10 @@ namespace Oshima.FunGame.OshimaModules.Effects.SkillEffects
             foreach (Character enemy in targets)
             {
                 WriteLine($"[ {caster} ] 眩晕了 [ {enemy} ] ！持续时间：{眩晕时间}！");
-                眩晕 e = new(Skill, caster, false, 0, 1);
+                眩晕 e = new(Skill, caster, _durative, _duration, _durationTurn);
                 enemy.Effects.Add(e);
                 e.OnEffectGained(enemy);
-                GamingQueue?.LastRound.Effects.TryAdd(enemy, e.EffectType);
+                GamingQueue?.LastRound.Effects.TryAdd(enemy, [e.EffectType]);
             }
         }
     }

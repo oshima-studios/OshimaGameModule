@@ -27,7 +27,7 @@ namespace Oshima.FunGame.OshimaModules.Skills
         public override long Id => Skill.Id;
         public override string Name => Skill.Name;
         public override string Description => $"造成伤害时会标记目标，攻击具有标记的敌人将对其造成眩晕 1 回合，并回收标记，额外对该角色造成 {系数 * 100:0.##}% 最大生命值的物理伤害。";
-        public override string DispelDescription => "可驱散性：眩晕需强驱散";
+        public override string DispelDescription => "被驱散性：眩晕需强驱散，标记可弱驱散";
 
         public double 系数 { get; set; } = 0.12;
         private bool 是否是嵌套伤害 = false;

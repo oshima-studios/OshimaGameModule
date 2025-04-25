@@ -27,6 +27,7 @@ namespace Oshima.FunGame.OshimaModules.Skills
         public override string Name => Skill.Name;
         public override string Description => $"进入不可选中状态，获得 100 行动速度，提高 8% 暴击率，持续 {Duration:0.##} {GameplayEquilibriumConstant.InGameTime}。破隐一击：在持续时间内，首次造成伤害会附加 {系数 * 100:0.##}% 敏捷 [ {伤害加成:0.##} ] 的强化伤害，并解除不可选中状态。";
         public override string DispelDescription => "不可选中状态生效期间，此技能不可驱散，否则可弱驱散";
+        public override EffectType EffectType => EffectType.Unselectable;
         public override bool Durative => true;
         public override double Duration => 12 + (1 * (Level - 1));
 
@@ -37,8 +38,9 @@ namespace Oshima.FunGame.OshimaModules.Skills
 
         public override void OnEffectGained(Character character)
         {
+            DispelledType = DispelledType.CannotBeDispelled;
             Skill.IsInEffect = true;
-            AddEffectTypeToCharacter(character, [EffectType.Unselectable]);
+            AddEffectTypeToCharacter(character, [EffectType]);
             character.ExSPD += 100;
             character.ExCritRate += 0.08;
             GamingQueue?.InterruptCastingAsync(character);
@@ -51,6 +53,7 @@ namespace Oshima.FunGame.OshimaModules.Skills
             {
                 // 在没有打出破隐一击的情况下，恢复角色状态
                 RemoveEffectTypesFromCharacter(character);
+                DispelledType = DispelledType.Weak;
             }
             character.ExSPD -= 100;
             character.ExCritRate -= 0.08;
@@ -65,6 +68,7 @@ namespace Oshima.FunGame.OshimaModules.Skills
                 RemoveEffectTypesFromCharacter(character);
                 double d = 伤害加成;
                 WriteLine($"[ {character} ] 触发了疾风步破隐一击，获得了 [ {d:0.##} ] 点伤害加成！");
+                DispelledType = DispelledType.Weak;
                 return d;
             }
             return 0;
@@ -74,7 +78,7 @@ namespace Oshima.FunGame.OshimaModules.Skills
         {
             if (!caster.Effects.Contains(this))
             {
-                GamingQueue?.LastRound.Effects.Add(caster, EffectType.Unselectable);
+                GamingQueue?.LastRound.Effects.Add(caster, [EffectType]);
                 首次伤害 = true;
                 破隐一击 = false;
                 RemainDuration = Duration;

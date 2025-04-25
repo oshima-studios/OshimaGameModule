@@ -8,7 +8,7 @@ namespace Oshima.FunGame.OshimaModules.Effects.OpenEffects
         public override long Id => (long)EffectID.ExCritDMG;
         public override string Name => "暴击伤害加成";
         public override string Description => $"{(实际加成 >= 0 ? "增加" : "减少")}角色 {Math.Abs(实际加成) * 100:0.##}% 暴击伤害。" + (Source != null && Skill.Character != Source ? $"来自：[ {Source} ]" + (Skill.Item != null ? $" 的 [ {Skill.Item.Name} ]" : "") : "");
-        public override EffectType EffectType => EffectType.Item;
+        public override EffectType EffectType { get; set; } = EffectType.Item;
         public double Value => 实际加成;
 
         private readonly double 实际加成 = 0;

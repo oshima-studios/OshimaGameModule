@@ -28,7 +28,7 @@ namespace Oshima.FunGame.OshimaModules.Skills
         public override string Name => Skill.Name;
         public override string Description => $"对处于完全行动不能、行动受限、战斗不能、技能受限、攻击受限状态的敌人额外造成 {系数 * 100:0.##}% 力量 [ {伤害加成:0.##} ] 点伤害；造成魔法伤害时使敌人眩晕 1 回合，冷却 {基础冷却时间:0.##} {GameplayEquilibriumConstant.InGameTime}。" +
             (冷却时间 > 0 ? $"（正在冷却：剩余 {冷却时间:0.##} {GameplayEquilibriumConstant.InGameTime}）" : "");
-        public override string DispelDescription => "可驱散性：眩晕需强驱散";
+        public override string DispelDescription => "被驱散性：眩晕需强驱散";
         public double 冷却时间 { get; set; } = 0;
         public double 基础冷却时间 { get; set; } = 10;
         private static double 系数 => 4;

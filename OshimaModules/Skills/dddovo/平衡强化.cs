@@ -8,6 +8,7 @@ namespace Oshima.FunGame.OshimaModules.Skills
         public override long Id => (long)SuperSkillID.平衡强化;
         public override string Name => "平衡强化";
         public override string Description => Effects.Count > 0 ? Effects.First().Description : "";
+        public override string DispelDescription => Effects.Count > 0 ? Effects.First().DispelDescription : "";
         public override double EPCost => 100;
         public override double CD => 55 - (1 * (Level - 1));
         public override double HardnessTime { get; set; } = 12;
@@ -27,6 +28,7 @@ namespace Oshima.FunGame.OshimaModules.Skills
         public override string Description => $"敏捷提高 20%，然后将目前的力量补充到与敏捷持平，持续 {Duration:0.##} {GameplayEquilibriumConstant.InGameTime}。";
         public override bool Durative => true;
         public override double Duration => 30;
+        public override DispelledType DispelledType => DispelledType.CannotBeDispelled;
 
         private double 本次提升的敏捷 = 0;
         private double 本次提升的力量 = 0;
@@ -66,6 +68,7 @@ namespace Oshima.FunGame.OshimaModules.Skills
                 caster.Effects.Add(this);
                 OnEffectGained(caster);
             }
+            GamingQueue?.LastRound.Effects.TryAdd(caster, [EffectType.DamageBoost, EffectType.Lifesteal]);
         }
     }
 }

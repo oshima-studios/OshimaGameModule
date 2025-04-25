@@ -9,6 +9,7 @@ namespace Oshima.FunGame.OshimaModules.Effects.PassiveEffects
         public override string Name => "累积之压标记";
         public override string Description => $"此角色持有累积之压标记。来自：[ {Source} ]";
         public override EffectType EffectType => EffectType.Mark;
+        public override bool DurativeWithoutDuration => true;
         public override Character Source => _sourceCharacter;
 
         private readonly Character _sourceCharacter;

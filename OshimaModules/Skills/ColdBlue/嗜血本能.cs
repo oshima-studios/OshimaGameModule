@@ -1,6 +1,5 @@
 ﻿using Milimoe.FunGame.Core.Entity;
 using Milimoe.FunGame.Core.Library.Constant;
-using Oshima.FunGame.OshimaModules.Effects.PassiveEffects;
 
 namespace Oshima.FunGame.OshimaModules.Skills
 {
@@ -9,6 +8,7 @@ namespace Oshima.FunGame.OshimaModules.Skills
         public override long Id => (long)SuperSkillID.嗜血本能;
         public override string Name => "嗜血本能";
         public override string Description => Effects.Count > 0 ? Effects.First().Description : "";
+        public override string DispelDescription => Effects.Count > 0 ? Effects.First().DispelDescription : "";
         public override double EPCost => 100;
         public override double CD => 45;
         public override double HardnessTime { get; set; } = 5;
@@ -28,12 +28,14 @@ namespace Oshima.FunGame.OshimaModules.Skills
         public override string Description => $"{Duration} {GameplayEquilibriumConstant.InGameTime}内，攻击拥有标记的角色将不会回收标记，增强 {最大生命值伤害 * 100:0.##}% 最大生命值伤害，并获得 {吸血 * 100:0.##}% 吸血。";
         public override bool Durative => true;
         public override double Duration => 25;
+        public override DispelledType DispelledType => DispelledType.CannotBeDispelled;
 
         private static double 吸血 => 0.2;
         private double 最大生命值伤害 => 0.015 * Level;
 
         public override void OnEffectGained(Character character)
         {
+            character.Lifesteal += 吸血;
             if (character.Effects.Where(e => e is 累积之压特效).FirstOrDefault() is 累积之压特效 e)
             {
                 e.系数 += 最大生命值伤害;
@@ -42,18 +44,10 @@ namespace Oshima.FunGame.OshimaModules.Skills
 
         public override void OnEffectLost(Character character)
         {
+            character.Lifesteal -= 吸血;
             if (character.Effects.Where(e => e is 累积之压特效).FirstOrDefault() is 累积之压特效 e)
             {
                 e.系数 -= 最大生命值伤害;
-            }
-        }
-
-        public override void AfterDamageCalculation(Character character, Character enemy, double damage, bool isNormalAttack, bool isMagicDamage, MagicType magicType, DamageResult damageResult)
-        {
-            if (character == Skill.Character && damageResult != DamageResult.Evaded && character.HP < character.MaxHP)
-            {
-                double 实际吸血 = 吸血 * damage;
-                HealToTarget(character, character, 实际吸血);
             }
         }
 
@@ -65,6 +59,7 @@ namespace Oshima.FunGame.OshimaModules.Skills
                 caster.Effects.Add(this);
                 OnEffectGained(caster);
             }
+            GamingQueue?.LastRound.Effects.TryAdd(caster, [EffectType.DamageBoost, EffectType.Lifesteal]);
         }
     }
 }

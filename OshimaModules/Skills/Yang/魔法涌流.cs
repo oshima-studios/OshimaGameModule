@@ -8,6 +8,7 @@ namespace Oshima.FunGame.OshimaModules.Skills
         public override long Id => (long)SuperSkillID.魔法涌流;
         public override string Name => "魔法涌流";
         public override string Description => Effects.Count > 0 ? Effects.First().Description : "";
+        public override string DispelDescription => Effects.Count > 0 ? Effects.First().DispelDescription : "";
         public override double EPCost => 100;
         public override double CD => 35;
         public override double HardnessTime { get; set; } = 3;
@@ -27,6 +28,7 @@ namespace Oshima.FunGame.OshimaModules.Skills
         public override string Description => $"{Duration:0.##} {GameplayEquilibriumConstant.InGameTime}内，增加自身所有伤害的 {减伤比例 * 100:0.##}% 伤害减免；【魔法震荡】的冷却时间降低至 5 {GameplayEquilibriumConstant.InGameTime}，并将普通攻击转为魔法伤害，允许普通攻击时选择至多 3 个目标。";
         public override bool Durative => true;
         public override double Duration => 30;
+        public override DispelledType DispelledType => DispelledType.CannotBeDispelled;
 
         private double 减伤比例 => 0.15 + 0.04 * (Level - 1);
         private double 实际比例 = 0;
@@ -71,6 +73,7 @@ namespace Oshima.FunGame.OshimaModules.Skills
                 caster.Effects.Add(this);
                 OnEffectGained(caster);
             }
+            GamingQueue?.LastRound.Effects.TryAdd(caster, [EffectType.DefenseBoost]);
         }
     }
 }

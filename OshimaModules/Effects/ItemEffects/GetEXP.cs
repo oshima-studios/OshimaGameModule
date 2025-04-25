@@ -9,7 +9,7 @@ namespace Oshima.FunGame.OshimaModules.Effects.ItemEffects
         public override long Id => (long)EffectID.GetEXP;
         public override string Name => "立即获得经验值";
         public override string Description => $"角色立即获得 {实际获得:0.##} 点经验值。" + (Source != null && Skill.Character != Source ? $"来自：[ {Source} ]" + (Skill.Item != null ? $" 的 [ {Skill.Item.Name} ]" : "") : "");
-        public override EffectType EffectType => EffectType.Item;
+        public override EffectType EffectType { get; set; } = EffectType.Item;
 
         private readonly double 实际获得 = 0;
 
