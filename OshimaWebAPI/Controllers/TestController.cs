@@ -23,25 +23,25 @@ namespace Oshima.FunGame.WebAPI.Controllers
         {
             return msg.Encrypt(key);
         }
-        
+
         [HttpGet("gethmacsha256")]
         public string UseHMACSHA256(string msg, string key)
         {
             return Encryption.HmacSha256(msg, key);
         }
-        
+
         [HttpGet("getrsa")]
         public string GetRSA(string msg, string key)
         {
             return Encryption.RSADecrypt(msg, key);
         }
-        
+
         [HttpGet("setrsa")]
         public string SetRSA(string msg, string key)
         {
             return Encryption.RSAEncrypt(msg, key);
         }
-        
+
         /// <summary>
         /// 1: public, 2: private
         /// </summary>
