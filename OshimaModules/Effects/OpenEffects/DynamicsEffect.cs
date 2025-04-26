@@ -11,7 +11,6 @@ namespace Oshima.FunGame.OshimaModules.Effects.OpenEffects
         public override long Id => (long)EffectID.DynamicsEffect;
         public override string Name { get; set; } = "动态扩展特效";
         public override string Description => string.Join("", Descriptions) + (Source != null && Skill.Character != Source ? $"来自：[ {Source} ]" + (Skill.Item != null ? $" 的 [ {Skill.Item.Name} ]" : "") : "");
-        public override EffectType EffectType { get; set; } = EffectType.Item;
         public HashSet<string> Descriptions { get; } = [];
         public Dictionary<string, double> RealDynamicsValues { get; } = [];
 
@@ -495,6 +494,7 @@ namespace Oshima.FunGame.OshimaModules.Effects.OpenEffects
 
         public DynamicsEffect(Skill skill, Dictionary<string, object> args, Character? source = null) : base(skill, args)
         {
+            EffectType = EffectType.Item;
             GamingQueue = skill.GamingQueue;
             Source = source;
         }

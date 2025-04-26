@@ -8,7 +8,6 @@ namespace Oshima.FunGame.OshimaModules.Effects.OpenEffects
         public override long Id => (long)EffectID.SkillHardTimeReduce2;
         public override string Name => Skill.Name;
         public override string Description => $"减少角色的所有主动技能 {减少比例 * 100:0.##}% 硬直时间。" + (Source != null && Skill.Character != Source ? $"来自：[ {Source} ]" + (Skill.Item != null ? $" 的 [ {Skill.Item.Name} ]" : "") : "");
-        public override EffectType EffectType { get; set; } = EffectType.Item;
 
         private readonly double 减少比例 = 0;
 
@@ -40,6 +39,7 @@ namespace Oshima.FunGame.OshimaModules.Effects.OpenEffects
 
         public SkillHardTimeReduce2(Skill skill, Dictionary<string, object> args, Character? source = null) : base(skill, args)
         {
+            EffectType = EffectType.Item;
             GamingQueue = skill.GamingQueue;
             Source = source;
             if (Values.Count > 0)
