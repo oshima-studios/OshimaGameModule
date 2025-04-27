@@ -5151,6 +5151,85 @@ namespace Oshima.FunGame.WebAPI.Controllers
             }
         }
 
+        [HttpPost("springoflife")]
+        public string SpringOfLife([FromQuery] long? uid = null)
+        {
+            long userid = uid ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
+
+            PluginConfig pc = new("saved", userid.ToString());
+            pc.LoadConfig();
+
+            string msg = "";
+            if (pc.Count > 0)
+            {
+                User user = FunGameService.GetUser(pc);
+
+                int dead = user.Inventory.Characters.Count(c => c.HP <= 0);
+                int halfdown = user.Inventory.Characters.Count(c => (c.HP / c.MaxHP) < 0.5 && c.HP > 0);
+                int halfup = user.Inventory.Characters.Count(c => (c.HP / c.MaxHP) >= 0.5);
+
+                double deadNeed = 10000 * dead;
+                double halfdownNeed = 6000 * halfdown;
+                double halfupNeed = 2000 * halfup;
+                double total = deadNeed + halfdownNeed + halfupNeed;
+
+                if (user.Inventory.Credits >= total)
+                {
+                    user.Inventory.Credits -= total;
+                    foreach (Character character in user.Inventory.Characters)
+                    {
+                        character.Recovery();
+                    }
+
+                    msg = $"感谢使用生命之泉服务！你已消费：{total} {General.GameplayEquilibriumConstant.InGameCurrency}。";
+
+                    user.LastTime = DateTime.Now;
+                    pc.Add("user", user);
+                    pc.SaveConfig();
+                }
+                else
+                {
+                    msg = $"你的 {General.GameplayEquilibriumConstant.InGameCurrency} 不足 {total} 呢！无法饮用生命之泉！";
+                }
+
+                msg += $"（{dead} 个死亡角色，{halfdown} 个 50% 以下的角色，{halfup} 个 50% 以上的角色）\r\n" +
+                    $"收费标准：\r\n10000 {General.GameplayEquilibriumConstant.InGameCurrency} / 死亡角色\r\n" +
+                    $"6000 {General.GameplayEquilibriumConstant.InGameCurrency} / 50% 生命值以下的角色\r\n" +
+                    $"2000 {General.GameplayEquilibriumConstant.InGameCurrency} / 50% 生命值以上的角色";
+
+                return msg;
+            }
+            else
+            {
+                return noSaved;
+            }
+        }
+
+        [HttpPost("template")]
+        public string Template([FromQuery] long? uid = null)
+        {
+            long userid = uid ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
+
+            PluginConfig pc = new("saved", userid.ToString());
+            pc.LoadConfig();
+
+            string msg = "";
+            if (pc.Count > 0)
+            {
+                User user = FunGameService.GetUser(pc);
+
+                user.LastTime = DateTime.Now;
+                pc.Add("user", user);
+                pc.SaveConfig();
+
+                return msg;
+            }
+            else
+            {
+                return noSaved;
+            }
+        }
+
         [HttpGet("reload")]
         public string Relaod([FromQuery] long? master = null)
         {

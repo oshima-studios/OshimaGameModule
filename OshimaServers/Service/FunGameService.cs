@@ -317,6 +317,7 @@ namespace Oshima.FunGame.OshimaServers.Service
                         }
                     }
                     newSkill.Level = skill.Level;
+                    newSkill.Item = item;
                     item.Skills.Passives.Add(newSkill);
                 }
                 List<string> strings = [];
@@ -428,8 +429,8 @@ namespace Oshima.FunGame.OshimaServers.Service
         {
             User user = pc.Get<User>("user") ?? Factory.GetUser();
 
-            List<Character> characters = new(user.Inventory.Characters);
-            List<Item> items = new(user.Inventory.Items);
+            List<Character> characters = [.. user.Inventory.Characters];
+            List<Item> items = [.. user.Inventory.Items];
             Character mc = user.Inventory.MainCharacter;
             List<long> squad = [.. user.Inventory.Squad];
             Dictionary<long, DateTime> training = user.Inventory.Training.ToDictionary(kv => kv.Key, kv => kv.Value);
@@ -468,12 +469,16 @@ namespace Oshima.FunGame.OshimaServers.Service
                 // 自动回血
                 DateTime now = DateTime.Now;
                 int seconds = (int)(now - user.LastTime).TotalSeconds;
-                double recoveryHP = realCharacter.HR * seconds;
-                double recoveryMP = realCharacter.MR * seconds;
-                double recoveryEP = realCharacter.ER * seconds;
-                realCharacter.HP += recoveryHP;
-                realCharacter.MP += recoveryMP;
-                realCharacter.EP += recoveryEP;
+                // 死了不回，要去治疗
+                if (realCharacter.HP > 0)
+                {
+                    double recoveryHP = realCharacter.HR * seconds;
+                    double recoveryMP = realCharacter.MR * seconds;
+                    double recoveryEP = realCharacter.ER * seconds;
+                    realCharacter.HP += recoveryHP;
+                    realCharacter.MP += recoveryMP;
+                    realCharacter.EP += recoveryEP;
+                }
                 // 减少所有技能的冷却时间
                 foreach (Skill skill in realCharacter.Skills)
                 {
@@ -485,7 +490,7 @@ namespace Oshima.FunGame.OshimaServers.Service
                     }
                 }
                 // 移除到时间的特效
-                List<Effect> effects = realCharacter.Effects.Where(e => e.Level > 0).ToList();
+                List<Effect> effects = [.. realCharacter.Effects];
                 foreach (Effect effect in effects)
                 {
                     if (effect.Level == 0)
@@ -541,7 +546,7 @@ namespace Oshima.FunGame.OshimaServers.Service
 
         public static IEnumerable<T> GetPage<T>(IEnumerable<T> list, int showPage, int pageSize)
         {
-            return list.Skip((showPage - 1) * pageSize).Take(pageSize).ToList();
+            return [.. list.Skip((showPage - 1) * pageSize).Take(pageSize)];
         }
 
         public static string GetDrawCardResult(int reduce, User user, bool isMulti = false, int multiCount = 1)
@@ -568,7 +573,7 @@ namespace Oshima.FunGame.OshimaServers.Service
             {
                 case 1:
                     if ((int)type > (int)QualityType.Orange) type = QualityType.Orange;
-                    Item[] 武器 = FunGameConstant.Equipment.Where(i => i.Id.ToString().StartsWith("11") && i.QualityType == type).ToArray();
+                    Item[] 武器 = [.. FunGameConstant.Equipment.Where(i => i.Id.ToString().StartsWith("11") && i.QualityType == type)];
                     Item a = 武器[Random.Shared.Next(武器.Length)].Copy();
                     SetSellAndTradeTime(a);
                     user.Inventory.Items.Add(a);
@@ -577,7 +582,7 @@ namespace Oshima.FunGame.OshimaServers.Service
 
                 case 2:
                     if ((int)type > (int)QualityType.Green) type = QualityType.Green;
-                    Item[] 防具 = FunGameConstant.Equipment.Where(i => i.Id.ToString().StartsWith("12") && i.QualityType == type).ToArray();
+                    Item[] 防具 = [.. FunGameConstant.Equipment.Where(i => i.Id.ToString().StartsWith("12") && i.QualityType == type)];
                     Item b = 防具[Random.Shared.Next(防具.Length)].Copy();
                     SetSellAndTradeTime(b);
                     user.Inventory.Items.Add(b);
@@ -586,7 +591,7 @@ namespace Oshima.FunGame.OshimaServers.Service
 
                 case 3:
                     if ((int)type > (int)QualityType.Green) type = QualityType.Green;
-                    Item[] 鞋子 = FunGameConstant.Equipment.Where(i => i.Id.ToString().StartsWith("13") && i.QualityType == type).ToArray();
+                    Item[] 鞋子 = [.. FunGameConstant.Equipment.Where(i => i.Id.ToString().StartsWith("13") && i.QualityType == type)];
                     Item c = 鞋子[Random.Shared.Next(鞋子.Length)].Copy();
                     SetSellAndTradeTime(c);
                     user.Inventory.Items.Add(c);
@@ -595,7 +600,7 @@ namespace Oshima.FunGame.OshimaServers.Service
 
                 case 4:
                     if ((int)type > (int)QualityType.Purple) type = QualityType.Purple;
-                    Item[] 饰品 = FunGameConstant.Equipment.Where(i => i.Id.ToString().StartsWith("14") && i.QualityType == type).ToArray();
+                    Item[] 饰品 = [.. FunGameConstant.Equipment.Where(i => i.Id.ToString().StartsWith("14") && i.QualityType == type)];
                     Item d = 饰品[Random.Shared.Next(饰品.Length)].Copy();
                     SetSellAndTradeTime(d);
                     user.Inventory.Items.Add(d);
@@ -684,7 +689,7 @@ namespace Oshima.FunGame.OshimaServers.Service
             {
                 case 1:
                     if ((int)type > (int)QualityType.Orange) type = QualityType.Orange;
-                    Item[] 武器 = FunGameConstant.Equipment.Where(i => i.Id.ToString().StartsWith("11") && i.QualityType == type).ToArray();
+                    Item[] 武器 = [.. FunGameConstant.Equipment.Where(i => i.Id.ToString().StartsWith("11") && i.QualityType == type)];
                     Item a = 武器[Random.Shared.Next(武器.Length)].Copy();
                     SetSellAndTradeTime(a);
                     user.Inventory.Items.Add(a);
@@ -693,7 +698,7 @@ namespace Oshima.FunGame.OshimaServers.Service
 
                 case 2:
                     if ((int)type > (int)QualityType.Green) type = QualityType.Green;
-                    Item[] 防具 = FunGameConstant.Equipment.Where(i => i.Id.ToString().StartsWith("12") && i.QualityType == type).ToArray();
+                    Item[] 防具 = [.. FunGameConstant.Equipment.Where(i => i.Id.ToString().StartsWith("12") && i.QualityType == type)];
                     Item b = 防具[Random.Shared.Next(防具.Length)].Copy();
                     SetSellAndTradeTime(b);
                     user.Inventory.Items.Add(b);
@@ -702,7 +707,7 @@ namespace Oshima.FunGame.OshimaServers.Service
 
                 case 3:
                     if ((int)type > (int)QualityType.Green) type = QualityType.Green;
-                    Item[] 鞋子 = FunGameConstant.Equipment.Where(i => i.Id.ToString().StartsWith("13") && i.QualityType == type).ToArray();
+                    Item[] 鞋子 = [.. FunGameConstant.Equipment.Where(i => i.Id.ToString().StartsWith("13") && i.QualityType == type)];
                     Item c = 鞋子[Random.Shared.Next(鞋子.Length)].Copy();
                     SetSellAndTradeTime(c);
                     user.Inventory.Items.Add(c);
@@ -711,7 +716,7 @@ namespace Oshima.FunGame.OshimaServers.Service
 
                 case 4:
                     if ((int)type > (int)QualityType.Purple) type = QualityType.Purple;
-                    Item[] 饰品 = FunGameConstant.Equipment.Where(i => i.Id.ToString().StartsWith("14") && i.QualityType == type).ToArray();
+                    Item[] 饰品 = [.. FunGameConstant.Equipment.Where(i => i.Id.ToString().StartsWith("14") && i.QualityType == type)];
                     Item d = 饰品[Random.Shared.Next(饰品.Length)].Copy();
                     SetSellAndTradeTime(d);
                     user.Inventory.Items.Add(d);
@@ -1295,10 +1300,10 @@ namespace Oshima.FunGame.OshimaServers.Service
                     boss.Level = cLevel;
                     boss.NormalAttack.Level = naLevel;
                     boss.NormalAttack.HardnessTime = 6;
-                    Item[] weapons = FunGameConstant.Equipment.Where(i => i.Id.ToString().StartsWith("11") && (int)i.QualityType == 4).ToArray();
-                    Item[] armors = FunGameConstant.Equipment.Where(i => i.Id.ToString().StartsWith("12") && (int)i.QualityType == 1).ToArray();
-                    Item[] shoes = FunGameConstant.Equipment.Where(i => i.Id.ToString().StartsWith("13") && (int)i.QualityType == 1).ToArray();
-                    Item[] accessory = FunGameConstant.Equipment.Where(i => i.Id.ToString().StartsWith("14") && (int)i.QualityType == 3).ToArray();
+                    Item[] weapons = [.. FunGameConstant.Equipment.Where(i => i.Id.ToString().StartsWith("11") && (int)i.QualityType == 4)];
+                    Item[] armors = [.. FunGameConstant.Equipment.Where(i => i.Id.ToString().StartsWith("12") && (int)i.QualityType == 1)];
+                    Item[] shoes = [.. FunGameConstant.Equipment.Where(i => i.Id.ToString().StartsWith("13") && (int)i.QualityType == 1)];
+                    Item[] accessory = [.. FunGameConstant.Equipment.Where(i => i.Id.ToString().StartsWith("14") && (int)i.QualityType == 3)];
                     Item? a = null, b = null, c = null, d = null, d2 = null;
                     if (weapons.Length > 0)
                     {

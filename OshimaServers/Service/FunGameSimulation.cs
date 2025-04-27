@@ -4,6 +4,7 @@ using Milimoe.FunGame.Core.Entity;
 using Milimoe.FunGame.Core.Library.Constant;
 using Milimoe.FunGame.Core.Model;
 using Oshima.FunGame.OshimaModules.Effects.OpenEffects;
+using Oshima.FunGame.OshimaModules.Skills;
 
 namespace Oshima.FunGame.OshimaServers.Service
 {
@@ -114,6 +115,11 @@ namespace Oshima.FunGame.OshimaServers.Service
                         c.Level = clevel;
                         c.NormalAttack.Level = mlevel;
                         FunGameService.AddCharacterSkills(c, 1, slevel, slevel);
+                        Skill 疾风步 = new 疾风步(c)
+                        {
+                            Level = slevel
+                        };
+                        c.Skills.Add(疾风步);
                     }
 
                     // 创建顺序表并排序
