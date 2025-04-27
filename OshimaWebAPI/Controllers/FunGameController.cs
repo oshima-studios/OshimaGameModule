@@ -5166,14 +5166,18 @@ namespace Oshima.FunGame.WebAPI.Controllers
 
                 int dead = user.Inventory.Characters.Count(c => c.HP <= 0);
                 int halfdown = user.Inventory.Characters.Count(c => (c.HP / c.MaxHP) < 0.5 && c.HP > 0);
-                int halfup = user.Inventory.Characters.Count(c => (c.HP / c.MaxHP) >= 0.5);
+                int halfup = user.Inventory.Characters.Count(c => (c.HP / c.MaxHP) >= 0.5 && c.HP != c.MaxHP);
 
                 double deadNeed = 10000 * dead;
                 double halfdownNeed = 6000 * halfdown;
                 double halfupNeed = 2000 * halfup;
                 double total = deadNeed + halfdownNeed + halfupNeed;
 
-                if (user.Inventory.Credits >= total)
+                if (total == 0)
+                {
+                    msg = $"你暂时不需要生命之泉的服务，欢迎下次光临。";
+                }
+                else if (user.Inventory.Credits >= total)
                 {
                     user.Inventory.Credits -= total;
                     foreach (Character character in user.Inventory.Characters)

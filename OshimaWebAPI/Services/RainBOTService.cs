@@ -1997,7 +1997,7 @@ namespace Oshima.FunGame.WebAPI.Services
 
                 if (e.Detail == "生命之泉")
                 {
-                    string msg = NetworkUtility.JsonDeserialize<string>(Controller.SpringOfLife()) ?? "";
+                    string msg = Controller.SpringOfLife(uid);
                     if (msg != "")
                     {
                         await SendAsync(e, "生命之泉", string.Join("\r\n", msg));
@@ -2007,7 +2007,7 @@ namespace Oshima.FunGame.WebAPI.Services
 
                 if (uid == GeneralSettings.Master && e.Detail.StartsWith("重载FunGame", StringComparison.CurrentCultureIgnoreCase))
                 {
-                    string msg = NetworkUtility.JsonDeserialize<string>(Controller.Relaod(uid)) ?? "";
+                    string msg = Controller.Relaod(uid);
                     if (msg != "")
                     {
                         await SendAsync(e, "重载FunGame", msg);
