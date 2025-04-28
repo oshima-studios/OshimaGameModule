@@ -52,6 +52,7 @@ namespace Oshima.FunGame.OshimaModules
                     (long)GiftBoxID.年夜饭 => new 年夜饭(),
                     (long)GiftBoxID.蛇年大吉 => new 蛇年大吉(),
                     (long)GiftBoxID.新春快乐 => new 新春快乐(),
+                    (long)GiftBoxID.毕业礼包 => new 毕业礼包(),
                     _ => null,
                 };
             };

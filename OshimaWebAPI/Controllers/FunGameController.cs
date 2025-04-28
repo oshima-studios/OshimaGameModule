@@ -5023,7 +5023,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
         }
 
         [HttpPost("creategiftbox")]
-        public string CreateGiftBox([FromQuery] long? uid = null, [FromQuery] string? name = null)
+        public string CreateGiftBox([FromQuery] long? uid = null, [FromQuery] string? name = null, [FromQuery] bool? checkRepeat = null)
         {
             long userid = uid ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
             string itemName = name ?? "";
@@ -5037,18 +5037,25 @@ namespace Oshima.FunGame.WebAPI.Controllers
 
                 if (FunGameConstant.AllItems.FirstOrDefault(i => i.Name == itemName) is Item item)
                 {
-                    PluginConfig pc2 = new("giftbox", "giftbox");
-                    pc2.LoadConfig();
-
-                    List<long> list = [];
-                    if (pc2.TryGetValue(itemName, out object? value) && value is List<long> tempList)
+                    if (checkRepeat ?? false)
                     {
-                        list = [.. tempList];
-                    }
+                        PluginConfig pc2 = new("giftbox", "giftbox");
+                        pc2.LoadConfig();
 
-                    if (list.Contains(user.Id))
-                    {
-                        return NetworkUtility.JsonSerialize($"你已经领取过这个礼包【{itemName}】啦，不能重复领取哦！");
+                        List<long> list = [];
+                        if (pc2.TryGetValue(itemName, out object? value) && value is List<long> tempList)
+                        {
+                            list = [.. tempList];
+                        }
+
+                        if (list.Contains(user.Id))
+                        {
+                            return $"你已经领取过这个礼包【{itemName}】啦，不能重复领取哦！";
+                        }
+
+                        list.Add(user.Id);
+                        pc2.Add(itemName, list);
+                        pc2.SaveConfig();
                     }
 
                     Item newItem = item.Copy();
@@ -5058,24 +5065,20 @@ namespace Oshima.FunGame.WebAPI.Controllers
                     user.Inventory.Items.Add(newItem);
                     string msg = $"恭喜你获得礼包【{itemName}】一份！";
 
-                    list.Add(user.Id);
-                    pc2.Add(itemName, list);
-                    pc2.SaveConfig();
-
                     user.LastTime = DateTime.Now;
                     pc.Add("user", user);
                     pc.SaveConfig();
 
-                    return NetworkUtility.JsonSerialize(msg);
+                    return msg;
                 }
                 else
                 {
-                    return NetworkUtility.JsonSerialize("没有找到这个礼包，可能已经过期。");
+                    return "没有找到这个礼包，可能已经过期。";
                 }
             }
             else
             {
-                return NetworkUtility.JsonSerialize(noSaved);
+                return noSaved;
             }
         }
 
@@ -5168,9 +5171,9 @@ namespace Oshima.FunGame.WebAPI.Controllers
                 int halfdown = user.Inventory.Characters.Count(c => (c.HP / c.MaxHP) < 0.5 && c.HP > 0);
                 int halfup = user.Inventory.Characters.Count(c => (c.HP / c.MaxHP) >= 0.5 && c.HP != c.MaxHP);
 
-                double deadNeed = 10000 * dead;
-                double halfdownNeed = 6000 * halfdown;
-                double halfupNeed = 2000 * halfup;
+                double deadNeed = 3000 * dead;
+                double halfdownNeed = 1500 * halfdown;
+                double halfupNeed = 500 * halfup;
                 double total = deadNeed + halfdownNeed + halfupNeed;
 
                 if (total == 0)
@@ -5197,9 +5200,9 @@ namespace Oshima.FunGame.WebAPI.Controllers
                 }
 
                 msg += $"（{dead} 个死亡角色，{halfdown} 个 50% 以下的角色，{halfup} 个 50% 以上的角色）\r\n" +
-                    $"收费标准：\r\n10000 {General.GameplayEquilibriumConstant.InGameCurrency} / 死亡角色\r\n" +
-                    $"6000 {General.GameplayEquilibriumConstant.InGameCurrency} / 50% 生命值以下的角色\r\n" +
-                    $"2000 {General.GameplayEquilibriumConstant.InGameCurrency} / 50% 生命值以上的角色";
+                    $"收费标准：\r\n3000 {General.GameplayEquilibriumConstant.InGameCurrency} / 死亡角色\r\n" +
+                    $"1500 {General.GameplayEquilibriumConstant.InGameCurrency} / 50% 生命值以下的角色\r\n" +
+                    $"500 {General.GameplayEquilibriumConstant.InGameCurrency} / 50% 生命值以上的角色";
 
                 return msg;
             }
@@ -5241,9 +5244,9 @@ namespace Oshima.FunGame.WebAPI.Controllers
             {
                 FunGameService.Reload();
                 FunGameSimulation.InitFunGameSimulation();
-                return NetworkUtility.JsonSerialize("FunGame已重新加载。");
+                return "FunGame已重新加载。";
             }
-            return NetworkUtility.JsonSerialize("提供的参数不正确。");
+            return "提供的参数不正确。";
         }
     }
 }

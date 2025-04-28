@@ -130,6 +130,33 @@ namespace Oshima.FunGame.OshimaModules.Items
         }
     }
 
+    public class 毕业礼包 : Item, 礼包.GiftBox
+    {
+        public override long Id => (long)GiftBoxID.毕业礼包;
+        public override string Name => "毕业礼包";
+        public override string Description => Skills.Active?.Description ?? "";
+        public override QualityType QualityType => QualityType.Gold;
+        public Dictionary<string, int> Gifts { get; set; } = [];
+
+        public 毕业礼包(User? user = null, int remainUseTimes = 1) : base(ItemType.GiftBox)
+        {
+            User = user;
+            礼包.Init(this, new()
+            {
+                { General.GameplayEquilibriumConstant.InGameCurrency, 290000 },
+                { General.GameplayEquilibriumConstant.InGameMaterial, 2000 },
+                { new 升华之印().Name, 33 },
+                { new 流光之印().Name, 12 },
+                { new 永恒之印().Name, 2 },
+                { new 技能卷轴().Name, 76 },
+                { new 智慧之果().Name, 35 },
+                { new 奥术符文().Name, 10 },
+                { new 混沌之核().Name, 2 },
+                { new 大经验书().Name, 164 }
+            }, remainUseTimes);
+        }
+    }
+
     public class 礼包技能 : Skill
     {
         public override long Id => (long)ItemActiveID.礼包;

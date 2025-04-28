@@ -2004,6 +2004,16 @@ namespace Oshima.FunGame.WebAPI.Services
                     }
                     return result;
                 }
+                
+                if (e.Detail == "毕业礼包")
+                {
+                    string msg = Controller.CreateGiftBox(uid, "毕业礼包");
+                    if (msg != "")
+                    {
+                        await SendAsync(e, "毕业礼包", string.Join("\r\n", msg));
+                    }
+                    return result;
+                }
 
                 if (uid == GeneralSettings.Master && e.Detail.StartsWith("重载FunGame", StringComparison.CurrentCultureIgnoreCase))
                 {

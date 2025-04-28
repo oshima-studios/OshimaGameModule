@@ -48,7 +48,7 @@ namespace Oshima.FunGame.OshimaServers.Service
 
             FunGameConstant.Items.AddRange(exItems.Values.Where(i => (int)i.ItemType > 4));
             FunGameConstant.Items.AddRange([new 小经验书(), new 中经验书(), new 大经验书(), new 升华之印(), new 流光之印(), new 永恒之印(), new 技能卷轴(), new 智慧之果(), new 奥术符文(), new 混沌之核(),
-                new 小回复药(), new 中回复药(), new 大回复药(), new 魔力填充剂1(), new 魔力填充剂2(), new 魔力填充剂3(), new 能量饮料1(), new 能量饮料2(), new 能量饮料3(), new 年夜饭(), new 蛇年大吉(), new 新春快乐()]);
+                new 小回复药(), new 中回复药(), new 大回复药(), new 魔力填充剂1(), new 魔力填充剂2(), new 魔力填充剂3(), new 能量饮料1(), new 能量饮料2(), new 能量饮料3(), new 年夜饭(), new 蛇年大吉(), new 新春快乐(), new 毕业礼包()]);
 
             FunGameConstant.AllItems.AddRange(FunGameConstant.Equipment);
             FunGameConstant.AllItems.AddRange(FunGameConstant.Items);
@@ -1115,6 +1115,10 @@ namespace Oshima.FunGame.OshimaServers.Service
                     else if (item.Name == nameof(新春快乐))
                     {
                         msg += "\r\n" + "新春纳福，喜乐安康！！";
+                    }
+                    else if (item.Name == nameof(毕业礼包))
+                    {
+                        msg += "\r\n" + "咦？！！啊咧！！！";
                     }
                     item.RemainUseTimes--;
                     if (item.RemainUseTimes < 0) item.RemainUseTimes = 0;
