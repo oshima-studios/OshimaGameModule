@@ -76,7 +76,7 @@ namespace Oshima.FunGame.OshimaModules.Items
         public override string Name => "小回复药";
         public override string Description => Skills.Active?.Description ?? "";
         public override QualityType QualityType => QualityType.White;
-        public double HP { get; set; } = 300;
+        public double HP { get; set; } = 600;
 
         public 小回复药(User? user = null, int remainUseTimes = 1) : base(ItemType.Consumable)
         {
@@ -96,7 +96,7 @@ namespace Oshima.FunGame.OshimaModules.Items
         public override string Name => "中回复药";
         public override string Description => Skills.Active?.Description ?? "";
         public override QualityType QualityType => QualityType.Green;
-        public double HP { get; set; } = 700;
+        public double HP { get; set; } = 1800;
 
         public 中回复药(User? user = null, int remainUseTimes = 1) : base(ItemType.Consumable)
         {
@@ -116,7 +116,7 @@ namespace Oshima.FunGame.OshimaModules.Items
         public override string Name => "大回复药";
         public override string Description => Skills.Active?.Description ?? "";
         public override QualityType QualityType => QualityType.Blue;
-        public double HP { get; set; } = 1500;
+        public double HP { get; set; } = 3000;
 
         public 大回复药(User? user = null, int remainUseTimes = 1) : base(ItemType.Consumable)
         {

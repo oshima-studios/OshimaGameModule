@@ -32,6 +32,14 @@ namespace Oshima.FunGame.OshimaServers.Service
                 // 创建顺序表并排序
                 ActionQueue actionQueue = new(characters, false, WriteLine);
                 actionQueue.SetCharactersToAIControl(false, characters);
+                foreach (Character dead in characters)
+                {
+                    if (dead.HP <= 0)
+                    {
+                        actionQueue.Queue.Remove(dead);
+                        actionQueue.Eliminated.Add(dead);
+                    }
+                }
                 ActionQueue = actionQueue;
                 if (PrintOut) Console.WriteLine();
 
@@ -242,6 +250,14 @@ namespace Oshima.FunGame.OshimaServers.Service
                         MaxScoreToWin = maxScoreToWin
                     };
                     actionQueue.SetCharactersToAIControl(false, characters);
+                    foreach (Character dead in characters)
+                    {
+                        if (dead.HP <= 0)
+                        {
+                            actionQueue.Queue.Remove(dead);
+                            actionQueue.Eliminated.Add(dead);
+                        }
+                    }
                     ActionQueue = actionQueue;
                     if (PrintOut) Console.WriteLine();
 
