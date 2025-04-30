@@ -38,12 +38,12 @@ namespace Oshima.FunGame.WebAPI.Controllers
         
         [AllowAnonymous]
         [HttpGet("last")]
-        public string[] GetLast([FromQuery] bool full = false)
+        public List<string> GetLast([FromQuery] bool full = false)
         {
             PluginConfig LastRecordConfig = new("FunGameSimulation", "LastRecord");
             LastRecordConfig.LoadConfig();
             string get = full ? "full" : "last";
-            return LastRecordConfig.Get<string[]>(get) ?? [];
+            return LastRecordConfig.GetValue<List<string>>(get) ?? [];
         }
 
         [AllowAnonymous]
