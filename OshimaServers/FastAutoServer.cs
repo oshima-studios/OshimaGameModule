@@ -167,7 +167,7 @@ namespace Oshima.FunGame.OshimaServers
                     SendAllGamingMessage(obj, data, c.GetInfo());
                 }
 
-                ActionQueue actionQueue = new(inGameCharacters, false, (str) =>
+                MixGamingQueue actionQueue = new(inGameCharacters, (str) =>
                 {
                     SendAllGamingMessage(obj, data, str);
                 });
@@ -332,7 +332,7 @@ namespace Oshima.FunGame.OshimaServers
             }
         }
 
-        public static void 空投(ActionQueue queue, double totalTime)
+        public static void 空投(GamingQueue queue, double totalTime)
         {
             Item[] 这次发放的空投;
             if (totalTime == 0)

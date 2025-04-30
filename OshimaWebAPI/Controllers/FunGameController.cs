@@ -31,12 +31,19 @@ namespace Oshima.FunGame.WebAPI.Controllers
 
         [AllowAnonymous]
         [HttpGet("test")]
-        public async Task<List<string>> GetTest([FromQuery] bool? isweb = null, [FromQuery] bool? isteam = null, [FromQuery] bool? showall = null)
+        public async Task<List<string>> GetTest([FromQuery] bool? isweb = null, [FromQuery] bool? isteam = null, [FromQuery] bool? showall = null, [FromQuery] int? maxRespawnTimesMix = null)
         {
-            bool web = isweb ?? true;
-            bool team = isteam ?? false;
-            bool all = showall ?? false;
-            return await FunGameSimulation.StartSimulationGame(false, web, team, all);
+            return await FunGameSimulation.StartSimulationGame(false, isweb ?? true, isteam ?? false, showall ?? false, maxRespawnTimesMix ?? 1);
+        }
+        
+        [AllowAnonymous]
+        [HttpGet("last")]
+        public string[] GetLast([FromQuery] bool full = false)
+        {
+            PluginConfig LastRecordConfig = new("FunGameSimulation", "LastRecord");
+            LastRecordConfig.LoadConfig();
+            string get = full ? "full" : "last";
+            return LastRecordConfig.Get<string[]>(get) ?? [];
         }
 
         [AllowAnonymous]
@@ -1874,7 +1881,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
                 {
                     user1.Inventory.MainCharacter.Recovery(EP: 200);
                     user2.Inventory.MainCharacter.Recovery(EP: 200);
-                    return await FunGameActionQueue.NewAndStartGame([user1.Inventory.MainCharacter, user2.Inventory.MainCharacter], false, false, false, false, showAllRound);
+                    return await FunGameActionQueue.NewAndStartGame([user1.Inventory.MainCharacter, user2.Inventory.MainCharacter], 0, 0, false, false, false, false, showAllRound);
                 }
                 else
                 {
@@ -3462,7 +3469,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
                     }
 
                     Character boss2 = CharacterBuilder.Build(boss, false, true, null, FunGameConstant.AllItems, FunGameConstant.AllSkills, false);
-                    List<string> msgs = await FunGameActionQueue.NewAndStartGame([user.Inventory.MainCharacter, boss2], false, false, false, false, showAllRound);
+                    List<string> msgs = await FunGameActionQueue.NewAndStartGame([user.Inventory.MainCharacter, boss2], 0, 0, false, false, false, false, showAllRound);
 
                     if (boss2.HP <= 0)
                     {

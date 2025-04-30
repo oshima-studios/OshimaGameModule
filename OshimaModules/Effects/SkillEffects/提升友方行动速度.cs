@@ -45,7 +45,7 @@ namespace Oshima.FunGame.OshimaModules.Effects.SkillEffects
                 target.Effects.Add(e);
                 e.OnEffectGained(target);
                 e.EffectType = EffectType.Haste;
-                GamingQueue?.LastRound.Effects.TryAdd(target, [e.EffectType]);
+                GamingQueue?.LastRound.ApplyEffects.TryAdd(target, [e.EffectType]);
                 GamingQueue?.ChangeCharacterHardnessTime(target, -0.3, true, false);
             }
         }

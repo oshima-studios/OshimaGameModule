@@ -1447,10 +1447,7 @@ namespace Oshima.FunGame.OshimaServers.Service
             if (team is null)
             {
                 baseScore += stats.Kills * 0.1;
-                if (stats.Deaths == 0)
-                {
-                    baseScore += 0.5;
-                }
+                baseScore -= stats.Deaths * 0.05;
             }
             else
             {
@@ -1458,7 +1455,7 @@ namespace Oshima.FunGame.OshimaServers.Service
             }
 
             // 伤害贡献
-            double logDamageContribution = Math.Log(1 + (stats.TotalDamage / (stats.TotalTakenDamage + 1)));
+            double logDamageContribution = Math.Log(1 + (stats.TotalDamage / (stats.TotalTakenDamage + 1.75)));
 
             // 存活时间贡献
             double liveTimeContribution = Math.Log(1 + (stats.LiveTime / (stats.TotalTakenDamage + 0.01) * 100));

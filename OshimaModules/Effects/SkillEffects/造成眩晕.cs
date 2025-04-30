@@ -35,7 +35,7 @@ namespace Oshima.FunGame.OshimaModules.Effects.SkillEffects
                 眩晕 e = new(Skill, caster, _durative, _duration, _durationTurn);
                 enemy.Effects.Add(e);
                 e.OnEffectGained(enemy);
-                GamingQueue?.LastRound.Effects.TryAdd(enemy, [e.EffectType]);
+                GamingQueue?.LastRound.ApplyEffects.TryAdd(enemy, [e.EffectType]);
             }
         }
     }

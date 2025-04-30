@@ -7,7 +7,7 @@ namespace Oshima.FunGame.OshimaServers.Service
 {
     public class FunGameActionQueue
     {
-        public ActionQueue ActionQueue { get; set; } = new();
+        public GamingQueue GamingQueue { get; set; } = new();
         public bool IsWeb { get; set; } = false;
         public bool PrintOut { get; set; } = false;
         public bool DeathMatchRoundDetail { get; set; } = false;
@@ -15,7 +15,7 @@ namespace Oshima.FunGame.OshimaServers.Service
 
         private string _msg = "";
 
-        public async Task<List<string>> StartGame(List<Character> characters, bool printout = false, bool isWeb = false, bool deathMatchRoundDetail = false, bool showRoundEndDetail = false, bool showAllRound = false)
+        public async Task<List<string>> StartGame(List<Character> characters, int maxRespawnTimes = 0, int maxScoreToWin = 0, bool printout = false, bool isWeb = false, bool deathMatchRoundDetail = false, bool showRoundEndDetail = false, bool showAllRound = false)
         {
             Result.Clear();
             PrintOut = printout;
@@ -30,7 +30,11 @@ namespace Oshima.FunGame.OshimaServers.Service
                 if (PrintOut) Console.WriteLine();
 
                 // 创建顺序表并排序
-                ActionQueue actionQueue = new(characters, false, WriteLine);
+                MixGamingQueue actionQueue = new(characters, WriteLine)
+                {
+                    MaxRespawnTimes = maxRespawnTimes,
+                    MaxScoreToWin = maxScoreToWin
+                };
                 actionQueue.SetCharactersToAIControl(false, characters);
                 foreach (Character dead in characters)
                 {
@@ -40,7 +44,7 @@ namespace Oshima.FunGame.OshimaServers.Service
                         actionQueue.Eliminated.Add(dead);
                     }
                 }
-                ActionQueue = actionQueue;
+                GamingQueue = actionQueue;
                 if (PrintOut) Console.WriteLine();
 
                 // 总游戏时长
@@ -156,7 +160,7 @@ namespace Oshima.FunGame.OshimaServers.Service
                 }
 
                 // 赛后统计
-                FunGameService.GetCharacterRating(actionQueue.CharacterStatistics, false, actionQueue.EliminatedTeams);
+                FunGameService.GetCharacterRating(actionQueue.CharacterStatistics, false, []);
 
                 // 统计技术得分，评选 MVP
                 Character? mvp = actionQueue.CharacterStatistics.OrderByDescending(d => d.Value.Rating).Select(d => d.Key).FirstOrDefault();
@@ -244,7 +248,7 @@ namespace Oshima.FunGame.OshimaServers.Service
                     List<Character> characters = [.. teams.SelectMany(t => t.Members)];
 
                     // 创建顺序表并排序
-                    ActionQueue actionQueue = new(characters, true, WriteLine)
+                    TeamGamingQueue actionQueue = new(characters, WriteLine)
                     {
                         MaxRespawnTimes = maxRespawnTimes,
                         MaxScoreToWin = maxScoreToWin
@@ -258,7 +262,7 @@ namespace Oshima.FunGame.OshimaServers.Service
                             actionQueue.Eliminated.Add(dead);
                         }
                     }
-                    ActionQueue = actionQueue;
+                    GamingQueue = actionQueue;
                     if (PrintOut) Console.WriteLine();
 
                     // 总游戏时长
@@ -424,9 +428,9 @@ namespace Oshima.FunGame.OshimaServers.Service
             if (PrintOut) Console.WriteLine(str);
         }
 
-        public static async Task<List<string>> NewAndStartGame(List<Character> characters, bool printout = false, bool isWeb = false, bool deathMatchRoundDetail = false, bool showRoundEndDetail = false, bool showAllRound = false)
+        public static async Task<List<string>> NewAndStartGame(List<Character> characters, int maxRespawnTimes = 0, int maxScoreToWin = 0, bool printout = false, bool isWeb = false, bool deathMatchRoundDetail = false, bool showRoundEndDetail = false, bool showAllRound = false)
         {
-            return await new FunGameActionQueue().StartGame(characters, printout, isWeb, deathMatchRoundDetail, showRoundEndDetail, showAllRound);
+            return await new FunGameActionQueue().StartGame(characters, maxRespawnTimes, maxScoreToWin, printout, isWeb, deathMatchRoundDetail, showRoundEndDetail, showAllRound);
         }
 
         public static async Task<List<string>> NewAndStartTeamGame(List<Team> teams, int maxRespawnTimes = 0, int maxScoreToWin = 0, bool printout = false, bool isWeb = false, bool deathMatchRoundDetail = false, bool showRoundEndDetail = false, bool showAllRound = false)

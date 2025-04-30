@@ -62,7 +62,7 @@ namespace Oshima.FunGame.OshimaModules.Skills
                 caster.Effects.Add(this);
                 OnEffectGained(caster);
             }
-            GamingQueue?.LastRound.Effects.TryAdd(caster, [EffectType.MPRegen, EffectType.Haste]);
+            GamingQueue?.LastRound.ApplyEffects.TryAdd(caster, [EffectType.MPRegen, EffectType.Haste]);
         }
     }
 }

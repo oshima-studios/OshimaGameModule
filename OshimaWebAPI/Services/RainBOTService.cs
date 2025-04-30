@@ -221,7 +221,7 @@ namespace Oshima.FunGame.WebAPI.Services
                     if (!FunGameSimulation)
                     {
                         FunGameSimulation = true;
-                        List<string> msgs = await Controller.GetTest(false);
+                        List<string> msgs = await Controller.GetTest(false, maxRespawnTimesMix: 0);
                         List<string> real = [];
                         int remain = 7;
                         string merge = "";
@@ -261,6 +261,66 @@ namespace Oshima.FunGame.WebAPI.Services
                     {
                         await SendAsync(e, "饭给木", "游戏正在模拟中，请勿重复请求！");
                     }
+                    return result;
+                }
+                
+                if (e.Detail.StartsWith("混战模拟"))
+                {
+                    int maxRespawnTimesMix = 1;
+                    string detail = e.Detail.Replace("混战模拟", "").Trim();
+                    if (int.TryParse(detail, out int times))
+                    {
+                        maxRespawnTimesMix = times;
+                    }
+                    if (!FunGameSimulation)
+                    {
+                        FunGameSimulation = true;
+                        List<string> msgs = await Controller.GetTest(false, maxRespawnTimesMix: maxRespawnTimesMix);
+                        List<string> real = [];
+                        int remain = 7;
+                        string merge = "";
+                        for (int i = 0; i < msgs.Count - 2; i++)
+                        {
+                            remain--;
+                            merge += msgs[i] + "\r\n";
+                            if (remain == 0)
+                            {
+                                real.Add(merge);
+                                merge = "";
+                                if ((msgs.Count - i - 3) < 7)
+                                {
+                                    remain = msgs.Count - i - 3;
+                                }
+                                else remain = 7;
+                            }
+                        }
+                        if (msgs.Count > 2)
+                        {
+                            real.Add(msgs[^2]);
+                            real.Add(msgs[^1]);
+                        }
+                        if (real.Count >= 3)
+                        {
+                            real = real[^3..];
+                        }
+                        int count = 1;
+                        foreach (string msg in real)
+                        {
+                            await SendAsync(e, "饭给木", msg.Trim(), msgSeq: count++);
+                            await Task.Delay(5500);
+                        }
+                        FunGameSimulation = false;
+                    }
+                    else
+                    {
+                        await SendAsync(e, "饭给木", "游戏正在模拟中，请勿重复请求！");
+                    }
+                    return result;
+                }
+
+                if (e.Detail == "上次的完整日志")
+                {
+                    await SendAsync(e, "饭给木", string.Join("\r\n", Controller.GetLast()));
                     return result;
                 }
 
@@ -2004,7 +2064,7 @@ namespace Oshima.FunGame.WebAPI.Services
                     }
                     return result;
                 }
-                
+
                 if (e.Detail == "毕业礼包")
                 {
                     string msg = Controller.CreateGiftBox(uid, "毕业礼包");

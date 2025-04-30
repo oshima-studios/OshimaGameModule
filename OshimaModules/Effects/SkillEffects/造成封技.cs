@@ -33,7 +33,7 @@ namespace Oshima.FunGame.OshimaModules.Effects.SkillEffects
                 封技 e = new(Skill, caster, false, 0, 1);
                 enemy.Effects.Add(e);
                 e.OnEffectGained(enemy);
-                GamingQueue?.LastRound.Effects.TryAdd(enemy, [e.EffectType]);
+                GamingQueue?.LastRound.ApplyEffects.TryAdd(enemy, [e.EffectType]);
             }
         }
     }

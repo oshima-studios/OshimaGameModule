@@ -1,6 +1,7 @@
 ﻿using System.Text;
 using Milimoe.FunGame.Core.Api.Utility;
 using Milimoe.FunGame.Core.Entity;
+using Milimoe.FunGame.Core.Interface.Entity;
 using Milimoe.FunGame.Core.Library.Constant;
 using Milimoe.FunGame.Core.Model;
 using Oshima.FunGame.OshimaModules.Effects.OpenEffects;
@@ -14,6 +15,7 @@ namespace Oshima.FunGame.OshimaServers.Service
         public static Dictionary<Character, CharacterStatistics> TeamCharacterStatistics { get; } = [];
         public static PluginConfig StatsConfig { get; } = new("FunGameSimulation", nameof(CharacterStatistics));
         public static PluginConfig TeamStatsConfig { get; } = new("FunGameSimulation", nameof(TeamCharacterStatistics));
+        public static PluginConfig LastRecordConfig { get; } = new("FunGameSimulation", "LastRecord");
         public static bool IsRuning { get; set; } = false;
         public static bool IsWeb { get; set; } = false;
         public static bool PrintOut { get; set; } = false;
@@ -24,6 +26,7 @@ namespace Oshima.FunGame.OshimaServers.Service
         {
             CharacterStatistics.Clear();
             TeamCharacterStatistics.Clear();
+            LastRecordConfig.Clear();
 
             foreach (Character c in FunGameConstant.Characters)
             {
@@ -54,7 +57,7 @@ namespace Oshima.FunGame.OshimaServers.Service
             }
         }
 
-        public static async Task<List<string>> StartSimulationGame(bool printout, bool isWeb = false, bool isTeam = false, bool deathMatchRoundDetail = false)
+        public static async Task<List<string>> StartSimulationGame(bool printout, bool isWeb = false, bool isTeam = false, bool deathMatchRoundDetail = false, int maxRespawnTimesMix = 1)
         {
             PrintOut = printout;
             IsWeb = isWeb;
@@ -64,6 +67,7 @@ namespace Oshima.FunGame.OshimaServers.Service
                 if (IsRuning) return ["游戏正在模拟中，请勿重复请求！"];
 
                 List<string> result = [];
+                List<string> lastRecord = [];
                 Msg = "";
 
                 IsRuning = true;
@@ -123,11 +127,25 @@ namespace Oshima.FunGame.OshimaServers.Service
                     }
 
                     // 创建顺序表并排序
-                    ActionQueue actionQueue = new(characters, isTeam, WriteLine);
+                    GamingQueue actionQueue;
+                    MixGamingQueue? mgq = null;
+                    TeamGamingQueue? tgq = null;
                     if (isTeam)
                     {
-                        actionQueue.MaxRespawnTimes = -1;
-                        actionQueue.MaxScoreToWin = 30;
+                        tgq = new TeamGamingQueue(characters, WriteLine)
+                        {
+                            MaxRespawnTimes = -1,
+                            MaxScoreToWin = 30
+                        };
+                        actionQueue = tgq;
+                    }
+                    else
+                    {
+                        mgq = new MixGamingQueue(characters, WriteLine)
+                        {
+                            MaxRespawnTimes = maxRespawnTimesMix
+                        };
+                        actionQueue = mgq;
                     }
                     if (PrintOut) Console.WriteLine();
 
@@ -177,7 +195,7 @@ namespace Oshima.FunGame.OshimaServers.Service
                     if (PrintOut) Console.WriteLine();
 
                     // 团队模式
-                    if (isTeam)
+                    if (isTeam && actionQueue is TeamGamingQueue tg)
                     {
                         Msg = "=== 团队模式随机分组 ===\r\n\r\n";
                         // 打乱角色列表
@@ -201,12 +219,12 @@ namespace Oshima.FunGame.OshimaServers.Service
                         }
 
                         // 添加到团队字典
-                        actionQueue.AddTeam("队伍一", group1);
-                        actionQueue.AddTeam("队伍二", group2);
+                        tg.AddTeam("队伍一", group1);
+                        tg.AddTeam("队伍二", group2);
 
-                        foreach (string team in actionQueue.Teams.Keys)
+                        foreach (string team in tg.Teams.Keys)
                         {
-                            WriteLine($"团队【{team}】的成员：\r\n{string.Join("\r\n", actionQueue.Teams[team].Members)}\r\n");
+                            WriteLine($"团队【{team}】的成员：\r\n{string.Join("\r\n", tg.Teams[team].Members)}\r\n");
                         }
                         result.Add(Msg);
                     }
@@ -235,6 +253,11 @@ namespace Oshima.FunGame.OshimaServers.Service
                     int i = 1;
                     while (i < maxRound)
                     {
+                        if (i != 1)
+                        {
+                            lastRecord.Add(actionQueue.LastRound.ToString());
+                        }
+
                         Msg = "";
                         if (i == maxRound - 1)
                         {
@@ -259,8 +282,8 @@ namespace Oshima.FunGame.OshimaServers.Service
                                     WriteLine("[ " + winner + " ] 对 [ " + c + " ] 造成了 99999999999 点真实伤害。");
                                     await actionQueue.DeathCalculationAsync(winner, c);
                                 }
-                                await actionQueue.EndGameInfo(winner);
                                 result.Add(Msg);
+                                mgq?.EndGameInfo(winner);
                                 break;
                             }
                         }
@@ -272,13 +295,14 @@ namespace Oshima.FunGame.OshimaServers.Service
                         if (characterToAct != null)
                         {
                             WriteLine($"=== Round {i++} ===");
-                            WriteLine("现在是 [ " + characterToAct + (isTeam ? "（" + (actionQueue.GetTeam(characterToAct)?.Name ?? "") + "）" : "") + " ] 的回合！");
+                            WriteLine("现在是 [ " + characterToAct + (tgq != null ? "（" + (tgq.GetTeam(characterToAct)?.Name ?? "") + "）" : "") + " ] 的回合！");
 
                             bool isGameEnd = await actionQueue.ProcessTurnAsync(characterToAct);
 
                             if (isGameEnd)
                             {
                                 result.Add(Msg);
+                                lastRecord.Add(actionQueue.LastRound.ToString());
                                 break;
                             }
 
@@ -292,7 +316,7 @@ namespace Oshima.FunGame.OshimaServers.Service
                             roundMsg = Msg;
                             if (!deathMatchRoundDetail)
                             {
-                                roundMsg = actionQueue.LastRound.ToString().Trim() + $"\r\n{(isTeam ? $"比分：{string.Join(" / ", actionQueue.Teams.Values.Select(t => $"{t.Name}({t.Score})"))}，击杀来自{actionQueue.GetTeam(actionQueue.LastRound.Actor)}" : "")}\r\n";
+                                roundMsg = actionQueue.LastRound.ToString().Trim() + $"\r\n{(tgq != null ? $"比分：{string.Join(" / ", tgq.Teams.Values.Select(t => $"{t.Name}({t.Score})"))}，击杀来自{tgq.GetTeam(tgq.LastRound.Actor)}" : "")}\r\n";
                             }
                             Msg = "";
                         }
@@ -351,7 +375,7 @@ namespace Oshima.FunGame.OshimaServers.Service
                     }
 
                     // 赛后统计
-                    FunGameService.GetCharacterRating(actionQueue.CharacterStatistics, isTeam, actionQueue.EliminatedTeams);
+                    FunGameService.GetCharacterRating(actionQueue.CharacterStatistics, isTeam, tgq != null ? tgq.EliminatedTeams : []);
 
                     // 统计技术得分，评选 MVP
                     Character? mvp = actionQueue.CharacterStatistics.OrderByDescending(d => d.Value.Rating).Select(d => d.Key).FirstOrDefault();
@@ -360,7 +384,7 @@ namespace Oshima.FunGame.OshimaServers.Service
                     {
                         CharacterStatistics stats = actionQueue.CharacterStatistics[mvp];
                         stats.MVPs++;
-                        mvpBuilder.AppendLine($"{(isTeam ? "[ " + actionQueue.GetTeamFromEliminated(mvp)?.Name + " ] " : "")}[ {mvp.ToStringWithLevel()} ]");
+                        mvpBuilder.AppendLine($"{(tgq != null ? "[ " + tgq.GetTeamFromEliminated(mvp)?.Name + " ] " : "")}[ {mvp.ToStringWithLevel()} ]");
                         mvpBuilder.AppendLine($"技术得分：{stats.Rating:0.0#} / 击杀数：{stats.Kills} / 助攻数：{stats.Assists}{(actionQueue.MaxRespawnTimes != 0 ? " / 死亡数：" + stats.Deaths : "")}");
                         mvpBuilder.AppendLine($"存活时长：{stats.LiveTime:0.##} / 存活回合数：{stats.LiveRound} / 行动回合数：{stats.ActionTurn}");
                         mvpBuilder.AppendLine($"控制时长：{stats.ControlTime:0.##} / 总计治疗：{stats.TotalHeal:0.##}");
@@ -379,18 +403,30 @@ namespace Oshima.FunGame.OshimaServers.Service
                     else
                     {
                         StringBuilder ratingBuilder = new();
-                        if (isTeam)
+                        if (tgq != null)
                         {
                             ratingBuilder.AppendLine($"=== 赛后数据 ===");
-                            foreach (Team team in actionQueue.EliminatedTeams)
+                            foreach (Team team in tgq.EliminatedTeams)
                             {
                                 ratingBuilder.AppendLine($"☆--- [ {team} ] ---☆");
-                                foreach (Character character in actionQueue.CharacterStatistics.Where(d => team.Members.Contains(d.Key))
+                                foreach (Character character in tgq.CharacterStatistics.Where(d => team.Members.Contains(d.Key))
                                     .OrderByDescending(d => d.Value.Rating).Select(d => d.Key))
                                 {
-                                    CharacterStatistics stats = actionQueue.CharacterStatistics[character];
+                                    CharacterStatistics stats = tgq.CharacterStatistics[character];
                                     ratingBuilder.AppendLine($"[ {stats.Rating:0.0#} ]  {character}（{stats.Kills} / {stats.Assists} / {stats.Deaths}）");
                                 }
+                            }
+                        }
+                        else if (mgq != null)
+                        {
+                            ratingBuilder.AppendLine($"=== 赛后数据 ===");
+                            foreach (Character statCharacter in actionQueue.CharacterStatistics
+                                .OrderBy(kv => kv.Value.Deaths)
+                                .ThenByDescending(kv => kv.Value.Rating)
+                                .ThenByDescending(kv => kv.Value.Kills).Select(kv => kv.Key))
+                            {
+                                CharacterStatistics stats = actionQueue.CharacterStatistics[statCharacter];
+                                ratingBuilder.AppendLine($"[ {stats.Rating:0.0#} ]  {statCharacter}（{stats.Kills} / {stats.Assists} / {stats.Deaths}）");
                             }
                         }
                         WriteLine("=== 本场比赛最佳角色 ===");
@@ -404,14 +440,14 @@ namespace Oshima.FunGame.OshimaServers.Service
                         }
                     }
 
-                    if (isTeam)
+                    if (tgq != null)
                     {
-                        foreach (Character character in actionQueue.CharacterStatistics.OrderByDescending(d => d.Value.Rating).Select(d => d.Key))
+                        foreach (Character character in tgq.CharacterStatistics.OrderByDescending(d => d.Value.Rating).Select(d => d.Key))
                         {
                             StringBuilder builder = new();
-                            CharacterStatistics stats = actionQueue.CharacterStatistics[character];
-                            builder.AppendLine($"{(isWeb ? count + "." : ("[ " + actionQueue.GetTeamFromEliminated(character)?.Name + " ]" ?? ""))} [ {character.ToStringWithLevel()} ]");
-                            builder.AppendLine($"技术得分：{stats.Rating:0.0#} / 击杀数：{stats.Kills} / 助攻数：{stats.Assists}{(actionQueue.MaxRespawnTimes != 0 ? " / 死亡数：" + stats.Deaths : "")}");
+                            CharacterStatistics stats = tgq.CharacterStatistics[character];
+                            builder.AppendLine($"{(isWeb ? count + "." : ("[ " + tgq.GetTeamFromEliminated(character)?.Name + " ]" ?? ""))} [ {character.ToStringWithLevel()} ]");
+                            builder.AppendLine($"技术得分：{stats.Rating:0.0#} / 击杀数：{stats.Kills} / 助攻数：{stats.Assists}{(tgq.MaxRespawnTimes != 0 ? " / 死亡数：" + stats.Deaths : "")}");
                             builder.AppendLine($"存活时长：{stats.LiveTime:0.##} / 存活回合数：{stats.LiveRound} / 行动回合数：{stats.ActionTurn}");
                             builder.AppendLine($"控制时长：{stats.ControlTime:0.##} / 总计治疗：{stats.TotalHeal:0.##}");
                             builder.AppendLine($"总计伤害：{stats.TotalDamage:0.##} / 总计物理伤害：{stats.TotalPhysicalDamage:0.##} / 总计魔法伤害：{stats.TotalMagicDamage:0.##}");
@@ -464,16 +500,17 @@ namespace Oshima.FunGame.OshimaServers.Service
                     }
 
                     result.Add(Msg);
+                    lastRecord.Add(Msg);
 
                     // 显示每个角色的信息
                     if (isWeb)
                     {
-                        if (isTeam)
+                        if (tgq != null)
                         {
                             top = 1;
-                            for (i = actionQueue.EliminatedTeams.Count - 1; i >= 0; i--)
+                            for (i = tgq.EliminatedTeams.Count - 1; i >= 0; i--)
                             {
-                                Team team = actionQueue.EliminatedTeams[i];
+                                Team team = tgq.EliminatedTeams[i];
                                 string topTeam = "";
                                 if (top == 1)
                                 {
@@ -493,7 +530,9 @@ namespace Oshima.FunGame.OshimaServers.Service
                                 }
                                 foreach (Character character in team.Members)
                                 {
-                                    result.Add($"== {topTeam}团队 [ {team.Name} ] ==\r\n== 角色：[ {character} ] ==\r\n{character.GetInfo()}");
+                                    string msg = $"== {topTeam}团队 [ {team.Name} ] ==\r\n== 角色：[ {character} ] ==\r\n{character.GetInfo()}";
+                                    result.Add(msg);
+                                    lastRecord.Add(msg);
                                 }
                                 top++;
                             }
@@ -503,7 +542,9 @@ namespace Oshima.FunGame.OshimaServers.Service
                             for (i = actionQueue.Eliminated.Count - 1; i >= 0; i--)
                             {
                                 Character character = actionQueue.Eliminated[i];
-                                result.Add($"=== 角色 [ {character} ] ===\r\n{character.GetInfo()}");
+                                string msg = $"=== 角色 [ {character} ] ===\r\n{character.GetInfo()}";
+                                result.Add(msg);
+                                lastRecord.Add(msg);
                             }
                         }
                     }
@@ -531,6 +572,13 @@ namespace Oshima.FunGame.OshimaServers.Service
                         }
                     }
 
+                    lock (LastRecordConfig)
+                    {
+                        LastRecordConfig.Add("last", result);
+                        LastRecordConfig.Add("full", lastRecord);
+                        LastRecordConfig.SaveConfig();
+                    }
+
                     IsRuning = false;
                 }
 
@@ -550,7 +598,7 @@ namespace Oshima.FunGame.OshimaServers.Service
             if (PrintOut) Console.WriteLine(str);
         }
 
-        public static void 空投(ActionQueue queue, int mQuality, int wQuality, int aQuality, int sQuality, int acQuality)
+        public static void 空投(GamingQueue queue, int mQuality, int wQuality, int aQuality, int sQuality, int acQuality)
         {
             foreach (Character character in queue.Queue)
             {

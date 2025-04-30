@@ -73,7 +73,7 @@ namespace Oshima.FunGame.OshimaModules.Skills
                 caster.Effects.Add(this);
                 OnEffectGained(caster);
             }
-            GamingQueue?.LastRound.Effects.TryAdd(caster, [EffectType.DefenseBoost]);
+            GamingQueue?.LastRound.ApplyEffects.TryAdd(caster, [EffectType.DefenseBoost]);
         }
     }
 }
