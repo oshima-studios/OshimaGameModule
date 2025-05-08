@@ -16,7 +16,10 @@ namespace Oshima.FunGame.OshimaModules.Skills
             Effects.Add(new ExMaxHP2(this, new()
             {
                 { "exhp", -0.2 }
-            }));
+            })
+            {
+                ParentEffect = Effects.First()
+            });
         }
 
         public override IEnumerable<Effect> AddPassiveEffectToCharacter()
