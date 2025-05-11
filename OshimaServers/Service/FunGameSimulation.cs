@@ -57,7 +57,7 @@ namespace Oshima.FunGame.OshimaServers.Service
             }
         }
 
-        public static async Task<List<string>> StartSimulationGame(bool printout, bool isWeb = false, bool isTeam = false, bool deathMatchRoundDetail = false, int maxRespawnTimesMix = 1)
+        public static async Task<List<string>> StartSimulationGame(bool printout, bool isWeb = false, bool isTeam = false, bool deathMatchRoundDetail = false, int maxRespawnTimesMix = 1, bool useStore = false)
         {
             PrintOut = printout;
             IsWeb = isWeb;
@@ -108,9 +108,9 @@ namespace Oshima.FunGame.OshimaServers.Service
                         character9, character10, character11, character12
                     ];
 
-                    int clevel = 60;
-                    int slevel = 6;
-                    int mlevel = 8;
+                    int clevel = 15;
+                    int slevel = 2;
+                    int mlevel = 2;
 
                     // 升级和赋能
                     for (int index = 0; index < characters.Count; index++)
@@ -152,37 +152,48 @@ namespace Oshima.FunGame.OshimaServers.Service
                     // 总游戏时长
                     double totalTime = 0;
 
+                    // 初始化商店
+                    Store store = new("模拟商店");
+                    if (useStore)
+                    {
+                        AddStoreItems(actionQueue, store);
+                    }
+
                     // 开始空投
                     Msg = "";
-                    int 发放的卡包品质 = 0;
-                    int 发放的武器品质 = 0;
-                    int 发放的防具品质 = 0;
-                    int 发放的鞋子品质 = 0;
-                    int 发放的饰品品质 = 0;
-                    WriteLine($"社区送温暖了，现在随机发放空投！！");
-                    空投(actionQueue, 发放的卡包品质, 发放的武器品质, 发放的防具品质, 发放的鞋子品质, 发放的饰品品质);
-                    WriteLine("");
-                    if (isWeb) result.Add("=== 空投 ===\r\n" + Msg);
-                    double 下一次空投 = isTeam ? 80 : 40;
-                    if (发放的卡包品质 < 4)
+                    int mQuality = 0;
+                    int wQuality = 0;
+                    int aQuality = 0;
+                    int sQuality = 0;
+                    int acQuality = 0;
+                    double nextDropTime = 0;
+                    if (!useStore)
                     {
-                        发放的卡包品质++;
-                    }
-                    if (发放的武器品质 < 4)
-                    {
-                        发放的武器品质++;
-                    }
-                    if (发放的防具品质 < 1)
-                    {
-                        发放的防具品质++;
-                    }
-                    if (发放的鞋子品质 < 1)
-                    {
-                        发放的鞋子品质++;
-                    }
-                    if (发放的饰品品质 < 3)
-                    {
-                        发放的饰品品质++;
+                        WriteLine($"社区送温暖了，现在随机发放空投！！");
+                        DropItems(actionQueue, mQuality, wQuality, aQuality, sQuality, acQuality, false);
+                        WriteLine("");
+                        if (isWeb) result.Add("=== 空投 ===\r\n" + Msg);
+                        nextDropTime = isTeam ? 80 : 40;
+                        if (mQuality < 4)
+                        {
+                            mQuality++;
+                        }
+                        if (wQuality < 4)
+                        {
+                            wQuality++;
+                        }
+                        if (aQuality < 1)
+                        {
+                            aQuality++;
+                        }
+                        if (sQuality < 1)
+                        {
+                            sQuality++;
+                        }
+                        if (acQuality < 3)
+                        {
+                            acQuality++;
+                        }
                     }
 
                     // 显示角色信息
@@ -324,7 +335,7 @@ namespace Oshima.FunGame.OshimaServers.Service
                         // 模拟时间流逝
                         double timeLapse = await actionQueue.TimeLapse();
                         totalTime += timeLapse;
-                        下一次空投 -= timeLapse;
+                        nextDropTime -= timeLapse;
 
                         if (roundMsg != "")
                         {
@@ -335,34 +346,34 @@ namespace Oshima.FunGame.OshimaServers.Service
                             result.Add(roundMsg);
                         }
 
-                        if (下一次空投 <= 0)
+                        if (!useStore && nextDropTime <= 0)
                         {
                             // 空投
                             Msg = "";
                             WriteLine($"社区送温暖了，现在随机发放空投！！");
-                            空投(actionQueue, 发放的卡包品质, 发放的武器品质, 发放的防具品质, 发放的鞋子品质, 发放的饰品品质);
+                            DropItems(actionQueue, mQuality, wQuality, aQuality, sQuality, acQuality);
                             WriteLine("");
                             if (isWeb) result.Add("=== 空投 ===\r\n" + Msg);
-                            下一次空投 = isTeam ? 100 : 40;
-                            if (发放的卡包品质 < 4)
+                            nextDropTime = isTeam ? 100 : 40;
+                            if (mQuality < 4)
                             {
-                                发放的卡包品质++;
+                                mQuality++;
                             }
-                            if (发放的武器品质 < 4)
+                            if (wQuality < 4)
                             {
-                                发放的武器品质++;
+                                wQuality++;
                             }
-                            if (发放的防具品质 < 1)
+                            if (aQuality < 1)
                             {
-                                发放的防具品质++;
+                                aQuality++;
                             }
-                            if (发放的鞋子品质 < 1)
+                            if (sQuality < 1)
                             {
-                                发放的鞋子品质++;
+                                sQuality++;
                             }
-                            if (发放的饰品品质 < 3)
+                            if (acQuality < 3)
                             {
-                                发放的饰品品质++;
+                                acQuality++;
                             }
                         }
                     }
@@ -598,52 +609,85 @@ namespace Oshima.FunGame.OshimaServers.Service
             if (PrintOut) Console.WriteLine(str);
         }
 
-        public static void 空投(GamingQueue queue, int mQuality, int wQuality, int aQuality, int sQuality, int acQuality)
+        public static void AddStoreItems(GamingQueue queue, Store store)
         {
-            foreach (Character character in queue.Queue)
+            foreach (Item item in FunGameConstant.Equipment)
             {
-                Item[] 武器 = [.. FunGameConstant.Equipment.Where(i => i.Id.ToString().StartsWith("11") && (int)i.QualityType == wQuality)];
-                Item[] 防具 = [.. FunGameConstant.Equipment.Where(i => i.Id.ToString().StartsWith("12") && (int)i.QualityType == aQuality)];
-                Item[] 鞋子 = [.. FunGameConstant.Equipment.Where(i => i.Id.ToString().StartsWith("13") && (int)i.QualityType == sQuality)];
-                Item[] 饰品 = [.. FunGameConstant.Equipment.Where(i => i.Id.ToString().StartsWith("14") && (int)i.QualityType == acQuality)];
-                Item? a = null, b = null, c = null, d = null, d2 = null;
-                if (武器.Length > 0)
+                Item realItem = item.Copy();
+                realItem.SetGamingQueue(queue);
+                realItem.Price = Random.Shared.Next() * (int)item.QualityType;
+                store.AddItem(realItem, 100);
+            }
+        }
+        
+        public static void DropItems(GamingQueue queue, int mQuality, int wQuality, int aQuality, int sQuality, int acQuality, bool addLevel = true)
+        {
+            if (wQuality == 0 && aQuality == 0 && sQuality == 0 && acQuality == 0) return;
+            foreach (Character character in queue.HardnessTime.Keys)
+            {
+                if (addLevel)
                 {
-                    a = 武器[Random.Shared.Next(武器.Length)];
+                    character.Level += 15;
+                    character.NormalAttack.Level += 2;
+                    foreach (Skill skill in character.Skills)
+                    {
+                        if (skill.SkillType == SkillType.Passive) continue;
+                        skill.Level += 2;
+                    }
+                    Character? original = queue.Original[character.Guid];
+                    if (original != null)
+                    {
+                        original.Level += 15;
+                        original.NormalAttack.Level += 2;
+                        foreach (Skill skill in original.Skills)
+                        {
+                            if (skill.SkillType == SkillType.Passive) continue;
+                            skill.Level += 2;
+                        }
+                    }
                 }
-                if (防具.Length > 0)
+                Item[] weapons = [.. FunGameConstant.Equipment.Where(i => i.Id.ToString().StartsWith("11") && (int)i.QualityType == wQuality)];
+                Item[] armors = [.. FunGameConstant.Equipment.Where(i => i.Id.ToString().StartsWith("12") && (int)i.QualityType == aQuality)];
+                Item[] shoes = [.. FunGameConstant.Equipment.Where(i => i.Id.ToString().StartsWith("13") && (int)i.QualityType == sQuality)];
+                Item[] accessories = [.. FunGameConstant.Equipment.Where(i => i.Id.ToString().StartsWith("14") && (int)i.QualityType == acQuality)];
+                Item? weapon = null, armor = null, shoe = null, accessory1 = null, accessory2 = null;
+                if (weapons.Length > 0)
                 {
-                    b = 防具[Random.Shared.Next(防具.Length)];
+                    weapon = weapons[Random.Shared.Next(weapons.Length)];
                 }
-                if (鞋子.Length > 0)
+                if (armors.Length > 0)
                 {
-                    c = 鞋子[Random.Shared.Next(鞋子.Length)];
+                    armor = armors[Random.Shared.Next(armors.Length)];
                 }
-                if (饰品.Length > 0)
+                if (shoes.Length > 0)
                 {
-                    d = 饰品[Random.Shared.Next(饰品.Length)];
+                    shoe = shoes[Random.Shared.Next(shoes.Length)];
                 }
-                if (饰品.Length > 0)
+                if (accessories.Length > 0)
                 {
-                    d2 = 饰品[Random.Shared.Next(饰品.Length)];
+                    accessory1 = accessories[Random.Shared.Next(accessories.Length)];
                 }
-                List<Item> 这次发放的空投 = [];
-                if (a != null) 这次发放的空投.Add(a);
-                if (b != null) 这次发放的空投.Add(b);
-                if (c != null) 这次发放的空投.Add(c);
-                if (d != null) 这次发放的空投.Add(d);
-                if (d2 != null) 这次发放的空投.Add(d2);
-                Item? 魔法卡包 = FunGameService.GenerateMagicCardPack(3, (QualityType)mQuality);
-                if (魔法卡包 != null)
+                if (accessories.Length > 0)
                 {
-                    foreach (Skill magic in 魔法卡包.Skills.Magics)
+                    accessory2 = accessories[Random.Shared.Next(accessories.Length)];
+                }
+                List<Item> thisDrops = [];
+                if (weapon != null) thisDrops.Add(weapon);
+                if (armor != null) thisDrops.Add(armor);
+                if (shoe != null) thisDrops.Add(shoe);
+                if (accessory1 != null) thisDrops.Add(accessory1);
+                if (accessory2 != null) thisDrops.Add(accessory2);
+                Item? mcp = FunGameService.GenerateMagicCardPack(3, (QualityType)mQuality);
+                if (mcp != null)
+                {
+                    foreach (Skill magic in mcp.Skills.Magics)
                     {
                         magic.Level = 8;
                     }
-                    魔法卡包.SetGamingQueue(queue);
-                    queue.Equip(character, 魔法卡包);
+                    mcp.SetGamingQueue(queue);
+                    queue.Equip(character, mcp);
                 }
-                foreach (Item item in 这次发放的空投)
+                foreach (Item item in thisDrops)
                 {
                     Item realItem = item.Copy();
                     realItem.SetGamingQueue(queue);
