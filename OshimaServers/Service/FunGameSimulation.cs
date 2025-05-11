@@ -606,7 +606,7 @@ namespace Oshima.FunGame.OshimaServers.Service
                 Item[] 防具 = [.. FunGameConstant.Equipment.Where(i => i.Id.ToString().StartsWith("12") && (int)i.QualityType == aQuality)];
                 Item[] 鞋子 = [.. FunGameConstant.Equipment.Where(i => i.Id.ToString().StartsWith("13") && (int)i.QualityType == sQuality)];
                 Item[] 饰品 = [.. FunGameConstant.Equipment.Where(i => i.Id.ToString().StartsWith("14") && (int)i.QualityType == acQuality)];
-                Item? a = null, b = null, c = null, d = null;
+                Item? a = null, b = null, c = null, d = null, d2 = null;
                 if (武器.Length > 0)
                 {
                     a = 武器[Random.Shared.Next(武器.Length)];
@@ -623,11 +623,16 @@ namespace Oshima.FunGame.OshimaServers.Service
                 {
                     d = 饰品[Random.Shared.Next(饰品.Length)];
                 }
+                if (饰品.Length > 0)
+                {
+                    d2 = 饰品[Random.Shared.Next(饰品.Length)];
+                }
                 List<Item> 这次发放的空投 = [];
                 if (a != null) 这次发放的空投.Add(a);
                 if (b != null) 这次发放的空投.Add(b);
                 if (c != null) 这次发放的空投.Add(c);
                 if (d != null) 这次发放的空投.Add(d);
+                if (d2 != null) 这次发放的空投.Add(d2);
                 Item? 魔法卡包 = FunGameService.GenerateMagicCardPack(3, (QualityType)mQuality);
                 if (魔法卡包 != null)
                 {

@@ -32,6 +32,11 @@ namespace Oshima.FunGame.OshimaModules.Skills
         public double 系数 { get; set; } = 0.12;
         private bool 是否是嵌套伤害 = false;
 
+        public override bool BeforeCriticalCheck(Character actor, Character enemy, ref double throwingBonus)
+        {
+            return !是否是嵌套伤害;
+        }
+
         public override void AfterDamageCalculation(Character character, Character enemy, double damage, bool isNormalAttack, bool isMagicDamage, MagicType magicType, DamageResult damageResult)
         {
             if (character == Skill.Character && damageResult != DamageResult.Evaded && !是否是嵌套伤害 && enemy.HP > 0)

@@ -14,7 +14,7 @@ namespace Oshima.FunGame.OshimaModules.Effects.OpenEffects
 
         public override bool BeforeEvadeCheck(Character actor, Character enemy, ref double throwingBonus)
         {
-            if (actor == Skill.Character)
+            if (actor == Skill.Character && Random.Shared.NextDouble() < 概率)
             {
                 if (GamingQueue != null) WriteLine($"[ {actor} ] 的普通攻击无视了 [ {enemy} ] 的闪避！");
                 return false;
