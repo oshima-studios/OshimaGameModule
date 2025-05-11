@@ -245,7 +245,7 @@ namespace Oshima.FunGame.OshimaServers.Service
                     if (PrintOut) Console.WriteLine();
 
                     // 总回合数
-                    int maxRound = isTeam ? 9999 : 999;
+                    int maxRound = 9999;
 
                     // 随机回合奖励
                     Dictionary<long, bool> effects = [];
