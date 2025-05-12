@@ -28,9 +28,9 @@ namespace Oshima.FunGame.OshimaModules.Skills
 
         private bool 是否是嵌套伤害 = false;
 
-        public override void AfterDamageCalculation(Character character, Character enemy, double damage, bool isNormalAttack, bool isMagicDamage, MagicType magicType, DamageResult damageResult)
+        public override void AfterDamageCalculation(Character character, Character enemy, double damage, double actualDamage, bool isNormalAttack, bool isMagicDamage, MagicType magicType, DamageResult damageResult)
         {
-            if (character == Skill.Character && damageResult != DamageResult.Evaded && !是否是嵌套伤害 && enemy.HP > 0)
+            if (character == Skill.Character && (damageResult == DamageResult.Normal || damageResult == DamageResult.Critical) && !是否是嵌套伤害 && enemy.HP > 0)
             {
                 // 减少能量
                 double EP = Random.Shared.Next(7, 15);

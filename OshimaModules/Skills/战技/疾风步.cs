@@ -61,7 +61,7 @@ namespace Oshima.FunGame.OshimaModules.Skills
 
         public override double AlterActualDamageAfterCalculation(Character character, Character enemy, double damage, bool isNormalAttack, bool isMagicDamage, MagicType magicType, DamageResult damageResult, ref bool isEvaded, Dictionary<Effect, double> totalDamageBonus)
         {
-            if (character == Skill.Character && damageResult != DamageResult.Evaded && 首次伤害)
+            if (character == Skill.Character && (damageResult == DamageResult.Normal || damageResult == DamageResult.Critical) && 首次伤害)
             {
                 首次伤害 = false;
                 破隐一击 = true;

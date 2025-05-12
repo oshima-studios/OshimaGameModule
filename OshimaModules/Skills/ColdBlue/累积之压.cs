@@ -37,9 +37,9 @@ namespace Oshima.FunGame.OshimaModules.Skills
             return !是否是嵌套伤害;
         }
 
-        public override void AfterDamageCalculation(Character character, Character enemy, double damage, bool isNormalAttack, bool isMagicDamage, MagicType magicType, DamageResult damageResult)
+        public override void AfterDamageCalculation(Character character, Character enemy, double damage, double actualDamage, bool isNormalAttack, bool isMagicDamage, MagicType magicType, DamageResult damageResult)
         {
-            if (character == Skill.Character && damageResult != DamageResult.Evaded && !是否是嵌套伤害 && enemy.HP > 0)
+            if (character == Skill.Character && (damageResult == DamageResult.Normal || damageResult == DamageResult.Critical) && !是否是嵌套伤害 && enemy.HP > 0)
             {
                 // 叠标记
                 IEnumerable<Effect> effects = enemy.Effects.Where(e => e is 累积之压标记);

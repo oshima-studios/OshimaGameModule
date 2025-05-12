@@ -93,12 +93,12 @@ namespace Oshima.FunGame.OshimaModules.Skills
             return 0;
         }
 
-        public override void AfterDamageCalculation(Character character, Character enemy, double damage, bool isNormalAttack, bool isMagicDamage, MagicType magicType, DamageResult damageResult)
+        public override void AfterDamageCalculation(Character character, Character enemy, double damage, double actualDamage, bool isNormalAttack, bool isMagicDamage, MagicType magicType, DamageResult damageResult)
         {
-            if (enemy == Skill.Character && damageResult != DamageResult.Evaded)
+            if (enemy == Skill.Character && (damageResult == DamageResult.Normal || damageResult == DamageResult.Critical))
             {
-                累计受到的伤害 += damage;
-                if (enemy.HP < 0 && 受到伤害之前的HP - damage + 这次受到的额外伤害 > 0)
+                累计受到的伤害 += actualDamage;
+                if (enemy.HP < 0 && 受到伤害之前的HP - actualDamage + 这次受到的额外伤害 > 0)
                 {
                     enemy.HP = 10;
                     WriteLine($"[ {enemy} ] 的破釜沉舟触发，保护了自己不进入死亡！！");

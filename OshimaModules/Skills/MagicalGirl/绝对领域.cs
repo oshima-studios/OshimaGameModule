@@ -49,7 +49,7 @@ namespace Oshima.FunGame.OshimaModules.Skills
 
         public override double AlterActualDamageAfterCalculation(Character character, Character enemy, double damage, bool isNormalAttack, bool isMagicDamage, MagicType magicType, DamageResult damageResult, ref bool isEvaded, Dictionary<Effect, double> totalDamageBonus)
         {
-            if (enemy == Skill.Character && damageResult != DamageResult.Evaded)
+            if (enemy == Skill.Character && (damageResult == DamageResult.Normal || damageResult == DamageResult.Critical))
             {
                 WriteLine($"[ {enemy} ] 发动了绝对领域，巧妙的化解了此伤害！");
                 isEvaded = true;

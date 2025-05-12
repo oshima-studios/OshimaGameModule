@@ -202,10 +202,6 @@ namespace Oshima.FunGame.OshimaServers.Service
                     {
                         if (PrintOut) Console.WriteLine(builder.ToString());
                     }
-                    if (character.User != null)
-                    {
-                        character.User.Inventory.Credits += stats.TotalEarnedMoney;
-                    }
                 }
 
                 Result.Add(_msg);
@@ -404,10 +400,6 @@ namespace Oshima.FunGame.OshimaServers.Service
                         {
                             CharacterStatistics stats = actionQueue.CharacterStatistics[character];
                             ratingBuilder.AppendLine($"[ {stats.Rating:0.0#} ]  {character}（{stats.Kills} / {stats.Assists} / {stats.Deaths}）");
-                            if (character.User != null)
-                            {
-                                character.User.Inventory.Credits += stats.TotalEarnedMoney;
-                            }
                         }
                     }
                     Result.Add(mvpBuilder.ToString() + "\r\n\r\n" + ratingBuilder.ToString());

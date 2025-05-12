@@ -30,9 +30,9 @@ namespace Oshima.FunGame.OshimaModules.Skills
         public override double Duration => 30;
         public override DispelledType DispelledType => DispelledType.CannotBeDispelled;
 
-        public override void AfterDamageCalculation(Character character, Character enemy, double damage, bool isNormalAttack, bool isMagicDamage, MagicType magicType, DamageResult damageResult)
+        public override void AfterDamageCalculation(Character character, Character enemy, double damage, double actualDamage, bool isNormalAttack, bool isMagicDamage, MagicType magicType, DamageResult damageResult)
         {
-            if (character == Skill.Character && damageResult != DamageResult.Evaded && character.HP < character.MaxHP)
+            if (character == Skill.Character && (damageResult == DamageResult.Normal || damageResult == DamageResult.Critical) && character.HP < character.MaxHP)
             {
                 double 实际吸血 = 0.4 * damage;
                 HealToTarget(character, character, 实际吸血);

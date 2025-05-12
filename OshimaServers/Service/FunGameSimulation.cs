@@ -108,7 +108,7 @@ namespace Oshima.FunGame.OshimaServers.Service
                         character9, character10, character11, character12
                     ];
 
-                    int clevel = 15;
+                    int clevel = 10;
                     int slevel = 2;
                     int mlevel = 2;
 
@@ -152,8 +152,9 @@ namespace Oshima.FunGame.OshimaServers.Service
                     // 总游戏时长
                     double totalTime = 0;
 
-                    // 初始化商店
-                    Store store = new("模拟商店");
+                    // 初始化商店 团队模式专供
+                    useStore = useStore && isTeam;
+                    List<Item> store = [];
                     if (useStore)
                     {
                         AddStoreItems(actionQueue, store);
@@ -173,7 +174,7 @@ namespace Oshima.FunGame.OshimaServers.Service
                         DropItems(actionQueue, mQuality, wQuality, aQuality, sQuality, acQuality, false);
                         WriteLine("");
                         if (isWeb) result.Add("=== 空投 ===\r\n" + Msg);
-                        nextDropTime = isTeam ? 80 : 40;
+                        nextDropTime = isTeam ? 90 : 60;
                         if (mQuality < 4)
                         {
                             mQuality++;
@@ -219,19 +220,26 @@ namespace Oshima.FunGame.OshimaServers.Service
                         // 将角色交替分配到两个团队中
                         for (int cid = 0; cid < shuffledCharacters.Count; cid++)
                         {
+                            // 创建角色的用户，用于绑定金币
+                            User user = Factory.GetUser();
+                            user.Username = FunGameService.GenerateRandomChineseUserName();
+                            user.Inventory.Credits = 255;
+                            Character thisCharacter = shuffledCharacters[cid];
+                            thisCharacter.User = user;
+
                             if (cid % 2 == 0)
                             {
-                                group1.Add(shuffledCharacters[cid]);
+                                group1.Add(thisCharacter);
                             }
                             else
                             {
-                                group2.Add(shuffledCharacters[cid]);
+                                group2.Add(thisCharacter);
                             }
                         }
 
-                        // 添加到团队字典
-                        tg.AddTeam("队伍一", group1);
-                        tg.AddTeam("队伍二", group2);
+                        // 添加到团队字典，第一个用户为队长
+                        tg.AddTeam($"{group1.First().User.Username}的小队", group1);
+                        tg.AddTeam($"{group2.First().User.Username}的小队", group2);
 
                         foreach (string team in tg.Teams.Keys)
                         {
@@ -344,6 +352,17 @@ namespace Oshima.FunGame.OshimaServers.Service
                                 roundMsg += "\r\n" + Msg;
                             }
                             result.Add(roundMsg);
+                        }
+
+                        // 模拟商店购买，死的人不能买
+                        if (useStore)
+                        {
+                            // 发钱了，1.5/秒
+                            foreach (Character character in actionQueue.HardnessTime.Keys)
+                            {
+                                character.User.Inventory.Credits += 1.5 * timeLapse;
+                            }
+                            BuyItems(actionQueue, store);
                         }
 
                         if (!useStore && nextDropTime <= 0)
@@ -609,25 +628,258 @@ namespace Oshima.FunGame.OshimaServers.Service
             if (PrintOut) Console.WriteLine(str);
         }
 
-        public static void AddStoreItems(GamingQueue queue, Store store)
+        public static void AddStoreItems(GamingQueue queue, List<Item> store)
         {
             foreach (Item item in FunGameConstant.Equipment)
             {
                 Item realItem = item.Copy();
                 realItem.SetGamingQueue(queue);
-                realItem.Price = Random.Shared.Next() * (int)item.QualityType;
-                store.AddItem(realItem, 100);
+                realItem.Price = Random.Shared.Next(5, 20) * ((int)item.QualityType + 1) * 2;
+                store.Add(realItem);
+            }
+        }
+        
+        public static void BuyItems(GamingQueue queue, List<Item> store)
+        {
+            // 升级成本
+            double costLevel = 200;
+
+            // 卡包购买/升级成本
+            Dictionary<QualityType, double> costMCP = new()
+            {
+                { QualityType.White, 20 }, // 普通
+                { QualityType.Green, 50 }, // 优秀
+                { QualityType.Blue, 80 }, // 稀有
+                { QualityType.Purple, 120 }, // 史诗
+                { QualityType.Orange, 160 }, // 传说
+            };
+
+            foreach (Character character in queue.Queue)
+            {
+                // 购买欲望，可以加多个判断
+                List<Func<bool>> funcs = [
+                    () => Random.Shared.NextDouble() > 0.3
+                ];
+
+                if (funcs.All(f => f()))
+                {
+                    // 定义操作的概率（优先级）
+                    Dictionary<string, double> pOperations = new()
+                    {
+                        { "升级角色", 0.8 }, // 会同时升级技能等级，优先级高
+                        { "买卡包", 0.6 }, // 会获得属性加成和魔法技能，优先级高
+                        { "买武器", 0.4 }, // 提升攻击力
+                        { "买防具", 0.4 }, // 提升防御性能
+                        { "买鞋子", 0.4 }, // 提升速度
+                        { "买饰品", 0.4 } // 提升综合能力
+                    };
+
+                    // 记录操作
+                    Dictionary<string, bool> operation = new()
+                    {
+                        { "升级角色", false },
+                        { "买卡包", false },
+                        { "买武器", false },
+                        { "买防具", false },
+                        { "买鞋子", false },
+                        { "买饰品", false }
+                    };
+
+                    // 本次购买只提升？
+                    bool onlyLarger = Random.Shared.NextDouble() > 0.3;
+
+                    bool buy = true;
+                    int failedBuyTimes = 0;
+                    while (buy && pOperations.Values.Any(o => o != 0) && operation.Values.Any(o => o == false))
+                    {
+                        // 先看手上的钱能买什么
+                        IEnumerable<Item> canBuys = store.Where(i => i.Price <= character.User.Inventory.Credits);
+
+                        // 然后看能买的东西里，是否品质符合
+                        Item[] weapons = [.. canBuys.Where(i => i.Id.ToString().StartsWith("11") &&
+                            (onlyLarger ? (int)i.QualityType > Convert.ToInt32(character.EquipSlot.Weapon?.QualityType) : (int)i.QualityType >= Convert.ToInt32(character.EquipSlot.Weapon?.QualityType)))];
+                        Item[] armors = [.. canBuys.Where(i => i.Id.ToString().StartsWith("12") &&
+                            (onlyLarger ? (int)i.QualityType > Convert.ToInt32(character.EquipSlot.Armor?.QualityType) : (int)i.QualityType >= Convert.ToInt32(character.EquipSlot.Armor?.QualityType)))];
+                        Item[] shoes = [.. canBuys.Where(i => i.Id.ToString().StartsWith("13") &&
+                            (onlyLarger ? (int)i.QualityType > Convert.ToInt32(character.EquipSlot.Shoes?.QualityType) : (int)i.QualityType >= Convert.ToInt32(character.EquipSlot.Shoes?.QualityType)))];
+                        Item[] accessories = [.. canBuys.Where(i => i.Id.ToString().StartsWith("14") &&
+                            (onlyLarger ? (int)i.QualityType > Math.Min(Convert.ToInt32(character.EquipSlot.Accessory1?.QualityType), Convert.ToInt32(character.EquipSlot.Accessory2?.QualityType))
+                            : (int)i.QualityType >= Math.Min(Convert.ToInt32(character.EquipSlot.Accessory1?.QualityType), Convert.ToInt32(character.EquipSlot.Accessory2?.QualityType))))];
+
+                        // 魔法卡包单独列出
+                        int mQuality = Convert.ToInt32(character.EquipSlot.MagicCardPack?.QualityType);
+
+                        if (character.User.Inventory.Credits < costLevel)
+                        {
+                            pOperations["升级角色"] = 0;
+                        }
+
+                        if (character.User.Inventory.Credits < costMCP[(QualityType)mQuality])
+                        {
+                            pOperations["买卡包"] = 0;
+                        }
+
+                        if (weapons.Length == 0)
+                        {
+                            pOperations["买武器"] = 0;
+                        }
+
+                        if (armors.Length == 0)
+                        {
+                            pOperations["买防具"] = 0;
+                        }
+
+                        if (shoes.Length == 0)
+                        {
+                            pOperations["买鞋子"] = 0;
+                        }
+
+                        if (accessories.Length == 0)
+                        {
+                            pOperations["买饰品"] = 0;
+                        }
+
+                        double p = Random.Shared.NextDouble();
+
+                        foreach (KeyValuePair<string, double> kvp in pOperations.OrderByDescending(kv => kv.Value))
+                        {
+                            string op = "";
+                            if (kvp.Value != 0 && p <= kvp.Value)
+                            {
+                                op = kvp.Key;
+                            }
+                            else
+                            {
+                                continue;
+                            }
+                            switch (op)
+                            {
+                                case "升级角色":
+                                    // 钱够吗？
+                                    if (character.User.Inventory.Credits >= costLevel)
+                                    {
+                                        character.User.Inventory.Credits -= costLevel;
+                                        operation["升级角色"] = true;
+                                        character.Level += 10;
+                                        character.NormalAttack.Level += 2;
+                                        foreach (Skill skill in character.Skills)
+                                        {
+                                            if (skill.SkillType == SkillType.Passive) continue;
+                                            skill.Level += 2;
+                                        }
+                                        Character? original = queue.Original[character.Guid];
+                                        if (original != null)
+                                        {
+                                            original.Level += 10;
+                                            original.NormalAttack.Level += 2;
+                                            foreach (Skill skill in original.Skills)
+                                            {
+                                                if (skill.SkillType == SkillType.Passive) continue;
+                                                skill.Level += 2;
+                                            }
+                                        }
+                                        WriteLine($"[ {character} ] 消费了 {costLevel}，购买了【升级角色】！当前角色 {character.Level} 级，技能 {character.NormalAttack.Level} 级（战技、爆发技最高 6 级）。");
+                                    }
+                                    else failedBuyTimes++;
+                                    break;
+                                case "买卡包":
+                                    // 看角色能购买的最高级卡包是什么
+                                    QualityType canBuyMCP = costMCP.Where(kv => (int)kv.Key >= mQuality && character.User.Inventory.Credits >= kv.Value).OrderByDescending(kv => kv.Value).Select(kv => kv.Key).FirstOrDefault();
+                                    double mcpCost = costMCP[canBuyMCP];
+                                    // 买卡包
+                                    if (character.User.Inventory.Credits >= mcpCost)
+                                    {
+                                        character.User.Inventory.Credits -= mcpCost;
+                                        operation["买卡包"] = true;
+                                        Item? mcp = FunGameService.GenerateMagicCardPack(3, canBuyMCP);
+                                        if (mcp != null)
+                                        {
+                                            foreach (Skill magic in mcp.Skills.Magics)
+                                            {
+                                                magic.Level = character.NormalAttack.Level;
+                                            }
+                                            mcp.SetGamingQueue(queue);
+                                            queue.Equip(character, mcp);
+                                        }
+                                        WriteLine($"[ {character} ] 消费了 {mcpCost}，购买了【卡包】！详细说明：\r\n{mcp}");
+                                    }
+                                    else failedBuyTimes++;
+                                    break;
+                                case "买武器":
+                                    Item weapon = weapons[Random.Shared.Next(weapons.Length)];
+                                    double wCost = weapon.Price;
+                                    if (character.User.Inventory.Credits >= wCost)
+                                    {
+                                        character.User.Inventory.Credits -= wCost;
+                                        operation["买武器"] = true;
+                                        Item realItem = weapon.Copy();
+                                        realItem.SetGamingQueue(queue);
+                                        WriteLine($"[ {character} ] 消费了 {wCost}，购买了武器！详细说明：\r\n{realItem}");
+                                        queue.Equip(character, realItem);
+                                    }
+                                    else failedBuyTimes++;
+                                    break;
+                                case "买防具":
+                                    Item armor = armors[Random.Shared.Next(armors.Length)];
+                                    double aCost = armor.Price;
+                                    if (character.User.Inventory.Credits >= aCost)
+                                    {
+                                        character.User.Inventory.Credits -= aCost;
+                                        operation["买防具"] = true;
+                                        Item realItem = armor.Copy();
+                                        realItem.SetGamingQueue(queue);
+                                        WriteLine($"[ {character} ] 消费了 {aCost}，购买了防具！详细说明：\r\n{realItem}");
+                                        queue.Equip(character, realItem);
+                                    }
+                                    else failedBuyTimes++;
+                                    break;
+                                case "买鞋子":
+                                    Item shoe = shoes[Random.Shared.Next(shoes.Length)];
+                                    double sCost = shoe.Price;
+                                    if (character.User.Inventory.Credits >= sCost)
+                                    {
+                                        character.User.Inventory.Credits -= sCost;
+                                        operation["买鞋子"] = true;
+                                        Item realItem = shoe.Copy();
+                                        realItem.SetGamingQueue(queue);
+                                        WriteLine($"[ {character} ] 消费了 {sCost}，购买了鞋子！详细说明：\r\n{realItem}");
+                                        queue.Equip(character, realItem);
+                                    }
+                                    else failedBuyTimes++;
+                                    break;
+                                case "买饰品":
+                                    Item accessory = accessories[Random.Shared.Next(accessories.Length)];
+                                    double acCost = accessory.Price;
+                                    if (character.User.Inventory.Credits >= acCost)
+                                    {
+                                        character.User.Inventory.Credits -= acCost;
+                                        operation["买饰品"] = true;
+                                        Item realItem = accessory.Copy();
+                                        realItem.SetGamingQueue(queue);
+                                        WriteLine($"[ {character} ] 消费了 {acCost}，购买了饰品！详细说明：\r\n{realItem}");
+                                        queue.Equip(character, realItem);
+                                    }
+                                    else failedBuyTimes++;
+                                    break;
+                                default:
+                                    break;
+                            }
+                        }
+                        // 看还要不要买，超过两次购买失败说明没钱别买了
+                        buy = failedBuyTimes < 2 && funcs.All(f => f());
+                    }
+                    WriteLine($"[ {character} ] 结束购买，剩余{General.GameplayEquilibriumConstant.InGameCurrency}：{character.User.Inventory.Credits:0.00}。");
+                }
             }
         }
         
         public static void DropItems(GamingQueue queue, int mQuality, int wQuality, int aQuality, int sQuality, int acQuality, bool addLevel = true)
         {
-            if (wQuality == 0 && aQuality == 0 && sQuality == 0 && acQuality == 0) return;
             foreach (Character character in queue.HardnessTime.Keys)
             {
                 if (addLevel)
                 {
-                    character.Level += 15;
+                    character.Level += 10;
                     character.NormalAttack.Level += 2;
                     foreach (Skill skill in character.Skills)
                     {
@@ -637,7 +889,7 @@ namespace Oshima.FunGame.OshimaServers.Service
                     Character? original = queue.Original[character.Guid];
                     if (original != null)
                     {
-                        original.Level += 15;
+                        original.Level += 10;
                         original.NormalAttack.Level += 2;
                         foreach (Skill skill in original.Skills)
                         {
@@ -645,6 +897,20 @@ namespace Oshima.FunGame.OshimaServers.Service
                             skill.Level += 2;
                         }
                     }
+                }
+                Item? mcp = FunGameService.GenerateMagicCardPack(3, (QualityType)mQuality);
+                if (mcp != null)
+                {
+                    foreach (Skill magic in mcp.Skills.Magics)
+                    {
+                        magic.Level = character.NormalAttack.Level;
+                    }
+                    mcp.SetGamingQueue(queue);
+                    queue.Equip(character, mcp);
+                }
+                if (wQuality == -1 && aQuality == -1 && sQuality == -1 && acQuality == -1)
+                {
+                    continue;
                 }
                 Item[] weapons = [.. FunGameConstant.Equipment.Where(i => i.Id.ToString().StartsWith("11") && (int)i.QualityType == wQuality)];
                 Item[] armors = [.. FunGameConstant.Equipment.Where(i => i.Id.ToString().StartsWith("12") && (int)i.QualityType == aQuality)];
@@ -677,16 +943,6 @@ namespace Oshima.FunGame.OshimaServers.Service
                 if (shoe != null) thisDrops.Add(shoe);
                 if (accessory1 != null) thisDrops.Add(accessory1);
                 if (accessory2 != null) thisDrops.Add(accessory2);
-                Item? mcp = FunGameService.GenerateMagicCardPack(3, (QualityType)mQuality);
-                if (mcp != null)
-                {
-                    foreach (Skill magic in mcp.Skills.Magics)
-                    {
-                        magic.Level = 8;
-                    }
-                    mcp.SetGamingQueue(queue);
-                    queue.Equip(character, mcp);
-                }
                 foreach (Item item in thisDrops)
                 {
                     Item realItem = item.Copy();

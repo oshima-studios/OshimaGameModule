@@ -31,9 +31,9 @@ namespace Oshima.FunGame.OshimaModules.Skills
         public int 释放次数 { get; set; } = 0;
         public double 获得额外能量值 => 0.25 * Skill.Character?.INT ?? 0;
 
-        public override void AfterDamageCalculation(Character character, Character enemy, double damage, bool isNormalAttack, bool isMagicDamage, MagicType magicType, DamageResult damageResult)
+        public override void AfterDamageCalculation(Character character, Character enemy, double damage, double actualDamage, bool isNormalAttack, bool isMagicDamage, MagicType magicType, DamageResult damageResult)
         {
-            if (character == Skill.Character && (是否支持普攻 && isNormalAttack || isMagicDamage) && damageResult != DamageResult.Evaded && character.EP < 200)
+            if (character == Skill.Character && (是否支持普攻 && isNormalAttack || isMagicDamage) && (damageResult == DamageResult.Normal || damageResult == DamageResult.Critical) && character.EP < 200)
             {
                 double 实际获得能量值 = 获得额外能量值;
                 character.EP += 实际获得能量值;
