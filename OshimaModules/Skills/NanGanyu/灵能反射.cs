@@ -46,7 +46,7 @@ namespace Oshima.FunGame.OshimaModules.Skills
                         scd.Enable = true;
                     }
                 }
-                WriteLine($"[ {character} ] 发动了灵能反射！额外获得了 {实际获得能量值:0.##} 能量，并消除了 2 {GameplayEquilibriumConstant.InGameTime} 冷却时间！");
+                WriteLine($"[ {character} ] 发动了灵能反射！额外获得了 {实际获得能量值:0.##} 能量，并消除了 2 {GameplayEquilibriumConstant.InGameTime}冷却时间！");
                 IEnumerable<Effect> effects = character.Effects.Where(e => e is 三重叠加特效);
                 if (effects.Any() && effects.First() is 三重叠加特效 e)
                 {

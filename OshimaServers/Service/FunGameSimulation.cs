@@ -223,7 +223,7 @@ namespace Oshima.FunGame.OshimaServers.Service
                             // 创建角色的用户，用于绑定金币
                             User user = Factory.GetUser();
                             user.Username = FunGameService.GenerateRandomChineseUserName();
-                            user.Inventory.Credits = 255;
+                            user.Inventory.Credits = 20;
                             Character thisCharacter = shuffledCharacters[cid];
                             thisCharacter.User = user;
 
@@ -313,7 +313,7 @@ namespace Oshima.FunGame.OshimaServers.Service
                         // 处理回合
                         if (characterToAct != null)
                         {
-                            WriteLine($"=== Round {i++} ===");
+                            WriteLine($"=== Round {i++} [ Time: {totalTime} ] ===");
                             WriteLine("现在是 [ " + characterToAct + (tgq != null ? "（" + (tgq.GetTeam(characterToAct)?.Name ?? "") + "）" : "") + " ] 的回合！");
 
                             bool isGameEnd = await actionQueue.ProcessTurnAsync(characterToAct);
@@ -342,7 +342,7 @@ namespace Oshima.FunGame.OshimaServers.Service
 
                         // 模拟时间流逝
                         double timeLapse = await actionQueue.TimeLapse();
-                        totalTime += timeLapse;
+                        totalTime = actionQueue.TotalTime;
                         nextDropTime -= timeLapse;
 
                         if (roundMsg != "")
@@ -354,13 +354,13 @@ namespace Oshima.FunGame.OshimaServers.Service
                             result.Add(roundMsg);
                         }
 
-                        // 模拟商店购买，死的人不能买
+                        // 模拟商店购买
                         if (useStore)
                         {
-                            // 发钱了，1.5/秒
+                            // 发钱了
                             foreach (Character character in actionQueue.HardnessTime.Keys)
                             {
-                                character.User.Inventory.Credits += 1.5 * timeLapse;
+                                character.User.Inventory.Credits += 3 * timeLapse;
                             }
                             BuyItems(actionQueue, store);
                         }
@@ -492,10 +492,13 @@ namespace Oshima.FunGame.OshimaServers.Service
                                 if (PrintOut) Console.WriteLine(builder.ToString());
                             }
 
-                            CharacterStatistics? totalStats = TeamCharacterStatistics.Where(kv => kv.Key.GetName() == character.GetName()).Select(kv => kv.Value).FirstOrDefault();
-                            if (totalStats != null)
+                            if (!useStore)
                             {
-                                UpdateStatistics(totalStats, stats);
+                                CharacterStatistics? totalStats = TeamCharacterStatistics.Where(kv => kv.Key.GetName() == character.GetName()).Select(kv => kv.Value).FirstOrDefault();
+                                if (totalStats != null)
+                                {
+                                    UpdateStatistics(totalStats, stats);
+                                }
                             }
                         }
                     }
@@ -521,10 +524,13 @@ namespace Oshima.FunGame.OshimaServers.Service
                                 if (PrintOut) Console.WriteLine(builder.ToString());
                             }
 
-                            CharacterStatistics? totalStats = CharacterStatistics.Where(kv => kv.Key.GetName() == character.GetName()).Select(kv => kv.Value).FirstOrDefault();
-                            if (totalStats != null)
+                            if (!useStore)
                             {
-                                UpdateStatistics(totalStats, stats);
+                                CharacterStatistics? totalStats = CharacterStatistics.Where(kv => kv.Key.GetName() == character.GetName()).Select(kv => kv.Value).FirstOrDefault();
+                                if (totalStats != null)
+                                {
+                                    UpdateStatistics(totalStats, stats);
+                                }
                             }
                         }
                     }
@@ -579,26 +585,29 @@ namespace Oshima.FunGame.OshimaServers.Service
                         }
                     }
 
-                    if (isTeam)
+                    if (!useStore)
                     {
-                        lock (TeamStatsConfig)
+                        if (isTeam)
                         {
-                            foreach (Character c in TeamCharacterStatistics.Keys)
+                            lock (TeamStatsConfig)
                             {
-                                TeamStatsConfig.Add(c.ToStringWithOutUser(), TeamCharacterStatistics[c]);
+                                foreach (Character c in TeamCharacterStatistics.Keys)
+                                {
+                                    TeamStatsConfig.Add(c.ToStringWithOutUser(), TeamCharacterStatistics[c]);
+                                }
+                                TeamStatsConfig.SaveConfig();
                             }
-                            TeamStatsConfig.SaveConfig();
                         }
-                    }
-                    else
-                    {
-                        lock (StatsConfig)
+                        else
                         {
-                            foreach (Character c in CharacterStatistics.Keys)
+                            lock (StatsConfig)
                             {
-                                StatsConfig.Add(c.ToStringWithOutUser(), CharacterStatistics[c]);
+                                foreach (Character c in CharacterStatistics.Keys)
+                                {
+                                    StatsConfig.Add(c.ToStringWithOutUser(), CharacterStatistics[c]);
+                                }
+                                StatsConfig.SaveConfig();
                             }
-                            StatsConfig.SaveConfig();
                         }
                     }
 
@@ -634,7 +643,7 @@ namespace Oshima.FunGame.OshimaServers.Service
             {
                 Item realItem = item.Copy();
                 realItem.SetGamingQueue(queue);
-                realItem.Price = Random.Shared.Next(5, 20) * ((int)item.QualityType + 1) * 2;
+                realItem.Price = Random.Shared.Next(1, 10) * ((int)item.QualityType + 1) * 2;
                 store.Add(realItem);
             }
         }
@@ -642,19 +651,19 @@ namespace Oshima.FunGame.OshimaServers.Service
         public static void BuyItems(GamingQueue queue, List<Item> store)
         {
             // 升级成本
-            double costLevel = 200;
+            double costLevel = 20;
 
             // 卡包购买/升级成本
             Dictionary<QualityType, double> costMCP = new()
             {
-                { QualityType.White, 20 }, // 普通
-                { QualityType.Green, 50 }, // 优秀
-                { QualityType.Blue, 80 }, // 稀有
-                { QualityType.Purple, 120 }, // 史诗
-                { QualityType.Orange, 160 }, // 传说
+                { QualityType.White, 5 }, // 普通
+                { QualityType.Green, 10 }, // 优秀
+                { QualityType.Blue, 15 }, // 稀有
+                { QualityType.Purple, 20 }, // 史诗
+                { QualityType.Orange, 25 }, // 传说
             };
 
-            foreach (Character character in queue.Queue)
+            foreach (Character character in queue.HardnessTime.Keys)
             {
                 // 购买欲望，可以加多个判断
                 List<Func<bool>> funcs = [
@@ -778,7 +787,7 @@ namespace Oshima.FunGame.OshimaServers.Service
                                                 skill.Level += 2;
                                             }
                                         }
-                                        WriteLine($"[ {character} ] 消费了 {costLevel}，购买了【升级角色】！当前角色 {character.Level} 级，技能 {character.NormalAttack.Level} 级（战技、爆发技最高 6 级）。");
+                                        WriteLine($"[ {character} ] 消费了 {costLevel} {General.GameplayEquilibriumConstant.InGameCurrency}，购买了【升级角色】！当前角色 {character.Level} 级，技能 {character.NormalAttack.Level} 级（战技、爆发技最高 6 级）。");
                                     }
                                     else failedBuyTimes++;
                                     break;
@@ -799,9 +808,9 @@ namespace Oshima.FunGame.OshimaServers.Service
                                                 magic.Level = character.NormalAttack.Level;
                                             }
                                             mcp.SetGamingQueue(queue);
+                                            WriteLine($"[ {character} ] 消费了 {mcpCost} {General.GameplayEquilibriumConstant.InGameCurrency}，购买了【卡包-{mcp.Name}】！详细说明：\r\n{mcp}");
                                             queue.Equip(character, mcp);
                                         }
-                                        WriteLine($"[ {character} ] 消费了 {mcpCost}，购买了【卡包】！详细说明：\r\n{mcp}");
                                     }
                                     else failedBuyTimes++;
                                     break;
@@ -814,7 +823,7 @@ namespace Oshima.FunGame.OshimaServers.Service
                                         operation["买武器"] = true;
                                         Item realItem = weapon.Copy();
                                         realItem.SetGamingQueue(queue);
-                                        WriteLine($"[ {character} ] 消费了 {wCost}，购买了武器！详细说明：\r\n{realItem}");
+                                        WriteLine($"[ {character} ] 消费了 {wCost} {General.GameplayEquilibriumConstant.InGameCurrency}，购买了武器-{realItem.Name}！详细说明：\r\n{realItem}");
                                         queue.Equip(character, realItem);
                                     }
                                     else failedBuyTimes++;
@@ -828,7 +837,7 @@ namespace Oshima.FunGame.OshimaServers.Service
                                         operation["买防具"] = true;
                                         Item realItem = armor.Copy();
                                         realItem.SetGamingQueue(queue);
-                                        WriteLine($"[ {character} ] 消费了 {aCost}，购买了防具！详细说明：\r\n{realItem}");
+                                        WriteLine($"[ {character} ] 消费了 {aCost} {General.GameplayEquilibriumConstant.InGameCurrency}，购买了防具-{realItem.Name}！详细说明：\r\n{realItem}");
                                         queue.Equip(character, realItem);
                                     }
                                     else failedBuyTimes++;
@@ -842,7 +851,7 @@ namespace Oshima.FunGame.OshimaServers.Service
                                         operation["买鞋子"] = true;
                                         Item realItem = shoe.Copy();
                                         realItem.SetGamingQueue(queue);
-                                        WriteLine($"[ {character} ] 消费了 {sCost}，购买了鞋子！详细说明：\r\n{realItem}");
+                                        WriteLine($"[ {character} ] 消费了 {sCost} {General.GameplayEquilibriumConstant.InGameCurrency}，购买了鞋子-{realItem.Name}！详细说明：\r\n{realItem}");
                                         queue.Equip(character, realItem);
                                     }
                                     else failedBuyTimes++;
@@ -856,7 +865,7 @@ namespace Oshima.FunGame.OshimaServers.Service
                                         operation["买饰品"] = true;
                                         Item realItem = accessory.Copy();
                                         realItem.SetGamingQueue(queue);
-                                        WriteLine($"[ {character} ] 消费了 {acCost}，购买了饰品！详细说明：\r\n{realItem}");
+                                        WriteLine($"[ {character} ] 消费了 {acCost} {General.GameplayEquilibriumConstant.InGameCurrency}，购买了饰品-{realItem.Name}！详细说明：\r\n{realItem}");
                                         queue.Equip(character, realItem);
                                     }
                                     else failedBuyTimes++;

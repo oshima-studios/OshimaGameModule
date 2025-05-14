@@ -13,7 +13,7 @@ namespace Oshima.FunGame.OshimaModules.Characters
             NickName = "心音";
             PrimaryAttribute = PrimaryAttribute.AGI;
             InitialATK = 22;
-            InitialHP = 80;
+            InitialHP = 85;
             InitialMP = 60;
             InitialSTR = 8;
             STRGrowth = 0.9;

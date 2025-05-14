@@ -60,7 +60,7 @@ namespace Oshima.FunGame.OshimaModules.Skills
         {
             if (enemy == Skill.Character)
             {
-                return damage * (1 - 实际比例);
+                return -(damage * 实际比例);
             }
             return 0;
         }
