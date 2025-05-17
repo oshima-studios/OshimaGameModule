@@ -10,12 +10,20 @@ namespace Oshima.FunGame.OshimaModules.Effects.OpenEffects
     {
         public override long Id => (long)EffectID.DynamicsEffect;
         public override string Name { get; set; } = "动态扩展特效";
-        public override string Description => string.Join("", Descriptions) + (Source != null && Skill.Character != Source ? $"来自：[ {Source} ]" + (Skill.Item != null ? $" 的 [ {Skill.Item.Name} ]" : "") : "");
+        public override string Description => string.Join("", Descriptions) + (Source != null && Skill.Character != Source || Skill is not OpenSkill ? $"来自：[ {Source} ]" + (Skill.Item != null ? $" 的 [ {Skill.Item.Name} ]" : (Skill is OpenSkill ? "" : $" 的 [ {Skill.Name} ]")) : "");
         public HashSet<string> Descriptions { get; } = [];
         public Dictionary<string, double> RealDynamicsValues { get; } = [];
 
         public override void OnEffectGained(Character character)
         {
+            if (Durative && RemainDuration == 0)
+            {
+                RemainDuration = Duration;
+            }
+            else if (RemainDurationTurn == 0)
+            {
+                RemainDurationTurn = DurationTurn;
+            }
             Resolve(character);
         }
 

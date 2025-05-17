@@ -1,7 +1,8 @@
-﻿using System.Text;
+﻿using System.IO.Compression;
+using System.Text;
+using System.Text.Json;
 using Milimoe.FunGame.Core.Api.Utility;
 using Milimoe.FunGame.Core.Entity;
-using Milimoe.FunGame.Core.Interface.Entity;
 using Milimoe.FunGame.Core.Library.Constant;
 using Milimoe.FunGame.Core.Model;
 using Oshima.FunGame.OshimaModules.Effects.OpenEffects;
@@ -618,6 +619,9 @@ namespace Oshima.FunGame.OshimaServers.Service
                         LastRecordConfig.SaveConfig();
                     }
 
+                    //string zipFileName = "rounds_archive.zip";
+                    //WriteRoundsToZip(actionQueue.Rounds.ToDictionary(kv => kv.Round, kv => kv), zipFileName);
+
                     IsRuning = false;
                 }
 
@@ -629,6 +633,82 @@ namespace Oshima.FunGame.OshimaServers.Service
                 Console.WriteLine(ex);
                 return [ex.ToString()];
             }
+        }
+
+        /// <summary>
+        /// 将回合记录字典序列化为 JSON，然后压缩并写入 ZIP 文件
+        /// </summary>
+        /// <param name="roundsData">要写入的字典数据</param>
+        /// <param name="zipFilePath">输出的 ZIP 文件路径</param>
+        public static void WriteRoundsToZip(Dictionary<int, RoundRecord> roundsData, string zipFilePath)
+        {
+            // 确保目标目录存在
+            string? directory = Path.GetDirectoryName(zipFilePath);
+            if (!string.IsNullOrEmpty(directory) && !Directory.Exists(directory))
+            {
+                Directory.CreateDirectory(directory);
+            }
+
+            // 创建 ZIP 文件
+            using FileStream? zipFileStream = new(zipFilePath, FileMode.Create);
+            using ZipArchive? zipArchive = new(zipFileStream, ZipArchiveMode.Create);
+            // 在 ZIP 档案中创建一个条目来存放 JSON 数据
+            // 你可以给这个条目起个名字，比如 "rounds_data.json"
+            ZipArchiveEntry jsonEntry = zipArchive.CreateEntry("rounds_data.json", CompressionLevel.Optimal); // 使用 Optimal 级别压缩
+
+            // 获取条目的流，将 JSON 数据写入这个流
+            using Stream? entryStream = jsonEntry.Open();
+            // 使用 System.Text.Json 直接序列化到流
+            JsonSerializer.Serialize(entryStream, roundsData, JsonTool.JsonSerializerOptions);
+
+            Console.WriteLine($"回合记录已成功序列化、压缩并写入到: {zipFilePath}");
+        }
+
+        /// <summary>
+        /// 从 ZIP 文件中读取并解压 JSON 数据，然后反序列化为回合记录字典
+        /// </summary>
+        /// <param name="zipFilePath">输入的 ZIP 文件路径</param>
+        /// <returns>反序列化后的字典数据</returns>
+        public static Dictionary<int, RoundRecord>? ReadRoundsFromZip(string zipFilePath)
+        {
+            if (!File.Exists(zipFilePath))
+            {
+                Console.WriteLine($"错误: 文件不存在 {zipFilePath}");
+                return null;
+            }
+
+            Dictionary<int, RoundRecord>? roundsData;
+
+            // 打开 ZIP 文件
+            using FileStream? zipFileStream = new(zipFilePath, FileMode.Open);
+            using ZipArchive? zipArchive = new(zipFileStream, ZipArchiveMode.Read);
+            ZipArchiveEntry? jsonEntry = zipArchive.GetEntry("rounds_data.json");
+
+            if (jsonEntry == null)
+            {
+                Console.WriteLine($"错误: ZIP 档案中找不到 'rounds_data.json' 条目。");
+                return null;
+            }
+
+            // 获取条目的流，从这个流中读取 JSON 数据
+            using Stream? entryStream = jsonEntry.Open();
+            try
+            {
+                roundsData = JsonSerializer.Deserialize<Dictionary<int, RoundRecord>>(entryStream, JsonTool.JsonSerializerOptions);
+            }
+            catch (JsonException ex)
+            {
+                Console.WriteLine($"JSON 反序列化错误: {ex.Message}");
+                return null;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"读取或反序列化过程中发生未知错误: {ex.Message}");
+                return null;
+            }
+
+            Console.WriteLine($"回合记录已成功从 {zipFilePath} 读取、解压并反序列化。");
+            return roundsData;
         }
 
         public static void WriteLine(string str)

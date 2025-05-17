@@ -50,7 +50,7 @@ namespace Oshima.FunGame.OshimaModules.Skills
 
         public override void AfterDamageCalculation(Character character, Character enemy, double damage, double actualDamage, bool isNormalAttack, bool isMagicDamage, MagicType magicType, DamageResult damageResult)
         {
-            if (character == Skill.Character && isMagicDamage && 冷却时间 == 0 && (damageResult == DamageResult.Normal || damageResult == DamageResult.Critical))
+            if (character == Skill.Character && isMagicDamage && actualDamage > 0 && 冷却时间 == 0 && (damageResult == DamageResult.Normal || damageResult == DamageResult.Critical))
             {
                 IEnumerable<Effect> effects = enemy.Effects.Where(e => e is 眩晕 && e.Skill == Skill);
                 if (effects.Any())

@@ -8,7 +8,7 @@ namespace Oshima.FunGame.OshimaModules.Effects.ItemEffects
     {
         public override long Id => (long)EffectID.RecoverMP;
         public override string Name => "立即回复魔法值";
-        public override string Description => $"立即回复角色 {实际回复:0.##} 点魔法值。" + (Source != null && Skill.Character != Source ? $"来自：[ {Source} ]" + (Skill.Item != null ? $" 的 [ {Skill.Item.Name} ]" : "") : "");
+        public override string Description => $"立即回复角色 {实际回复:0.##} 点魔法值。" + (Source != null && Skill.Character != Source || Skill is not OpenSkill ? $"来自：[ {Source} ]" + (Skill.Item != null ? $" 的 [ {Skill.Item.Name} ]" : (Skill is OpenSkill ? "" : $" 的 [ {Skill.Name} ]")) : "");
         public override EffectType EffectType { get; set; } = EffectType.Item;
 
         private readonly double 实际回复 = 0;

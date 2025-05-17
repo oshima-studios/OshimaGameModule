@@ -7,12 +7,20 @@ namespace Oshima.FunGame.OshimaModules.Effects.OpenEffects
     {
         public override long Id => (long)EffectID.NormalAttackHardTimeReduce;
         public override string Name => Skill.Name;
-        public override string Description => $"减少角色的普通攻击 {实际硬直时间减少:0.##} {GameplayEquilibriumConstant.InGameTime}硬直时间。" + (Source != null && Skill.Character != Source ? $"来自：[ {Source} ]" + (Skill.Item != null ? $" 的 [ {Skill.Item.Name} ]" : "") : "");
+        public override string Description => $"减少角色的普通攻击 {实际硬直时间减少:0.##} {GameplayEquilibriumConstant.InGameTime}硬直时间。" + (Source != null && Skill.Character != Source || Skill is not OpenSkill ? $"来自：[ {Source} ]" + (Skill.Item != null ? $" 的 [ {Skill.Item.Name} ]" : (Skill is OpenSkill ? "" : $" 的 [ {Skill.Name} ]")) : "");
 
         private readonly double 实际硬直时间减少 = 0;
 
         public override void OnEffectGained(Character character)
         {
+            if (Durative && RemainDuration == 0)
+            {
+                RemainDuration = Duration;
+            }
+            else if (RemainDurationTurn == 0)
+            {
+                RemainDurationTurn = DurationTurn;
+            }
             character.NormalAttack.HardnessTime -= 实际硬直时间减少;
         }
 

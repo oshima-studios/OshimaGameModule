@@ -30,7 +30,7 @@ namespace Oshima.FunGame.OshimaModules.Effects.SkillEffects
             foreach (Character enemy in targets)
             {
                 WriteLine($"[ {caster} ] 对 [ {enemy} ] 造成了封技和施法解除！持续时间：{封技时间}！");
-                封技 e = new(Skill, caster, false, 0, 1);
+                封技 e = new(Skill, caster, _durative, _duration, _durationTurn);
                 enemy.Effects.Add(e);
                 e.OnEffectGained(enemy);
                 GamingQueue?.LastRound.ApplyEffects.TryAdd(enemy, [e.EffectType]);

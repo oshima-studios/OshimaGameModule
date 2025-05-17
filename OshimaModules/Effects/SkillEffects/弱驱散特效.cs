@@ -7,7 +7,22 @@ namespace Oshima.FunGame.OshimaModules.Effects.SkillEffects
     {
         public override long Id => Skill.Id;
         public override string Name => Skill.Name;
-        public override string Description => $"弱驱散{(Skill.CanSelectTargetCount > 1 ? $"至多 {Skill.CanSelectTargetCount} 个" : "")}目标。";
+        public override string Description => $"弱驱散{TargetDescription}。";
+        public string TargetDescription
+        {
+            get
+            {
+                if (Skill.SelectAllTeammates)
+                {
+                    return "友方全体角色";
+                }
+                else if (Skill.SelectAllEnemies)
+                {
+                    return "敌方全体角色";
+                }
+                return $"{(Skill.CanSelectTargetCount > 1 ? $"至多 {Skill.CanSelectTargetCount} 个" : "")}目标";
+            }
+        }
         public override DispelType DispelType => DispelType.Weak;
 
         public 弱驱散特效(Skill skill) : base(skill)

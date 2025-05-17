@@ -21,7 +21,7 @@ namespace Oshima.FunGame.OshimaModules.Skills
         public 回复术(Character? character = null) : base(SkillType.Magic, character)
         {
             SelectTargetPredicates.Add(c => c.HP > 0 && c.HP < c.MaxHP);
-            Effects.Add(new 纯数值回复生命(this, 70, 120));
+            Effects.Add(new 纯数值回复生命(this, 200, 280));
         }
     }
 }

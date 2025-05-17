@@ -70,12 +70,12 @@ namespace Oshima.FunGame.OshimaModules.Skills
 
         public 大地之墙(Character? character = null) : base(SkillType.Magic, character)
         {
-            Effect shield = new 增加物理护盾(this, 120, 160, true, 60)
+            Effect shield = new 增加物理护盾(this, 120, 160)
             {
                 DispelledType = DispelledType.CannotBeDispelled
             };
             Effects.Add(shield);
-            Effect dispel = new 施加持续性弱驱散(this, durative: true, duration: 30)
+            Effect dispel = new 施加持续性弱驱散(this, durative: true, duration: 12)
             {
                 DispelledType = DispelledType.Strong
             };
@@ -83,7 +83,6 @@ namespace Oshima.FunGame.OshimaModules.Skills
             Effects.Add(new 大地之墙特效(this));
         }
     }
-
 
     public class 大地之墙特效(Skill skill) : Effect(skill)
     {

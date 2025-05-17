@@ -33,22 +33,22 @@ namespace Oshima.FunGame.OshimaModules.Skills
 
         public override double AlterActualDamageAfterCalculation(Character character, Character enemy, double damage, bool isNormalAttack, bool isMagicDamage, MagicType magicType, DamageResult damageResult, ref bool isEvaded, Dictionary<Effect, double> totalDamageBonus)
         {
-            if ((damageResult == DamageResult.Normal || damageResult == DamageResult.Critical))
+            if ((damageResult == DamageResult.Normal || damageResult == DamageResult.Critical) && character == Skill.Character)
             {
-                if (enemy == Skill.Character && damage > 0 && !enemy.Effects.Where(e => e is 绝对领域特效).Any())
-                {
-                    累计伤害 = 0;
-                }
-
-                if (character == Skill.Character)
-                {
-                    double 实际伤害提升 = damage * 累计伤害;
-                    if (实际伤害提升 > 0) WriteLine($"[ {character} ] 的伤害提升了 {累计伤害 * 100:0.##}% [ {实际伤害提升:0.##} ] 点！");
-                    累计伤害 *= 0.7;
-                    return 实际伤害提升;
-                }
+                double 实际伤害提升 = damage * 累计伤害;
+                if (实际伤害提升 > 0) WriteLine($"[ {character} ] 的伤害提升了 {累计伤害 * 100:0.##}% [ {实际伤害提升:0.##} ] 点！");
+                累计伤害 *= 0.7;
+                return 实际伤害提升;
             }
             return 0;
+        }
+
+        public override void AfterDamageCalculation(Character character, Character enemy, double damage, double actualDamage, bool isNormalAttack, bool isMagicDamage, MagicType magicType, DamageResult damageResult)
+        {
+            if ((damageResult == DamageResult.Normal || damageResult == DamageResult.Critical) && enemy == Skill.Character && actualDamage > 0 && !enemy.Effects.Where(e => e is 绝对领域特效).Any())
+            {
+                累计伤害 = 0;
+            }
         }
 
         public override void OnTimeElapsed(Character character, double eapsed)
