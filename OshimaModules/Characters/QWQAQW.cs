@@ -13,7 +13,7 @@ namespace Oshima.FunGame.OshimaModules.Characters
             NickName = "LUOLI66";
             PrimaryAttribute = PrimaryAttribute.INT;
             InitialATK = 18;
-            InitialHP = 95;
+            InitialHP = 100;
             InitialMP = 45;
             InitialSTR = 0;
             STRGrowth = 0;

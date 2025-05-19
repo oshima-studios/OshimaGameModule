@@ -11,14 +11,15 @@ namespace Oshima.FunGame.OshimaModules.Skills
         public override string Description => Effects.Count > 0 ? string.Join("\r\n", Effects.Select(e => e.Description)) : "";
         public override string DispelDescription => Effects.Count > 0 ? Effects.First(e => e is 造成虚弱).DispelDescription : "";
         public override double MPCost => Level > 0 ? 100 + (100 * (Level - 1)) : 100;
-        public override double CD => Level > 0 ? 75 - (1 * (Level - 1)) : 75;
+        public override double CD => Level > 0 ? 75 - (1.5 * (Level - 1)) : 75;
         public override double CastTime => 11;
         public override double HardnessTime { get; set; } = 4;
         public override int CanSelectTargetCount => 1;
 
         public 凝胶稠絮(Character? character = null) : base(SkillType.Magic, character)
         {
-            Effects.Add(new 造成虚弱(this, false, 0, 3, 0, 0.25, 1.2, 0.15, 0.3));
+            Effects.Add(new 造成虚弱(this, false, 0, 3, 0, 0.08, 0.5, 0.05, 0.1,
+                0.025, 0.1, 0.015, 0.03));
         }
     }
 }

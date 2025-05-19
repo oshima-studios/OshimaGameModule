@@ -55,11 +55,11 @@ namespace Oshima.FunGame.OshimaModules.Skills
             {
                 if (character.HP > character.MaxHP * 0.3)
                 {
-                    系数 = 1.0 + ((Random.Shared.Next(高于30的加成下限, 高于30的加成上限) + 0.0) / 100);
+                    系数 = (Random.Shared.Next(高于30的加成下限, 高于30的加成上限) + 0.0) / 100;
                 }
                 else
                 {
-                    系数 = 1.0 + ((Random.Shared.Next(低于30的加成下限, 低于30的加成上限) + 0.0) / 100);
+                    系数 = (Random.Shared.Next(低于30的加成下限, 低于30的加成上限) + 0.0) / 100;
                 }
                 return 系数 * 累计受到的伤害;
             }

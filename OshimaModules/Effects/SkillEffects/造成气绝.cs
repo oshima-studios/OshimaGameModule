@@ -8,7 +8,7 @@ namespace Oshima.FunGame.OshimaModules.Effects.SkillEffects
     {
         public override long Id => Skill.Id;
         public override string Name => Skill.Name;
-        public override string Description => $"对目标{(Skill.CanSelectTargetCount > 1 ? $"至多 {Skill.CanSelectTargetCount} 个" : "")}敌人造成气绝 {气绝时间}。气绝期间，目标行动受限且持续流失生命值。";
+        public override string Description => $"对目标{(Skill.CanSelectTargetCount > 1 ? $"至多 {Skill.CanSelectTargetCount} 个" : "")}敌人造成气绝 {气绝时间}。气绝期间，目标行动受限且持续{DamageString}。";
         public override DispelledType DispelledType => DispelledType.Strong;
 
         private string 气绝时间 => _durative && _duration > 0 ? 实际气绝时间 + $" {GameplayEquilibriumConstant.InGameTime}" : (!_durative && _durationTurn > 0 ? 实际气绝时间 + " 回合" : $"0 {GameplayEquilibriumConstant.InGameTime}");
@@ -20,6 +20,8 @@ namespace Oshima.FunGame.OshimaModules.Effects.SkillEffects
         private readonly bool _isPercentage;
         private readonly double _durationDamage;
         private readonly double _durationDamagePercent;
+        private double Damage => _isPercentage ? _durationDamagePercent : _durationDamage;
+        private string DamageString => _isPercentage ? $"流失 {Damage * 100:0.##}% 当前生命值" : $"流失 {Damage:0.##} 点生命值";
 
         public 造成气绝(Skill skill, bool durative = false, double duration = 0, int durationTurn = 1, double levelGrowth = 0,
             bool isPercentage = true, double durationDamage = 100, double durationDamagePercent = 0.02) : base(skill)
