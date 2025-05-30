@@ -32,7 +32,7 @@ namespace Oshima.FunGame.OshimaModules.Effects.ItemEffects
             caster.EP += 实际获得;
         }
 
-        public override void OnSkillCasted(List<Character> targets, Dictionary<string, object> others)
+        public override void OnSkillCasted(User user, List<Character> targets, Dictionary<string, object> others)
         {
             foreach (Character target in targets)
             {

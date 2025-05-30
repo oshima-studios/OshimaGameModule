@@ -24,7 +24,7 @@ namespace Oshima.FunGame.OshimaModules.Items
             item.IsRemoveAfterUse = true;
         }
 
-        public static bool OnItemUsed(Item item, Dictionary<string, object> args)
+        public static bool OnItemUsed(User user, Item item, Dictionary<string, object> args)
         {
             string msg = "";
             if (item is GiftBox box)
@@ -61,9 +61,9 @@ namespace Oshima.FunGame.OshimaModules.Items
             }, remainUseTimes);
         }
 
-        protected override bool OnItemUsed(Dictionary<string, object> args)
+        protected override bool OnItemUsed(User user, Dictionary<string, object> args)
         {
-            return 礼包.OnItemUsed(this, args);
+            return 礼包.OnItemUsed(user, this, args);
         }
     }
 
@@ -93,9 +93,9 @@ namespace Oshima.FunGame.OshimaModules.Items
             }, remainUseTimes);
         }
 
-        protected override bool OnItemUsed(Dictionary<string, object> args)
+        protected override bool OnItemUsed(User user, Dictionary<string, object> args)
         {
-            return 礼包.OnItemUsed(this, args);
+            return 礼包.OnItemUsed(user, this, args);
         }
     }
 
@@ -124,9 +124,9 @@ namespace Oshima.FunGame.OshimaModules.Items
             }, remainUseTimes);
         }
 
-        protected override bool OnItemUsed(Dictionary<string, object> args)
+        protected override bool OnItemUsed(User user, Dictionary<string, object> args)
         {
-            return 礼包.OnItemUsed(this, args);
+            return 礼包.OnItemUsed(user, this, args);
         }
     }
 

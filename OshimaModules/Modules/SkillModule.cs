@@ -15,12 +15,21 @@ namespace Oshima.FunGame.OshimaModules
         public override string Description => OshimaGameModuleConstant.Description;
         public override string Version => OshimaGameModuleConstant.Version;
         public override string Author => OshimaGameModuleConstant.Author;
+        public Dictionary<string, Skill> KnownSkills { get; } = [];
 
         public override Dictionary<string, Skill> Skills
         {
             get
             {
-                return Factory.GetGameModuleInstances<Skill>(OshimaGameModuleConstant.General, OshimaGameModuleConstant.Skill);
+                Dictionary<string, Skill> skills = Factory.GetGameModuleInstances<Skill>(OshimaGameModuleConstant.General, OshimaGameModuleConstant.Skill);
+                if (KnownSkills.Count == 0 && skills.Count > 0)
+                {
+                    foreach (string key in skills.Keys)
+                    {
+                        KnownSkills[key] = skills[key];
+                    }
+                }
+                return skills;
             }
         }
 
@@ -33,7 +42,7 @@ namespace Oshima.FunGame.OshimaModules
         {
             return (id, name, args) =>
             {
-                return id switch
+                Skill? skill = id switch
                 {
                     (long)MagicID.冰霜攻击 => new 冰霜攻击(),
                     (long)MagicID.火之矢 => new 火之矢(),
@@ -90,6 +99,13 @@ namespace Oshima.FunGame.OshimaModules
                     (long)ItemActiveID.礼包 => new 礼包技能(),
                     _ => null
                 };
+
+                if (skill is null && KnownSkills.Values.FirstOrDefault(i => i.Id == id) is Skill known)
+                {
+                    skill = known.Copy();
+                }
+
+                return skill;
             };
         }
 

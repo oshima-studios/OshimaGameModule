@@ -11,12 +11,21 @@ namespace Oshima.FunGame.OshimaModules
         public override string Description => OshimaGameModuleConstant.Description;
         public override string Version => OshimaGameModuleConstant.Version;
         public override string Author => OshimaGameModuleConstant.Author;
+        public Dictionary<string, Item> KnownItems { get; } = [];
 
         public override Dictionary<string, Item> Items
         {
             get
             {
-                return Factory.GetGameModuleInstances<Item>(OshimaGameModuleConstant.General, OshimaGameModuleConstant.Item);
+                Dictionary<string, Item> items = Factory.GetGameModuleInstances<Item>(OshimaGameModuleConstant.General, OshimaGameModuleConstant.Item);
+                if (KnownItems.Count == 0 && items.Count > 0)
+                {
+                    foreach (string key in items.Keys)
+                    {
+                        KnownItems[key] = items[key];
+                    }
+                }
+                return items;
             }
         }
 
@@ -24,7 +33,7 @@ namespace Oshima.FunGame.OshimaModules
         {
             return (id, name, args) =>
             {
-                return id switch
+                Item? item = id switch
                 {
                     (long)AccessoryID.攻击之爪8 => new 攻击之爪8(),
                     (long)AccessoryID.攻击之爪20 => new 攻击之爪20(),
@@ -55,6 +64,13 @@ namespace Oshima.FunGame.OshimaModules
                     (long)GiftBoxID.毕业礼包 => new 毕业礼包(),
                     _ => null,
                 };
+
+                if (item is null && KnownItems.Values.FirstOrDefault(i => i.Id == id) is Item known)
+                {
+                    item = known.Copy();
+                }
+
+                return item;
             };
         }
     }

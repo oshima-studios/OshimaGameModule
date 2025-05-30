@@ -21,11 +21,11 @@ namespace Oshima.FunGame.OshimaModules.Items
             item.IsRemoveAfterUse = true;
         }
 
-        public static string UseItem(Item item, Character character)
+        public static string UseItem(User user, Item item, Character character)
         {
             if (item.Skills.Active != null)
             {
-                item.Skills.Active.OnSkillCasted([character]);
+                item.Skills.Active.OnSkillCasted(user, [character]);
                 string msg = $"对角色 [ {character} ] 使用 [ {item.Name} ] 成功！";
                 if (item is MPRecovery hpBook)
                 {
@@ -36,7 +36,7 @@ namespace Oshima.FunGame.OshimaModules.Items
             return "此物品没有主动技能，无法被使用！";
         }
 
-        public static bool OnItemUsed(Item item, Dictionary<string, object> args)
+        public static bool OnItemUsed(User user, Item item, Dictionary<string, object> args)
         {
             string msg = "";
             bool result = false;
@@ -47,7 +47,7 @@ namespace Oshima.FunGame.OshimaModules.Items
                 if (temp.Length > 0)
                 {
                     targets = [temp[0]];
-                    msg = UseItem(item, temp[0]);
+                    msg = UseItem(user, item, temp[0]);
                     result = true;
                 }
                 else
@@ -84,9 +84,9 @@ namespace Oshima.FunGame.OshimaModules.Items
             魔力填充剂.Init(this, MP, remainUseTimes);
         }
 
-        protected override bool OnItemUsed(Dictionary<string, object> args)
+        protected override bool OnItemUsed(User user, Dictionary<string, object> args)
         {
-            return 魔力填充剂.OnItemUsed(this, args);
+            return 魔力填充剂.OnItemUsed(user, this, args);
         }
     }
 
@@ -104,9 +104,9 @@ namespace Oshima.FunGame.OshimaModules.Items
             魔力填充剂.Init(this, MP, remainUseTimes);
         }
 
-        protected override bool OnItemUsed(Dictionary<string, object> args)
+        protected override bool OnItemUsed(User user, Dictionary<string, object> args)
         {
-            return 魔力填充剂.OnItemUsed(this, args);
+            return 魔力填充剂.OnItemUsed(user, this, args);
         }
     }
 
@@ -124,9 +124,9 @@ namespace Oshima.FunGame.OshimaModules.Items
             魔力填充剂.Init(this, MP, remainUseTimes);
         }
 
-        protected override bool OnItemUsed(Dictionary<string, object> args)
+        protected override bool OnItemUsed(User user, Dictionary<string, object> args)
         {
-            return 魔力填充剂.OnItemUsed(this, args);
+            return 魔力填充剂.OnItemUsed(user, this, args);
         }
     }
 

@@ -999,7 +999,7 @@ namespace Oshima.FunGame.OshimaServers.Service
             {
                 { "targets", targets.ToArray() }
             };
-            bool result = item.UseItem(args);
+            bool result = item.UseItem(user, args);
             if (item.EntityState == EntityState.Deleted)
             {
                 user.Inventory.Items.Remove(item);
@@ -1037,7 +1037,7 @@ namespace Oshima.FunGame.OshimaServers.Service
                         msgs.Add($"{item.Name} 的剩余使用次数为 0，无法使用！");
                         result = false;
                     }
-                    bool tempResult = item.UseItem(args);
+                    bool tempResult = item.UseItem(user, args);
                     if (item.EntityState == EntityState.Deleted)
                     {
                         user.Inventory.Items.Remove(item);

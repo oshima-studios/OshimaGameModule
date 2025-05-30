@@ -11,14 +11,21 @@ namespace Oshima.FunGame.OshimaModules
         public override string Description => OshimaGameModuleConstant.Description;
         public override string Version => OshimaGameModuleConstant.Version;
         public override string Author => OshimaGameModuleConstant.Author;
+        public Dictionary<string, Character> KnownCharacters { get; } = [];
 
         public override Dictionary<string, Character> Characters
         {
             get
             {
-                EntityModuleConfig<Character> config = new(OshimaGameModuleConstant.General, OshimaGameModuleConstant.Character);
-                config.LoadConfig();
-                return config;
+                Dictionary<string, Character> characters = Factory.GetGameModuleInstances<Character>(OshimaGameModuleConstant.General, OshimaGameModuleConstant.Character);
+                if (KnownCharacters.Count == 0 && characters.Count > 0)
+                {
+                    foreach (string key in characters.Keys)
+                    {
+                        KnownCharacters[key] = characters[key];
+                    }
+                }
+                return characters;
             }
         }
 
@@ -26,7 +33,7 @@ namespace Oshima.FunGame.OshimaModules
         {
             return (id, name, args) =>
             {
-                return id switch
+                Character? character = id switch
                 {
                     1 => new OshimaShiya(),
                     2 => new XinYin(),
@@ -42,6 +49,13 @@ namespace Oshima.FunGame.OshimaModules
                     12 => new Quduoduo(),
                     _ => null,
                 };
+
+                if (character is null && KnownCharacters.Values.FirstOrDefault(i => i.Id == id) is Character known)
+                {
+                    character = known.Copy();
+                }
+
+                return character;
             };
         }
     }
