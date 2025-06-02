@@ -33,7 +33,7 @@ namespace Oshima.FunGame.OshimaModules
         {
             return (id, name, args) =>
             {
-                Character? character = id switch
+                return id switch
                 {
                     1 => new OshimaShiya(),
                     2 => new XinYin(),
@@ -49,13 +49,6 @@ namespace Oshima.FunGame.OshimaModules
                     12 => new Quduoduo(),
                     _ => null,
                 };
-
-                if (character is null && KnownCharacters.Values.FirstOrDefault(i => i.Id == id) is Character known)
-                {
-                    character = known.Copy();
-                }
-
-                return character;
             };
         }
     }

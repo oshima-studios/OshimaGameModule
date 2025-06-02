@@ -42,7 +42,7 @@ namespace Oshima.FunGame.OshimaModules
         {
             return (id, name, args) =>
             {
-                Skill? skill = id switch
+                return id switch
                 {
                     (long)MagicID.冰霜攻击 => new 冰霜攻击(),
                     (long)MagicID.火之矢 => new 火之矢(),
@@ -99,13 +99,6 @@ namespace Oshima.FunGame.OshimaModules
                     (long)ItemActiveID.礼包 => new 礼包技能(),
                     _ => null
                 };
-
-                if (skill is null && KnownSkills.Values.FirstOrDefault(i => i.Id == id) is Skill known)
-                {
-                    skill = known.Copy();
-                }
-
-                return skill;
             };
         }
 

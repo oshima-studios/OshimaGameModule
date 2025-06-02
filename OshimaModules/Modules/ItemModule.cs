@@ -33,7 +33,7 @@ namespace Oshima.FunGame.OshimaModules
         {
             return (id, name, args) =>
             {
-                Item? item = id switch
+                return id switch
                 {
                     (long)AccessoryID.攻击之爪8 => new 攻击之爪8(),
                     (long)AccessoryID.攻击之爪20 => new 攻击之爪20(),
@@ -64,13 +64,6 @@ namespace Oshima.FunGame.OshimaModules
                     (long)GiftBoxID.毕业礼包 => new 毕业礼包(),
                     _ => null,
                 };
-
-                if (item is null && KnownItems.Values.FirstOrDefault(i => i.Id == id) is Item known)
-                {
-                    item = known.Copy();
-                }
-
-                return item;
             };
         }
     }
