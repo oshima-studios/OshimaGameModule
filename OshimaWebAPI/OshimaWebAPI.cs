@@ -176,6 +176,7 @@ namespace Oshima.FunGame.WebAPI
                 builder.Services.AddScoped<RainBOTService>();
                 builder.Services.AddScoped<FunGameController>();
                 builder.Services.AddScoped<QQController>();
+                builder.Services.AddScoped<TestController>();
                 builder.Services.AddTransient(provider =>
                 {
                     SQLHelper? sql = Factory.OpenFactory.GetSQLHelper();

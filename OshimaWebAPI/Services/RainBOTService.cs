@@ -12,7 +12,7 @@ using Oshima.FunGame.WebAPI.Models;
 
 namespace Oshima.FunGame.WebAPI.Services
 {
-    public class RainBOTService(FunGameController controller, QQController qqcontroller, QQBotService service, ILogger<RainBOTService> logger, IMemoryCache memoryCache)
+    public class RainBOTService(FunGameController controller, QQController qqcontroller, QQBotService service, ILogger<RainBOTService> logger, IMemoryCache memoryCache, TestController testController)
     {
         private static List<string> FunGameItemType { get; } = ["卡包", "武器", "防具", "鞋子", "饰品", "消耗品", "魔法卡", "收藏品", "特殊物品", "任务物品", "礼包", "其他"];
         private bool FunGameSimulation { get; set; } = false;
@@ -21,6 +21,7 @@ namespace Oshima.FunGame.WebAPI.Services
         private QQBotService Service { get; } = service;
         private ILogger<RainBOTService> Logger { get; } = logger;
         private IMemoryCache MemoryCache { get; set; } = memoryCache;
+        private TestController TestController { get; set; } = testController;
 
         private async Task SendAsync(IBotMessage msg, string title, string content, int msgType = 0, object? media = null, int? msgSeq = null)
         {
@@ -102,6 +103,20 @@ namespace Oshima.FunGame.WebAPI.Services
                 if (!e.IsGroup && e.Detail == "获取接入码")
                 {
                     await SendAsync(e, "获取接入码", $"你的接入码为 {openid}，请妥善保存！");
+                    return true;
+                }
+
+                if (e.Detail == "查询服务器启动时间")
+                {
+                    string msg = NetworkUtility.JsonDeserialize<string>(TestController.GetLastLoginTime()) ?? "";
+                    await SendAsync(e, "查询服务器启动时间", msg);
+                    return true;
+                }
+
+                if (e.Detail.StartsWith("查询任务计划"))
+                {
+                    string msg = NetworkUtility.JsonDeserialize<string>(TestController.GetTaskScheduler(e.Detail.Replace("查询任务计划", ""))) ?? "";
+                    await SendAsync(e, "查询任务计划", msg);
                     return true;
                 }
 
