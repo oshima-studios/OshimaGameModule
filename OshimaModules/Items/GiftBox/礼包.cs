@@ -143,12 +143,12 @@ namespace Oshima.FunGame.OshimaModules.Items
             User = user;
             礼包.Init(this, new()
             {
-                { General.GameplayEquilibriumConstant.InGameCurrency, 290000 },
-                { General.GameplayEquilibriumConstant.InGameMaterial, 2000 },
-                { new 升华之印().Name, 33 },
-                { new 流光之印().Name, 12 },
-                { new 永恒之印().Name, 2 },
-                { new 技能卷轴().Name, 76 },
+                { General.GameplayEquilibriumConstant.InGameCurrency, 294000 },
+                { General.GameplayEquilibriumConstant.InGameMaterial, 2660 },
+                { new 升华之印().Name, 49 },
+                { new 流光之印().Name, 21 },
+                { new 永恒之印().Name, 6 },
+                { new 技能卷轴().Name, 78 },
                 { new 智慧之果().Name, 35 },
                 { new 奥术符文().Name, 10 },
                 { new 混沌之核().Name, 2 },
