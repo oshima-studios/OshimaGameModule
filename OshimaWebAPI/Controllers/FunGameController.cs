@@ -2480,7 +2480,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
                 User user = FunGameService.GetUser(pc);
 
                 string msg = "";
-                if (user.IsAdmin)
+                if (user.IsAdmin || userid > 0)
                 {
                     PluginConfig pc2 = new("saved", targetid.ToString());
                     pc2.LoadConfig();
