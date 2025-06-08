@@ -24,8 +24,8 @@ namespace Oshima.FunGame.WebAPI.Controllers
     {
         private ILogger<FunGameController> Logger { get; set; } = logger;
 
-        private const int drawCardReduce = 2000;
-        private const int drawCardReduce_Material = 10;
+        private const int drawCardReduce = 1000;
+        private const int drawCardReduce_Material = 5;
         private const string noSaved = "你还没有创建存档！请发送【创建存档】创建。";
         private const string refused = "暂时无法使用此指令。";
 
@@ -466,7 +466,9 @@ namespace Oshima.FunGame.WebAPI.Controllers
                             User user = Factory.GetUser(sqlHelper.DataSet);
                             sqlHelper.Commit();
                             user.Inventory.Credits = 5000;
-                            user.Inventory.Characters.Add(new CustomCharacter(FunGameConstant.CustomCharacterId, username, nickname: username));
+                            Character character = new CustomCharacter(FunGameConstant.CustomCharacterId, username, nickname: username);
+                            character.Recovery();
+                            user.Inventory.Characters.Add(character);
                             FunGameConstant.UserIdAndUsername[user.Id] = user;
                             PluginConfig pc = new("saved", user.Id.ToString());
                             pc.LoadConfig();
@@ -613,7 +615,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
             {
                 User user = FunGameService.GetUser(pc);
 
-                int reduce = 1500;
+                int reduce = 200;
                 if (user.Inventory.Credits >= reduce)
                 {
                     user.Inventory.Credits -= reduce;
@@ -721,7 +723,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
                     {
                         if (newCustom is null)
                         {
-                            int reduce = 20;
+                            int reduce = 3;
                             if (user.Inventory.Materials >= reduce)
                             {
                                 user.Inventory.Materials -= reduce;
@@ -5178,9 +5180,9 @@ namespace Oshima.FunGame.WebAPI.Controllers
                 int halfdown = user.Inventory.Characters.Count(c => (c.HP / c.MaxHP) < 0.5 && c.HP > 0);
                 int halfup = user.Inventory.Characters.Count(c => (c.HP / c.MaxHP) >= 0.5 && c.HP != c.MaxHP);
 
-                double deadNeed = 3000 * dead;
-                double halfdownNeed = 1500 * halfdown;
-                double halfupNeed = 500 * halfup;
+                double deadNeed = 300 * dead;
+                double halfdownNeed = 150 * halfdown;
+                double halfupNeed = 50 * halfup;
                 double total = deadNeed + halfdownNeed + halfupNeed;
 
                 if (total == 0)
@@ -5207,9 +5209,9 @@ namespace Oshima.FunGame.WebAPI.Controllers
                 }
 
                 msg += $"（{dead} 个死亡角色，{halfdown} 个 50% 以下的角色，{halfup} 个 50% 以上的角色）\r\n" +
-                    $"收费标准：\r\n3000 {General.GameplayEquilibriumConstant.InGameCurrency} / 死亡角色\r\n" +
-                    $"1500 {General.GameplayEquilibriumConstant.InGameCurrency} / 50% 生命值以下的角色\r\n" +
-                    $"500 {General.GameplayEquilibriumConstant.InGameCurrency} / 50% 生命值以上的角色";
+                    $"收费标准：\r\n300 {General.GameplayEquilibriumConstant.InGameCurrency} / 死亡角色\r\n" +
+                    $"150 {General.GameplayEquilibriumConstant.InGameCurrency} / 50% 生命值以下的角色\r\n" +
+                    $"50 {General.GameplayEquilibriumConstant.InGameCurrency} / 50% 生命值以上的角色";
 
                 return msg;
             }

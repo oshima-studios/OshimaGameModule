@@ -1650,6 +1650,7 @@ namespace Oshima.FunGame.OshimaServers.Service
                 {
                     int index = Random.Shared.Next(FunGameConstant.AllItems.Count);
                     Item item = FunGameConstant.AllItems[index].Copy();
+                    item.Character = null;
                     (int min, int max) = (0, 0);
                     if (FunGameConstant.PriceRanges.TryGetValue(item.QualityType, out (int Min, int Max) range))
                     {

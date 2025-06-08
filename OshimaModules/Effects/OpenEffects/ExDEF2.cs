@@ -7,7 +7,7 @@ namespace Oshima.FunGame.OshimaModules.Effects.OpenEffects
     {
         public override long Id => (long)EffectID.ExDEF2;
         public override string Name => "物理护甲加成";
-        public override string Description => $"{(实际加成 >= 0 ? "增加" : "减少")}角色 {Math.Abs(加成比例) * 100:0.##}% [ {实际加成:0.##} ] 点物理护甲。" + (Source != null && Skill.Character != Source || Skill is not OpenSkill ? $"来自：[ {Source} ]" + (Skill.Item != null ? $" 的 [ {Skill.Item.Name} ]" : (Skill is OpenSkill ? "" : $" 的 [ {Skill.Name} ]")) : "");
+        public override string Description => $"{(实际加成 >= 0 ? "增加" : "减少")}角色 {Math.Abs(加成比例) * 100:0.##}% [ {实际加成:0.##} ] 点物理护甲。" + (Source != null && (Skill.Character != Source || Skill is not OpenSkill) ? $"来自：[ {Source} ]" + (Skill.Item != null ? $" 的 [ {Skill.Item.Name} ]" : (Skill is OpenSkill ? "" : $" 的 [ {Skill.Name} ]")) : "");
         public double Value => 实际加成;
 
         private readonly double 加成比例 = 0;

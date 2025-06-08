@@ -579,12 +579,12 @@ namespace Oshima.FunGame.OshimaServers.Service
 
         public static Dictionary<QualityType, double> DrawCardProbabilities { get; } = new()
         {
-            { QualityType.White, 69.53 },
-            { QualityType.Green, 15.35 },
-            { QualityType.Blue, 9.48 },
-            { QualityType.Purple, 4.25 },
-            { QualityType.Orange, 1.33 },
-            { QualityType.Red, 0.06 }
+            { QualityType.White, 49.53 },
+            { QualityType.Green, 19.35 },
+            { QualityType.Blue, 13.48 },
+            { QualityType.Purple, 8.25 },
+            { QualityType.Orange, 6.33 },
+            { QualityType.Red, 3.06 }
         };
 
         public static Dictionary<QualityType, (int Min, int Max)> PriceRanges { get; } = new()
