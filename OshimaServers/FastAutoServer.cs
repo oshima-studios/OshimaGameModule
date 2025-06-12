@@ -356,7 +356,7 @@ namespace Oshima.FunGame.OshimaServers
             _ = SendGamingMessage(obj.All.Values, GamingType.UpdateInfo, data);
         }
 
-        public override void AfterLoad(params object[] args)
+        public override void AfterLoad(GameModuleLoader loader, params object[] args)
         {
             foreach (Character c in GameModuleDepend.Characters.Values)
             {

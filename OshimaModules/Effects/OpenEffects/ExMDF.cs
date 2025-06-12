@@ -43,11 +43,11 @@ namespace Oshima.FunGame.OshimaModules.Effects.OpenEffects
                 case MagicType.Element:
                     character.MDF.Element += 实际加成;
                     break;
-                case MagicType.Fleabane:
-                    character.MDF.Fleabane += 实际加成;
+                case MagicType.Aster:
+                    character.MDF.Aster += 实际加成;
                     break;
-                case MagicType.Particle:
-                    character.MDF.Particle += 实际加成;
+                case MagicType.SpatioTemporal:
+                    character.MDF.SpatioTemporal += 实际加成;
                     break;
                 case MagicType.None:
                 default:
@@ -78,11 +78,11 @@ namespace Oshima.FunGame.OshimaModules.Effects.OpenEffects
                 case MagicType.Element:
                     character.MDF.Element -= 实际加成;
                     break;
-                case MagicType.Fleabane:
-                    character.MDF.Fleabane -= 实际加成;
+                case MagicType.Aster:
+                    character.MDF.Aster -= 实际加成;
                     break;
-                case MagicType.Particle:
-                    character.MDF.Particle -= 实际加成;
+                case MagicType.SpatioTemporal:
+                    character.MDF.SpatioTemporal -= 实际加成;
                     break;
                 case MagicType.None:
                 default:

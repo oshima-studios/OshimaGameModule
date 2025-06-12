@@ -24,7 +24,7 @@ namespace Oshima.FunGame.OshimaModules.Skills
     {
         public override long Id => Skill.Id;
         public override string Name => Skill.Name;
-        public override string Description => $"每释放 {触发硬直次数:0.##} 次魔法才会触发硬直时间，且魔法伤害命中时基于 15% 智力 [ {获得额外能量值:0.##} ] 获得额外能量值，并减少所有技能 2 {GameplayEquilibriumConstant.InGameTime} 冷却时间。";
+        public override string Description => $"每释放 {触发硬直次数:0.##} 次魔法才会触发硬直时间，且魔法伤害命中时基于 15% 智力 [ {获得额外能量值:0.##} ] 获得额外能量值，并减少所有技能 2 {GameplayEquilibriumConstant.InGameTime}冷却时间。";
 
         public bool 是否支持普攻 { get; set; } = false;
         public int 触发硬直次数 { get; set; } = 2;

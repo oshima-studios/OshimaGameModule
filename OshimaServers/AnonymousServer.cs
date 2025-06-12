@@ -90,8 +90,18 @@ namespace Oshima.FunGame.OshimaServers
             Controller.WriteLine($"{model.GetClientName()} 从匿名服务器断开", LogLevel.Info);
         }
 
-        public override void AfterLoad(params object[] args)
+        public override void AfterLoad(GameModuleLoader loader, params object[] args)
         {
+            foreach (ItemModule itemModule in loader.Items.Values)
+            {
+                if (itemModule is OshimaModules.ItemModule items)
+                {
+                    foreach (string key in items.KnownItems.Keys)
+                    {
+                        Controller.WriteLine(key + ": " + items.KnownItems[key].BackgroundStory, LogLevel.Debug);
+                    }
+                }
+            }
             Controller.NewSQLHelper();
             Controller.NewMailSender();
             FunGameService.InitFunGame();
