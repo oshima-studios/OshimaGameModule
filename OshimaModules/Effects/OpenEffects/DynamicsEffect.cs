@@ -3,9 +3,6 @@ using Milimoe.FunGame.Core.Library.Constant;
 
 namespace Oshima.FunGame.OshimaModules.Effects.OpenEffects
 {
-    /// <summary>
-    /// 除了硬直时间减少和魔法抗性，可以都用这个
-    /// </summary>
     public class DynamicsEffect : Effect
     {
         public override long Id => (long)EffectID.DynamicsEffect;
@@ -53,9 +50,9 @@ namespace Oshima.FunGame.OshimaModules.Effects.OpenEffects
                             {
                                 character.ExATK2 += exATK;
                             }
-                            else
+                            else if (RealDynamicsValues.TryGetValue("exatk", out double current))
                             {
-                                character.ExATK2 -= exATK;
+                                character.ExATK2 -= current;
                             }
                             RealDynamicsValues["exatk"] = exATK;
                             Descriptions.Add($"{(exATK >= 0 ? "增加" : "减少")}角色 {Math.Abs(exATK):0.##} 点攻击力。");
@@ -68,9 +65,9 @@ namespace Oshima.FunGame.OshimaModules.Effects.OpenEffects
                             {
                                 character.ExDEF2 += exDEF;
                             }
-                            else
+                            else if (RealDynamicsValues.TryGetValue("exdef", out double current))
                             {
-                                character.ExDEF2 -= exDEF;
+                                character.ExDEF2 -= current;
                             }
                             RealDynamicsValues["exdef"] = exDEF;
                             Descriptions.Add($"{(exDEF >= 0 ? "增加" : "减少")}角色 {Math.Abs(exDEF):0.##} 点物理护甲。");
@@ -83,9 +80,9 @@ namespace Oshima.FunGame.OshimaModules.Effects.OpenEffects
                             {
                                 character.ExSTR += exSTR;
                             }
-                            else
+                            else if (RealDynamicsValues.TryGetValue("exstr", out double current))
                             {
-                                character.ExSTR -= exSTR;
+                                character.ExSTR -= current;
                             }
                             RealDynamicsValues["exstr"] = exSTR;
                             Descriptions.Add($"{(exSTR >= 0 ? "增加" : "减少")}角色 {Math.Abs(exSTR):0.##} 点力量。");
@@ -98,9 +95,9 @@ namespace Oshima.FunGame.OshimaModules.Effects.OpenEffects
                             {
                                 character.ExAGI += exAGI;
                             }
-                            else
+                            else if (RealDynamicsValues.TryGetValue("exagi", out double current))
                             {
-                                character.ExAGI -= exAGI;
+                                character.ExAGI -= current;
                             }
                             RealDynamicsValues["exagi"] = exAGI;
                             Descriptions.Add($"{(exAGI >= 0 ? "增加" : "减少")}角色 {Math.Abs(exAGI):0.##} 点敏捷。");
@@ -113,9 +110,9 @@ namespace Oshima.FunGame.OshimaModules.Effects.OpenEffects
                             {
                                 character.ExINT += exINT;
                             }
-                            else
+                            else if (RealDynamicsValues.TryGetValue("exint", out double current))
                             {
-                                character.ExINT -= exINT;
+                                character.ExINT -= current;
                             }
                             RealDynamicsValues["exint"] = exINT;
                             Descriptions.Add($"{(exINT >= 0 ? "增加" : "减少")}角色 {Math.Abs(exINT):0.##} 点智力。");
@@ -136,16 +133,16 @@ namespace Oshima.FunGame.OshimaModules.Effects.OpenEffects
                                         s.HardnessTime -= shtr;
                                 }
                             }
-                            else
+                            else if (RealDynamicsValues.TryGetValue("shtr", out double current))
                             {
                                 foreach (Skill s in character.Skills)
                                 {
-                                    s.HardnessTime += shtr;
+                                    s.HardnessTime += current;
                                 }
                                 foreach (Skill? s in character.Items.Select(i => i.Skills.Active))
                                 {
                                     if (s != null)
-                                        s.HardnessTime += shtr;
+                                        s.HardnessTime += current;
                                 }
                             }
                             RealDynamicsValues["shtr"] = shtr;
@@ -159,12 +156,58 @@ namespace Oshima.FunGame.OshimaModules.Effects.OpenEffects
                             {
                                 character.NormalAttack.HardnessTime -= nahtr;
                             }
-                            else
+                            else if (RealDynamicsValues.TryGetValue("nahtr", out double current))
                             {
-                                character.NormalAttack.HardnessTime += nahtr;
+                                character.NormalAttack.HardnessTime += current;
                             }
                             RealDynamicsValues["nahtr"] = nahtr;
                             Descriptions.Add($"减少角色的普通攻击 {nahtr:0.##} {GameplayEquilibriumConstant.InGameTime}硬直时间。");
+                        }
+                        break;
+                    case "shtr2":
+                        if (double.TryParse(value, out double shtr2))
+                        {
+                            if (!remove)
+                            {
+                                foreach (Skill s in character.Skills)
+                                {
+                                    s.HardnessTime -= s.HardnessTime * shtr2;
+                                }
+                                foreach (Skill? s in character.Items.Select(i => i.Skills.Active))
+                                {
+                                    if (s != null)
+                                        s.HardnessTime -= s.HardnessTime * shtr2;
+                                }
+                            }
+                            else if (RealDynamicsValues.TryGetValue("shtr2", out double current))
+                            {
+                                foreach (Skill s in character.Skills)
+                                {
+                                    s.HardnessTime += s.HardnessTime * current;
+                                }
+                                foreach (Skill? s in character.Items.Select(i => i.Skills.Active))
+                                {
+                                    if (s != null)
+                                        s.HardnessTime += s.HardnessTime * current;
+                                }
+                            }
+                            RealDynamicsValues["shtr2"] = shtr2;
+                            Descriptions.Add($"减少角色的所有主动技能 {shtr2 * 100:0.##}% {GameplayEquilibriumConstant.InGameTime}硬直时间。");
+                        }
+                        break;
+                    case "nahtr2":
+                        if (double.TryParse(value, out double nahtr2))
+                        {
+                            if (!remove)
+                            {
+                                character.NormalAttack.HardnessTime -= character.NormalAttack.HardnessTime * nahtr2;
+                            }
+                            else if (RealDynamicsValues.TryGetValue("nahtr2", out double current))
+                            {
+                                character.NormalAttack.HardnessTime += character.NormalAttack.HardnessTime * current;
+                            }
+                            RealDynamicsValues["nahtr2"] = nahtr2;
+                            Descriptions.Add($"减少角色的普通攻击 {nahtr2 * 100:0.##}% {GameplayEquilibriumConstant.InGameTime}硬直时间。");
                         }
                         break;
                     case "exacc":
@@ -174,9 +217,9 @@ namespace Oshima.FunGame.OshimaModules.Effects.OpenEffects
                             {
                                 character.ExAccelerationCoefficient += exacc;
                             }
-                            else
+                            else if (RealDynamicsValues.TryGetValue("exacc", out double current))
                             {
-                                character.ExAccelerationCoefficient -= exacc;
+                                character.ExAccelerationCoefficient -= current;
                             }
                             RealDynamicsValues["exacc"] = exacc;
                             Descriptions.Add($"{(exacc >= 0 ? "增加" : "减少")}角色 {Math.Abs(exacc) * 100:0.##}% 加速系数。");
@@ -189,9 +232,9 @@ namespace Oshima.FunGame.OshimaModules.Effects.OpenEffects
                             {
                                 character.ExSPD += exspd;
                             }
-                            else
+                            else if (RealDynamicsValues.TryGetValue("exspd", out double current))
                             {
-                                character.ExSPD -= exspd;
+                                character.ExSPD -= current;
                             }
                             RealDynamicsValues["exspd"] = exspd;
                             Descriptions.Add($"{(exspd >= 0 ? "增加" : "减少")}角色 {Math.Abs(exspd):0.##} 点行动速度。");
@@ -204,9 +247,9 @@ namespace Oshima.FunGame.OshimaModules.Effects.OpenEffects
                             {
                                 character.ExActionCoefficient += exac;
                             }
-                            else
+                            else if (RealDynamicsValues.TryGetValue("exac", out double current))
                             {
-                                character.ExActionCoefficient -= exac;
+                                character.ExActionCoefficient -= current;
                             }
                             RealDynamicsValues["exac"] = exac;
                             Descriptions.Add($"{(exac >= 0 ? "增加" : "减少")}角色 {Math.Abs(exac) * 100:0.##}% 行动系数。");
@@ -219,9 +262,9 @@ namespace Oshima.FunGame.OshimaModules.Effects.OpenEffects
                             {
                                 character.ExCDR += excdr;
                             }
-                            else
+                            else if (RealDynamicsValues.TryGetValue("excdr", out double current))
                             {
-                                character.ExCDR -= excdr;
+                                character.ExCDR -= current;
                             }
                             RealDynamicsValues["excdr"] = excdr;
                             Descriptions.Add($"{(excdr >= 0 ? "增加" : "减少")}角色 {Math.Abs(excdr) * 100:0.##}% 冷却缩减。");
@@ -234,9 +277,9 @@ namespace Oshima.FunGame.OshimaModules.Effects.OpenEffects
                             {
                                 character.ExHP2 += exhp;
                             }
-                            else
+                            else if (RealDynamicsValues.TryGetValue("exhp", out double current))
                             {
-                                character.ExHP2 -= exhp;
+                                character.ExHP2 -= current;
                             }
                             RealDynamicsValues["exhp"] = exhp;
                             Descriptions.Add($"{(exhp >= 0 ? "增加" : "减少")}角色 {Math.Abs(exhp):0.##} 点最大生命值。");
@@ -249,9 +292,9 @@ namespace Oshima.FunGame.OshimaModules.Effects.OpenEffects
                             {
                                 character.ExMP2 += exmp;
                             }
-                            else
+                            else if (RealDynamicsValues.TryGetValue("exmp", out double current))
                             {
-                                character.ExMP2 -= exmp;
+                                character.ExMP2 -= current;
                             }
                             RealDynamicsValues["exmp"] = exmp;
                             Descriptions.Add($"{(exmp >= 0 ? "增加" : "减少")}角色 {Math.Abs(exmp):0.##} 点最大魔法值。");
@@ -264,9 +307,9 @@ namespace Oshima.FunGame.OshimaModules.Effects.OpenEffects
                             {
                                 character.ExCritRate += excr;
                             }
-                            else
+                            else if (RealDynamicsValues.TryGetValue("excr", out double current))
                             {
-                                character.ExCritRate -= excr;
+                                character.ExCritRate -= current;
                             }
                             RealDynamicsValues["excr"] = excr;
                             Descriptions.Add($"{(excr >= 0 ? "增加" : "减少")}角色 {Math.Abs(excr) * 100:0.##}% 暴击率。");
@@ -279,9 +322,9 @@ namespace Oshima.FunGame.OshimaModules.Effects.OpenEffects
                             {
                                 character.ExCritDMG += excrd;
                             }
-                            else
+                            else if (RealDynamicsValues.TryGetValue("excrd", out double current))
                             {
-                                character.ExCritDMG -= excrd;
+                                character.ExCritDMG -= current;
                             }
                             RealDynamicsValues["excrd"] = excrd;
                             Descriptions.Add($"{(excrd >= 0 ? "增加" : "减少")}角色 {Math.Abs(excrd) * 100:0.##}% 暴击伤害。");
@@ -294,9 +337,9 @@ namespace Oshima.FunGame.OshimaModules.Effects.OpenEffects
                             {
                                 character.ExEvadeRate += exer;
                             }
-                            else
+                            else if (RealDynamicsValues.TryGetValue("exer", out double current))
                             {
-                                character.ExEvadeRate -= exer;
+                                character.ExEvadeRate -= current;
                             }
                             RealDynamicsValues["exer"] = exer;
                             Descriptions.Add($"{(exer >= 0 ? "增加" : "减少")}角色 {Math.Abs(exer) * 100:0.##}% 闪避率。");
@@ -309,9 +352,9 @@ namespace Oshima.FunGame.OshimaModules.Effects.OpenEffects
                             {
                                 character.PhysicalPenetration += exppt;
                             }
-                            else
+                            else if (RealDynamicsValues.TryGetValue("exppt", out double current))
                             {
-                                character.PhysicalPenetration -= exppt;
+                                character.PhysicalPenetration -= current;
                             }
                             RealDynamicsValues["exppt"] = exppt;
                             Descriptions.Add($"{(exppt >= 0 ? "增加" : "减少")}角色 {Math.Abs(exppt) * 100:0.##}% 物理穿透。");
@@ -324,9 +367,9 @@ namespace Oshima.FunGame.OshimaModules.Effects.OpenEffects
                             {
                                 character.MagicalPenetration += exmpt;
                             }
-                            else
+                            else if (RealDynamicsValues.TryGetValue("exmpt", out double current))
                             {
-                                character.MagicalPenetration -= exmpt;
+                                character.MagicalPenetration -= current;
                             }
                             RealDynamicsValues["exmpt"] = exmpt;
                             Descriptions.Add($"{(exmpt >= 0 ? "增加" : "减少")}角色 {Math.Abs(exmpt) * 100:0.##}% 魔法穿透。");
@@ -339,9 +382,9 @@ namespace Oshima.FunGame.OshimaModules.Effects.OpenEffects
                             {
                                 character.ExPDR += expdr;
                             }
-                            else
+                            else if (RealDynamicsValues.TryGetValue("expdr", out double current))
                             {
-                                character.ExPDR -= expdr;
+                                character.ExPDR -= current;
                             }
                             RealDynamicsValues["expdr"] = expdr;
                             Descriptions.Add($"{(expdr >= 0 ? "增加" : "减少")}角色 {Math.Abs(expdr) * 100:0.##}% 物理伤害减免。");
@@ -354,9 +397,9 @@ namespace Oshima.FunGame.OshimaModules.Effects.OpenEffects
                             {
                                 character.ExHR += exhr;
                             }
-                            else
+                            else if (RealDynamicsValues.TryGetValue("exhr", out double current))
                             {
-                                character.ExHR -= exhr;
+                                character.ExHR -= current;
                             }
                             RealDynamicsValues["exhr"] = exhr;
                             Descriptions.Add($"{(exhr >= 0 ? "增加" : "减少")}角色 {Math.Abs(exhr):0.##} 点生命回复。");
@@ -369,9 +412,9 @@ namespace Oshima.FunGame.OshimaModules.Effects.OpenEffects
                             {
                                 character.ExMR += exmr;
                             }
-                            else
+                            else if (RealDynamicsValues.TryGetValue("exmr", out double current))
                             {
-                                character.ExMR -= exmr;
+                                character.ExMR -= current;
                             }
                             RealDynamicsValues["exmr"] = exmr;
                             Descriptions.Add($"{(exmr >= 0 ? "增加" : "减少")}角色 {Math.Abs(exmr):0.##} 点魔法回复。");
@@ -494,6 +537,47 @@ namespace Oshima.FunGame.OshimaModules.Effects.OpenEffects
                             }
                             RealDynamicsValues["exmp2"] = exmp2;
                             Descriptions.Add($"{(real >= 0 ? "增加" : "减少")}角色 {Math.Abs(exmp2) * 100:0.##}% [ {Math.Abs(real):0.##} ] 点最大魔法值。");
+                        }
+                        break;
+                    case "mdftype":
+                        if (int.TryParse(value, out int mdftype))
+                        {
+                            double mdfValue = 0;
+                            MagicType magicType = MagicType.None;
+                            if (!remove)
+                            {
+                                magicType = (MagicType)mdftype;
+                                string mdfvalueKey = Values.Keys.FirstOrDefault(s => s.Equals("mdfvalue", StringComparison.CurrentCultureIgnoreCase)) ?? "";
+                                if (mdfvalueKey.Length > 0 && double.TryParse(Values[mdfvalueKey].ToString(), out mdfValue))
+                                {
+                                    if (magicType == MagicType.None)
+                                    {
+                                        character.MDF.AddAllValue(mdfValue);
+                                    }
+                                    else
+                                    {
+                                        character.MDF[magicType] += mdfValue;
+                                    }
+                                }
+                            }
+                            else if (RealDynamicsValues.TryGetValue("mdftype", out double currentType))
+                            {
+                                magicType = (MagicType)(int)currentType;
+                                if (RealDynamicsValues.TryGetValue("mdfvalue", out mdfValue))
+                                {
+                                    if (magicType == MagicType.None)
+                                    {
+                                        character.MDF.AddAllValue(-mdfValue);
+                                    }
+                                    else
+                                    {
+                                        character.MDF[magicType] -= mdfValue;
+                                    }
+                                }
+                            }
+                            RealDynamicsValues["mdftype"] = mdftype;
+                            RealDynamicsValues["mdfvalue"] = mdfValue;
+                            Descriptions.Add($"{(mdfValue >= 0 ? "增加" : "减少")}角色 {Math.Abs(mdfValue) * 100:0.##}% {CharacterSet.GetMagicResistanceName(magicType)}。");
                         }
                         break;
                 }

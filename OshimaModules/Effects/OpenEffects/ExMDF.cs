@@ -26,28 +26,14 @@ namespace Oshima.FunGame.OshimaModules.Effects.OpenEffects
             switch (魔法类型)
             {
                 case MagicType.Starmark:
-                    character.MDF.Starmark += 实际加成;
-                    break;
                 case MagicType.PurityNatural:
-                    character.MDF.PurityNatural += 实际加成;
-                    break;
                 case MagicType.PurityContemporary:
-                    character.MDF.PurityContemporary += 实际加成;
-                    break;
                 case MagicType.Bright:
-                    character.MDF.Bright += 实际加成;
-                    break;
                 case MagicType.Shadow:
-                    character.MDF.Shadow += 实际加成;
-                    break;
                 case MagicType.Element:
-                    character.MDF.Element += 实际加成;
-                    break;
                 case MagicType.Aster:
-                    character.MDF.Aster += 实际加成;
-                    break;
                 case MagicType.SpatioTemporal:
-                    character.MDF.SpatioTemporal += 实际加成;
+                    character.MDF[魔法类型] += 实际加成;
                     break;
                 case MagicType.None:
                 default:
@@ -61,28 +47,14 @@ namespace Oshima.FunGame.OshimaModules.Effects.OpenEffects
             switch (魔法类型)
             {
                 case MagicType.Starmark:
-                    character.MDF.Starmark -= 实际加成;
-                    break;
                 case MagicType.PurityNatural:
-                    character.MDF.PurityNatural -= 实际加成;
-                    break;
                 case MagicType.PurityContemporary:
-                    character.MDF.PurityContemporary -= 实际加成;
-                    break;
                 case MagicType.Bright:
-                    character.MDF.Bright -= 实际加成;
-                    break;
                 case MagicType.Shadow:
-                    character.MDF.Shadow -= 实际加成;
-                    break;
                 case MagicType.Element:
-                    character.MDF.Element -= 实际加成;
-                    break;
                 case MagicType.Aster:
-                    character.MDF.Aster -= 实际加成;
-                    break;
                 case MagicType.SpatioTemporal:
-                    character.MDF.SpatioTemporal -= 实际加成;
+                    character.MDF[魔法类型] -= 实际加成;
                     break;
                 case MagicType.None:
                 default:
