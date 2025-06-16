@@ -25,7 +25,7 @@ namespace Oshima.FunGame.OshimaModules.Skills
     {
         public override long Id => Skill.Id;
         public override string Name => Skill.Name;
-        public override string Description => $"{Duration:0.##} {GameplayEquilibriumConstant.InGameTime}内，增加 40% 攻击力 [ {攻击力提升:0.##} ]、30% 物理穿透和 25% 闪避率（不可叠加），普通攻击硬直时间额外减少 20%，基于 {系数 * 100:0.##}% 敏捷 [ {伤害加成:0.##} ] 强化普通攻击的伤害。在持续时间内，【心灵之火】的冷却时间降低至 3 {GameplayEquilibriumConstant.InGameTime}。";
+        public override string Description => $"{Duration:0.##} {GameplayEquilibriumConstant.InGameTime}内，增加 40% 攻击力 [ {攻击力提升:0.##} ]、30% 物理穿透和 25% 闪避率（不可叠加），普通攻击硬直时间额外减少 20%，基于 {系数 * 100:0.##}% 敏捷 [ {伤害加成:0.##} ] 强化普通攻击的伤害。在持续时间内，[ 心灵之火 ] 的冷却时间降低至 3 {GameplayEquilibriumConstant.InGameTime}。";
         public override bool Durative => true;
         public override double Duration => 40;
         public override DispelledType DispelledType => DispelledType.CannotBeDispelled;

@@ -70,7 +70,7 @@ namespace Oshima.FunGame.OshimaModules.Skills
 
         public 大地之墙(Character? character = null) : base(SkillType.Magic, character)
         {
-            Effect shield = new 增加物理护盾(this, 120, 160)
+            Effect shield = new 增加物理护盾_特效持续型(this, 120, 160, true, 15)
             {
                 DispelledType = DispelledType.CannotBeDispelled
             };

@@ -22,8 +22,7 @@ namespace Oshima.FunGame.OshimaModules.Skills
 
         public 盖亚之盾(Character? character = null) : base(SkillType.Magic, character)
         {
-            Effects.Add(new 增加物理护盾(this, 160, 80));
-            Effects.Add(new 增加魔法护盾(this, 160, 80));
+            Effects.Add(new 增加混合护盾值(this, 160, 120));
         }
     }
 }

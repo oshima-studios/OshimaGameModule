@@ -13,28 +13,50 @@ namespace Oshima.FunGame.OshimaModules.Effects.PassiveEffects
         public override bool DurativeWithoutDuration => true;
         public override bool IsDebuff => false;
         public override Character Source => _sourceCharacter;
+        public override bool Durative => _durative;
+        public override double Duration => _duration;
+        public override int DurationTurn => _durationTurn;
 
         private readonly Character _sourceCharacter;
         private readonly double _shield;
+        private readonly bool _durative;
+        private readonly double _duration;
+        private readonly int _durationTurn;
 
-        public 魔法护盾(Skill skill, Character sourceCharacter, double shield) : base(skill)
+        public 魔法护盾(Skill skill, Character sourceCharacter, double shield, bool durative = false, double duration = 0, int durationTurn = 0) : base(skill)
         {
             GamingQueue = skill.GamingQueue;
             _sourceCharacter = sourceCharacter;
+            _durative = durative;
+            _duration = duration;
+            _durationTurn = durationTurn;
             _shield = shield;
         }
 
         public override void OnEffectGained(Character character)
         {
-            character.Shield.None += _shield;
+            if (_durative && RemainDuration == 0)
+            {
+                RemainDuration = Duration;
+            }
+            else if (RemainDurationTurn == 0)
+            {
+                RemainDurationTurn = DurationTurn;
+            }
+            character.Shield.AddShieldOfEffect(new(this, _shield, true, MagicType.None));
         }
 
-        public override bool OnShieldBroken(Character character, Character attacker, bool isMagic, MagicType magicType, double damage, double shield, double overFlowing)
+        public override void OnEffectLost(Character character)
         {
-            Effect[] effects = [.. character.Effects.Where(e => e is 魔法护盾)];
-            foreach (Effect effect in effects)
+            character.Shield.RemoveShieldOfEffect(this);
+        }
+
+        public override bool OnShieldBroken(Character character, Character attacker, Effect effet, double overFlowing)
+        {
+            if (effet == this)
             {
-                character.Effects.Remove(effect);
+                character.Shield.RemoveShieldOfEffect(this);
+                character.Effects.Remove(this);
             }
             return true;
         }

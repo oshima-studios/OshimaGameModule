@@ -24,7 +24,7 @@ namespace Oshima.FunGame.OshimaModules.Skills
     {
         public override long Id => Skill.Id;
         public override string Name => Skill.Name;
-        public override string Description => $"在 AI 控制下，任何目标都将则优先选择血量更低的角色。行动开始时，弱者猎手会盯上一名角色，然后标记所有生命值百分比低于自己的角色。在此回合内攻击被盯上或者被标记的角色，将造成 150% 伤害。";
+        public override string Description => $"在 AI 控制下，任何目标都将则优先选择血量更低的角色。行动开始时，弱者猎手会盯上一名角色，然后标记所有生命值百分比低于自己的角色。在此回合内攻击被盯上或者被标记的角色，将造成 140% 伤害。";
 
         public HashSet<Character> 猎手标记 { get; set; } = [];
 
@@ -32,7 +32,7 @@ namespace Oshima.FunGame.OshimaModules.Skills
         {
             if (character == Skill.Character && 猎手标记.Contains(enemy))
             {
-                double 额外伤害 = damage * 0.5;
+                double 额外伤害 = damage * 0.4;
                 return 额外伤害;
             }
             return 0;

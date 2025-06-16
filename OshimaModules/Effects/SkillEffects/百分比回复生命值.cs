@@ -6,7 +6,7 @@ namespace Oshima.FunGame.OshimaModules.Effects.SkillEffects
     {
         public override long Id => Skill.Id;
         public override string Name => Skill.Name;
-        public override string Description => $"为{(Skill.CanSelectTargetCount > 1 ? $"至多 {Skill.CanSelectTargetCount} 个" : "")}目标回复其最大生命值 {百分比 * 100:0.##}% 点生命值。";
+        public override string Description => $"为{(Skill.CanSelectTargetCount > 1 ? $"至多 {Skill.CanSelectTargetCount} 个" : "")}目标回复其最大生命值 {百分比 * 100:0.##}% 生命值。{(CanRespawn ? "如果目标已死亡，将复活目标。" : "")}";
 
         private double 基础回复 { get; set; } = 0.03;
         private double 回复成长 { get; set; } = 0.03;

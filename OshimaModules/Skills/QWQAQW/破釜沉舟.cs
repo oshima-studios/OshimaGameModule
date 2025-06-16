@@ -32,7 +32,7 @@ namespace Oshima.FunGame.OshimaModules.Skills
     {
         public override long Id => Skill.Id;
         public override string Name => Skill.Name;
-        public override string Description => $"最大生命值减少 20%。破釜沉舟：生命值高于 30% 时，受到额外的 [ {高于30额外伤害下限}~{高于30额外伤害上限}% ] 伤害，但是获得 [ 累计所受伤害的 {高于30的加成下限}~{高于30的加成上限}%  ] 伤害加成；生命值低于等于 30% 时，不会受到额外的伤害，仅能获得 [ 累计受到的伤害 {低于30的加成下限}~{低于30的加成上限}% ] 伤害加成。" +
+        public override string Description => $"最大生命值减少 20%。破釜沉舟：生命值高于 30% 时，受到额外的 [ {高于30额外伤害下限}～{高于30额外伤害上限}% ] 伤害，获得 [ 累计所受伤害的 {高于30的加成下限}～{高于30的加成上限}%  ] 伤害加成；生命值低于等于 30% 时，不会受到额外的伤害，并且获得 [ 累计受到的伤害 {低于30的加成下限}～{低于30的加成上限}% ] 的伤害加成。" +
             $"在没有受到任何伤害的时候，将获得 {常规伤害加成 * 100:0.##}% 伤害加成。" + (累计受到的伤害 > 0 ? $"（当前累计受到伤害：{累计受到的伤害:0.##}）" : "");
 
         private double 累计受到的伤害 = 0;
@@ -42,10 +42,10 @@ namespace Oshima.FunGame.OshimaModules.Skills
         private readonly double 常规伤害加成 = 0.35;
         private readonly int 高于30额外伤害上限 = 30;
         private readonly int 高于30额外伤害下限 = 15;
-        private readonly int 高于30的加成上限 = 100;
-        private readonly int 高于30的加成下限 = 80;
-        private readonly int 低于30的加成上限 = 60;
-        private readonly int 低于30的加成下限 = 40;
+        private readonly int 高于30的加成上限 = 80;
+        private readonly int 高于30的加成下限 = 50;
+        private readonly int 低于30的加成上限 = 120;
+        private readonly int 低于30的加成下限 = 90;
 
         private double 伤害加成(double damage)
         {

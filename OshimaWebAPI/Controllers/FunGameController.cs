@@ -71,6 +71,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
                     builder.AppendLine($"总计行动回合数：{stats.ActionTurn} / 场均：{stats.AvgActionTurn}");
                     builder.AppendLine($"总计存活时长：{stats.LiveTime:0.##} / 场均：{stats.AvgLiveTime:0.##}");
                     builder.AppendLine($"总计控制时长：{stats.ControlTime:0.##} / 场均：{stats.AvgControlTime:0.##}");
+                    builder.AppendLine($"总计护盾抵消：{stats.TotalShield:0.##} / 场均：{stats.AvgShield:0.##}");
                     builder.AppendLine($"总计赚取金钱：{stats.TotalEarnedMoney} / 场均：{stats.AvgEarnedMoney}");
                     builder.AppendLine($"每回合伤害：{stats.DamagePerRound:0.##}");
                     builder.AppendLine($"每行动回合伤害：{stats.DamagePerTurn:0.##}");
@@ -128,6 +129,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
                     builder.AppendLine($"总计行动回合数：{stats.ActionTurn} / 场均：{stats.AvgActionTurn}");
                     builder.AppendLine($"总计存活时长：{stats.LiveTime:0.##} / 场均：{stats.AvgLiveTime:0.##}");
                     builder.AppendLine($"总计控制时长：{stats.ControlTime:0.##} / 场均：{stats.AvgControlTime:0.##}");
+                    builder.AppendLine($"总计护盾抵消：{stats.TotalShield:0.##} / 场均：{stats.AvgShield:0.##}");
                     builder.AppendLine($"总计赚取金钱：{stats.TotalEarnedMoney} / 场均：{stats.AvgEarnedMoney}");
                     builder.AppendLine($"每回合伤害：{stats.DamagePerRound:0.##}");
                     builder.AppendLine($"每行动回合伤害：{stats.DamagePerTurn:0.##}");
