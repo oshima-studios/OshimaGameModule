@@ -434,7 +434,7 @@ namespace Oshima.FunGame.OshimaModules.Effects.OpenEffects
                                 character.ExATKPercentage -= percentage;
                             }
                             RealDynamicsValues["exatk2"] = exATK2;
-                            Descriptions.Add($"{(real >= 0 ? "增加" : "减少")}角色 {Math.Abs(exATK2) * 100:0.##}% [ {Math.Abs(real):0.##} ] 点攻击力。");
+                            Descriptions.Add($"{(real >= 0 ? "增加" : "减少")}角色 {Math.Abs(exATK2) * 100:0.##}% [ {(real == 0 ? "基于基础攻击力" : $"{Math.Abs(real):0.##}")} ] 点攻击力。");
                         }
                         break;
                     case "exdef2":
@@ -451,7 +451,7 @@ namespace Oshima.FunGame.OshimaModules.Effects.OpenEffects
                                 character.ExDEFPercentage -= percentage;
                             }
                             RealDynamicsValues["exdef2"] = exDEF2;
-                            Descriptions.Add($"{(real >= 0 ? "增加" : "减少")}角色 {Math.Abs(exDEF2) * 100:0.##}% [ {Math.Abs(real):0.##} ] 点物理护甲。");
+                            Descriptions.Add($"{(real >= 0 ? "增加" : "减少")}角色 {Math.Abs(exDEF2) * 100:0.##}% [ {(real == 0 ? "基于基础物理护甲" : $"{Math.Abs(real):0.##}")} ] 点物理护甲。");
                         }
                         break;
                     case "exstr2":
@@ -468,7 +468,7 @@ namespace Oshima.FunGame.OshimaModules.Effects.OpenEffects
                                 character.ExSTRPercentage -= percentage;
                             }
                             RealDynamicsValues["exstr2"] = exSTR2;
-                            Descriptions.Add($"{(real >= 0 ? "增加" : "减少")}角色 {Math.Abs(exSTR2) * 100:0.##}% [ {Math.Abs(real):0.##} ] 点力量。");
+                            Descriptions.Add($"{(real >= 0 ? "增加" : "减少")}角色 {Math.Abs(exSTR2) * 100:0.##}% [ {(real == 0 ? "基于基础力量" : $"{Math.Abs(real):0.##}")} ] 点力量。");
                         }
                         break;
                     case "exagi2":
@@ -485,7 +485,7 @@ namespace Oshima.FunGame.OshimaModules.Effects.OpenEffects
                                 character.ExAGIPercentage -= percentage;
                             }
                             RealDynamicsValues["exagi2"] = exAGI2;
-                            Descriptions.Add($"{(real >= 0 ? "增加" : "减少")}角色 {Math.Abs(exAGI2) * 100:0.##}% [ {Math.Abs(real):0.##} ] 点敏捷。");
+                            Descriptions.Add($"{(real >= 0 ? "增加" : "减少")}角色 {Math.Abs(exAGI2) * 100:0.##}% [ {(real == 0 ? "基于基础敏捷" : $"{Math.Abs(real):0.##}")} ] 点敏捷。");
                         }
                         break;
                     case "exint2":
@@ -502,7 +502,7 @@ namespace Oshima.FunGame.OshimaModules.Effects.OpenEffects
                                 character.ExINTPercentage -= percentage;
                             }
                             RealDynamicsValues["exint2"] = exINT2;
-                            Descriptions.Add($"{(real >= 0 ? "增加" : "减少")}角色 {Math.Abs(exINT2) * 100:0.##}% [ {Math.Abs(real):0.##} ] 点智力。");
+                            Descriptions.Add($"{(real >= 0 ? "增加" : "减少")}角色 {Math.Abs(exINT2) * 100:0.##}% [ {(real == 0 ? "基于基础智力" : $"{Math.Abs(real):0.##}")} ] 点智力。");
                         }
                         break;
                     case "exhp2":
@@ -519,7 +519,7 @@ namespace Oshima.FunGame.OshimaModules.Effects.OpenEffects
                                 character.ExHPPercentage -= percentage;
                             }
                             RealDynamicsValues["exhp2"] = exhp2;
-                            Descriptions.Add($"{(real >= 0 ? "增加" : "减少")}角色 {Math.Abs(exhp2) * 100:0.##}% [ {Math.Abs(real):0.##} ] 点最大生命值。");
+                            Descriptions.Add($"{(real >= 0 ? "增加" : "减少")}角色 {Math.Abs(exhp2) * 100:0.##}% [ {(real == 0 ? "基于基础生命值" : $"{Math.Abs(real):0.##}")} ] 点最大生命值。");
                         }
                         break;
                     case "exmp2":
@@ -536,7 +536,7 @@ namespace Oshima.FunGame.OshimaModules.Effects.OpenEffects
                                 character.ExMPPercentage -= percentage;
                             }
                             RealDynamicsValues["exmp2"] = exmp2;
-                            Descriptions.Add($"{(real >= 0 ? "增加" : "减少")}角色 {Math.Abs(exmp2) * 100:0.##}% [ {Math.Abs(real):0.##} ] 点最大魔法值。");
+                            Descriptions.Add($"{(real >= 0 ? "增加" : "减少")}角色 {Math.Abs(exmp2) * 100:0.##}% [ {(real == 0 ? "基于基础魔法值" : $"{Math.Abs(real):0.##}")} ] 点最大魔法值。");
                         }
                         break;
                     case "mdftype":

@@ -28,9 +28,9 @@ namespace Oshima.FunGame.OshimaModules.Skills
             (Skill.Character != null ? "（当前模式：" + CharacterSet.GetPrimaryAttributeName(Skill.Character.PrimaryAttribute) + "）" : "");
 
         private double 交换的基础智力 = 0;
-        private double 实际增加暴击率 = 0.15;
-        private double 实际增加闪避率 = 0.15;
-        private double 实际增加魔法抗性 = 0.15;
+        private readonly double 实际增加暴击率 = 0.15;
+        private readonly double 实际增加闪避率 = 0.15;
+        private readonly double 实际增加魔法抗性 = 0.15;
         private bool 已经加过 = false;
 
         public override void OnEffectGained(Character character)

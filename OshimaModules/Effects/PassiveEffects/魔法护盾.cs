@@ -7,7 +7,7 @@ namespace Oshima.FunGame.OshimaModules.Effects.PassiveEffects
     {
         public override long Id => 4107;
         public override string Name => "魔法护盾";
-        public override string Description => $"此角色拥有魔法护盾。来自：[ {Source} ] 的 [ {Skill.Name} ]";
+        public override string Description => $"此角色拥有魔法护盾{CurrentShield}。来自：[ {Source} ] 的 [ {Skill.Name} ]";
         public override EffectType EffectType => EffectType.Shield;
         public override DispelledType DispelledType => DispelledType.CannotBeDispelled;
         public override bool DurativeWithoutDuration => true;
@@ -17,15 +17,28 @@ namespace Oshima.FunGame.OshimaModules.Effects.PassiveEffects
         public override double Duration => _duration;
         public override int DurationTurn => _durationTurn;
 
+        private string CurrentShield
+        {
+            get
+            {
+                if (_targetCharacter != null && _targetCharacter.Shield.ShieldOfEffects.TryGetValue(this, out ShieldOfEffect? value) && value != null)
+                {
+                    return $"，护盾值：{value.Shield:0.##} 点";
+                }
+                else return "";
+            }
+        }
+        private readonly Character _targetCharacter;
         private readonly Character _sourceCharacter;
         private readonly double _shield;
         private readonly bool _durative;
         private readonly double _duration;
         private readonly int _durationTurn;
 
-        public 魔法护盾(Skill skill, Character sourceCharacter, double shield, bool durative = false, double duration = 0, int durationTurn = 0) : base(skill)
+        public 魔法护盾(Skill skill, Character targetCharacter, Character sourceCharacter, double shield, bool durative = false, double duration = 0, int durationTurn = 0) : base(skill)
         {
             GamingQueue = skill.GamingQueue;
+            _targetCharacter = targetCharacter;
             _sourceCharacter = sourceCharacter;
             _durative = durative;
             _duration = duration;

@@ -34,7 +34,10 @@ namespace Oshima.FunGame.OshimaModules.Effects.SkillEffects
             foreach (Character target in targets)
             {
                 WriteLine($"[ {target} ] 获得了 {护盾值:0.##} 点物理护盾！");
-                物理护盾 e = new(Skill, caster, 护盾值, _durative, _duration, _durationTurn);
+                物理护盾 e = new(Skill, target, caster, 护盾值, _durative, _duration, _durationTurn)
+                {
+                    ParentEffect = ParentEffect
+                };
                 target.Effects.Add(e);
                 e.OnEffectGained(target);
                 e.DispelledType = DispelledType;

@@ -54,6 +54,7 @@ namespace Oshima.FunGame.OshimaModules.Effects.SkillEffects
                     if (_duration > e.Duration) e.Duration = _duration;
                     if (_durationTurn > e.DurationTurn) e.DurationTurn = _durationTurn;
                     e.DispelledType = DispelledType;
+                    e.ParentEffect = ParentEffect;
                 }
                 else
                 {
@@ -62,6 +63,7 @@ namespace Oshima.FunGame.OshimaModules.Effects.SkillEffects
                     e.OnEffectGained(target);
                     e.IsDebuff = isDebuff;
                     e.DispelledType = DispelledType;
+                    e.ParentEffect = ParentEffect;
                 }
                 GamingQueue?.LastRound.ApplyEffects.TryAdd(target, [e.EffectType]);
             }

@@ -26,9 +26,33 @@ namespace Oshima.FunGame.OshimaModules.Skills
         public override long Id => Skill.Id;
         public override string Name => "变幻之心";
         public override string Description => $"检查 [ 智慧与力量 ] 的模式。在力量模式下，立即回复 {生命值回复 * 100:0.##}% 生命值，同时下 {吸血次数} 次对敌人造成伤害时获得 30% 生命偷取；" +
-            $"智力模式下，下 {魔法加成次数} 次魔法伤害提升 {伤害提升 * 100:0.##}%。此技能效果不叠加，重复释放时将重置次数；若是模式切换后重复释放，将回收先前的效果。";
+            $"智力模式下，下 {魔法加成次数} 次魔法伤害提升 {伤害提升 * 100:0.##}%。此技能效果不叠加，重复释放时将重置次数；若是模式切换后重复释放，将回收先前的效果。{当前次数描述}";
         public override DispelledType DispelledType => DispelledType.CannotBeDispelled;
 
+        private string 当前次数描述
+        {
+            get
+            {
+                string str = "";
+                if (当前吸血次数 > 0 || 当前魔法加成次数 > 0)
+                {
+                    str = 当前吸血次数 > 0 ? "吸血次数" : (当前魔法加成次数 > 0 ? "魔法加成次数" : "");
+                    if (str != "")
+                    {
+                        str = $"剩余{str}：";
+                    }
+                    if (当前吸血次数 > 0)
+                    {
+                        str += $"{当前吸血次数} 次。";
+                    }
+                    else if (当前魔法加成次数 > 0)
+                    {
+                        str += $"{当前魔法加成次数} 次。";
+                    }
+                }
+                return str;
+            }
+        }
         private int 吸血次数
         {
             get
@@ -63,8 +87,8 @@ namespace Oshima.FunGame.OshimaModules.Skills
         }
         private double 生命值回复 => 0.25 + 0.03 * (Level - 1);
         private double 伤害提升 => 0.6 + 0.4 * (Level - 1);
-        private double 当前吸血次数 = 0;
-        private double 当前魔法加成次数 = 0;
+        private int 当前吸血次数 = 0;
+        private int 当前魔法加成次数 = 0;
 
         public override void OnEffectGained(Character character)
         {

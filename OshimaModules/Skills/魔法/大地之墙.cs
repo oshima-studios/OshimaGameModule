@@ -70,17 +70,20 @@ namespace Oshima.FunGame.OshimaModules.Skills
 
         public 大地之墙(Character? character = null) : base(SkillType.Magic, character)
         {
-            Effect shield = new 增加物理护盾_特效持续型(this, 120, 160, true, 15)
+            Effect effect = new 大地之墙特效(this);
+            Effect shield = new 增加物理护盾_特效持续型(this, 120, 160, true, 20)
             {
-                DispelledType = DispelledType.CannotBeDispelled
+                DispelledType = DispelledType.CannotBeDispelled,
+                ParentEffect = effect
             };
             Effects.Add(shield);
             Effect dispel = new 施加持续性弱驱散(this, durative: true, duration: 12)
             {
-                DispelledType = DispelledType.Strong
+                DispelledType = DispelledType.Strong,
+                ParentEffect = effect
             };
             Effects.Add(dispel);
-            Effects.Add(new 大地之墙特效(this));
+            Effects.Add(effect);
         }
     }
 
@@ -88,30 +91,38 @@ namespace Oshima.FunGame.OshimaModules.Skills
     {
         public override long Id => Skill.Id;
         public override string Name => Skill.Name;
-        public override string Description => $"";
+        public override string Description => "";
         public override bool ForceHideInStatusBar => true;
+
+        private List<Character> _targets = [];
 
         public override void OnTimeElapsed(Character character, double elapsed)
         {
-            if (!character.Effects.Any(e => e is 物理护盾) && character.Effects.FirstOrDefault(e => e is 施加持续性弱驱散) is 施加持续性弱驱散 e)
+            if (!character.Effects.Any(e => e is 物理护盾 && e.ParentEffect == this))
             {
-                e.DispelledType = DispelledType.Weak;
-            }
-            else
-            {
-                character.Effects.Remove(this);
+                if (character.Effects.FirstOrDefault(e => e is 施加持续性弱驱散 && e.ParentEffect == this) is 施加持续性弱驱散 e)
+                {
+                    e.DispelledType = DispelledType.Weak;
+                }
+                else
+                {
+                    character.Effects.Remove(this);
+                }
             }
         }
 
         public override void OnSkillCasted(Character caster, List<Character> targets, Dictionary<string, object> others)
         {
+            _targets = targets;
             foreach (Character target in targets)
             {
-                if (!target.Effects.Any(e => e is 大地之墙特效))
-                {
-                    target.Effects.Add(new 大地之墙特效(Skill));
-                }
+                target.Effects.Add(this);
             }
+        }
+
+        public string Observer()
+        {
+            return $"正在监控目标角色 [ {string.Join(" ] / [ ", _targets)} ] 的对象：{string.Join("，", _targets.SelectMany(c => c.Effects.Where(e => e.ParentEffect == this).Distinct().Select(e => e.Name)))}";
         }
     }
 }
