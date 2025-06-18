@@ -36,7 +36,10 @@ namespace Oshima.FunGame.OshimaModules.Effects.ItemEffects
 
         public override void OnSkillCasted(Character caster, List<Character> targets, Dictionary<string, object> others)
         {
-            HealToTarget(caster, caster, 实际回复, 能复活);
+            foreach (Character target in targets)
+            {
+                HealToTarget(caster, target, 实际回复, 能复活);
+            }
         }
 
         public override void OnSkillCasted(User user, List<Character> targets, Dictionary<string, object> others)

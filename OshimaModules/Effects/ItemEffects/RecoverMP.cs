@@ -30,7 +30,11 @@ namespace Oshima.FunGame.OshimaModules.Effects.ItemEffects
 
         public override void OnSkillCasted(Character caster, List<Character> targets, Dictionary<string, object> others)
         {
-            caster.MP += 实际回复;
+            foreach (Character target in targets)
+            {
+                target.MP += 实际回复;
+                WriteLine($"[ {target} ] 回复了 {实际回复:0.##} 点魔法值！");
+            }
         }
 
         public override void OnSkillCasted(User user, List<Character> targets, Dictionary<string, object> others)
