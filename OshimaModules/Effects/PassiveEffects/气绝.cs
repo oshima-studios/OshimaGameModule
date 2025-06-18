@@ -49,9 +49,9 @@ namespace Oshima.FunGame.OshimaModules.Effects.PassiveEffects
                     int loop = 0;
                     for (; loop < elapsed; loop++)
                     {
+                        elapsed--;
                         OnTimeElapsed(character, 1);
                     }
-                    elapsed -= loop;
                     if (elapsed > 0)
                     {
                         OnTimeElapsed(character, elapsed);
