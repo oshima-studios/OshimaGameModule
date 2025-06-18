@@ -1,11 +1,12 @@
 ﻿using Milimoe.FunGame.Core.Entity;
 using Milimoe.FunGame.Core.Library.Constant;
 using Oshima.FunGame.OshimaModules.Effects.ItemEffects;
+using Oshima.FunGame.OshimaModules.Effects.SkillEffects;
 using Oshima.FunGame.OshimaModules.Skills;
 
 namespace Oshima.FunGame.OshimaModules.Items
 {
-    public class 回复药
+    public class 复苏药
     {
         public interface HPRecovery
         {
@@ -14,7 +15,7 @@ namespace Oshima.FunGame.OshimaModules.Items
 
         public static void Init(Item item, double hp, int remainUseTimes = 1, bool isPercentage = false)
         {
-            item.Skills.Active = new 回复药技能(item, hp, isPercentage);
+            item.Skills.Active = new 复苏药技能(item, hp, isPercentage);
             item.RemainUseTimes = remainUseTimes;
             item.IsReduceTimesAfterUse = true;
             item.IsRemoveAfterUse = true;
@@ -69,112 +70,110 @@ namespace Oshima.FunGame.OshimaModules.Items
         }
     }
 
-    public class 小回复药 : Item, 回复药.HPRecovery
+    public class 复苏药1 : Item, 复苏药.HPRecovery
     {
-        public override long Id => (long)ConsumableID.小回复药;
-        public override string Name => "小回复药";
-        public override string Description => Skills.Active?.Description ?? "";
-        public override QualityType QualityType => QualityType.White;
-        public double HP { get; set; } = 600;
-
-        public 小回复药(User? user = null, int remainUseTimes = 1) : base(ItemType.Consumable)
-        {
-            User = user;
-            回复药.Init(this, HP, remainUseTimes);
-        }
-
-        protected override bool OnItemUsed(User user, Dictionary<string, object> args)
-        {
-            return 回复药.OnItemUsed(user, this, args);
-        }
-    }
-
-    public class 中回复药 : Item, 回复药.HPRecovery
-    {
-        public override long Id => (long)ConsumableID.中回复药;
-        public override string Name => "中回复药";
+        public override long Id => (long)ConsumableID.复苏药1;
+        public override string Name => "复苏药";
         public override string Description => Skills.Active?.Description ?? "";
         public override QualityType QualityType => QualityType.Green;
-        public double HP { get; set; } = 1800;
+        public double HP { get; set; } = 500;
 
-        public 中回复药(User? user = null, int remainUseTimes = 1) : base(ItemType.Consumable)
+        public 复苏药1(User? user = null, int remainUseTimes = 1) : base(ItemType.Consumable)
         {
             User = user;
-            回复药.Init(this, HP, remainUseTimes);
+            复苏药.Init(this, HP, remainUseTimes);
         }
 
         protected override bool OnItemUsed(User user, Dictionary<string, object> args)
         {
-            return 回复药.OnItemUsed(user, this, args);
+            return 复苏药.OnItemUsed(user, this, args);
         }
     }
 
-    public class 大回复药 : Item, 回复药.HPRecovery
+    public class 复苏药2 : Item, 复苏药.HPRecovery
     {
-        public override long Id => (long)ConsumableID.大回复药;
-        public override string Name => "大回复药";
+        public override long Id => (long)ConsumableID.复苏药2;
+        public override string Name => "复苏药·改";
         public override string Description => Skills.Active?.Description ?? "";
         public override QualityType QualityType => QualityType.Blue;
-        public double HP { get; set; } = 3000;
+        public double HP { get; set; } = 2500;
 
-        public 大回复药(User? user = null, int remainUseTimes = 1) : base(ItemType.Consumable)
+        public 复苏药2(User? user = null, int remainUseTimes = 1) : base(ItemType.Consumable)
         {
             User = user;
-            回复药.Init(this, HP, remainUseTimes);
+            复苏药.Init(this, HP, remainUseTimes);
         }
 
         protected override bool OnItemUsed(User user, Dictionary<string, object> args)
         {
-            return 回复药.OnItemUsed(user, this, args);
+            return 复苏药.OnItemUsed(user, this, args);
         }
     }
 
-    public class 全回复药 : Item, 回复药.HPRecovery
+    public class 复苏药3 : Item, 复苏药.HPRecovery
     {
-        public override long Id => (long)ConsumableID.全回复药;
-        public override string Name => "全回复药";
+        public override long Id => (long)ConsumableID.复苏药3;
+        public override string Name => "复苏药·全";
         public override string Description => Skills.Active?.Description ?? "";
         public override QualityType QualityType => QualityType.Purple;
         public double HP { get; set; } = 1;
 
-        public 全回复药(User? user = null, int remainUseTimes = 1) : base(ItemType.Consumable)
+        public 复苏药3(User? user = null, int remainUseTimes = 1) : base(ItemType.Consumable)
         {
             User = user;
-            回复药.Init(this, HP, remainUseTimes, true);
+            复苏药.Init(this, HP, remainUseTimes, true);
         }
 
         protected override bool OnItemUsed(User user, Dictionary<string, object> args)
         {
-            return 回复药.OnItemUsed(user, this, args);
+            return 复苏药.OnItemUsed(user, this, args);
         }
     }
 
-    public class 回复药技能 : Skill
+    public class 复苏药技能 : Skill
     {
-        public override long Id => (long)ItemActiveID.回复药;
-        public override string Name => "回复药";
+        public override long Id => (long)ItemActiveID.复苏药;
+        public override string Name => "复苏药";
         public override string Description => string.Join("", Effects.Select(e => e.Description));
-        public override bool CanSelectSelf => true;
-        public override bool CanSelectTeammate => true;
-        public override bool CanSelectEnemy => false;
-        public override int CanSelectTargetCount => 1;
+        public override bool SelectAllTeammates => _canSelectAllTeammates;
+        public override bool SelectAllEnemies => _canSelectAllEnemies;
+        public override bool CanSelectSelf => _canSelectSelf;
+        public override bool CanSelectTeammate => _canSelectTeammate;
+        public override bool CanSelectEnemy => _canSelectEnemy;
+        public override int CanSelectTargetCount => _canSelectCount;
 
-        public 回复药技能(Item? item = null, double hp = 0, bool isPercentage = false) : base(SkillType.Item)
+        private readonly bool _canSelectAllTeammates;
+        private readonly bool _canSelectAllEnemies;
+        private readonly bool _canSelectSelf;
+        private readonly bool _canSelectTeammate;
+        private readonly bool _canSelectEnemy;
+        private readonly int _canSelectCount;
+
+        public 复苏药技能(Item? item = null, double hp = 0, bool isPercentage = false, bool canSelectAllTeammates = false, bool canSelectAllEnemies = false, bool canSelectSelf = true, bool canSelectTeammate = true, bool canSelectEnemy = false, int canSelectCount = 1) : base(SkillType.Item)
         {
             Level = 1;
             Item = item;
+            _canSelectAllTeammates = canSelectAllTeammates;
+            _canSelectAllEnemies = canSelectAllEnemies;
+            _canSelectSelf = canSelectSelf;
+            _canSelectTeammate = canSelectTeammate;
+            _canSelectEnemy = canSelectEnemy;
+            _canSelectCount = canSelectCount;
+            Effects.Add(new 强驱散特效(this));
             if (!isPercentage)
             {
                 Effects.Add(new RecoverHP(this, new()
                 {
-                    { "hp", hp }
+                    { "hp", hp },
+                    { "respawn", true }
                 }));
             }
             else
             {
                 Effects.Add(new RecoverHP2(this, new()
                 {
-                    { "hp", hp }
+                    { "hp", hp },
+                    { "respawn", true }
                 }));
             }
         }

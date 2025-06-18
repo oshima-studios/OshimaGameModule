@@ -278,7 +278,7 @@ namespace Oshima.FunGame.WebAPI.Services
                     }
                     return result;
                 }
-                
+
                 if (e.Detail.StartsWith("混战模拟"))
                 {
                     int maxRespawnTimesMix = 1;

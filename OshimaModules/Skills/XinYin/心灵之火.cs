@@ -31,7 +31,7 @@ namespace Oshima.FunGame.OshimaModules.Skills
         public double 基础冷却时间 { get; set; } = 12;
         private bool 是否是嵌套普通攻击 = false;
 
-        public override double AlterActualDamageAfterCalculation(Character character, Character enemy, double damage, bool isNormalAttack, bool isMagicDamage, MagicType magicType, DamageResult damageResult, ref bool isEvaded, Dictionary<Effect, double> totalDamageBonus)
+        public override double AlterActualDamageAfterCalculation(Character character, Character enemy, double damage, bool isNormalAttack, DamageType damageType, MagicType magicType, DamageResult damageResult, ref bool isEvaded, Dictionary<Effect, double> totalDamageBonus)
         {
             if (character == Skill.Character && 是否是嵌套普通攻击 && isNormalAttack && damage > 0)
             {
@@ -40,7 +40,7 @@ namespace Oshima.FunGame.OshimaModules.Skills
             return 0;
         }
 
-        public override void AfterDamageCalculation(Character character, Character enemy, double damage, double actualDamage, bool isNormalAttack, bool isMagicDamage, MagicType magicType, DamageResult damageResult)
+        public override void AfterDamageCalculation(Character character, Character enemy, double damage, double actualDamage, bool isNormalAttack, DamageType damageType, MagicType magicType, DamageResult damageResult)
         {
             if (character == Skill.Character && isNormalAttack && 冷却时间 == 0 && !是否是嵌套普通攻击 && GamingQueue != null && enemy.HP > 0)
             {

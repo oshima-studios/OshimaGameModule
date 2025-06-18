@@ -1326,7 +1326,7 @@
   "YukiのCalfSocks": {
     "Id": 14510,
     "Name": "YukiのCalfSocks",
-    "Description": "增加角色 15% 暴击率和 30% 暴击伤害。",
+    "Description": "增加角色 10% 暴击率和 25% 暴击伤害。",
     "BackgroundStory": "小雪的小腿袜，拥有神秘的力量，令人神往。",
     "ItemType": 4,
     "WeaponType": 0,
@@ -1341,11 +1341,11 @@
           "Effects": [
             {
               "Id": 8014,
-              "excr": 0.15
+              "excr": 0.1
             },
             {
               "Id": 8015,
-              "excrd": 0.3
+              "excrd": 0.25
             }
           ]
         }
@@ -1477,7 +1477,7 @@
   "YukiのCalfSocks-圣诞限定": {
     "Id": 14515,
     "Name": "YukiのCalfSocks-圣诞限定",
-    "Description": "增加角色 50% 暴击伤害。",
+    "Description": "增加角色 40% 暴击伤害。",
     "BackgroundStory": "小雪的圣诞限定小腿袜，结合了圣诞树的红绿色，还有铃铛和鹿角的装饰。",
     "ItemType": 4,
     "WeaponType": 0,
@@ -1492,7 +1492,7 @@
           "Effects": [
             {
               "Id": 8015,
-              "excrd": 0.5
+              "excrd": 0.4
             }
           ]
         }

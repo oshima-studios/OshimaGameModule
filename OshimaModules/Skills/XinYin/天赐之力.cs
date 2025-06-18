@@ -65,7 +65,7 @@ namespace Oshima.FunGame.OshimaModules.Skills
             return CharacterActionType.None;
         }
 
-        public override double AlterExpectedDamageBeforeCalculation(Character character, Character enemy, double damage, bool isNormalAttack, bool isMagicDamage, MagicType magicType, Dictionary<Effect, double> totalDamageBonus)
+        public override double AlterExpectedDamageBeforeCalculation(Character character, Character enemy, double damage, bool isNormalAttack, DamageType damageType, MagicType magicType, Dictionary<Effect, double> totalDamageBonus)
         {
             if (character == Skill.Character && isNormalAttack)
             {

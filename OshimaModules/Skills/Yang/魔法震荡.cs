@@ -34,7 +34,7 @@ namespace Oshima.FunGame.OshimaModules.Skills
         private static double 系数 => 4;
         private double 伤害加成 => 系数 * Skill.Character?.STR ?? 0;
 
-        public override double AlterExpectedDamageBeforeCalculation(Character character, Character enemy, double damage, bool isNormalAttack, bool isMagicDamage, MagicType magicType, Dictionary<Effect, double> totalDamageBonus)
+        public override double AlterExpectedDamageBeforeCalculation(Character character, Character enemy, double damage, bool isNormalAttack, DamageType damageType, MagicType magicType, Dictionary<Effect, double> totalDamageBonus)
         {
             if (character == Skill.Character && (
                 enemy.CharacterState == CharacterState.NotActionable ||
@@ -48,9 +48,9 @@ namespace Oshima.FunGame.OshimaModules.Skills
             return 0;
         }
 
-        public override void AfterDamageCalculation(Character character, Character enemy, double damage, double actualDamage, bool isNormalAttack, bool isMagicDamage, MagicType magicType, DamageResult damageResult)
+        public override void AfterDamageCalculation(Character character, Character enemy, double damage, double actualDamage, bool isNormalAttack, DamageType damageType, MagicType magicType, DamageResult damageResult)
         {
-            if (character == Skill.Character && isMagicDamage && actualDamage > 0 && 冷却时间 == 0 && (damageResult == DamageResult.Normal || damageResult == DamageResult.Critical))
+            if (character == Skill.Character && damageType == DamageType.Magical && actualDamage > 0 && 冷却时间 == 0 && (damageResult == DamageResult.Normal || damageResult == DamageResult.Critical))
             {
                 IEnumerable<Effect> effects = enemy.Effects.Where(e => e is 眩晕 && e.Skill == Skill);
                 if (effects.Any())

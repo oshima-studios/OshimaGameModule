@@ -30,13 +30,13 @@ namespace Oshima.FunGame.OshimaModules.Skills
         private readonly double 敏捷系数 = 2.5;
         private bool 是否是嵌套伤害 = false;
 
-        public override void AfterDamageCalculation(Character character, Character enemy, double damage, double actualDamage, bool isNormalAttack, bool isMagicDamage, MagicType magicType, DamageResult damageResult)
+        public override void AfterDamageCalculation(Character character, Character enemy, double damage, double actualDamage, bool isNormalAttack, DamageType damageType, MagicType magicType, DamageResult damageResult)
         {
             if (character == Skill.Character && isNormalAttack && (damageResult == DamageResult.Normal || damageResult == DamageResult.Critical) && !是否是嵌套伤害 && enemy.HP > 0)
             {
                 WriteLine($"[ {character} ] 发动了敏捷之刃！将造成额外伤害！");
                 是否是嵌套伤害 = true;
-                DamageToEnemy(character, enemy, true, magicType, 敏捷伤害);
+                DamageToEnemy(character, enemy, DamageType.Magical, magicType, 敏捷伤害);
             }
 
             if (character == Skill.Character && 是否是嵌套伤害)

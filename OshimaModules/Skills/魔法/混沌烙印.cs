@@ -18,7 +18,7 @@ namespace Oshima.FunGame.OshimaModules.Skills
 
         public 混沌烙印(Character? character = null) : base(SkillType.Magic, character)
         {
-            Effects.Add(new 造成气绝(this, true, 6, 0, 1.5, true, 0, 0.3));
+            Effects.Add(new 造成气绝(this, true, 4, 0, 0.5, true, 0, 0.3));
         }
     }
 }

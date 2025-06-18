@@ -28,7 +28,7 @@ namespace Oshima.FunGame.OshimaModules.Skills
 
         private bool 是否是嵌套伤害 = false;
 
-        public override void AfterDamageCalculation(Character character, Character enemy, double damage, double actualDamage, bool isNormalAttack, bool isMagicDamage, MagicType magicType, DamageResult damageResult)
+        public override void AfterDamageCalculation(Character character, Character enemy, double damage, double actualDamage, bool isNormalAttack, DamageType damageType, MagicType magicType, DamageResult damageResult)
         {
             if (character == Skill.Character && (damageResult == DamageResult.Normal || damageResult == DamageResult.Critical) && !是否是嵌套伤害 && enemy.HP > 0)
             {
@@ -42,7 +42,7 @@ namespace Oshima.FunGame.OshimaModules.Skills
                     double 额外伤害 = damage * 0.3;
                     WriteLine($"[ {character} ] 发动了枯竭打击！将造成额外伤害！");
                     是否是嵌套伤害 = true;
-                    DamageToEnemy(character, enemy, isMagicDamage, magicType, 额外伤害);
+                    DamageToEnemy(character, enemy, damageType, magicType, 额外伤害);
                 }
             }
 

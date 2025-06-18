@@ -1,6 +1,7 @@
 ﻿using Milimoe.FunGame.Core.Entity;
 using Milimoe.FunGame.Core.Library.Constant;
 using Oshima.FunGame.OshimaModules.Effects.PassiveEffects;
+using Oshima.FunGame.OshimaModules.Skills;
 
 namespace Oshima.FunGame.OshimaModules.Effects.SkillEffects
 {
@@ -8,8 +9,7 @@ namespace Oshima.FunGame.OshimaModules.Effects.SkillEffects
     {
         public override long Id => Skill.Id;
         public override string Name => Skill.Name;
-        public override string Description => $"为{TargetDescription}提供 {护盾值:0.##} 点物理护盾，持续 {持续时间}。";
-        public string TargetDescription => Skill.SelectAllTeammates ? "友方全体角色" : $"目标{(Skill.CanSelectTargetCount > 1 ? $"至多 {Skill.CanSelectTargetCount} 个" : "")}友方角色";
+        public override string Description => $"为{Skill.TargetDescription()}提供 {护盾值:0.##} 点物理护盾，持续 {持续时间}。";
 
         private string 持续时间 => _durative && _duration > 0 ? _duration + $" {GameplayEquilibriumConstant.InGameTime}" : (!_durative && _durationTurn > 0 ? _durationTurn + " 回合" : $"0 {GameplayEquilibriumConstant.InGameTime}");
         private double 护盾值 => Level > 0 ? Math.Abs(基础数值护盾 + 基础护盾等级成长 * (Level - 1)) : Math.Abs(基础数值护盾);

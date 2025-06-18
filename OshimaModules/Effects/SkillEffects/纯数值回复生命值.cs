@@ -1,4 +1,5 @@
 ﻿using Milimoe.FunGame.Core.Entity;
+using Oshima.FunGame.OshimaModules.Skills;
 
 namespace Oshima.FunGame.OshimaModules.Effects.SkillEffects
 {
@@ -6,7 +7,7 @@ namespace Oshima.FunGame.OshimaModules.Effects.SkillEffects
     {
         public override long Id => Skill.Id;
         public override string Name => Skill.Name;
-        public override string Description => $"为{(Skill.CanSelectTargetCount > 1 ? $"至多 {Skill.CanSelectTargetCount} 个" : "")}目标回复 {Heal:0.##} 点生命值。{(CanRespawn ? "如果目标已死亡，将复活目标。" : "")}";
+        public override string Description => $"为{Skill.TargetDescription()}回复 {Heal:0.##} 点生命值。{(CanRespawn ? "如果目标已死亡，将复活目标。" : "")}";
 
         private double Heal => Skill.Level > 0 ? 基础回复 + 回复成长 * (Skill.Level - 1) : 基础回复;
         private double 基础回复 { get; set; } = 100;

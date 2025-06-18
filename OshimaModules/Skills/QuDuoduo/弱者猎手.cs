@@ -28,7 +28,7 @@ namespace Oshima.FunGame.OshimaModules.Skills
 
         public HashSet<Character> 猎手标记 { get; set; } = [];
 
-        public override double AlterExpectedDamageBeforeCalculation(Character character, Character enemy, double damage, bool isNormalAttack, bool isMagicDamage, MagicType magicType, Dictionary<Effect, double> totalDamageBonus)
+        public override double AlterExpectedDamageBeforeCalculation(Character character, Character enemy, double damage, bool isNormalAttack, DamageType damageType, MagicType magicType, Dictionary<Effect, double> totalDamageBonus)
         {
             if (character == Skill.Character && 猎手标记.Contains(enemy))
             {

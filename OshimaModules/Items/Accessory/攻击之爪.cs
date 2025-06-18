@@ -5,16 +5,16 @@ using Oshima.FunGame.OshimaModules.Skills;
 
 namespace Oshima.FunGame.OshimaModules.Items
 {
-    public class 攻击之爪8 : Item
+    public class 攻击之爪10 : Item
     {
-        public override long Id => (long)AccessoryID.攻击之爪8;
-        public override string Name => "攻击之爪 +8";
+        public override long Id => (long)AccessoryID.攻击之爪10;
+        public override string Name => "攻击之爪 +10";
         public override string Description => Skills.Passives.Count > 0 ? Skills.Passives.First().Description : "";
         public override QualityType QualityType => QualityType.White;
 
-        public 攻击之爪8(Character? character = null) : base(ItemType.Accessory)
+        public 攻击之爪10(Character? character = null) : base(ItemType.Accessory)
         {
-            Skills.Passives.Add(new 攻击之爪技能(character, this, 8));
+            Skills.Passives.Add(new 攻击之爪技能(character, this, 10));
         }
     }
 
@@ -31,29 +31,29 @@ namespace Oshima.FunGame.OshimaModules.Items
         }
     }
 
-    public class 攻击之爪35 : Item
+    public class 攻击之爪30 : Item
     {
-        public override long Id => (long)AccessoryID.攻击之爪35;
-        public override string Name => "攻击之爪 +35";
+        public override long Id => (long)AccessoryID.攻击之爪30;
+        public override string Name => "攻击之爪 +30";
         public override string Description => Skills.Passives.Count > 0 ? Skills.Passives.First().Description : "";
         public override QualityType QualityType => QualityType.Blue;
 
-        public 攻击之爪35(Character? character = null) : base(ItemType.Accessory)
+        public 攻击之爪30(Character? character = null) : base(ItemType.Accessory)
         {
-            Skills.Passives.Add(new 攻击之爪技能(character, this, 35));
+            Skills.Passives.Add(new 攻击之爪技能(character, this, 30));
         }
     }
 
-    public class 攻击之爪50 : Item
+    public class 攻击之爪40 : Item
     {
-        public override long Id => (long)AccessoryID.攻击之爪50;
-        public override string Name => "攻击之爪 +50";
+        public override long Id => (long)AccessoryID.攻击之爪40;
+        public override string Name => "攻击之爪 +40";
         public override string Description => Skills.Passives.Count > 0 ? Skills.Passives.First().Description : "";
         public override QualityType QualityType => QualityType.Purple;
 
-        public 攻击之爪50(Character? character = null) : base(ItemType.Accessory)
+        public 攻击之爪40(Character? character = null) : base(ItemType.Accessory)
         {
-            Skills.Passives.Add(new 攻击之爪技能(character, this, 50));
+            Skills.Passives.Add(new 攻击之爪技能(character, this, 40));
         }
     }
 

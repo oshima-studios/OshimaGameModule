@@ -1,5 +1,6 @@
 ﻿using Milimoe.FunGame.Core.Entity;
 using Milimoe.FunGame.Core.Library.Constant;
+using Oshima.FunGame.OshimaModules.Skills;
 
 namespace Oshima.FunGame.OshimaModules.Effects.SkillEffects
 {
@@ -7,7 +8,7 @@ namespace Oshima.FunGame.OshimaModules.Effects.SkillEffects
     {
         public override long Id => Skill.Id;
         public override string Name => Skill.Name;
-        public override string Description => $"对目标{(Skill.CanSelectTargetCount > 1 ? $"至多 {Skill.CanSelectTargetCount} 个" : "")}敌人造成 {BaseDamage:0.##} + {AttributeCoefficient * 100:0.##}% {CharacterSet.GetPrimaryAttributeName(基于属性)} [ {Damage:0.##} ] 点{(IsMagic ? CharacterSet.GetMagicDamageName(MagicType) : "物理伤害")}。";
+        public override string Description => $"对{Skill.TargetDescription()}造成 {BaseDamage:0.##} + {AttributeCoefficient * 100:0.##}% {CharacterSet.GetPrimaryAttributeName(基于属性)} [ {Damage:0.##} ] 点{CharacterSet.GetDamageTypeName(DamageType, MagicType)}。";
         private double BaseDamage => Skill.Level > 0 ? 基础数值伤害 + 基础伤害等级成长 * (Skill.Level - 1) : 基础数值伤害;
         private double AttributeCoefficient => Skill.Level > 0 ? 基础属性系数 + 基础系数等级成长 * (Skill.Level - 1) : 基础属性系数;
         private double Damage
@@ -33,9 +34,9 @@ namespace Oshima.FunGame.OshimaModules.Effects.SkillEffects
         private double 基础伤害等级成长 { get; set; } = 50;
         private double 基础属性系数 { get; set; } = 0.4;
         private double 基础系数等级成长 { get; set; } = 0.4;
-        private bool IsMagic { get; set; } = true;
+        private DamageType DamageType { get; set; } = DamageType.Magical;
 
-        public 基于属性的伤害(Skill skill, PrimaryAttribute 基于属性, double 基础数值伤害, double 基础伤害等级成长, double 基础属性系数, double 基础系数等级成长, bool isMagic = true, MagicType magicType = MagicType.None) : base(skill)
+        public 基于属性的伤害(Skill skill, PrimaryAttribute 基于属性, double 基础数值伤害, double 基础伤害等级成长, double 基础属性系数, double 基础系数等级成长, DamageType damageType = DamageType.Magical, MagicType magicType = MagicType.None) : base(skill)
         {
             GamingQueue = skill.GamingQueue;
             this.基于属性 = 基于属性;
@@ -43,7 +44,7 @@ namespace Oshima.FunGame.OshimaModules.Effects.SkillEffects
             this.基础伤害等级成长 = 基础伤害等级成长;
             this.基础属性系数 = 基础属性系数;
             this.基础系数等级成长 = 基础系数等级成长;
-            IsMagic = isMagic;
+            DamageType = damageType;
             MagicType = magicType;
         }
 
@@ -51,7 +52,7 @@ namespace Oshima.FunGame.OshimaModules.Effects.SkillEffects
         {
             foreach (Character enemy in targets)
             {
-                DamageToEnemy(caster, enemy, IsMagic, MagicType, Damage);
+                DamageToEnemy(caster, enemy, DamageType, MagicType, Damage);
             }
         }
     }

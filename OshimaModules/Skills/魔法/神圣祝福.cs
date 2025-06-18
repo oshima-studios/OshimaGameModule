@@ -10,7 +10,7 @@ namespace Oshima.FunGame.OshimaModules.Skills
         public override string Name => "神圣祝福";
         public override string Description => Effects.Count > 0 ? Effects.First().Description : "";
         public override double MPCost => Level > 0 ? 105 + (105 * (Level - 1)) : 105;
-        public override double CD => Level > 0 ? 95 - (1.5* (Level - 1)) : 95;
+        public override double CD => Level > 0 ? 95 - (1.5 * (Level - 1)) : 95;
         public override double CastTime => Level > 0 ? 5 + (1 * (Level - 1)) : 5;
         public override double HardnessTime { get; set; } = 6;
         public override bool CanSelectSelf => true;
@@ -34,7 +34,7 @@ namespace Oshima.FunGame.OshimaModules.Skills
 
         private string 持续时间 => _durative && _duration > 0 ? 实际持续时间 + $" {GameplayEquilibriumConstant.InGameTime}" : (!_durative && _durationTurn > 0 ? 实际持续时间 + " 回合" : $"0 {GameplayEquilibriumConstant.InGameTime}");
         private double 实际持续时间 => _durative && _duration > 0 ? _duration + _levelGrowth * (Level - 1) : (!_durative && _durationTurn > 0 ? _durationTurn + _levelGrowth * (Level - 1) : 0);
-        
+
         private readonly bool _durative;
         private readonly double _duration;
         private readonly int _durationTurn;

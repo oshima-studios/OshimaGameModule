@@ -47,7 +47,7 @@ namespace Oshima.FunGame.OshimaModules.Skills
             character.ExATK2 -= 实际攻击力加成;
         }
 
-        public override void AfterDamageCalculation(Character character, Character enemy, double damage, double actualDamage, bool isNormalAttack, bool isMagicDamage, MagicType magicType, DamageResult damageResult)
+        public override void AfterDamageCalculation(Character character, Character enemy, double damage, double actualDamage, bool isNormalAttack, DamageType damageType, MagicType magicType, DamageResult damageResult)
         {
             if (character == Skill.Character && isNormalAttack)
             {

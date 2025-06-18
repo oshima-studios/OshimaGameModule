@@ -47,7 +47,7 @@ namespace Oshima.FunGame.OshimaModules.Skills
             {
                 WriteLine($"[ {caster} ] 正在毁灭 [ {c} ] 的能量！！");
                 double ep = c.EP;
-                DamageToEnemy(caster, c, true, MagicType, ep * 能量系数 + 智力伤害);
+                DamageToEnemy(caster, c, DamageType.Magical, MagicType, ep * 能量系数 + 智力伤害);
             }
         }
     }

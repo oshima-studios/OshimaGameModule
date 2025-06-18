@@ -31,7 +31,7 @@ namespace Oshima.FunGame.OshimaModules.Skills
         private double 累计伤害 = 0;
         private double 下一次提升 = 7;
 
-        public override double AlterActualDamageAfterCalculation(Character character, Character enemy, double damage, bool isNormalAttack, bool isMagicDamage, MagicType magicType, DamageResult damageResult, ref bool isEvaded, Dictionary<Effect, double> totalDamageBonus)
+        public override double AlterActualDamageAfterCalculation(Character character, Character enemy, double damage, bool isNormalAttack, DamageType damageType, MagicType magicType, DamageResult damageResult, ref bool isEvaded, Dictionary<Effect, double> totalDamageBonus)
         {
             if ((damageResult == DamageResult.Normal || damageResult == DamageResult.Critical) && character == Skill.Character)
             {
@@ -43,7 +43,7 @@ namespace Oshima.FunGame.OshimaModules.Skills
             return 0;
         }
 
-        public override void AfterDamageCalculation(Character character, Character enemy, double damage, double actualDamage, bool isNormalAttack, bool isMagicDamage, MagicType magicType, DamageResult damageResult)
+        public override void AfterDamageCalculation(Character character, Character enemy, double damage, double actualDamage, bool isNormalAttack, DamageType damageType, MagicType magicType, DamageResult damageResult)
         {
             if ((damageResult == DamageResult.Normal || damageResult == DamageResult.Critical) && enemy == Skill.Character && actualDamage > 0 && !enemy.Effects.Where(e => e is 绝对领域特效).Any())
             {

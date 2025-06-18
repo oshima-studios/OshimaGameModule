@@ -67,7 +67,7 @@ namespace Oshima.FunGame.OshimaModules.Skills
             return 系数 * damage;
         }
 
-        public override double AlterExpectedDamageBeforeCalculation(Character character, Character enemy, double damage, bool isNormalAttack, bool isMagicDamage, MagicType magicType, Dictionary<Effect, double> totalDamageBonus)
+        public override double AlterExpectedDamageBeforeCalculation(Character character, Character enemy, double damage, bool isNormalAttack, DamageType damageType, MagicType magicType, Dictionary<Effect, double> totalDamageBonus)
         {
             if (character == Skill.Character)
             {
@@ -94,7 +94,7 @@ namespace Oshima.FunGame.OshimaModules.Skills
             return 0;
         }
 
-        public override void AfterDamageCalculation(Character character, Character enemy, double damage, double actualDamage, bool isNormalAttack, bool isMagicDamage, MagicType magicType, DamageResult damageResult)
+        public override void AfterDamageCalculation(Character character, Character enemy, double damage, double actualDamage, bool isNormalAttack, DamageType damageType, MagicType magicType, DamageResult damageResult)
         {
             if (enemy == Skill.Character && (damageResult == DamageResult.Normal || damageResult == DamageResult.Critical))
             {

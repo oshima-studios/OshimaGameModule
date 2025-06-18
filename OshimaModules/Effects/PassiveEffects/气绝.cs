@@ -7,7 +7,7 @@ namespace Oshima.FunGame.OshimaModules.Effects.PassiveEffects
     {
         public override long Id => 4109;
         public override string Name => "气绝";
-        public override string Description => $"此角色处于气绝状态，行动受限并且每{GameplayEquilibriumConstant.InGameTime}持续流失 {(_isPercentage ? $"{_durationDamagePercent * 100:0.##}% [ {Damage:0.##} ]" : Damage.ToString("0.##"))} 点生命值。来自：[ {Source} ] 的 [ {Skill.Name} ]";
+        public override string Description => $"此角色处于气绝状态，行动受限并且每{GameplayEquilibriumConstant.InGameTime}持续流失 {(_isPercentage ? $"{_durationDamagePercent * 100:0.##}% [ {Damage:0.##} ]" : Damage.ToString("0.##"))} 点当前生命值。来自：[ {Source} ] 的 [ {Skill.Name} ]";
         public override EffectType EffectType => EffectType.Bleed;
         public override DispelledType DispelledType => DispelledType.Strong;
         public override bool IsDebuff => true;
@@ -44,11 +44,24 @@ namespace Oshima.FunGame.OshimaModules.Effects.PassiveEffects
         {
             if (character.HP > 0)
             {
-                double damage = Damage * elapsed;
-                character.HP -= damage;
-                if (character.HP <= 0)
+                if (elapsed > 1)
                 {
-                    character.HP = 1;
+                    int loop = 0;
+                    for (; loop < elapsed; loop++)
+                    {
+                        OnTimeElapsed(character, 1);
+                    }
+                    elapsed -= loop;
+                    if (elapsed > 0)
+                    {
+                        OnTimeElapsed(character, elapsed);
+                    }
+                }
+                else
+                {
+                    double damage = Damage * elapsed;
+                    WriteLine($"[ {character} ] 因气绝而流失生命值！");
+                    DamageToEnemy(Source, character, DamageType.True, MagicType, damage);
                 }
             }
         }

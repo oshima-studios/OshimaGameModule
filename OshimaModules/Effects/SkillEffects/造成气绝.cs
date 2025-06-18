@@ -41,7 +41,7 @@ namespace Oshima.FunGame.OshimaModules.Effects.SkillEffects
             foreach (Character enemy in targets)
             {
                 WriteLine($"[ {caster} ] 对 [ {enemy} ] 造成了气绝！持续时间：{气绝时间}！");
-                气绝 e = new(Skill, enemy, caster, _durative, _duration, _durationTurn, _isPercentage, _durationDamage, _durationDamagePercent);
+                气绝 e = new(Skill, enemy, caster, _durative, _duration + _levelGrowth * (Level - 1), Convert.ToInt32(_durationTurn + _levelGrowth * (Level - 1)), _isPercentage, _durationDamage, _durationDamagePercent);
                 enemy.Effects.Add(e);
                 e.OnEffectGained(enemy);
                 GamingQueue?.LastRound.ApplyEffects.TryAdd(enemy, [e.EffectType]);

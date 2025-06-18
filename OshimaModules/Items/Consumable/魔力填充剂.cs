@@ -12,11 +12,10 @@ namespace Oshima.FunGame.OshimaModules.Items
             public double MP { get; set; }
         }
 
-        public static void Init(Item item, double exp, int remainUseTimes = 1)
+        public static void Init(Item item, double mp, int remainUseTimes = 1, bool isPercentage = false)
         {
-            item.Skills.Active = new 魔力填充剂技能(item, exp);
+            item.Skills.Active = new 魔力填充剂技能(item, mp, isPercentage);
             item.RemainUseTimes = remainUseTimes;
-            item.IsInGameItem = false;
             item.IsReduceTimesAfterUse = true;
             item.IsRemoveAfterUse = true;
         }
@@ -134,16 +133,30 @@ namespace Oshima.FunGame.OshimaModules.Items
     {
         public override long Id => (long)ItemActiveID.魔力填充剂;
         public override string Name => "魔力填充剂";
-        public override string Description => Effects.Count > 0 ? Effects.First().Description : "";
+        public override string Description => string.Join("", Effects.Select(e => e.Description));
+        public override bool CanSelectSelf => true;
+        public override bool CanSelectTeammate => true;
+        public override bool CanSelectEnemy => false;
+        public override int CanSelectTargetCount => 1;
 
-        public 魔力填充剂技能(Item? item = null, double mp = 0) : base(SkillType.Item)
+        public 魔力填充剂技能(Item? item = null, double mp = 0, bool isPercentage = false) : base(SkillType.Item)
         {
             Level = 1;
             Item = item;
-            Effects.Add(new RecoverMP(this, new()
+            if (!isPercentage)
             {
-                { "mp", mp }
-            }));
+                Effects.Add(new RecoverMP(this, new()
+                {
+                    { "mp", mp }
+                }));
+            }
+            else
+            {
+                Effects.Add(new RecoverMP2(this, new()
+                {
+                    { "mp", mp }
+                }));
+            }
         }
     }
 }

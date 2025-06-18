@@ -12,11 +12,10 @@ namespace Oshima.FunGame.OshimaModules.Items
             public double EP { get; set; }
         }
 
-        public static void Init(Item item, double exp, int remainUseTimes = 1)
+        public static void Init(Item item, double ep, int remainUseTimes = 1)
         {
-            item.Skills.Active = new 能量饮料技能(item, exp);
+            item.Skills.Active = new 能量饮料技能(item, ep);
             item.RemainUseTimes = remainUseTimes;
-            item.IsInGameItem = false;
             item.IsReduceTimesAfterUse = true;
             item.IsRemoveAfterUse = true;
         }
@@ -134,7 +133,11 @@ namespace Oshima.FunGame.OshimaModules.Items
     {
         public override long Id => (long)ItemActiveID.能量饮料;
         public override string Name => "能量饮料";
-        public override string Description => Effects.Count > 0 ? Effects.First().Description : "";
+        public override string Description => string.Join("", Effects.Select(e => e.Description));
+        public override bool CanSelectSelf => true;
+        public override bool CanSelectTeammate => true;
+        public override bool CanSelectEnemy => false;
+        public override int CanSelectTargetCount => 1;
 
         public 能量饮料技能(Item? item = null, double ep = 0) : base(SkillType.Item)
         {

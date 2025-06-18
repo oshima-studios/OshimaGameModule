@@ -1,6 +1,7 @@
 ﻿using Milimoe.FunGame.Core.Entity;
 using Milimoe.FunGame.Core.Library.Constant;
 using Oshima.FunGame.OshimaModules.Effects.PassiveEffects;
+using Oshima.FunGame.OshimaModules.Skills;
 
 namespace Oshima.FunGame.OshimaModules.Effects.SkillEffects
 {
@@ -8,7 +9,7 @@ namespace Oshima.FunGame.OshimaModules.Effects.SkillEffects
     {
         public override long Id => Skill.Id;
         public override string Name => Skill.Name;
-        public override string Description => $"持续强驱散{(Skill.CanSelectTargetCount > 1 ? $"至多 {Skill.CanSelectTargetCount} 个" : "")}目标{(_durativeWithoutDuration ? _durationString : $"，持续 {持续时间}")}。\r\n持续性驱散是持续性临时驱散，它会在持续时间结束之后恢复目标尚未结束的特效。";
+        public override string Description => $"持续强驱散{Skill.TargetDescription()}{(_durativeWithoutDuration ? _durationString : $"，持续 {持续时间}")}。\r\n持续性驱散是持续性临时驱散，它会在持续时间结束之后恢复目标尚未结束的特效。";
         public override DispelType DispelType => DispelType.DurativeStrong;
 
         private string 持续时间 => _durative && _duration > 0 ? 实际持续时间 + $" {GameplayEquilibriumConstant.InGameTime}" : (!_durative && _durationTurn > 0 ? 实际持续时间 + " 回合" : $"0 {GameplayEquilibriumConstant.InGameTime}");

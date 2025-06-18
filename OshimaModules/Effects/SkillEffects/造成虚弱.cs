@@ -1,6 +1,7 @@
 ﻿using Milimoe.FunGame.Core.Entity;
 using Milimoe.FunGame.Core.Library.Constant;
 using Oshima.FunGame.OshimaModules.Effects.PassiveEffects;
+using Oshima.FunGame.OshimaModules.Skills;
 
 namespace Oshima.FunGame.OshimaModules.Effects.SkillEffects
 {
@@ -8,10 +9,9 @@ namespace Oshima.FunGame.OshimaModules.Effects.SkillEffects
     {
         public override long Id => Skill.Id;
         public override string Name => Skill.Name;
-        public override string Description => $"对{TargetDescription}造成虚弱 {虚弱时间}，伤害降低 {ActualDamageReductionPercent * 100:0.##}%，" +
+        public override string Description => $"对{Skill.TargetDescription()}造成虚弱 {虚弱时间}，伤害降低 {ActualDamageReductionPercent * 100:0.##}%，" +
             $"物理护甲降低 {ActualDEFReductionPercent * 100:0.##}%，魔法抗性降低 {ActualMDFReductionPercent * 100:0.##}%，治疗效果降低 {ActualHealingReductionPercent * 100:0.##}%。";
         public override DispelledType DispelledType => DispelledType.Weak;
-        public string TargetDescription => Skill.SelectAllEnemies ? "敌方全体角色" : $"目标{(Skill.CanSelectTargetCount > 1 ? $"至多 {Skill.CanSelectTargetCount} 个" : "")}敌人";
 
         private string 虚弱时间 => _durative && _duration > 0 ? 实际虚弱时间 + $" {GameplayEquilibriumConstant.InGameTime}" : (!_durative && _durationTurn > 0 ? 实际虚弱时间 + " 回合" : $"0 {GameplayEquilibriumConstant.InGameTime}");
         private double 实际虚弱时间 => _durative && _duration > 0 ? _duration + _levelGrowth * (Level - 1) : (!_durative && _durationTurn > 0 ? _durationTurn + _levelGrowth * (Level - 1) : 0);

@@ -37,7 +37,7 @@ namespace Oshima.FunGame.OshimaModules.Skills
             return !是否是嵌套伤害;
         }
 
-        public override void AfterDamageCalculation(Character character, Character enemy, double damage, double actualDamage, bool isNormalAttack, bool isMagicDamage, MagicType magicType, DamageResult damageResult)
+        public override void AfterDamageCalculation(Character character, Character enemy, double damage, double actualDamage, bool isNormalAttack, DamageType damageType, MagicType magicType, DamageResult damageResult)
         {
             if (character == Skill.Character && actualDamage > 0 && (damageResult == DamageResult.Normal || damageResult == DamageResult.Critical) && !是否是嵌套伤害 && enemy.HP > 0)
             {
@@ -70,7 +70,7 @@ namespace Oshima.FunGame.OshimaModules.Skills
                         e3.OnEffectGained(enemy);
                     }
                     是否是嵌套伤害 = true;
-                    DamageToEnemy(character, enemy, false, magicType, 额外伤害);
+                    DamageToEnemy(character, enemy, DamageType.Physical, magicType, 额外伤害);
                 }
                 else
                 {

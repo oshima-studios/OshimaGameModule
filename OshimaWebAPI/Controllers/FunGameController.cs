@@ -35,7 +35,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
         {
             return await FunGameSimulation.StartSimulationGame(false, isweb ?? true, isteam ?? false, showall ?? false, maxRespawnTimesMix ?? 1);
         }
-        
+
         [AllowAnonymous]
         [HttpGet("last")]
         public List<string> GetLast([FromQuery] bool full = false)
@@ -61,11 +61,11 @@ namespace Oshima.FunGame.WebAPI.Controllers
                     builder.AppendLine($"总计造成伤害：{stats.TotalDamage:0.##} / 场均：{stats.AvgDamage:0.##}");
                     builder.AppendLine($"总计造成物理伤害：{stats.TotalPhysicalDamage:0.##} / 场均：{stats.AvgPhysicalDamage:0.##}");
                     builder.AppendLine($"总计造成魔法伤害：{stats.TotalMagicDamage:0.##} / 场均：{stats.AvgMagicDamage:0.##}");
-                    builder.AppendLine($"总计造成真实伤害：{stats.TotalRealDamage:0.##} / 场均：{stats.AvgRealDamage:0.##}");
+                    builder.AppendLine($"总计造成真实伤害：{stats.TotalTrueDamage:0.##} / 场均：{stats.AvgTrueDamage:0.##}");
                     builder.AppendLine($"总计承受伤害：{stats.TotalTakenDamage:0.##} / 场均：{stats.AvgTakenDamage:0.##}");
                     builder.AppendLine($"总计承受物理伤害：{stats.TotalTakenPhysicalDamage:0.##} / 场均：{stats.AvgTakenPhysicalDamage:0.##}");
                     builder.AppendLine($"总计承受魔法伤害：{stats.TotalTakenMagicDamage:0.##} / 场均：{stats.AvgTakenMagicDamage:0.##}");
-                    builder.AppendLine($"总计承受真实伤害：{stats.TotalTakenRealDamage:0.##} / 场均：{stats.AvgTakenRealDamage:0.##}");
+                    builder.AppendLine($"总计承受真实伤害：{stats.TotalTakenTrueDamage:0.##} / 场均：{stats.AvgTakenTrueDamage:0.##}");
                     builder.AppendLine($"总计治疗：{stats.TotalHeal:0.##} / 场均：{stats.AvgHeal:0.##}");
                     builder.AppendLine($"总计存活回合数：{stats.LiveRound} / 场均：{stats.AvgLiveRound}");
                     builder.AppendLine($"总计行动回合数：{stats.ActionTurn} / 场均：{stats.AvgActionTurn}");
@@ -119,11 +119,11 @@ namespace Oshima.FunGame.WebAPI.Controllers
                     builder.AppendLine($"总计造成伤害：{stats.TotalDamage:0.##} / 场均：{stats.AvgDamage:0.##}");
                     builder.AppendLine($"总计造成物理伤害：{stats.TotalPhysicalDamage:0.##} / 场均：{stats.AvgPhysicalDamage:0.##}");
                     builder.AppendLine($"总计造成魔法伤害：{stats.TotalMagicDamage:0.##} / 场均：{stats.AvgMagicDamage:0.##}");
-                    builder.AppendLine($"总计造成真实伤害：{stats.TotalRealDamage:0.##} / 场均：{stats.AvgRealDamage:0.##}");
+                    builder.AppendLine($"总计造成真实伤害：{stats.TotalTrueDamage:0.##} / 场均：{stats.AvgTrueDamage:0.##}");
                     builder.AppendLine($"总计承受伤害：{stats.TotalTakenDamage:0.##} / 场均：{stats.AvgTakenDamage:0.##}");
                     builder.AppendLine($"总计承受物理伤害：{stats.TotalTakenPhysicalDamage:0.##} / 场均：{stats.AvgTakenPhysicalDamage:0.##}");
                     builder.AppendLine($"总计承受魔法伤害：{stats.TotalTakenMagicDamage:0.##} / 场均：{stats.AvgTakenMagicDamage:0.##}");
-                    builder.AppendLine($"总计承受真实伤害：{stats.TotalTakenRealDamage:0.##} / 场均：{stats.AvgTakenRealDamage:0.##}");
+                    builder.AppendLine($"总计承受真实伤害：{stats.TotalTakenTrueDamage:0.##} / 场均：{stats.AvgTakenTrueDamage:0.##}");
                     builder.AppendLine($"总计治疗：{stats.TotalHeal:0.##} / 场均：{stats.AvgHeal:0.##}");
                     builder.AppendLine($"总计存活回合数：{stats.LiveRound} / 场均：{stats.AvgLiveRound}");
                     builder.AppendLine($"总计行动回合数：{stats.ActionTurn} / 场均：{stats.AvgActionTurn}");
