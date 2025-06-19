@@ -10,8 +10,8 @@ namespace Oshima.FunGame.OshimaModules.Skills
         public override string Name => "圣灵术";
         public override string Description => string.Join("", Effects.Select(e => e.Description));
         public override string DispelDescription => Effects.FirstOrDefault(e => e is 弱驱散特效)?.DispelDescription ?? "";
-        public override double MPCost => Level > 0 ? 120 + (95 * (Level - 1)) : 120;
-        public override double CD => Level > 0 ? 120 - (2 * (Level - 1)) : 120;
+        public override double MPCost => Level > 0 ? 110 + (95 * (Level - 1)) : 110;
+        public override double CD => Level > 0 ? 110 - (2 * (Level - 1)) : 110;
         public override double CastTime => 12;
         public override double HardnessTime { get; set; } = 2;
         public override bool CanSelectSelf => true;
@@ -23,7 +23,7 @@ namespace Oshima.FunGame.OshimaModules.Skills
         {
             SelectTargetPredicates.Add(c => c.HP >= 0 && c.HP < c.MaxHP);
             Effects.Add(new 弱驱散特效(this));
-            Effects.Add(new 纯数值回复生命(this, 145, 120, true));
+            Effects.Add(new 纯数值回复生命(this, 380, 270, true));
         }
 
         public override List<Character> GetSelectableTargets(Character caster, List<Character> enemys, List<Character> teammates)

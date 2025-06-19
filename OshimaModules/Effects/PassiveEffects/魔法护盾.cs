@@ -56,7 +56,7 @@ namespace Oshima.FunGame.OshimaModules.Effects.PassiveEffects
             {
                 RemainDurationTurn = DurationTurn;
             }
-            character.Shield.AddShieldOfEffect(new(this, _shield, true, MagicType.None));
+            character.Shield.AddShieldOfEffect(new(this, _shield, ShieldType.Magical, MagicType.None));
         }
 
         public override void OnEffectLost(Character character)

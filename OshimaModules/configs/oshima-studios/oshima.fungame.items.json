@@ -1,9 +1,9 @@
 ﻿{
-  "黑暗之刃": {
-    "Id": 11543,
-    "Name": "黑暗之刃",
+  "花剑": {
+    "Id": 11540,
+    "Name": "花剑",
     "Description": "增加角色 20 点攻击力。",
-    "BackgroundStory": "传说中的黑暗之刃，蕴含邪恶力量。",
+    "BackgroundStory": "初学者必备武器。",
     "ItemType": 1,
     "WeaponType": 1,
     "QualityType": 0,
@@ -11,8 +11,8 @@
       "Active": null,
       "Passives": [
         {
-          "Id": 7001,
-          "Name": "黑暗之刃",
+          "Id": 7000,
+          "Name": "花剑",
           "SkillType": 3,
           "Effects": [
             {
@@ -24,25 +24,100 @@
       ]
     }
   },
-  "烈焰长剑": {
-    "Id": 11544,
-    "Name": "烈焰长剑",
+  "木杖": {
+    "Id": 11541,
+    "Name": "木杖",
     "Description": "增加角色 20 点攻击力。",
-    "BackgroundStory": "火焰中锻造的长剑，散发着炙热气息。",
+    "BackgroundStory": "魔法使的起点。",
     "ItemType": 1,
-    "WeaponType": 2,
+    "WeaponType": 8,
+    "QualityType": 0,
+    "Skills": {
+      "Active": null,
+      "Passives": [
+        {
+          "Id": 7001,
+          "Name": "木杖",
+          "SkillType": 3,
+          "Effects": [
+            {
+              "Id": 8001,
+              "exatk": 20
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "真理": {
+    "Id": 11542,
+    "Name": "真理",
+    "Description": "增加角色 20 点攻击力。",
+    "BackgroundStory": "口径即是正义。",
+    "ItemType": 1,
+    "WeaponType": 4,
     "QualityType": 0,
     "Skills": {
       "Active": null,
       "Passives": [
         {
           "Id": 7002,
-          "Name": "烈焰长剑",
+          "Name": "真理",
           "SkillType": 3,
           "Effects": [
             {
               "Id": 8001,
               "exatk": 20
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "黯星之刃": {
+    "Id": 11543,
+    "Name": "黯星之刃",
+    "Description": "增加角色 40 点攻击力。",
+    "BackgroundStory": "从银辉城悖论引擎泄露的能量中淬炼而成，剑身隐隐闪烁着星屑般的光芒，仿佛能吞噬微弱的现实裂缝。",
+    "ItemType": 1,
+    "WeaponType": 1,
+    "QualityType": 1,
+    "Skills": {
+      "Active": null,
+      "Passives": [
+        {
+          "Id": 7003,
+          "Name": "黯星之刃",
+          "SkillType": 3,
+          "Effects": [
+            {
+              "Id": 8001,
+              "exatk": 40
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "熔岩裂刃": {
+    "Id": 11544,
+    "Name": "熔岩裂刃",
+    "Description": "增加角色 40 点攻击力。",
+    "BackgroundStory": "深渊火钻的余烬锻造此剑，挥舞时剑身如岩浆般滚烫，灼烧空气。",
+    "ItemType": 1,
+    "WeaponType": 2,
+    "QualityType": 1,
+    "Skills": {
+      "Active": null,
+      "Passives": [
+        {
+          "Id": 7004,
+          "Name": "熔岩裂刃",
+          "SkillType": 3,
+          "Effects": [
+            {
+              "Id": 8001,
+              "exatk": 40
             }
           ]
         }
@@ -52,217 +127,129 @@
   "银月弓": {
     "Id": 11545,
     "Name": "银月弓",
-    "Description": "增加角色 20 点攻击力。",
-    "BackgroundStory": "由稀有银月材料制成，精准无比。",
+    "Description": "增加角色 40 点攻击力。",
+    "BackgroundStory": "荧光精灵以液态月光浸润弓弦，箭矢划破夜空时如流星坠落。",
     "ItemType": 1,
     "WeaponType": 3,
-    "QualityType": 0,
-    "Skills": {
-      "Active": null,
-      "Passives": [
-        {
-          "Id": 7003,
-          "Name": "银月弓",
-          "SkillType": 3,
-          "Effects": [
-            {
-              "Id": 8001,
-              "exatk": 20
-            }
-          ]
-        }
-      ]
-    }
-  },
-  "风暴枪": {
-    "Id": 11546,
-    "Name": "风暴枪",
-    "Description": "增加角色 20 点攻击力。",
-    "BackgroundStory": "捕捉风暴之力的武器，射速惊人。",
-    "ItemType": 1,
-    "WeaponType": 9,
-    "QualityType": 0,
-    "Skills": {
-      "Active": null,
-      "Passives": [
-        {
-          "Id": 7004,
-          "Name": "风暴枪",
-          "SkillType": 3,
-          "Effects": [
-            {
-              "Id": 8001,
-              "exatk": 20
-            }
-          ]
-        }
-      ]
-    }
-  },
-  "幽灵拳套": {
-    "Id": 11547,
-    "Name": "幽灵拳套",
-    "Description": "增加角色 20 点攻击力。",
-    "BackgroundStory": "无形的力量增强拳套，适合迅捷攻击。",
-    "ItemType": 1,
-    "WeaponType": 11,
-    "QualityType": 0,
+    "QualityType": 1,
     "Skills": {
       "Active": null,
       "Passives": [
         {
           "Id": 7005,
-          "Name": "幽灵拳套",
+          "Name": "银月弓",
           "SkillType": 3,
           "Effects": [
             {
               "Id": 8001,
-              "exatk": 20
+              "exatk": 40
             }
           ]
         }
       ]
     }
   },
-  "雷霆之刃": {
-    "Id": 11548,
-    "Name": "雷霆之刃",
-    "Description": "增加角色 40 点攻击力。",
-    "BackgroundStory": "蕴含雷霆之力的神秘之剑，斩击时带有雷电。",
+  "罚罪之楔": {
+    "Id": 11546,
+    "Name": "罚罪之楔",
+    "Description": "增加角色 30 点攻击力和 10% 攻击力。",
+    "BackgroundStory": "从裁决尖碑坠落的塔刹碎片，尖端仍萦绕着泰坦调试世界时遗弃的错误符文。",
     "ItemType": 1,
-    "WeaponType": 1,
+    "WeaponType": 9,
     "QualityType": 1,
     "Skills": {
       "Active": null,
       "Passives": [
         {
           "Id": 7006,
-          "Name": "雷霆之刃",
+          "Name": "罚罪之楔",
           "SkillType": 3,
           "Effects": [
             {
               "Id": 8001,
-              "exatk": 40
+              "exatk": 30
+            },
+            {
+              "Id": 8023,
+              "exatk": 0.1
             }
           ]
         }
       ]
     }
   },
-  "龙骨重剑": {
-    "Id": 11549,
-    "Name": "龙骨重剑",
-    "Description": "增加角色 40 点攻击力。",
-    "BackgroundStory": "由远古龙骨锻造而成的巨剑，威力无比。",
+  "忏悔齿轮": {
+    "Id": 11547,
+    "Name": "忏悔齿轮",
+    "Description": "增加角色 30 点攻击力和 5% 暴击率。",
+    "BackgroundStory": "齿轮坟场拾到的噬罪者遗物，嵌入手掌的齿轮会转动着磨碎使用者的谎言。",
     "ItemType": 1,
-    "WeaponType": 2,
+    "WeaponType": 10,
     "QualityType": 1,
     "Skills": {
       "Active": null,
       "Passives": [
         {
           "Id": 7007,
-          "Name": "龙骨重剑",
+          "Name": "忏悔齿轮",
           "SkillType": 3,
           "Effects": [
             {
               "Id": 8001,
-              "exatk": 40
+              "exatk": 30
+            },
+            {
+              "Id": 8014,
+              "excr": 0.05
             }
           ]
         }
       ]
     }
   },
-  "暗影弓": {
-    "Id": 11550,
-    "Name": "暗影弓",
-    "Description": "增加角色 40 点攻击力。",
-    "BackgroundStory": "能够穿透黑暗的弓，适合隐匿射击。",
+  "鱿熔之信": {
+    "Id": 11548,
+    "Name": "鱿熔之信",
+    "Description": "增加角色 30 点攻击力和 20% 物理穿透。",
+    "BackgroundStory": "永燃坩埚的岩浆鱿鱼群将信仰铸进剑身，触碰活体金属苔藓会引发火山鲸的共鸣。",
     "ItemType": 1,
-    "WeaponType": 3,
+    "WeaponType": 1,
     "QualityType": 1,
     "Skills": {
       "Active": null,
       "Passives": [
         {
           "Id": 7008,
-          "Name": "暗影弓",
+          "Name": "鱿熔之信",
           "SkillType": 3,
           "Effects": [
             {
               "Id": 8001,
-              "exatk": 40
+              "exatk": 30
+            },
+            {
+              "Id": 8017,
+              "exppt": 0.2
             }
           ]
         }
       ]
     }
   },
-  "圣焰裁决": {
-    "Id": 11551,
-    "Name": "圣焰裁决",
-    "Description": "增加角色 40 点攻击力。",
-    "BackgroundStory": "能够发射赤焰的魔导枪，近距离威力极大。",
-    "ItemType": 1,
-    "WeaponType": 1,
-    "QualityType": 1,
-    "Skills": {
-      "Active": null,
-      "Passives": [
-        {
-          "Id": 7009,
-          "Name": "圣焰裁决",
-          "SkillType": 3,
-          "Effects": [
-            {
-              "Id": 8001,
-              "exatk": 40
-            }
-          ]
-        }
-      ]
-    }
-  },
-  "苍穹法杖": {
-    "Id": 11552,
-    "Name": "苍穹法杖",
-    "Description": "增加角色 40 点攻击力。",
-    "BackgroundStory": "据说能够召唤天空之力的法杖，拥有强大魔力。",
-    "ItemType": 1,
-    "WeaponType": 8,
-    "QualityType": 1,
-    "Skills": {
-      "Active": null,
-      "Passives": [
-        {
-          "Id": 7010,
-          "Name": "苍穹法杖",
-          "SkillType": 3,
-          "Effects": [
-            {
-              "Id": 8001,
-              "exatk": 40
-            }
-          ]
-        }
-      ]
-    }
-  },
-  "炽炎剑": {
-    "Id": 11553,
-    "Name": "炽炎剑",
+  "冬眠之怒": {
+    "Id": 11549,
+    "Name": "冬眠之怒",
     "Description": "增加角色 65 点攻击力。",
-    "BackgroundStory": "这把剑燃烧着永恒的火焰，传说可以焚尽一切。",
+    "BackgroundStory": "古龙封印解除前剥落的鳞甲，重击时飘出精灵封印术式的碎光——那是古龙在梦中的反击。",
     "ItemType": 1,
-    "WeaponType": 1,
+    "WeaponType": 2,
     "QualityType": 2,
     "Skills": {
       "Active": null,
       "Passives": [
         {
-          "Id": 7011,
-          "Name": "炽炎剑",
+          "Id": 7009,
+          "Name": "冬眠之怒",
           "SkillType": 3,
           "Effects": [
             {
@@ -274,11 +261,11 @@
       ]
     }
   },
-  "狂风弓": {
-    "Id": 11554,
-    "Name": "狂风弓",
+  "溺影者": {
+    "Id": 11550,
+    "Name": "溺影者",
     "Description": "增加角色 65 点攻击力。",
-    "BackgroundStory": "每次射击都能引发狂风，传说它由风神亲手打造。",
+    "BackgroundStory": "被千瞳湖倒影之城同化过的长弓，射出的箭总在触及目标前变成反向流动的湖水。",
     "ItemType": 1,
     "WeaponType": 3,
     "QualityType": 2,
@@ -286,8 +273,8 @@
       "Active": null,
       "Passives": [
         {
-          "Id": 7012,
-          "Name": "狂风弓",
+          "Id": 7010,
+          "Name": "溺影者",
           "SkillType": 3,
           "Effects": [
             {
@@ -299,11 +286,123 @@
       ]
     }
   },
-  "破晓枪": {
-    "Id": 11555,
-    "Name": "破晓枪",
+  "罚罪遗针": {
+    "Id": 11551,
+    "Name": "罚罪遗针",
     "Description": "增加角色 65 点攻击力。",
-    "BackgroundStory": "在破晓时分，这把长枪能够穿透任何黑暗。",
+    "BackgroundStory": "似乎是由断裂的引雷柱碎片改造，耳畔传来低沉不安的低语——泰坦的罪人。",
+    "ItemType": 1,
+    "WeaponType": 11,
+    "QualityType": 2,
+    "Skills": {
+      "Active": null,
+      "Passives": [
+        {
+          "Id": 7011,
+          "Name": "罚罪遗针",
+          "SkillType": 3,
+          "Effects": [
+            {
+              "Id": 8001,
+              "exatk": 65
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "星癔症": {
+    "Id": 11552,
+    "Name": "星癔症",
+    "Description": "增加角色 50 点攻击力和 30% 物理穿透。",
+    "BackgroundStory": "顶端晶石持续吸入星光，施法过量将使持杖者瞳孔显现星空巨兽轮廓。",
+    "ItemType": 1,
+    "WeaponType": 8,
+    "QualityType": 2,
+    "Skills": {
+      "Active": null,
+      "Passives": [
+        {
+          "Id": 7012,
+          "Name": "星癔症",
+          "SkillType": 3,
+          "Effects": [
+            {
+              "Id": 8001,
+              "exatk": 50
+            },
+            {
+              "Id": 8017,
+              "exppt": 0.3
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "火钻之癌": {
+    "Id": 11553,
+    "Name": "火钻之癌",
+    "Description": "增加角色 50 点攻击力和 10% 魔法穿透。",
+    "BackgroundStory": "剑身火钻随杀戮增殖，当覆盖全身时持剑者将化为新矿脉。",
+    "ItemType": 1,
+    "WeaponType": 1,
+    "QualityType": 2,
+    "Skills": {
+      "Active": null,
+      "Passives": [
+        {
+          "Id": 7013,
+          "Name": "火钻之癌",
+          "SkillType": 3,
+          "Effects": [
+            {
+              "Id": 8001,
+              "exatk": 50
+            },
+            {
+              "Id": 8018,
+              "exmpt": 0.1
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "昨日借据": {
+    "Id": 11554,
+    "Name": "昨日借据",
+    "Description": "增加角色 50 点攻击力和 15% 暴击伤害。",
+    "BackgroundStory": "每次开弓弓弦渗出更多时之沙，然后偷取光阴。",
+    "ItemType": 1,
+    "WeaponType": 3,
+    "QualityType": 2,
+    "Skills": {
+      "Active": null,
+      "Passives": [
+        {
+          "Id": 7014,
+          "Name": "昨日借据",
+          "SkillType": 3,
+          "Effects": [
+            {
+              "Id": 8001,
+              "exatk": 50
+            },
+            {
+              "Id": 8015,
+              "excrd": 0.15
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "永劫婚契": {
+    "Id": 11555,
+    "Name": "永劫婚契",
+    "Description": "增加角色 50 点攻击力和 40 行动速度。",
+    "BackgroundStory": "影玫瑰在矛尖绽放时，时间流速突然减半，随后逐渐丧失色彩感知。",
     "ItemType": 1,
     "WeaponType": 9,
     "QualityType": 2,
@@ -311,83 +410,37 @@
       "Active": null,
       "Passives": [
         {
-          "Id": 7013,
-          "Name": "破晓枪",
+          "Id": 7015,
+          "Name": "永劫婚契",
           "SkillType": 3,
           "Effects": [
             {
               "Id": 8001,
-              "exatk": 65
+              "exatk": 50
+            },
+            {
+              "Id": 8009,
+              "exspd": 30
             }
           ]
         }
       ]
     }
   },
-  "幽冥匕首": {
+  "母体赐胎": {
     "Id": 11556,
-    "Name": "幽冥匕首",
-    "Description": "增加角色 65 点攻击力。",
-    "BackgroundStory": "这对匕首闪烁着死亡的光芒，专为刺客所用。",
+    "Name": "母体赐胎",
+    "Description": "增加角色 95 点攻击力。",
+    "BackgroundStory": "刀柄菌丝随着杀戮逐渐向心脏延伸一寸，菌丝满布时将蜕变为新母体。",
     "ItemType": 1,
     "WeaponType": 6,
-    "QualityType": 2,
-    "Skills": {
-      "Active": null,
-      "Passives": [
-        {
-          "Id": 7014,
-          "Name": "幽冥匕首",
-          "SkillType": 3,
-          "Effects": [
-            {
-              "Id": 8001,
-              "exatk": 65
-            }
-          ]
-        }
-      ]
-    }
-  },
-  "天雷杖": {
-    "Id": 11557,
-    "Name": "天雷杖",
-    "Description": "增加角色 65 点攻击力。",
-    "BackgroundStory": "召唤天雷的法杖，拥有毁天灭地的力量。",
-    "ItemType": 1,
-    "WeaponType": 8,
-    "QualityType": 2,
-    "Skills": {
-      "Active": null,
-      "Passives": [
-        {
-          "Id": 7015,
-          "Name": "天雷杖",
-          "SkillType": 3,
-          "Effects": [
-            {
-              "Id": 8001,
-              "exatk": 65
-            }
-          ]
-        }
-      ]
-    }
-  },
-  "飞雷剑": {
-    "Id": 11558,
-    "Name": "飞雷剑",
-    "Description": "增加角色 95 点攻击力。",
-    "BackgroundStory": "此剑驾驭飞雷之力，能引发猛烈的雷击。",
-    "ItemType": 1,
-    "WeaponType": 1,
     "QualityType": 3,
     "Skills": {
       "Active": null,
       "Passives": [
         {
           "Id": 7016,
-          "Name": "雷霆之刃",
+          "Name": "母体赐胎",
           "SkillType": 3,
           "Effects": [
             {
@@ -399,11 +452,11 @@
       ]
     }
   },
-  "烈焰法杖": {
-    "Id": 11559,
-    "Name": "烈焰法杖",
+  "痛觉回路": {
+    "Id": 11557,
+    "Name": "痛觉回路",
     "Description": "增加角色 95 点攻击力。",
-    "BackgroundStory": "法杖中燃烧着不灭的火焰，象征着无尽的力量。",
+    "BackgroundStory": "据说神经宝石与原主痛觉神经直连，每当原主施放伤害性法术时会先承受双倍痛苦。",
     "ItemType": 1,
     "WeaponType": 8,
     "QualityType": 3,
@@ -412,7 +465,7 @@
       "Passives": [
         {
           "Id": 7017,
-          "Name": "烈焰法杖",
+          "Name": "痛觉回路",
           "SkillType": 3,
           "Effects": [
             {
@@ -424,11 +477,65 @@
       ]
     }
   },
-  "龙骨枪": {
-    "Id": 11560,
-    "Name": "龙骨枪",
+  "坟场低语": {
+    "Id": 11558,
+    "Name": "坟场低语",
     "Description": "增加角色 95 点攻击力。",
-    "BackgroundStory": "由远古龙骨制成的长柄武器，坚不可摧。",
+    "BackgroundStory": "齿轮残骸自发组合成的武器，接触血肉时会背诵上古机械法典。",
+    "ItemType": 1,
+    "WeaponType": 5,
+    "QualityType": 3,
+    "Skills": {
+      "Active": null,
+      "Passives": [
+        {
+          "Id": 7018,
+          "Name": "坟场低语",
+          "SkillType": 3,
+          "Effects": [
+            {
+              "Id": 8001,
+              "exatk": 95
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "替身指骨": {
+    "Id": 11559,
+    "Name": "替身指骨",
+    "Description": "增加角色 70 点攻击力和 12% 暴击率。",
+    "BackgroundStory": "裹着机械坟场拾回的神经皮膜，每当齿轮转动时它就模拟出原主人断裂的掌纹。",
+    "ItemType": 1,
+    "WeaponType": 8,
+    "QualityType": 3,
+    "Skills": {
+      "Active": null,
+      "Passives": [
+        {
+          "Id": 7019,
+          "Name": "替身指骨",
+          "SkillType": 3,
+          "Effects": [
+            {
+              "Id": 8001,
+              "exatk": 70
+            },
+            {
+              "Id": 8014,
+              "excr": 0.12
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "冬眠之弦": {
+    "Id": 11560,
+    "Name": "冬眠之弦",
+    "Description": "增加角色 70 点攻击力和 20% 攻击力。",
+    "BackgroundStory": "拉开弓弦时会掉落冰晶粉末——那是林海在冬季凝结时，遗留在树梢的叹息。",
     "ItemType": 1,
     "WeaponType": 9,
     "QualityType": 3,
@@ -436,74 +543,86 @@
       "Active": null,
       "Passives": [
         {
-          "Id": 7018,
-          "Name": "龙骨枪",
-          "SkillType": 3,
-          "Effects": [
-            {
-              "Id": 8001,
-              "exatk": 95
-            }
-          ]
-        }
-      ]
-    }
-  },
-  "疾风双刀": {
-    "Id": 11561,
-    "Name": "疾风双刀",
-    "Description": "增加角色 95 点攻击力。",
-    "BackgroundStory": "双持短刀，速度如疾风般迅捷。",
-    "ItemType": 1,
-    "WeaponType": 6,
-    "QualityType": 3,
-    "Skills": {
-      "Active": null,
-      "Passives": [
-        {
-          "Id": 7019,
-          "Name": "疾风双刀",
-          "SkillType": 3,
-          "Effects": [
-            {
-              "Id": 8001,
-              "exatk": 95
-            }
-          ]
-        }
-      ]
-    }
-  },
-  "霜月双刃": {
-    "Id": 11562,
-    "Name": "霜月双刃",
-    "Description": "增加角色 95 点攻击力。",
-    "BackgroundStory": "刀身细长，略微弯曲，刀柄末端镶嵌着一颗冰晶石。",
-    "ItemType": 1,
-    "WeaponType": 6,
-    "QualityType": 3,
-    "Skills": {
-      "Active": null,
-      "Passives": [
-        {
           "Id": 7020,
-          "Name": "霜月双刃",
+          "Name": "冬眠之弦",
           "SkillType": 3,
           "Effects": [
             {
               "Id": 8001,
-              "exatk": 95
+              "exatk": 70
+            },
+            {
+              "Id": 8023,
+              "exatk": 0.2
             }
           ]
         }
       ]
     }
   },
-  "影刃": {
+  "矿工的遗恨": {
+    "Id": 11561,
+    "Name": "矿工的遗恨",
+    "Description": "增加角色 70 点攻击力和 40% 物理穿透。",
+    "BackgroundStory": "最后一位熔岩矿工将它插进裂缝，刀尖在冷却前吞下了他坠入元素位面的剪影。",
+    "ItemType": 1,
+    "WeaponType": 6,
+    "QualityType": 3,
+    "Skills": {
+      "Active": null,
+      "Passives": [
+        {
+          "Id": 7021,
+          "Name": "矿工的遗恨",
+          "SkillType": 3,
+          "Effects": [
+            {
+              "Id": 8001,
+              "exatk": 70
+            },
+            {
+              "Id": 8017,
+              "exppt": 0.2
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "镜癌": {
+    "Id": 11562,
+    "Name": "镜癌",
+    "Description": "增加角色 70 点攻击力和 20% 魔法穿透。",
+    "BackgroundStory": "千瞳湖的镜像病感染了它的表面，光滑的倒影里总爬行着鳞片状增生组织。",
+    "ItemType": 1,
+    "WeaponType": 7,
+    "QualityType": 3,
+    "Skills": {
+      "Active": null,
+      "Passives": [
+        {
+          "Id": 7022,
+          "Name": "镜癌",
+          "SkillType": 3,
+          "Effects": [
+            {
+              "Id": 8001,
+              "exatk": 70
+            },
+            {
+              "Id": 8018,
+              "exmpt": 0.2
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "千瞳折跃": {
     "Id": 11563,
     "Description": "增加角色 130 点攻击力。",
-    "Name": "影刃",
-    "BackgroundStory": "藏于黑暗中的锋利刀刃，只在敌人未察觉时现身。",
+    "Name": "千瞳折跃",
+    "BackgroundStory": "千瞳镜湖底部的瞳孔门碎片镀在刃上，投掷时会在重力倒转的镜像中二次折射。",
     "ItemType": 1,
     "WeaponType": 11,
     "QualityType": 4,
@@ -511,8 +630,8 @@
       "Active": null,
       "Passives": [
         {
-          "Id": 7021,
-          "Name": "影刃",
+          "Id": 7023,
+          "Name": "千瞳折跃",
           "SkillType": 3,
           "Effects": [
             {
@@ -524,11 +643,11 @@
       ]
     }
   },
-  "寒霜之弓": {
+  "时渊弦歌": {
     "Id": 11564,
-    "Name": "寒霜之弓",
+    "Name": "时渊弦歌",
     "Description": "增加角色 130 点攻击力。",
-    "BackgroundStory": "弓弦上凝聚寒霜，箭矢能冻结一切。",
+    "BackgroundStory": "用永霜裂痕的时钟齿轮做弓弣，拉满时冰封记忆在弦上凝成冰晶箭簇。",
     "ItemType": 1,
     "WeaponType": 3,
     "QualityType": 4,
@@ -536,8 +655,8 @@
       "Active": null,
       "Passives": [
         {
-          "Id": 7022,
-          "Name": "寒霜之弓",
+          "Id": 7024,
+          "Name": "时渊弦歌",
           "SkillType": 3,
           "Effects": [
             {
@@ -549,11 +668,11 @@
       ]
     }
   },
-  "雷鸣战斧": {
+  "创世余颤": {
     "Id": 11565,
-    "Name": "雷鸣战斧",
+    "Name": "创世余颤",
     "Description": "增加角色 130 点攻击力。",
-    "BackgroundStory": "携带雷电之力的巨斧，一击之下，雷声轰鸣。",
+    "BackgroundStory": "雷霆王座裁决尖碑脱落的符文嵌于斧面，挥舞时重播泰坦调试世界的低语。",
     "ItemType": 1,
     "WeaponType": 2,
     "QualityType": 4,
@@ -561,8 +680,8 @@
       "Active": null,
       "Passives": [
         {
-          "Id": 7023,
-          "Name": "雷鸣战斧",
+          "Id": 7025,
+          "Name": "创世余颤",
           "SkillType": 3,
           "Effects": [
             {
@@ -574,11 +693,11 @@
       ]
     }
   },
-  "狂怒拳套": {
+  "血脉协奏曲": {
     "Id": 11566,
-    "Name": "狂怒拳套",
+    "Name": "血脉协奏曲",
     "Description": "增加角色 130 点攻击力。",
-    "BackgroundStory": "拳套内的力量能激发佩戴者的狂怒，造成大量伤害。",
+    "BackgroundStory": "植入了林海树木的荧蓝汁液导管，拳风会随精灵封印节拍闪烁。",
     "ItemType": 1,
     "WeaponType": 10,
     "QualityType": 4,
@@ -586,8 +705,8 @@
       "Active": null,
       "Passives": [
         {
-          "Id": 7024,
-          "Name": "狂怒拳套",
+          "Id": 7026,
+          "Name": "血脉协奏曲",
           "SkillType": 3,
           "Effects": [
             {
@@ -599,11 +718,11 @@
       ]
     }
   },
-  "星辰法器": {
+  "真空虹彩": {
     "Id": 11567,
-    "Name": "星辰法器",
+    "Name": "真空虹彩",
     "Description": "增加角色 130 点攻击力。",
-    "BackgroundStory": "法器中蕴含着星辰之力，每一次攻击都如天外陨石降临。",
+    "BackgroundStory": "穹顶之泪湖的星辉凝露在法器内分层，每道咒语都折射出肉眼未见的宇宙色谱。",
     "ItemType": 1,
     "WeaponType": 7,
     "QualityType": 4,
@@ -611,8 +730,8 @@
       "Active": null,
       "Passives": [
         {
-          "Id": 7025,
-          "Name": "星辰法器",
+          "Id": 7027,
+          "Name": "真空虹彩",
           "SkillType": 3,
           "Effects": [
             {
@@ -624,11 +743,11 @@
       ]
     }
   },
-  "魔切剑": {
+  "语律沉默": {
     "Id": 11568,
-    "Name": "魔切剑",
-    "Description": "增加角色 85 点攻击力和 20% 魔法穿透。",
-    "BackgroundStory": "一把深色陨铁铸成的重剑，剑身宽厚刻满幽光符文，散发着压制魔法的威慑力。",
+    "Name": "语律沉默",
+    "Description": "增加角色 90 点攻击力和 35% 魔法穿透。",
+    "BackgroundStory": "剑身蚀刻着泰坦调试世界时的废弃词条，挥动时引发语法乱流。",
     "ItemType": 1,
     "WeaponType": 2,
     "QualityType": 4,
@@ -636,14 +755,14 @@
       "Active": null,
       "Passives": [
         {
-          "Id": 7026,
-          "Name": "魔切剑",
+          "Id": 7028,
+          "Name": "语律沉默",
           "SkillType": 3,
           "Effects": [
             {
               "Id": 8032,
-              "exatk": 85,
-              "exmpt": 0.2
+              "exatk": 90,
+              "exmpt": 0.35
             }
           ]
         }
@@ -653,8 +772,8 @@
   "鸳鸯眼": {
     "Id": 11569,
     "Name": "鸳鸯眼",
-    "Description": "增加角色 85 点攻击力和 25% 物理穿透。",
-    "BackgroundStory": "一对刀柄缠绕异色皮革的短刀，刀刃闪烁着冷暖交织的光泽。",
+    "Description": "增加角色 90 点攻击力和 55% 物理穿透。",
+    "BackgroundStory": "梦境碎片在刀刃显影，左刀写情诗，右刀寄讣告。",
     "ItemType": 1,
     "WeaponType": 6,
     "QualityType": 4,
@@ -662,14 +781,14 @@
       "Active": null,
       "Passives": [
         {
-          "Id": 7027,
+          "Id": 7029,
           "Name": "鸳鸯眼",
           "SkillType": 3,
           "Effects": [
             {
               "Id": 8032,
-              "exatk": 85,
-              "exppt": 0.25
+              "exatk": 90,
+              "exppt": 0.55
             }
           ]
         }
@@ -679,8 +798,8 @@
   "昴宿": {
     "Id": 11570,
     "Name": "昴宿",
-    "Description": "增加角色 85 点攻击力和 15% 暴击率。",
-    "BackgroundStory": "一柄镶嵌着七颗星辰的银色长柄武器，散发着柔和而坚定的光辉。",
+    "Description": "增加角色 90 点攻击力和 20% 暴击率。",
+    "BackgroundStory": "用苍穹碎屿坠落的星锚残骸铸造，枪尖永远指向被束缚巨兽的哀鸣坐标。",
     "ItemType": 1,
     "WeaponType": 9,
     "QualityType": 4,
@@ -688,14 +807,14 @@
       "Active": null,
       "Passives": [
         {
-          "Id": 7028,
+          "Id": 7030,
           "Name": "昴宿",
           "SkillType": 3,
           "Effects": [
             {
               "Id": 8032,
               "exatk": 85,
-              "excr": 0.15
+              "excr": 0.2
             }
           ]
         }
@@ -705,7 +824,7 @@
   "蔷薇花环": {
     "Id": 11571,
     "Name": "蔷薇花环",
-    "Description": "增加角色 85 点攻击力和 25% 暴击伤害。",
+    "Description": "增加角色 90 点攻击力和 35% 暴击伤害。",
     "BackgroundStory": "一环荆棘与花朵交织的暗器，美丽而致命，象征着爱与痛的纠缠。",
     "ItemType": 1,
     "WeaponType": 11,
@@ -714,14 +833,14 @@
       "Active": null,
       "Passives": [
         {
-          "Id": 7029,
+          "Id": 7031,
           "Name": "蔷薇花环",
           "SkillType": 3,
           "Effects": [
             {
               "Id": 8032,
-              "exatk": 85,
-              "excrd": 0.25
+              "exatk": 90,
+              "excrd": 0.35
             }
           ]
         }
@@ -740,7 +859,7 @@
       "Active": null,
       "Passives": [
         {
-          "Id": 7030,
+          "Id": 7032,
           "Name": "金箍棒",
           "SkillType": 3,
           "Effects": [
@@ -757,8 +876,165 @@
       ]
     }
   },
+  "黑千鸟·白千鸟": {
+    "Id": 11573,
+    "Name": "黑千鸟·白千鸟",
+    "Description": "增加角色 110 点攻击力和 70% 物理穿透。",
+    "BackgroundStory": "一如夜色中无声的掠影，一如破晓时致命的闪光，它们在死寂中起舞，在血光中归巢。",
+    "ItemType": 1,
+    "WeaponType": 6,
+    "QualityType": 5,
+    "Skills": {
+      "Active": null,
+      "Passives": [
+        {
+          "Id": 7033,
+          "Name": "黑千鸟·白千鸟",
+          "SkillType": 3,
+          "Effects": [
+            {
+              "Id": 8032,
+              "exatk": 110,
+              "exppt": 0.7
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "红雪剑·白雨刀": {
+    "Id": 11574,
+    "Name": "红雪剑·白雨刀",
+    "Description": "增加角色 110 点攻击力和 50% 暴击伤害。",
+    "BackgroundStory": "一者铭刻血色宿命，一者涤尽尘世铅华，共谱一曲绝美的终章。",
+    "ItemType": 1,
+    "WeaponType": 6,
+    "QualityType": 5,
+    "Skills": {
+      "Active": null,
+      "Passives": [
+        {
+          "Id": 7034,
+          "Name": "红雪剑·白雨刀",
+          "SkillType": 3,
+          "Effects": [
+            {
+              "Id": 8032,
+              "exatk": 110,
+              "excrd": 0.5
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "羔羊颂": {
+    "Id": 11575,
+    "Name": "羔羊颂",
+    "Description": "增加角色 110 点攻击力和 30% 暴击率。",
+    "BackgroundStory": "银芒流转若垂首月光，锋刃低吟待迷途羔羊。",
+    "ItemType": 1,
+    "WeaponType": 1,
+    "QualityType": 5,
+    "Skills": {
+      "Active": null,
+      "Passives": [
+        {
+          "Id": 7035,
+          "Name": "羔羊颂",
+          "SkillType": 3,
+          "Effects": [
+            {
+              "Id": 8032,
+              "exatk": 110,
+              "excr": 0.3
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "紫苑": {
+    "Id": 11576,
+    "Name": "紫苑",
+    "Description": "增加角色 170 点攻击力。",
+    "BackgroundStory": "流星不过是谎言的残烬，而这把弓，只射穿未亡的昨日。",
+    "ItemType": 1,
+    "WeaponType": 3,
+    "QualityType": 5,
+    "Skills": {
+      "Active": null,
+      "Passives": [
+        {
+          "Id": 7036,
+          "Name": "紫苑",
+          "SkillType": 3,
+          "Effects": [
+            {
+              "Id": 8032,
+              "exatk": 170
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "机械星": {
+    "Id": 11577,
+    "Name": "机械星",
+    "Description": "增加角色 170 点攻击力。",
+    "BackgroundStory": "精密擒纵囚禁着失控熵增，水晶透镜后无数彗星正在溺亡。",
+    "ItemType": 1,
+    "WeaponType": 7,
+    "QualityType": 5,
+    "Skills": {
+      "Active": null,
+      "Passives": [
+        {
+          "Id": 7037,
+          "Name": "机械星",
+          "SkillType": 3,
+          "Effects": [
+            {
+              "Id": 8032,
+              "exatk": 170
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "镇魂铃": {
+    "Id": 11578,
+    "Name": "镇魂铃",
+    "Description": "增加角色 110 点攻击力和 50% 魔法穿透。",
+    "BackgroundStory": "十二律蚀骨为笼，余音锻魂成铜锈——此铃只囚未冷的灰烬。",
+    "ItemType": 1,
+    "WeaponType": 7,
+    "QualityType": 5,
+    "Skills": {
+      "Active": null,
+      "Passives": [
+        {
+          "Id": 7038,
+          "Name": "镇魂铃",
+          "SkillType": 3,
+          "Effects": [
+            {
+              "Id": 8001,
+              "exatk": 110
+            },
+            {
+              "Id": 8018,
+              "exmpt": 0.5
+            }
+          ]
+        }
+      ]
+    }
+  },
   "初级法袍": {
-    "Id": 12501,
+    "Id": 12500,
     "Name": "初级法袍",
     "Description": "增加角色 8% 魔法抗性。",
     "BackgroundStory": "可以不穿，不能没有。",
@@ -769,7 +1045,7 @@
       "Active": null,
       "Passives": [
         {
-          "Id": 7101,
+          "Id": 7100,
           "Name": "初级法袍",
           "SkillType": 3,
           "Effects": [
@@ -783,10 +1059,40 @@
       ]
     }
   },
+  "学院派法则": {
+    "Id": 12501,
+    "Name": "学院派法则",
+    "Description": "增加角色 5% 魔法抗性和 15 点物理护甲。",
+    "BackgroundStory": "小孩子才做选择。",
+    "ItemType": 2,
+    "WeaponType": 0,
+    "QualityType": 0,
+    "Skills": {
+      "Active": null,
+      "Passives": [
+        {
+          "Id": 7101,
+          "Name": "学院派法则",
+          "SkillType": 3,
+          "Effects": [
+            {
+              "Id": 8020,
+              "mdftype": 0,
+              "mdfvalue": 0.05
+            },
+            {
+              "Id": 8002,
+              "exdef": 15
+            }
+          ]
+        }
+      ]
+    }
+  },
   "高中校服": {
     "Id": 12502,
     "Name": "高中校服",
-    "Description": "增加角色 20 点物理护甲。",
+    "Description": "增加角色 30 点物理护甲。",
     "BackgroundStory": "珍藏的回忆。",
     "ItemType": 2,
     "WeaponType": 0,
@@ -801,7 +1107,7 @@
           "Effects": [
             {
               "Id": 8002,
-              "exdef": 20
+              "exdef": 30
             }
           ]
         }
@@ -811,7 +1117,7 @@
   "圣洁之盾": {
     "Id": 12503,
     "Name": "圣洁之盾",
-    "Description": "增加 12% 物理伤害减免。",
+    "Description": "增加 8% 物理伤害减免。",
     "BackgroundStory": "传说中由圣光祝福的盾牌，能够抵挡邪恶的力量。",
     "ItemType": 2,
     "WeaponType": 0,
@@ -826,7 +1132,7 @@
           "Effects": [
             {
               "Id": 8019,
-              "expdr": 0.12
+              "expdr": 0.08
             }
           ]
         }
@@ -836,7 +1142,7 @@
   "魔能法袍": {
     "Id": 12504,
     "Name": "魔能法袍",
-    "Description": "增加角色 15 点智力和 15% 魔法抗性。",
+    "Description": "增加角色 10 点智力和 15% 魔法抗性。",
     "BackgroundStory": "法袍蕴含着神秘的魔力，穿戴者能增强魔法威力。",
     "ItemType": 2,
     "WeaponType": 0,
@@ -851,7 +1157,7 @@
           "Effects": [
             {
               "Id": 8005,
-              "exint": 15
+              "exint": 10
             },
             {
               "Id": 8020,
@@ -866,7 +1172,7 @@
   "炼狱战铠": {
     "Id": 12505,
     "Name": "炼狱战铠",
-    "Description": "增加角色 40 点物理护甲，增加角色 5 点每秒生命回复。",
+    "Description": "增加角色 55 点物理护甲，增加角色 5 点每秒生命回复。",
     "BackgroundStory": "在无尽战火中锻造而成，具有极高的防御力。",
     "ItemType": 2,
     "WeaponType": 0,
@@ -881,7 +1187,7 @@
           "Effects": [
             {
               "Id": 8002,
-              "exdef": 40
+              "exdef": 55
             },
             {
               "Id": 8021,
@@ -895,7 +1201,7 @@
   "幽影斗篷": {
     "Id": 12506,
     "Name": "幽影斗篷",
-    "Description": "增加角色 30 点物理护甲和 8% 闪避率。",
+    "Description": "增加角色 55 点物理护甲和 8% 闪避率。",
     "BackgroundStory": "黑暗中编织而成的斗篷，能让穿戴者更加敏捷。",
     "ItemType": 2,
     "WeaponType": 0,
@@ -910,7 +1216,7 @@
           "Effects": [
             {
               "Id": 8002,
-              "exdef": 30
+              "exdef": 55
             },
             {
               "Id": 8016,
@@ -924,7 +1230,7 @@
   "帆布鞋": {
     "Id": 13501,
     "Name": "帆布鞋",
-    "Description": "增加角色 30 点行动速度。",
+    "Description": "增加角色 35 点行动速度。",
     "BackgroundStory": "一如年少模样。",
     "ItemType": 3,
     "WeaponType": 0,
@@ -939,7 +1245,7 @@
           "Effects": [
             {
               "Id": 8009,
-              "exspd": 30
+              "exspd": 35
             }
           ]
         }
@@ -949,7 +1255,7 @@
   "疾风靴": {
     "Id": 13502,
     "Name": "疾风靴",
-    "Description": "增加角色 65 点行动速度，使穿戴者行动更加敏捷。",
+    "Description": "增加角色 85 点行动速度，使穿戴者行动更加敏捷。",
     "BackgroundStory": "这双靴子由风元素加持，步伐轻盈如风。",
     "ItemType": 3,
     "WeaponType": 0,
@@ -964,7 +1270,7 @@
           "Effects": [
             {
               "Id": 8009,
-              "exspd": 65
+              "exspd": 85
             }
           ]
         }
@@ -974,7 +1280,7 @@
   "轻灵之鞋": {
     "Id": 13503,
     "Name": "轻灵之鞋",
-    "Description": "增加角色 45 点行动速度，并提高 10% 闪避率。",
+    "Description": "增加角色 65 点行动速度，并提高 10% 闪避率。",
     "BackgroundStory": "传说这双鞋能让穿戴者的步伐鬼魅般飘忽不定。",
     "ItemType": 3,
     "WeaponType": 0,
@@ -989,7 +1295,7 @@
           "Effects": [
             {
               "Id": 8009,
-              "exspd": 45
+              "exspd": 65
             },
             {
               "Id": 8016,
@@ -1003,7 +1309,7 @@
   "雷电靴": {
     "Id": 13504,
     "Name": "雷电靴",
-    "Description": "增加角色 45 点行动速度，并提高 10% 冷却缩减。",
+    "Description": "增加角色 65 点行动速度，并提高 10% 冷却缩减。",
     "BackgroundStory": "这双靴子蕴含雷电之力，使穿戴者快速出击。",
     "ItemType": 3,
     "WeaponType": 0,
@@ -1018,7 +1324,7 @@
           "Effects": [
             {
               "Id": 8009,
-              "exspd": 45
+              "exspd": 65
             },
             {
               "Id": 8011,
@@ -1032,7 +1338,7 @@
   "暗影之靴": {
     "Id": 13505,
     "Name": "暗影之靴",
-    "Description": "增加角色 38 点行动速度，并提高 8% 暴击率。",
+    "Description": "增加角色 48 点行动速度，并提高 8% 暴击率。",
     "BackgroundStory": "这双鞋在黑暗中隐藏，赋予穿戴者暗影的力量。",
     "ItemType": 3,
     "WeaponType": 0,
@@ -1047,7 +1353,7 @@
           "Effects": [
             {
               "Id": 8009,
-              "exspd": 38
+              "exspd": 48
             },
             {
               "Id": 8014,
@@ -1061,7 +1367,7 @@
   "守护吊坠": {
     "Id": 14501,
     "Name": "守护吊坠",
-    "Description": "增加角色 3 点所有力量、敏捷、智力。",
+    "Description": "增加角色 4 点所有力量、敏捷、智力。",
     "BackgroundStory": "带着一丝丝念想。",
     "ItemType": 4,
     "WeaponType": 0,
@@ -1076,15 +1382,15 @@
           "Effects": [
             {
               "Id": 8003,
-              "exstr": 3
+              "exstr": 4
             },
             {
               "Id": 8004,
-              "exagi": 3
+              "exagi": 4
             },
             {
               "Id": 8005,
-              "exint": 3
+              "exint": 4
             }
           ]
         }
@@ -1094,7 +1400,7 @@
   "富贵头冠": {
     "Id": 14502,
     "Name": "富贵头冠",
-    "Description": "增加角色 70 点最大生命值和 40 点最大魔法值。",
+    "Description": "增加角色 90 点最大生命值和 50 点最大魔法值。",
     "BackgroundStory": "辉煌华贵的头冠。",
     "ItemType": 4,
     "WeaponType": 0,
@@ -1109,11 +1415,11 @@
           "Effects": [
             {
               "Id": 8012,
-              "exhp": 70
+              "exhp": 90
             },
             {
               "Id": 8013,
-              "exmp": 40
+              "exmp": 50
             }
           ]
         }
@@ -1123,7 +1429,7 @@
   "黄金挂坠": {
     "Id": 14503,
     "Name": "黄金挂坠",
-    "Description": "增加角色 150 点最大生命值。",
+    "Description": "增加角色 300 点最大生命值。",
     "BackgroundStory": "珍贵稀有的黄金挂件，象征财富与荣耀的护身符。",
     "ItemType": 4,
     "WeaponType": 0,
@@ -1138,7 +1444,7 @@
           "Effects": [
             {
               "Id": 8012,
-              "exhp": 150
+              "exhp": 300
             }
           ]
         }
@@ -1148,7 +1454,7 @@
   "辉煌光环": {
     "Id": 14504,
     "Name": "辉煌光环",
-    "Description": "增加角色 80 点最大魔法值和 2 点每秒魔法回复。",
+    "Description": "增加角色 80 点最大魔法值和 3 点每秒魔法回复。",
     "BackgroundStory": "流光溢彩的光环。",
     "ItemType": 4,
     "WeaponType": 0,
@@ -1167,7 +1473,7 @@
             },
             {
               "Id": 8022,
-              "exmr": 2
+              "exmr": 3
             }
           ]
         }
@@ -1177,7 +1483,7 @@
   "银质手环": {
     "Id": 14505,
     "Name": "银质手环",
-    "Description": "增加角色 6 点所有力量、敏捷、智力。",
+    "Description": "增加角色 8 点所有力量、敏捷、智力。",
     "BackgroundStory": "素雅精致的银质手环。",
     "ItemType": 4,
     "WeaponType": 0,
@@ -1192,15 +1498,15 @@
           "Effects": [
             {
               "Id": 8003,
-              "exstr": 6
+              "exstr": 8
             },
             {
               "Id": 8004,
-              "exagi": 6
+              "exagi": 8
             },
             {
               "Id": 8005,
-              "exint": 6
+              "exint": 8
             }
           ]
         }
@@ -1210,7 +1516,7 @@
   "星辉护符": {
     "Id": 14506,
     "Name": "星辉护符",
-    "Description": "增加角色 15 点智力，提升暴击伤害 12%。",
+    "Description": "增加角色 15 点智力和 12% 暴击伤害。",
     "BackgroundStory": "护符上镶嵌着神秘的星辉宝石，传说能提升佩戴者的法术威力。",
     "ItemType": 4,
     "WeaponType": 0,
@@ -1268,8 +1574,8 @@
   "精灵之戒": {
     "Id": 14508,
     "Name": "精灵之戒",
-    "Description": "增加角色 5 点每秒魔法回复，并增加角色 8 点智力。",
-    "BackgroundStory": "这枚戒指由精灵制成，能够帮助法师更快地恢复法力。",
+    "Description": "增加角色 12 点智力和 6 点每秒生命回复。",
+    "BackgroundStory": "这枚戒指由精灵制成，佩戴者能感受到充沛的生命力。",
     "ItemType": 4,
     "WeaponType": 0,
     "QualityType": 2,
@@ -1282,12 +1588,12 @@
           "SkillType": 3,
           "Effects": [
             {
-              "Id": 8022,
-              "exmr": 5
+              "Id": 8021,
+              "exhr": 6
             },
             {
               "Id": 8005,
-              "exint": 8
+              "exint": 12
             }
           ]
         }
@@ -1297,7 +1603,7 @@
   "暗影项链": {
     "Id": 14509,
     "Name": "暗影项链",
-    "Description": "增加角色 15 点敏捷和 3 点每秒生命回复。",
+    "Description": "增加角色 15 点敏捷和 10% 冷却缩减。",
     "BackgroundStory": "项链蕴含着黑暗的力量，让佩戴者更具敏捷性。",
     "ItemType": 4,
     "WeaponType": 0,
@@ -1315,8 +1621,8 @@
               "exagi": 15
             },
             {
-              "Id": 8021,
-              "exhr": 5
+              "Id": 8011,
+              "excdr": 0.1
             }
           ]
         }
@@ -1409,7 +1715,7 @@
   "路人哥的cos服": {
     "Id": 14513,
     "Name": "路人哥的cos服",
-    "Description": "增加角色 12% 攻击力，增加角色 12% 魔法抗性，但是会减少 8% 物理伤害减免。",
+    "Description": "增加角色 15% 攻击力，增加角色 12% 魔法抗性，但是会减少 8% 物理伤害减免。",
     "BackgroundStory": "一套神秘的服饰，据说穿上后会引发未知的力量变化。",
     "ItemType": 4,
     "WeaponType": 0,
@@ -1424,7 +1730,7 @@
           "Effects": [
             {
               "Id": 8023,
-              "exatk": 0.12
+              "exatk": 0.15
             },
             {
               "Id": 8020,

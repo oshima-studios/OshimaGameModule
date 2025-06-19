@@ -180,7 +180,7 @@ namespace Oshima.FunGame.OshimaServers.Service
                         {
                             mQuality++;
                         }
-                        if (wQuality < 4)
+                        if (wQuality < 5)
                         {
                             wQuality++;
                         }
@@ -379,7 +379,7 @@ namespace Oshima.FunGame.OshimaServers.Service
                             {
                                 mQuality++;
                             }
-                            if (wQuality < 4)
+                            if (wQuality < 5)
                             {
                                 wQuality++;
                             }
@@ -1069,6 +1069,7 @@ namespace Oshima.FunGame.OshimaServers.Service
             totalStats.ActionTurn += stats.ActionTurn;
             totalStats.LiveTime = Calculation.Round2Digits(totalStats.LiveTime + stats.LiveTime);
             totalStats.ControlTime = Calculation.Round2Digits(totalStats.ControlTime + stats.ControlTime);
+            totalStats.TotalShield = Calculation.Round2Digits(totalStats.TotalShield + stats.TotalShield);
             totalStats.TotalEarnedMoney += stats.TotalEarnedMoney;
             totalStats.Kills += stats.Kills;
             totalStats.Deaths += stats.Deaths;

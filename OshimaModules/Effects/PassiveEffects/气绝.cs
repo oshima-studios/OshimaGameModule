@@ -40,29 +40,41 @@ namespace Oshima.FunGame.OshimaModules.Effects.PassiveEffects
             _durationDamagePercent = durationDamagePercent;
         }
 
+        private double GetDamage(double hp, double elapsed)
+        {
+            if (hp <= 0)
+            {
+                return 0;
+            }
+            double damage = _isPercentage ? hp * _durationDamagePercent : _durationDamage;
+            return damage * elapsed;
+        }
+
         public override void OnTimeElapsed(Character character, double elapsed)
         {
-            if (character.HP > 0)
+            if (character == _targetCharacter && character.HP > 0)
             {
+                double hp = character.HP;
+                double damage = GetDamage(hp, elapsed);
                 if (elapsed > 1)
                 {
+                    damage = 0;
                     int loop = 0;
-                    for (; loop < elapsed; loop++)
+                    int elapsedSecond = (int)elapsed;
+                    for (; loop < elapsedSecond; loop++)
                     {
+                        double current = GetDamage(hp, 1);
+                        damage += current;
+                        hp -= current;
                         elapsed--;
-                        OnTimeElapsed(character, 1);
                     }
                     if (elapsed > 0)
                     {
-                        OnTimeElapsed(character, elapsed);
+                        damage += GetDamage(hp, elapsed);
                     }
                 }
-                else
-                {
-                    double damage = Damage * elapsed;
-                    WriteLine($"[ {character} ] 因气绝而流失生命值！");
-                    DamageToEnemy(Source, character, DamageType.True, MagicType, damage);
-                }
+                WriteLine($"[ {character} ] 因气绝而流失生命值！");
+                DamageToEnemy(Source, character, DamageType.True, MagicType, damage);
             }
         }
 

@@ -10,7 +10,7 @@ namespace Oshima.FunGame.OshimaModules.Skills
         public override string Name => "虚弱领域";
         public override string Description => Effects.Count > 0 ? string.Join("\r\n", Effects.Select(e => e.Description)) : "";
         public override string DispelDescription => Effects.Count > 0 ? Effects.First(e => e is 造成虚弱).DispelDescription : "";
-        public override double MPCost => Level > 0 ? 95 + (95 * (Level - 1)) : 90;
+        public override double MPCost => Level > 0 ? 85 + (90 * (Level - 1)) : 85;
         public override double CD => Level > 0 ? 85 - (2 * (Level - 1)) : 85;
         public override double CastTime => 8;
         public override double HardnessTime { get; set; } = 3;

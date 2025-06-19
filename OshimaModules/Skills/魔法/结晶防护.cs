@@ -9,7 +9,7 @@ namespace Oshima.FunGame.OshimaModules.Skills
         public override long Id => (long)MagicID.结晶防护;
         public override string Name => "结晶防护";
         public override string Description => Effects.Count > 0 ? Effects.First().Description : "";
-        public override double MPCost => Level > 0 ? 85 + (90 * (Level - 1)) : 85;
+        public override double MPCost => Level > 0 ? 80 + (80 * (Level - 1)) : 80;
         public override double CD => Level > 0 ? 75 - (1 * (Level - 1)) : 75;
         public override double CastTime => Level > 0 ? 3 + (1.5 * (Level - 1)) : 3;
         public override double HardnessTime { get; set; } = 4;

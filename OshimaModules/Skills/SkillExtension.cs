@@ -16,11 +16,15 @@ namespace Oshima.FunGame.OshimaModules.Skills
             }
             if (skill.CanSelectTeammate && !skill.CanSelectEnemy)
             {
-                return $"目标{(skill.CanSelectTargetCount > 1 ? $"至多 {skill.CanSelectTargetCount} 个" : "")}友方角色";
+                return $"目标{(skill.CanSelectTargetCount > 1 ? $"至多 {skill.CanSelectTargetCount} 个" : "")}友方角色{(!skill.CanSelectSelf ? "（不包括自己）" : "")}";
             }
             else if (!skill.CanSelectTeammate && skill.CanSelectEnemy)
             {
                 return $"目标{(skill.CanSelectTargetCount > 1 ? $"至多 {skill.CanSelectTargetCount} 个" : "")}敌方角色";
+            }
+            else if (!skill.CanSelectTeammate && !skill.CanSelectEnemy && skill.CanSelectSelf)
+            {
+                return $"自身";
             }
             else
             {
