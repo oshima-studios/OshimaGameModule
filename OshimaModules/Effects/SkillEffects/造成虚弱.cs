@@ -58,7 +58,7 @@ namespace Oshima.FunGame.OshimaModules.Effects.SkillEffects
                 WriteLine($"[ {caster} ] 对 [ {enemy} ] 造成了虚弱！伤害降低 {ActualDamageReductionPercent * 100:0.##}%，" +
                     $"物理护甲降低 {ActualDEFReductionPercent * 100:0.##}%，魔法抗性降低 {ActualMDFReductionPercent * 100:0.##}%，" +
                     $"治疗效果降低 {ActualHealingReductionPercent * 100:0.##}%！持续时间：{虚弱时间}！");
-                虚弱 e = new(Skill, enemy, caster, _durative, _duration, _durationTurn, ActualDamageReductionPercent, ActualDEFReductionPercent, ActualMDFReductionPercent, ActualHealingReductionPercent);
+                虚弱 e = new(Skill, enemy, caster, _durative, _duration + _levelGrowth * (Level - 1), Convert.ToInt32(_durationTurn + _levelGrowth * (Level - 1)), ActualDamageReductionPercent, ActualDEFReductionPercent, ActualMDFReductionPercent, ActualHealingReductionPercent);
                 enemy.Effects.Add(e);
                 e.OnEffectGained(enemy);
                 GamingQueue?.LastRound.ApplyEffects.TryAdd(enemy, [e.EffectType]);

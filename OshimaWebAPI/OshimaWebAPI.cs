@@ -121,7 +121,7 @@ namespace Oshima.FunGame.WebAPI
                                 user.Inventory.Characters.Add(character);
 
                                 // 测试物品
-                                Item item = new 攻击之爪20();
+                                Item item = new 攻击之爪25();
                                 user.Inventory.Items.Add(item);
 
                                 sql.UpdateInventory(user.Inventory); // 更新库存

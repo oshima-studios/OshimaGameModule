@@ -59,7 +59,7 @@ namespace Oshima.FunGame.OshimaModules.Effects.SkillEffects
                 }
                 else
                 {
-                    e = new(Skill, caster, _durativeWithoutDuration, _durative, _duration, _durationTurn);
+                    e = new(Skill, caster, _durativeWithoutDuration, _durative, _duration + _levelGrowth * (Level - 1), Convert.ToInt32(_durationTurn + _levelGrowth * (Level - 1)));
                     target.Effects.Add(e);
                     e.OnEffectGained(target);
                     e.IsDebuff = isDebuff;

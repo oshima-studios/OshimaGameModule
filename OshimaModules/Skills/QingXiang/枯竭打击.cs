@@ -24,7 +24,7 @@ namespace Oshima.FunGame.OshimaModules.Skills
     {
         public override long Id => Skill.Id;
         public override string Name => Skill.Name;
-        public override string Description => $"每次造成伤害都会随机减少对方 [ 7~15 ] 点能量值，对能量值低于一半的角色额外造成 30% 伤害。对于枯竭打击而言，能量值大于100且小于150时，视为低于一半。";
+        public override string Description => $"每次造成伤害都会随机减少对方 [ 7～15 ] 点能量值，对能量值低于一半的角色额外造成 30% 伤害。对于枯竭打击而言，能量值大于 100 且小于 150 时，视为低于一半。";
 
         private bool 是否是嵌套伤害 = false;
 

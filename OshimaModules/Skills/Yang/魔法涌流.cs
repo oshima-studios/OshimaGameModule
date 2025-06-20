@@ -37,7 +37,7 @@ namespace Oshima.FunGame.OshimaModules.Skills
         {
             character.NormalAttack.CanSelectTargetCount += 2;
             实际比例 = 减伤比例;
-            character.NormalAttack.SetMagicType(true, character.MagicType);
+            character.NormalAttack.SetMagicType(new(this, true, MagicType.None, 999), GamingQueue);
             if (character.Effects.Where(e => e is 魔法震荡特效).FirstOrDefault() is 魔法震荡特效 e)
             {
                 e.基础冷却时间 = 5;
@@ -49,7 +49,7 @@ namespace Oshima.FunGame.OshimaModules.Skills
         {
             实际比例 = 0;
             character.NormalAttack.CanSelectTargetCount -= 2;
-            character.NormalAttack.SetMagicType(false, character.MagicType);
+            character.NormalAttack.UnsetMagicType(this, GamingQueue);
             if (character.Effects.Where(e => e is 魔法震荡特效).FirstOrDefault() is 魔法震荡特效 e)
             {
                 e.基础冷却时间 = 10;

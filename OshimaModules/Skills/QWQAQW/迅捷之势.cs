@@ -39,19 +39,19 @@ namespace Oshima.FunGame.OshimaModules.Skills
 
         public override void OnEffectGained(Character character)
         {
-            character.NormalAttack.SetMagicType(true, character.MagicType);
+            character.NormalAttack.SetMagicType(new(this, true, MagicType.None, 999), GamingQueue);
             实际物理伤害减免 = 物理伤害减免;
             实际魔法抗性 = 魔法抗性;
             character.ExPDR += 实际物理伤害减免;
-            character.MDF.AddAllValue(实际魔法抗性);
+            character.MDF[character.MagicType] += 实际魔法抗性;
             WriteLine($"[ {character} ] 提升了 {实际物理伤害减免 * 100:0.##}% 物理伤害减免，{实际魔法抗性 * 100:0.##}% 魔法抗性！！");
         }
 
         public override void OnEffectLost(Character character)
         {
-            character.NormalAttack.SetMagicType(false, character.MagicType);
+            character.NormalAttack.UnsetMagicType(this, GamingQueue);
             character.ExPDR -= 实际物理伤害减免;
-            character.MDF.AddAllValue(-实际魔法抗性);
+            character.MDF[character.MagicType] -= 实际魔法抗性;
             实际物理伤害减免 = 0;
             实际魔法抗性 = 0;
         }

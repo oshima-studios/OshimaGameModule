@@ -176,7 +176,7 @@ namespace Oshima.FunGame.OshimaServers.Service
                         WriteLine("");
                         if (isWeb) result.Add("=== 空投 ===\r\n" + Msg);
                         nextDropTime = isTeam ? 90 : 60;
-                        if (mQuality < 4)
+                        if (mQuality < 5)
                         {
                             mQuality++;
                         }
@@ -184,11 +184,11 @@ namespace Oshima.FunGame.OshimaServers.Service
                         {
                             wQuality++;
                         }
-                        if (aQuality < 1)
+                        if (aQuality < 5)
                         {
                             aQuality++;
                         }
-                        if (sQuality < 1)
+                        if (sQuality < 5)
                         {
                             sQuality++;
                         }
@@ -252,6 +252,12 @@ namespace Oshima.FunGame.OshimaServers.Service
                     // 显示初始顺序表
                     actionQueue.DisplayQueue();
                     if (PrintOut) Console.WriteLine();
+
+                    actionQueue.CharacterDeath += ActionQueue_CharacterDeath;
+                    if (actionQueue is TeamGamingQueue teamQueue)
+                    {
+                        //teamQueue.GameEndTeam += TeamQueue_GameEndTeam;
+                    }
 
                     // 总回合数
                     int maxRound = 9999;
@@ -375,7 +381,7 @@ namespace Oshima.FunGame.OshimaServers.Service
                             WriteLine("");
                             if (isWeb) result.Add("=== 空投 ===\r\n" + Msg);
                             nextDropTime = isTeam ? 100 : 40;
-                            if (mQuality < 4)
+                            if (mQuality < 5)
                             {
                                 mQuality++;
                             }
@@ -383,11 +389,11 @@ namespace Oshima.FunGame.OshimaServers.Service
                             {
                                 wQuality++;
                             }
-                            if (aQuality < 1)
+                            if (aQuality < 5)
                             {
                                 aQuality++;
                             }
-                            if (sQuality < 1)
+                            if (sQuality < 5)
                             {
                                 sQuality++;
                             }
@@ -636,6 +642,32 @@ namespace Oshima.FunGame.OshimaServers.Service
                 Console.WriteLine(ex);
                 return [ex.ToString()];
             }
+        }
+
+        private static async Task<bool> TeamQueue_GameEndTeam(TeamGamingQueue queue, Team winner)
+        {
+            foreach (Character character in winner.Members)
+            {
+                Item? i1 = character.UnEquip(EquipSlotType.MagicCardPack);
+                Item? i2 = character.UnEquip(EquipSlotType.Weapon);
+                Item? i3 = character.UnEquip(EquipSlotType.Armor);
+                Item? i4 = character.UnEquip(EquipSlotType.Shoes);
+                Item? i5 = character.UnEquip(EquipSlotType.Accessory1);
+                Item? i6 = character.UnEquip(EquipSlotType.Accessory2);
+                queue.WriteLine(character.GetInfo());
+            }
+            return await Task.FromResult(true);
+        }
+
+        private static async Task<bool> ActionQueue_GameEnd(GamingQueue queue, Character winner)
+        {
+            return await Task.FromResult(true);
+        }
+
+        private static async Task<bool> ActionQueue_CharacterDeath(GamingQueue queue, Character current, Character death)
+        {
+            death.Items.Clear();
+            return await Task.FromResult(true);
         }
 
         /// <summary>
@@ -971,7 +1003,7 @@ namespace Oshima.FunGame.OshimaServers.Service
             Item[] armors = [.. FunGameConstant.Equipment.Where(i => i.Id.ToString().StartsWith("12") && (int)i.QualityType == aQuality)];
             Item[] shoes = [.. FunGameConstant.Equipment.Where(i => i.Id.ToString().StartsWith("13") && (int)i.QualityType == sQuality)];
             Item[] accessories = [.. FunGameConstant.Equipment.Where(i => i.Id.ToString().StartsWith("14") && (int)i.QualityType == acQuality)];
-            Item[] consumables = [.. FunGameConstant.AllItems.Where(i => i.ItemType == ItemType.Consumable)];
+            Item[] consumables = [.. FunGameConstant.AllItems.Where(i => i.ItemType == ItemType.Consumable && i.IsInGameItem)];
             foreach (Character character in queue.HardnessTime.Keys)
             {
                 if (addLevel)

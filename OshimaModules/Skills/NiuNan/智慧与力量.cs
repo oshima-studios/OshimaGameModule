@@ -50,17 +50,23 @@ namespace Oshima.FunGame.OshimaModules.Skills
         {
             if (isAdd)
             {
-                已经加过 = true;
-                character.ExEvadeRate += 实际增加闪避率;
-                character.ExCritRate += 实际增加暴击率;
-                character.MDF.AddAllValue(实际增加魔法抗性);
+                if (!已经加过)
+                {
+                    已经加过 = true;
+                    character.ExEvadeRate += 实际增加闪避率;
+                    character.ExCritRate += 实际增加暴击率;
+                    character.MDF[character.MagicType] += 实际增加魔法抗性;
+                }
             }
             else
             {
-                已经加过 = false;
-                character.ExEvadeRate -= 实际增加闪避率;
-                character.ExCritRate -= 实际增加暴击率;
-                character.MDF.AddAllValue(-实际增加魔法抗性);
+                if (已经加过)
+                {
+                    已经加过 = false;
+                    character.ExEvadeRate -= 实际增加闪避率;
+                    character.ExCritRate -= 实际增加暴击率;
+                    character.MDF[character.MagicType] -= 实际增加魔法抗性;
+                }
             }
         }
 

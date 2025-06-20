@@ -36,9 +36,9 @@ namespace Oshima.FunGame.OshimaModules
                 return id switch
                 {
                     (long)AccessoryID.攻击之爪10 => new 攻击之爪10(),
-                    (long)AccessoryID.攻击之爪20 => new 攻击之爪20(),
-                    (long)AccessoryID.攻击之爪30 => new 攻击之爪30(),
+                    (long)AccessoryID.攻击之爪25 => new 攻击之爪25(),
                     (long)AccessoryID.攻击之爪40 => new 攻击之爪40(),
+                    (long)AccessoryID.攻击之爪55 => new 攻击之爪55(),
                     (long)ConsumableID.小经验书 => new 小经验书(),
                     (long)ConsumableID.中经验书 => new 中经验书(),
                     (long)ConsumableID.大经验书 => new 大经验书(),

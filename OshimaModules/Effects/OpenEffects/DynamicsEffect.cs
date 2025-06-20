@@ -38,6 +38,7 @@ namespace Oshima.FunGame.OshimaModules.Effects.OpenEffects
 
         private void Resolve(Character character, bool remove = false)
         {
+            Descriptions.Clear();
             foreach (string key in Values.Keys)
             {
                 string value = Values[key].ToString() ?? "";
@@ -146,7 +147,7 @@ namespace Oshima.FunGame.OshimaModules.Effects.OpenEffects
                                 }
                             }
                             RealDynamicsValues["shtr"] = shtr;
-                            Descriptions.Add($"减少角色的所有主动技能 {shtr:0.##} {GameplayEquilibriumConstant.InGameTime}硬直时间。");
+                            Descriptions.Add($"{(shtr < 0 ? "增加" : "减少")}角色的所有主动技能 {Math.Abs(shtr):0.##} {GameplayEquilibriumConstant.InGameTime}硬直时间。");
                         }
                         break;
                     case "nahtr":
@@ -154,14 +155,14 @@ namespace Oshima.FunGame.OshimaModules.Effects.OpenEffects
                         {
                             if (!remove)
                             {
-                                character.NormalAttack.HardnessTime -= nahtr;
+                                character.NormalAttack.ExHardnessTime -= nahtr;
                             }
                             else if (RealDynamicsValues.TryGetValue("nahtr", out double current))
                             {
-                                character.NormalAttack.HardnessTime += current;
+                                character.NormalAttack.ExHardnessTime += current;
                             }
                             RealDynamicsValues["nahtr"] = nahtr;
-                            Descriptions.Add($"减少角色的普通攻击 {nahtr:0.##} {GameplayEquilibriumConstant.InGameTime}硬直时间。");
+                            Descriptions.Add($"{(nahtr < 0 ? "增加" : "减少")}角色的普通攻击 {Math.Abs(nahtr):0.##} {GameplayEquilibriumConstant.InGameTime}硬直时间。");
                         }
                         break;
                     case "shtr2":
@@ -192,7 +193,7 @@ namespace Oshima.FunGame.OshimaModules.Effects.OpenEffects
                                 }
                             }
                             RealDynamicsValues["shtr2"] = shtr2;
-                            Descriptions.Add($"减少角色的所有主动技能 {shtr2 * 100:0.##}% {GameplayEquilibriumConstant.InGameTime}硬直时间。");
+                            Descriptions.Add($"{(shtr2 < 0 ? "增加" : "减少")}角色的所有主动技能 {Math.Abs(shtr2 * 100):0.##}% 硬直时间。");
                         }
                         break;
                     case "nahtr2":
@@ -200,14 +201,14 @@ namespace Oshima.FunGame.OshimaModules.Effects.OpenEffects
                         {
                             if (!remove)
                             {
-                                character.NormalAttack.HardnessTime -= character.NormalAttack.HardnessTime * nahtr2;
+                                character.NormalAttack.ExHardnessTime2 -= nahtr2;
                             }
                             else if (RealDynamicsValues.TryGetValue("nahtr2", out double current))
                             {
-                                character.NormalAttack.HardnessTime += character.NormalAttack.HardnessTime * current;
+                                character.NormalAttack.ExHardnessTime2 += current;
                             }
                             RealDynamicsValues["nahtr2"] = nahtr2;
-                            Descriptions.Add($"减少角色的普通攻击 {nahtr2 * 100:0.##}% {GameplayEquilibriumConstant.InGameTime}硬直时间。");
+                            Descriptions.Add($"{(nahtr2 < 0 ? "增加" : "减少")}角色的普通攻击 {Math.Abs(nahtr2 * 100):0.##}% 硬直时间。");
                         }
                         break;
                     case "exacc":
@@ -550,14 +551,7 @@ namespace Oshima.FunGame.OshimaModules.Effects.OpenEffects
                                 string mdfvalueKey = Values.Keys.FirstOrDefault(s => s.Equals("mdfvalue", StringComparison.CurrentCultureIgnoreCase)) ?? "";
                                 if (mdfvalueKey.Length > 0 && double.TryParse(Values[mdfvalueKey].ToString(), out mdfValue))
                                 {
-                                    if (magicType == MagicType.None)
-                                    {
-                                        character.MDF.AddAllValue(mdfValue);
-                                    }
-                                    else
-                                    {
-                                        character.MDF[magicType] += mdfValue;
-                                    }
+                                    character.MDF[magicType] += mdfValue;
                                 }
                             }
                             else if (RealDynamicsValues.TryGetValue("mdftype", out double currentType))
@@ -565,19 +559,27 @@ namespace Oshima.FunGame.OshimaModules.Effects.OpenEffects
                                 magicType = (MagicType)(int)currentType;
                                 if (RealDynamicsValues.TryGetValue("mdfvalue", out mdfValue))
                                 {
-                                    if (magicType == MagicType.None)
-                                    {
-                                        character.MDF.AddAllValue(-mdfValue);
-                                    }
-                                    else
-                                    {
-                                        character.MDF[magicType] -= mdfValue;
-                                    }
+                                    character.MDF[magicType] -= mdfValue;
                                 }
                             }
                             RealDynamicsValues["mdftype"] = mdftype;
                             RealDynamicsValues["mdfvalue"] = mdfValue;
                             Descriptions.Add($"{(mdfValue >= 0 ? "增加" : "减少")}角色 {Math.Abs(mdfValue) * 100:0.##}% {CharacterSet.GetMagicResistanceName(magicType)}。");
+                        }
+                        break;
+                    case "exls":
+                        if (double.TryParse(value, out double exls))
+                        {
+                            if (!remove)
+                            {
+                                character.Lifesteal += exls;
+                            }
+                            else if (RealDynamicsValues.TryGetValue("exls", out double current))
+                            {
+                                character.Lifesteal -= current;
+                            }
+                            RealDynamicsValues["exls"] = exls;
+                            Descriptions.Add($"{(exls >= 0 ? "增加" : "减少")}角色 {Math.Abs(exls) * 100:0.##}% 生命偷取。");
                         }
                         break;
                 }

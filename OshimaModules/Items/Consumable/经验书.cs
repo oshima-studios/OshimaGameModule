@@ -135,6 +135,10 @@ namespace Oshima.FunGame.OshimaModules.Items
         public override long Id => (long)ItemActiveID.经验书;
         public override string Name => "经验书";
         public override string Description => Effects.Count > 0 ? Effects.First().Description : "";
+        public override bool CanSelectSelf => true;
+        public override bool CanSelectTeammate => true;
+        public override bool CanSelectEnemy => false;
+        public override int CanSelectTargetCount => 1;
 
         public 经验书技能(Item? item = null, double exp = 0) : base(SkillType.Item)
         {

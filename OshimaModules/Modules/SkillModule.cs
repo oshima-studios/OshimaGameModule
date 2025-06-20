@@ -36,6 +36,7 @@ namespace Oshima.FunGame.OshimaModules
         protected override void AfterLoad()
         {
             General.GameplayEquilibriumConstant.InGameTime = "秒";
+            General.GameplayEquilibriumConstant.UseMagicType = [MagicType.None];
         }
 
         protected override Factory.EntityFactoryDelegate<Skill> SkillFactory()

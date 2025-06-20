@@ -23,44 +23,12 @@ namespace Oshima.FunGame.OshimaModules.Effects.OpenEffects
             {
                 RemainDurationTurn = DurationTurn;
             }
-            switch (魔法类型)
-            {
-                case MagicType.Starmark:
-                case MagicType.PurityNatural:
-                case MagicType.PurityContemporary:
-                case MagicType.Bright:
-                case MagicType.Shadow:
-                case MagicType.Element:
-                case MagicType.Aster:
-                case MagicType.SpatioTemporal:
-                    character.MDF[魔法类型] += 实际加成;
-                    break;
-                case MagicType.None:
-                default:
-                    character.MDF.AddAllValue(实际加成);
-                    break;
-            }
+            character.MDF[魔法类型] += 实际加成;
         }
 
         public override void OnEffectLost(Character character)
         {
-            switch (魔法类型)
-            {
-                case MagicType.Starmark:
-                case MagicType.PurityNatural:
-                case MagicType.PurityContemporary:
-                case MagicType.Bright:
-                case MagicType.Shadow:
-                case MagicType.Element:
-                case MagicType.Aster:
-                case MagicType.SpatioTemporal:
-                    character.MDF[魔法类型] -= 实际加成;
-                    break;
-                case MagicType.None:
-                default:
-                    character.MDF.AddAllValue(-实际加成);
-                    break;
-            }
+            character.MDF[魔法类型] -= 实际加成;
         }
 
         public ExMDF(Skill skill, Dictionary<string, object> args, Character? source = null) : base(skill, args)

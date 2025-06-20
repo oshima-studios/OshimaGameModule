@@ -18,29 +18,16 @@ namespace Oshima.FunGame.OshimaModules.Items
         }
     }
 
-    public class 攻击之爪20 : Item
+    public class 攻击之爪25 : Item
     {
-        public override long Id => (long)AccessoryID.攻击之爪20;
-        public override string Name => "攻击之爪 +20";
+        public override long Id => (long)AccessoryID.攻击之爪25;
+        public override string Name => "攻击之爪 +25";
         public override string Description => Skills.Passives.Count > 0 ? Skills.Passives.First().Description : "";
         public override QualityType QualityType => QualityType.Green;
 
-        public 攻击之爪20(Character? character = null) : base(ItemType.Accessory)
+        public 攻击之爪25(Character? character = null) : base(ItemType.Accessory)
         {
-            Skills.Passives.Add(new 攻击之爪技能(character, this, 20));
-        }
-    }
-
-    public class 攻击之爪30 : Item
-    {
-        public override long Id => (long)AccessoryID.攻击之爪30;
-        public override string Name => "攻击之爪 +30";
-        public override string Description => Skills.Passives.Count > 0 ? Skills.Passives.First().Description : "";
-        public override QualityType QualityType => QualityType.Blue;
-
-        public 攻击之爪30(Character? character = null) : base(ItemType.Accessory)
-        {
-            Skills.Passives.Add(new 攻击之爪技能(character, this, 30));
+            Skills.Passives.Add(new 攻击之爪技能(character, this, 25));
         }
     }
 
@@ -49,11 +36,63 @@ namespace Oshima.FunGame.OshimaModules.Items
         public override long Id => (long)AccessoryID.攻击之爪40;
         public override string Name => "攻击之爪 +40";
         public override string Description => Skills.Passives.Count > 0 ? Skills.Passives.First().Description : "";
-        public override QualityType QualityType => QualityType.Purple;
+        public override QualityType QualityType => QualityType.Blue;
 
         public 攻击之爪40(Character? character = null) : base(ItemType.Accessory)
         {
             Skills.Passives.Add(new 攻击之爪技能(character, this, 40));
+        }
+    }
+
+    public class 攻击之爪55 : Item
+    {
+        public override long Id => (long)AccessoryID.攻击之爪55;
+        public override string Name => "攻击之爪 +55";
+        public override string Description => Skills.Passives.Count > 0 ? Skills.Passives.First().Description : "";
+        public override QualityType QualityType => QualityType.Purple;
+
+        public 攻击之爪55(Character? character = null) : base(ItemType.Accessory)
+        {
+            Skills.Passives.Add(new 攻击之爪技能(character, this, 55));
+        }
+    }
+    
+    public class 攻击之爪70 : Item
+    {
+        public override long Id => (long)AccessoryID.攻击之爪70;
+        public override string Name => "攻击之爪 +70";
+        public override string Description => Skills.Passives.Count > 0 ? Skills.Passives.First().Description : "";
+        public override QualityType QualityType => QualityType.Orange;
+
+        public 攻击之爪70(Character? character = null) : base(ItemType.Accessory)
+        {
+            Skills.Passives.Add(new 攻击之爪技能(character, this, 70));
+        }
+    }
+    
+    public class 攻击之爪85 : Item
+    {
+        public override long Id => (long)AccessoryID.攻击之爪85;
+        public override string Name => "攻击之爪 +85";
+        public override string Description => Skills.Passives.Count > 0 ? Skills.Passives.First().Description : "";
+        public override QualityType QualityType => QualityType.Red;
+
+        public 攻击之爪85(Character? character = null) : base(ItemType.Accessory)
+        {
+            Skills.Passives.Add(new 攻击之爪技能(character, this, 85));
+        }
+    }
+    
+    public class 攻击之爪100 : Item
+    {
+        public override long Id => (long)AccessoryID.攻击之爪100;
+        public override string Name => "攻击之爪 +100";
+        public override string Description => Skills.Passives.Count > 0 ? Skills.Passives.First().Description : "";
+        public override QualityType QualityType => QualityType.Gold;
+
+        public 攻击之爪100(Character? character = null) : base(ItemType.Accessory)
+        {
+            Skills.Passives.Add(new 攻击之爪技能(character, this, 100));
         }
     }
 
@@ -71,7 +110,7 @@ namespace Oshima.FunGame.OshimaModules.Items
             {
                 { "exatk", exATK }
             };
-            Effects.Add(new ExATK(this, values, character));
+            Effects.Add(new ExATK(this, values));
         }
 
         public override IEnumerable<Effect> AddPassiveEffectToCharacter()

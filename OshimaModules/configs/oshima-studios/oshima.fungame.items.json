@@ -152,7 +152,7 @@
   "罚罪之楔": {
     "Id": 11546,
     "Name": "罚罪之楔",
-    "Description": "增加角色 30 点攻击力和 10% 攻击力。",
+    "Description": "增加角色 25 点攻击力和 10% 攻击力。",
     "BackgroundStory": "从裁决尖碑坠落的塔刹碎片，尖端仍萦绕着泰坦调试世界时遗弃的错误符文。",
     "ItemType": 1,
     "WeaponType": 9,
@@ -167,7 +167,7 @@
           "Effects": [
             {
               "Id": 8001,
-              "exatk": 30
+              "exatk": 25
             },
             {
               "Id": 8023,
@@ -420,7 +420,7 @@
             },
             {
               "Id": 8009,
-              "exspd": 30
+              "exspd": 40
             }
           ]
         }
@@ -534,10 +534,10 @@
   "冬眠之弦": {
     "Id": 11560,
     "Name": "冬眠之弦",
-    "Description": "增加角色 70 点攻击力和 20% 攻击力。",
+    "Description": "增加角色 60 点攻击力和 20% 攻击力。",
     "BackgroundStory": "拉开弓弦时会掉落冰晶粉末——那是林海在冬季凝结时，遗留在树梢的叹息。",
     "ItemType": 1,
-    "WeaponType": 9,
+    "WeaponType": 3,
     "QualityType": 3,
     "Skills": {
       "Active": null,
@@ -549,7 +549,7 @@
           "Effects": [
             {
               "Id": 8001,
-              "exatk": 70
+              "exatk": 60
             },
             {
               "Id": 8023,
@@ -582,7 +582,7 @@
             },
             {
               "Id": 8017,
-              "exppt": 0.2
+              "exppt": 0.4
             }
           ]
         }
@@ -696,7 +696,7 @@
   "血脉协奏曲": {
     "Id": 11566,
     "Name": "血脉协奏曲",
-    "Description": "增加角色 130 点攻击力。",
+    "Description": "增加角色 90 点攻击力和 10% 生命偷取。",
     "BackgroundStory": "植入了林海树木的荧蓝汁液导管，拳风会随精灵封印节拍闪烁。",
     "ItemType": 1,
     "WeaponType": 10,
@@ -710,8 +710,9 @@
           "SkillType": 3,
           "Effects": [
             {
-              "Id": 8001,
-              "exatk": 130
+              "Id": 8032,
+              "exatk": 90,
+              "exls": 0.1
             }
           ]
         }
@@ -721,7 +722,7 @@
   "真空虹彩": {
     "Id": 11567,
     "Name": "真空虹彩",
-    "Description": "增加角色 130 点攻击力。",
+    "Description": "增加角色 80 点攻击力和 30% 攻击力。",
     "BackgroundStory": "穹顶之泪湖的星辉凝露在法器内分层，每道咒语都折射出肉眼未见的宇宙色谱。",
     "ItemType": 1,
     "WeaponType": 7,
@@ -735,8 +736,9 @@
           "SkillType": 3,
           "Effects": [
             {
-              "Id": 8001,
-              "exatk": 130
+              "Id": 8032,
+              "exatk": 80,
+              "exatk2": 0.3
             }
           ]
         }
@@ -747,9 +749,9 @@
     "Id": 11568,
     "Name": "语律沉默",
     "Description": "增加角色 90 点攻击力和 35% 魔法穿透。",
-    "BackgroundStory": "剑身蚀刻着泰坦调试世界时的废弃词条，挥动时引发语法乱流。",
+    "BackgroundStory": "辉煌的外表上蚀刻着泰坦调试世界时的废弃词条，挥动时引发语法乱流。",
     "ItemType": 1,
-    "WeaponType": 2,
+    "WeaponType": 7,
     "QualityType": 4,
     "Skills": {
       "Active": null,
@@ -813,7 +815,7 @@
           "Effects": [
             {
               "Id": 8032,
-              "exatk": 85,
+              "exatk": 90,
               "excr": 0.2
             }
           ]
@@ -850,7 +852,7 @@
   "金箍棒": {
     "Id": 11572,
     "Name": "金箍棒",
-    "Description": "增加角色 85 点攻击力。克敌机先：普通攻击有 60% 概率无视闪避。",
+    "Description": "增加角色 90 点攻击力。克敌机先：普通攻击有 60% 概率无视闪避。",
     "BackgroundStory": "天河定底神珍棒，棒名如意世间高。",
     "ItemType": 1,
     "WeaponType": 9,
@@ -865,7 +867,7 @@
           "Effects": [
             {
               "Id": 8001,
-              "exatk": 85
+              "exatk": 90
             },
             {
               "Id": 8033,
@@ -1033,6 +1035,32 @@
       ]
     }
   },
+  "终焉之紫荆花": {
+    "Id": 11579,
+    "Name": "终焉之紫荆花",
+    "Description": "增加角色 110 点攻击力和 15% 生命偷取。",
+    "BackgroundStory": "他们看见剑刃绽放的紫荆时，总误以为春天将至。殊不知那千万盛开的花瓣，每一片都刻着古龙冬眠前的最后一个纪元。",
+    "ItemType": 1,
+    "WeaponType": 11,
+    "QualityType": 5,
+    "Skills": {
+      "Active": null,
+      "Passives": [
+        {
+          "Id": 7039,
+          "Name": "终焉之紫荆花",
+          "SkillType": 3,
+          "Effects": [
+            {
+              "Id": 8032,
+              "exatk": 110,
+              "exls": 0.15
+            }
+          ]
+        }
+      ]
+    }
+  },
   "初级法袍": {
     "Id": 12500,
     "Name": "初级法袍",
@@ -1142,7 +1170,7 @@
   "魔能法袍": {
     "Id": 12504,
     "Name": "魔能法袍",
-    "Description": "增加角色 10 点智力和 15% 魔法抗性。",
+    "Description": "增加角色 8 点智力和 8% 魔法抗性。",
     "BackgroundStory": "法袍蕴含着神秘的魔力，穿戴者能增强魔法威力。",
     "ItemType": 2,
     "WeaponType": 0,
@@ -1157,12 +1185,12 @@
           "Effects": [
             {
               "Id": 8005,
-              "exint": 10
+              "exint": 8
             },
             {
               "Id": 8020,
               "mdftype": 0,
-              "mdfvalue": 0.15
+              "mdfvalue": 0.08
             }
           ]
         }
@@ -1172,7 +1200,7 @@
   "炼狱战铠": {
     "Id": 12505,
     "Name": "炼狱战铠",
-    "Description": "增加角色 55 点物理护甲，增加角色 5 点每秒生命回复。",
+    "Description": "增加角色 50 点物理护甲和 5 点每秒生命回复。",
     "BackgroundStory": "在无尽战火中锻造而成，具有极高的防御力。",
     "ItemType": 2,
     "WeaponType": 0,
@@ -1187,7 +1215,7 @@
           "Effects": [
             {
               "Id": 8002,
-              "exdef": 55
+              "exdef": 50
             },
             {
               "Id": 8021,
@@ -1201,7 +1229,7 @@
   "幽影斗篷": {
     "Id": 12506,
     "Name": "幽影斗篷",
-    "Description": "增加角色 55 点物理护甲和 8% 闪避率。",
+    "Description": "增加角色 50 点物理护甲和 8% 闪避率。",
     "BackgroundStory": "黑暗中编织而成的斗篷，能让穿戴者更加敏捷。",
     "ItemType": 2,
     "WeaponType": 0,
@@ -1216,11 +1244,589 @@
           "Effects": [
             {
               "Id": 8002,
-              "exdef": 55
+              "exdef": 50
             },
             {
               "Id": 8016,
               "exer": 0.08
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "泰坦诗戒": {
+    "Id": 12507,
+    "Name": "泰坦诗戒",
+    "Description": "增加角色 70 点物理护甲和 10% 魔法抗性。",
+    "BackgroundStory": "裁决尖碑拓印符文的水晶额冠，雷光在思维间隙谱写创世韵脚。",
+    "ItemType": 2,
+    "WeaponType": 0,
+    "QualityType": 2,
+    "Skills": {
+      "Active": null,
+      "Passives": [
+        {
+          "Id": 7107,
+          "Name": "泰坦诗戒",
+          "SkillType": 3,
+          "Effects": [
+            {
+              "Id": 8032,
+              "exdef": 70,
+              "mdftype": 0,
+              "mdfvalue": 0.10
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "星缎礼赞": {
+    "Id": 12508,
+    "Name": "星缎礼赞",
+    "Description": "增加角色 95 点物理护甲。",
+    "BackgroundStory": "银辉城液态月光凝固的丝绸衬甲，移动时衣褶流淌银河碎影。",
+    "ItemType": 2,
+    "WeaponType": 0,
+    "QualityType": 2,
+    "Skills": {
+      "Active": null,
+      "Passives": [
+        {
+          "Id": 7108,
+          "Name": "星缎礼赞",
+          "SkillType": 3,
+          "Effects": [
+            {
+              "Id": 8032,
+              "exdef": 95
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "千瞳幻纱": {
+    "Id": 12509,
+    "Name": "千瞳幻纱",
+    "Description": "增加角色 14% 魔法抗性。",
+    "BackgroundStory": "千镜湖底抽丝编织的星雾薄纱，倒影中浮动的门扉始终半掩。",
+    "ItemType": 2,
+    "WeaponType": 0,
+    "QualityType": 2,
+    "Skills": {
+      "Active": null,
+      "Passives": [
+        {
+          "Id": 7109,
+          "Name": "千瞳幻纱",
+          "SkillType": 3,
+          "Effects": [
+            {
+              "Id": 8032,
+              "mdftype": 0,
+              "mdfvalue": 0.14
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "时隙沙漏裙": {
+    "Id": 12510,
+    "Name": "时隙沙漏裙",
+    "Description": "增加角色 12% 物理伤害减免和 10% 加速系数。",
+    "BackgroundStory": "昨日之城时光经纬织就的流砂裙摆，每步落下皆绽开石英花。",
+    "ItemType": 2,
+    "WeaponType": 0,
+    "QualityType": 2,
+    "Skills": {
+      "Active": null,
+      "Passives": [
+        {
+          "Id": 7110,
+          "Name": "时隙沙漏裙",
+          "SkillType": 3,
+          "Effects": [
+            {
+              "Id": 8032,
+              "expdr": 0.12,
+              "exacc": 0.1
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "冰魄披肩": {
+    "Id": 12511,
+    "Name": "冰魄披肩",
+    "Description": "增加角色 12% 物理伤害减免和 15% 冷却缩减。",
+    "BackgroundStory": "当你途经战场残影，冰晶会重演她未寄出的诀别信。",
+    "ItemType": 2,
+    "WeaponType": 0,
+    "QualityType": 3,
+    "Skills": {
+      "Active": null,
+      "Passives": [
+        {
+          "Id": 7111,
+          "Name": "冰魄披肩",
+          "SkillType": 3,
+          "Effects": [
+            {
+              "Id": 8032,
+              "expdr": 0.12,
+              "excdr": 0.15
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "炉心丝绸": {
+    "Id": 12512,
+    "Name": "炉心丝绸",
+    "Description": "增加角色 18% 魔法抗性。",
+    "BackgroundStory": "岩浆鱿鱼吞噬老匠人那夜，他未完成的丝绸内甲突然绽放活体金纹。",
+    "ItemType": 2,
+    "WeaponType": 0,
+    "QualityType": 3,
+    "Skills": {
+      "Active": null,
+      "Passives": [
+        {
+          "Id": 7112,
+          "Name": "炉心丝绸",
+          "SkillType": 3,
+          "Effects": [
+            {
+              "Id": 8032,
+              "mdftype": 0,
+              "mdfvalue": 0.18
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "液态月光嫁衣": {
+    "Id": 12513,
+    "Name": "液态月光嫁衣",
+    "Description": "增加角色 125 点物理护甲。",
+    "BackgroundStory": "礼成时衣袂每道流光都在虚空中绘制他消散的轮廓。",
+    "ItemType": 2,
+    "WeaponType": 0,
+    "QualityType": 3,
+    "Skills": {
+      "Active": null,
+      "Passives": [
+        {
+          "Id": 7113,
+          "Name": "液态月光嫁衣",
+          "SkillType": 3,
+          "Effects": [
+            {
+              "Id": 8032,
+              "exdef": 125
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "古树脐带": {
+    "Id": 12514,
+    "Name": "古树脐带",
+    "Description": "增加角色 100 点物理护甲和 10 点力量、敏捷、智力。",
+    "BackgroundStory": "精灵将濒死古龙封印进母树髓心，年轮间泌出的金色树脂，至今仍随龙息涨落闪烁。",
+    "ItemType": 2,
+    "WeaponType": 0,
+    "QualityType": 3,
+    "Skills": {
+      "Active": null,
+      "Passives": [
+        {
+          "Id": 7114,
+          "Name": "古树脐带",
+          "SkillType": 3,
+          "Effects": [
+            {
+              "Id": 8032,
+              "exdef": 100,
+              "exstr": 10,
+              "exagi": 10,
+              "exint": 10
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "千瞳面纱": {
+    "Id": 12515,
+    "Name": "千瞳面纱",
+    "Description": "增加角色 100 点物理护甲和 14% 魔法抗性。",
+    "BackgroundStory": "她为找回溺亡妹妹潜入倒影城，上岸时左眼变成湖水般的银瞳。",
+    "ItemType": 2,
+    "WeaponType": 0,
+    "QualityType": 3,
+    "Skills": {
+      "Active": null,
+      "Passives": [
+        {
+          "Id": 7115,
+          "Name": "千瞳面纱",
+          "SkillType": 3,
+          "Effects": [
+            {
+              "Id": 8032,
+              "exdef": 100,
+              "mdftype": 0,
+              "mdfvalue": 0.14
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "沙时襁褓": {
+    "Id": 12516,
+    "Name": "沙时襁褓",
+    "Description": "增加角色 16% 物理伤害减免。",
+    "BackgroundStory": "她为找回溺亡妹妹潜入倒影城，上岸时左眼变成湖水般的银瞳。",
+    "ItemType": 2,
+    "WeaponType": 0,
+    "QualityType": 3,
+    "Skills": {
+      "Active": null,
+      "Passives": [
+        {
+          "Id": 7116,
+          "Name": "沙时襁褓",
+          "SkillType": 3,
+          "Effects": [
+            {
+              "Id": 8032,
+              "expdr": 0.16
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "星锚襞襟": {
+    "Id": 12517,
+    "Name": "星锚襞襟",
+    "Description": "增加角色 20% 物理伤害减免和 6 点每秒生命回复。",
+    "BackgroundStory": "老守望者纵身跃入星渊，黎明时他的亚麻领巾飘回塔楼，别针已化作微缩星锚。",
+    "ItemType": 2,
+    "WeaponType": 0,
+    "QualityType": 4,
+    "Skills": {
+      "Active": null,
+      "Passives": [
+        {
+          "Id": 7117,
+          "Name": "星锚襞襟",
+          "SkillType": 3,
+          "Effects": [
+            {
+              "Id": 8032,
+              "expdr": 0.20,
+              "exhr": 6
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "母体菌毯": {
+    "Id": 12518,
+    "Name": "母体菌毯",
+    "Description": "增加角色 20% 魔法抗性和 6 点每秒魔法回复。",
+    "BackgroundStory": "她自愿被菌丝吞噬与母体对话，菌群却在她脊背织出春之草原——那是共生意识偷藏的纯粹梦境。",
+    "ItemType": 2,
+    "WeaponType": 0,
+    "QualityType": 4,
+    "Skills": {
+      "Active": null,
+      "Passives": [
+        {
+          "Id": 7118,
+          "Name": "母体菌毯",
+          "SkillType": 3,
+          "Effects": [
+            {
+              "Id": 8032,
+              "mdftype": 0,
+              "mdfvalue": 0.2,
+              "exmr": 6
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "未寄信札": {
+    "Id": 12519,
+    "Name": "未寄信札",
+    "Description": "增加角色 130 点物理护甲和 8% 加速系数、8% 冷却缩减。",
+    "BackgroundStory": "『勿忘春野的第37次绽放』——烙在胸甲内侧的遗书，那些字迹随温度变化浮现。",
+    "ItemType": 2,
+    "WeaponType": 0,
+    "QualityType": 4,
+    "Skills": {
+      "Active": null,
+      "Passives": [
+        {
+          "Id": 7119,
+          "Name": "未寄信札",
+          "SkillType": 3,
+          "Effects": [
+            {
+              "Id": 8032,
+              "exdef": 130,
+              "exacc": 0.08,
+              "excdr": 0.08
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "遗留的绷带": {
+    "Id": 12520,
+    "Name": "遗留的绷带",
+    "Description": "增加角色 130 点物理护甲和 16% 魔法抗性。",
+    "BackgroundStory": "银辉城的老妪用液态月光缝合战争伤口，绷带末端的针还悬着半颗未绣完的彗星。",
+    "ItemType": 2,
+    "WeaponType": 0,
+    "QualityType": 4,
+    "Skills": {
+      "Active": null,
+      "Passives": [
+        {
+          "Id": 7120,
+          "Name": "遗留的绷带",
+          "SkillType": 3,
+          "Effects": [
+            {
+              "Id": 8032,
+              "exdef": 130,
+              "mdftype": 0,
+              "mdfvalue": 0.16
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "吟游诗者的肋骨": {
+    "Id": 12521,
+    "Name": "吟游诗者的肋骨",
+    "Description": "增加角色 155 点物理护甲。",
+    "BackgroundStory": "断口处仿佛标记着《幽灵船安魂曲》的休止符，仍能听到咸腥的海风呼啸。",
+    "ItemType": 2,
+    "WeaponType": 0,
+    "QualityType": 4,
+    "Skills": {
+      "Active": null,
+      "Passives": [
+        {
+          "Id": 7121,
+          "Name": "吟游诗者的肋骨",
+          "SkillType": 3,
+          "Effects": [
+            {
+              "Id": 8032,
+              "exdef": 155
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "精灵封月戒律": {
+    "Id": 12522,
+    "Name": "精灵封月戒律",
+    "Description": "增加角色 24% 魔法抗性。",
+    "BackgroundStory": "当月光流淌到第三根肋骨，冰晶铠甲会浮现古龙的咒文，那是林海在封印时刺入精灵掌心的遗书。",
+    "ItemType": 2,
+    "WeaponType": 0,
+    "QualityType": 4,
+    "Skills": {
+      "Active": null,
+      "Passives": [
+        {
+          "Id": 7122,
+          "Name": "精灵封月戒律",
+          "SkillType": 3,
+          "Effects": [
+            {
+              "Id": 8032,
+              "mdftype": 0,
+              "mdfvalue": 0.24
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "时光的遗嘱": {
+    "Id": 12523,
+    "Name": "时光的遗嘱",
+    "Description": "增加角色 185 点物理护甲。",
+    "BackgroundStory": "冰晶裂帛织就的斗篷，衣摆封印着不同世纪的雪暴，当永霜裂痕哨塔时钟倒转，那些冻结在斗篷中的战士突然举起刀剑，将原主拉入某场未结束的战役。",
+    "ItemType": 2,
+    "WeaponType": 0,
+    "QualityType": 5,
+    "Skills": {
+      "Active": null,
+      "Passives": [
+        {
+          "Id": 7123,
+          "Name": "时光的遗嘱",
+          "SkillType": 3,
+          "Effects": [
+            {
+              "Id": 8032,
+              "exdef": 185
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "流沙时冕": {
+    "Id": 12524,
+    "Name": "流沙时冕",
+    "Description": "增加角色 28% 魔法抗性。",
+    "BackgroundStory": "第十万次沙丘重组后，甲缝里开出早已灭绝的时痕花——它用十二片花瓣重新定义了沙漠的晨昏。",
+    "ItemType": 2,
+    "WeaponType": 0,
+    "QualityType": 5,
+    "Skills": {
+      "Active": null,
+      "Passives": [
+        {
+          "Id": 7124,
+          "Name": "流沙时冕",
+          "SkillType": 3,
+          "Effects": [
+            {
+              "Id": 8032,
+              "mdftype": 0,
+              "mdfvalue": 0.28
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "菌网摇篮": {
+    "Id": 12525,
+    "Name": "菌网摇篮",
+    "Description": "增加角色 160 点物理护甲和 20% 魔法抗性。",
+    "BackgroundStory": "翡翠色菌丝在银质臂甲上编织神经网络，剧毒孢子在肘关节处凝结成婴孩蜷睡的形态。当沼渊毒气弥漫时，菌婴会睁开星眸吹散迷雾。",
+    "ItemType": 2,
+    "WeaponType": 0,
+    "QualityType": 5,
+    "Skills": {
+      "Active": null,
+      "Passives": [
+        {
+          "Id": 7125,
+          "Name": "菌网摇篮",
+          "SkillType": 3,
+          "Effects": [
+            {
+              "Id": 8032,
+              "exdef": 160,
+              "mdftype": 0,
+              "mdfvalue": 0.2
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "骨桥挽歌": {
+    "Id": 12526,
+    "Name": "骨桥挽歌",
+    "Description": "增加角色 24% 物理伤害减免和 15 点力量、敏捷、智力。",
+    "BackgroundStory": "翡翠色菌丝在银质臂甲上编织神经网络，剧毒孢子在肘关节处凝结成婴孩蜷睡的形态。当沼渊毒气弥漫时，菌婴会睁开星眸吹散迷雾。",
+    "ItemType": 2,
+    "WeaponType": 0,
+    "QualityType": 5,
+    "Skills": {
+      "Active": null,
+      "Passives": [
+        {
+          "Id": 7126,
+          "Name": "骨桥挽歌",
+          "SkillType": 3,
+          "Effects": [
+            {
+              "Id": 8032,
+              "expdr": 0.24,
+              "exstr": 15,
+              "exagi": 15,
+              "exint": 15
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "泰坦谬论": {
+    "Id": 12527,
+    "Name": "泰坦谬论",
+    "Description": "增加角色 24% 魔法抗性和 15% 生命偷取。",
+    "BackgroundStory": "额前悬浮的暗铜罗盘持续解离现实，视线所及之处建筑边缘流淌着错误代码。月圆之夜头盔开裂，泄露出泰坦调试世界时废弃的创世草案。",
+    "ItemType": 2,
+    "WeaponType": 0,
+    "QualityType": 5,
+    "Skills": {
+      "Active": null,
+      "Passives": [
+        {
+          "Id": 7127,
+          "Name": "泰坦谬论",
+          "SkillType": 3,
+          "Effects": [
+            {
+              "Id": 8032,
+              "mdftype": 0,
+              "mdfvalue": 0.24,
+              "exls": 0.15
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "棱镜安魂曲": {
+    "Id": 12528,
+    "Name": "棱镜安魂曲",
+    "Description": "增加角色 160 点物理护甲和 15% 生命偷取。",
+    "BackgroundStory": "晶簇里冰封着最后一声狼嚎，穿甲者从此在雾中行走时，步步踏碎永夜的休止符。",
+    "ItemType": 2,
+    "WeaponType": 0,
+    "QualityType": 5,
+    "Skills": {
+      "Active": null,
+      "Passives": [
+        {
+          "Id": 7128,
+          "Name": "棱镜安魂曲",
+          "SkillType": 3,
+          "Effects": [
+            {
+              "Id": 8032,
+              "exdef": 160,
+              "exls": 0.15
             }
           ]
         }
@@ -1239,7 +1845,7 @@
       "Active": null,
       "Passives": [
         {
-          "Id": 7701,
+          "Id": 7201,
           "Name": "帆布鞋",
           "SkillType": 3,
           "Effects": [
@@ -1255,7 +1861,7 @@
   "疾风靴": {
     "Id": 13502,
     "Name": "疾风靴",
-    "Description": "增加角色 85 点行动速度，使穿戴者行动更加敏捷。",
+    "Description": "增加角色 85 点行动速度。",
     "BackgroundStory": "这双靴子由风元素加持，步伐轻盈如风。",
     "ItemType": 3,
     "WeaponType": 0,
@@ -1264,7 +1870,7 @@
       "Active": null,
       "Passives": [
         {
-          "Id": 7702,
+          "Id": 7202,
           "Name": "疾风靴",
           "SkillType": 3,
           "Effects": [
@@ -1280,7 +1886,7 @@
   "轻灵之鞋": {
     "Id": 13503,
     "Name": "轻灵之鞋",
-    "Description": "增加角色 65 点行动速度，并提高 10% 闪避率。",
+    "Description": "增加角色 65 点行动速度和 10% 闪避率。",
     "BackgroundStory": "传说这双鞋能让穿戴者的步伐鬼魅般飘忽不定。",
     "ItemType": 3,
     "WeaponType": 0,
@@ -1289,7 +1895,7 @@
       "Active": null,
       "Passives": [
         {
-          "Id": 7703,
+          "Id": 7203,
           "Name": "轻灵之步",
           "SkillType": 3,
           "Effects": [
@@ -1309,7 +1915,7 @@
   "雷电靴": {
     "Id": 13504,
     "Name": "雷电靴",
-    "Description": "增加角色 65 点行动速度，并提高 10% 冷却缩减。",
+    "Description": "增加角色 65 点行动速度和 10% 冷却缩减。",
     "BackgroundStory": "这双靴子蕴含雷电之力，使穿戴者快速出击。",
     "ItemType": 3,
     "WeaponType": 0,
@@ -1318,7 +1924,7 @@
       "Active": null,
       "Passives": [
         {
-          "Id": 7704,
+          "Id": 7204,
           "Name": "雷霆之速",
           "SkillType": 3,
           "Effects": [
@@ -1338,7 +1944,7 @@
   "暗影之靴": {
     "Id": 13505,
     "Name": "暗影之靴",
-    "Description": "增加角色 48 点行动速度，并提高 8% 暴击率。",
+    "Description": "增加角色 48 点行动速度和 8% 暴击率。",
     "BackgroundStory": "这双鞋在黑暗中隐藏，赋予穿戴者暗影的力量。",
     "ItemType": 3,
     "WeaponType": 0,
@@ -1347,7 +1953,7 @@
       "Active": null,
       "Passives": [
         {
-          "Id": 7705,
+          "Id": 7205,
           "Name": "暗影疾行",
           "SkillType": 3,
           "Effects": [
@@ -1364,10 +1970,557 @@
       ]
     }
   },
+  "月轨巡游靴": {
+    "Id": 13506,
+    "Name": "月轨巡游靴",
+    "Description": "增加角色 95 点行动速度和 20% 智力。",
+    "BackgroundStory": "鞋跟镶嵌悖论引擎残片，踏过建筑时荡漾开环形光漪。",
+    "ItemType": 3,
+    "WeaponType": 0,
+    "QualityType": 2,
+    "Skills": {
+      "Active": null,
+      "Passives": [
+        {
+          "Id": 7206,
+          "Name": "月轨巡游靴",
+          "SkillType": 3,
+          "Effects": [
+            {
+              "Id": 8032,
+              "exspd": 95,
+              "exint2": 0.2
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "冬眠牧歌之踵": {
+    "Id": 13507,
+    "Name": "冬眠牧歌之踵",
+    "Description": "增加角色 80 点行动速度和 16% 暴击伤害。",
+    "BackgroundStory": "冰晶蹄铁包裹精灵封印苔藓，足迹蔓延霜花组成的五线谱。",
+    "ItemType": 3,
+    "WeaponType": 0,
+    "QualityType": 2,
+    "Skills": {
+      "Active": null,
+      "Passives": [
+        {
+          "Id": 7207,
+          "Name": "冬眠牧歌之踵",
+          "SkillType": 3,
+          "Effects": [
+            {
+              "Id": 8032,
+              "exspd": 80,
+              "excrd": 0.16
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "星锚咏叹滑轮": {
+    "Id": 13508,
+    "Name": "星锚咏叹滑轮",
+    "Description": "增加角色 95 点行动速度和 10% 加速系数。",
+    "BackgroundStory": "苍穹碎屿星骸熔铸的汞银滚轮，滑行轨迹牵引彗尾般的光尘。",
+    "ItemType": 3,
+    "WeaponType": 0,
+    "QualityType": 2,
+    "Skills": {
+      "Active": null,
+      "Passives": [
+        {
+          "Id": 7208,
+          "Name": "星锚咏叹滑轮",
+          "SkillType": 3,
+          "Effects": [
+            {
+              "Id": 8032,
+              "exspd": 95,
+              "exacc": 0.1
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "律动共鸣屐": {
+    "Id": 13509,
+    "Name": "律动共鸣屐",
+    "Description": "增加角色 95 点行动速度和 8 点每秒生命回复。",
+    "BackgroundStory": "悲鸣矿脉宝石雕琢的音叉鞋扣，敌人哀嚎转化为疗愈共鸣波。",
+    "ItemType": 3,
+    "WeaponType": 0,
+    "QualityType": 2,
+    "Skills": {
+      "Active": null,
+      "Passives": [
+        {
+          "Id": 7209,
+          "Name": "律动共鸣屐",
+          "SkillType": 3,
+          "Effects": [
+            {
+              "Id": 8032,
+              "exspd": 95,
+              "exhr": 8
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "永劫圆舞靴": {
+    "Id": 13510,
+    "Name": "永劫圆舞靴",
+    "Description": "增加角色 120 点行动速度。",
+    "BackgroundStory": "左履镶嵌永昼晨露右履凝结永夜月髓，旋转时激荡出时光缓冲的涟漪。",
+    "ItemType": 3,
+    "WeaponType": 0,
+    "QualityType": 2,
+    "Skills": {
+      "Active": null,
+      "Passives": [
+        {
+          "Id": 7210,
+          "Name": "永劫圆舞靴",
+          "SkillType": 3,
+          "Effects": [
+            {
+              "Id": 8032,
+              "exspd": 120
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "昨日回响之履": {
+    "Id": 13511,
+    "Name": "昨日回响之履",
+    "Description": "增加角色 125 点行动速度和 15% 冷却缩减。",
+    "BackgroundStory": "流沙时计荒漠的寻宝者陷入昨日之城幻境前，将怀表埋进沙丘，往昔之城在脚踝处投影为指南的虚影。",
+    "ItemType": 3,
+    "WeaponType": 0,
+    "QualityType": 3,
+    "Skills": {
+      "Active": null,
+      "Passives": [
+        {
+          "Id": 7211,
+          "Name": "昨日回响之履",
+          "SkillType": 3,
+          "Effects": [
+            {
+              "Id": 8032,
+              "exspd": 125,
+              "excrd": 0.15
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "悖论舞者足铃": {
+    "Id": 13512,
+    "Name": "悖论舞者足铃",
+    "Description": "增加角色 125 点行动速度和 8 点每秒魔法回复。",
+    "BackgroundStory": "银辉城舞姬踩着悖论引擎裂缝起舞时，液态月光浸染了银铃。",
+    "ItemType": 3,
+    "WeaponType": 0,
+    "QualityType": 3,
+    "Skills": {
+      "Active": null,
+      "Passives": [
+        {
+          "Id": 7212,
+          "Name": "悖论舞者足铃",
+          "SkillType": 3,
+          "Effects": [
+            {
+              "Id": 8032,
+              "exspd": 125,
+              "exmr": 8
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "彗尾巡礼": {
+    "Id": 13513,
+    "Name": "彗尾巡礼",
+    "Description": "增加角色 155 点行动速度。",
+    "BackgroundStory": "她盗取液态月光灌入高跟鞋，逃跑时洒落的银珠在建筑侧面凝固成阶梯，而整座城成为她的舞池。",
+    "ItemType": 3,
+    "WeaponType": 0,
+    "QualityType": 3,
+    "Skills": {
+      "Active": null,
+      "Passives": [
+        {
+          "Id": 7213,
+          "Name": "彗尾巡礼",
+          "SkillType": 3,
+          "Effects": [
+            {
+              "Id": 8032,
+              "exspd": 155
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "冬韵回声": {
+    "Id": 13514,
+    "Name": "冬韵回声",
+    "Description": "增加角色 100 点行动速度和 15% 暴击率。",
+    "BackgroundStory": "春季融雪时分，冰晶跌落声恰是古龙梦中的呼噜节奏。",
+    "ItemType": 3,
+    "WeaponType": 0,
+    "QualityType": 3,
+    "Skills": {
+      "Active": null,
+      "Passives": [
+        {
+          "Id": 7214,
+          "Name": "冬韵回声",
+          "SkillType": 3,
+          "Effects": [
+            {
+              "Id": 8032,
+              "exspd": 100,
+              "excr": 0.15
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "渊虹跃步": {
+    "Id": 13515,
+    "Name": "渊虹跃步",
+    "Description": "增加角色 125 点行动速度和 10% 魔法穿透。",
+    "BackgroundStory": "花蕊里沉睡着未渡之魂。",
+    "ItemType": 3,
+    "WeaponType": 0,
+    "QualityType": 3,
+    "Skills": {
+      "Active": null,
+      "Passives": [
+        {
+          "Id": 7215,
+          "Name": "渊虹跃步",
+          "SkillType": 3,
+          "Effects": [
+            {
+              "Id": 8032,
+              "exspd": 125,
+              "exmpt": 0.1
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "悖论圆舞": {
+    "Id": 13516,
+    "Name": "悖论圆舞",
+    "Description": "增加角色 125 点行动速度和 15% 加速系数。",
+    "BackgroundStory": "观众说她的舞步撕裂现实，却不知缎鞋每次点地都在不同时空。",
+    "ItemType": 3,
+    "WeaponType": 0,
+    "QualityType": 3,
+    "Skills": {
+      "Active": null,
+      "Passives": [
+        {
+          "Id": 7216,
+          "Name": "悖论圆舞",
+          "SkillType": 3,
+          "Effects": [
+            {
+              "Id": 8032,
+              "exspd": 125,
+              "exacc": 0.15
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "月光潮信": {
+    "Id": 13517,
+    "Name": "月光潮信",
+    "Description": "增加角色 155 点行动速度和 10% 魔法抗性。",
+    "BackgroundStory": "靴面流淌着鲸落蓝的磷火，每当踏上骸骨桥梁，鞋跟便敲击出管风琴般的低鸣。",
+    "ItemType": 3,
+    "WeaponType": 0,
+    "QualityType": 4,
+    "Skills": {
+      "Active": null,
+      "Passives": [
+        {
+          "Id": 7217,
+          "Name": "月光潮信",
+          "SkillType": 3,
+          "Effects": [
+            {
+              "Id": 8032,
+              "exspd": 155,
+              "mdftype": 0,
+              "mdfvalue": 0.1
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "心跳图谱": {
+    "Id": 13518,
+    "Name": "心跳图谱",
+    "Description": "增加角色 185 点行动速度。",
+    "BackgroundStory": "被惊动的晶簇守卫不再攻击，反而跟随靴印的韵律跳起机械圆舞，矿道疼痛化为深紫色的探戈节奏。",
+    "ItemType": 3,
+    "WeaponType": 0,
+    "QualityType": 4,
+    "Skills": {
+      "Active": null,
+      "Passives": [
+        {
+          "Id": 7218,
+          "Name": "心跳图谱",
+          "SkillType": 3,
+          "Effects": [
+            {
+              "Id": 8032,
+              "exspd": 185
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "凝霜邮路": {
+    "Id": 13519,
+    "Name": "凝霜邮路",
+    "Description": "增加角色 130 点行动速度和 30% 暴击伤害。",
+    "BackgroundStory": "鹿皮鞣制的靴筒沁出冷雾，踏过冰面时凝结出冰蔷薇驿站。",
+    "ItemType": 3,
+    "WeaponType": 0,
+    "QualityType": 4,
+    "Skills": {
+      "Active": null,
+      "Passives": [
+        {
+          "Id": 7219,
+          "Name": "凝霜邮路",
+          "SkillType": 3,
+          "Effects": [
+            {
+              "Id": 8032,
+              "exspd": 130,
+              "excrd": 0.3
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "镜语者的倒影": {
+    "Id": 13520,
+    "Name": "镜语者的倒影",
+    "Description": "增加角色 155 点行动速度和 10 点力量、敏捷、智力。",
+    "BackgroundStory": "鹿皮鞣制的靴筒沁出冷雾，踏过冰面时凝结出冰蔷薇驿站。",
+    "ItemType": 3,
+    "WeaponType": 0,
+    "QualityType": 4,
+    "Skills": {
+      "Active": null,
+      "Passives": [
+        {
+          "Id": 7220,
+          "Name": "镜语者的倒影",
+          "SkillType": 3,
+          "Effects": [
+            {
+              "Id": 8032,
+              "exspd": 155,
+              "exstr": 10,
+              "exagi": 10,
+              "exint": 10
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "影狼祭司的声纹": {
+    "Id": 13521,
+    "Name": "影狼祭司的声纹",
+    "Description": "增加角色 155 点行动速度和 20% 加速系数。",
+    "BackgroundStory": "以水晶为弦柱，以嚎叫为弓，可把整片红杉林调律成驱散雾气的巨型音叉。",
+    "ItemType": 3,
+    "WeaponType": 0,
+    "QualityType": 4,
+    "Skills": {
+      "Active": null,
+      "Passives": [
+        {
+          "Id": 7221,
+          "Name": "影狼祭司的声纹",
+          "SkillType": 3,
+          "Effects": [
+            {
+              "Id": 8032,
+              "exspd": 155,
+              "exacc": 0.20
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "永恒婚礼": {
+    "Id": 13522,
+    "Name": "永恒婚礼",
+    "Description": "增加角色 220 点行动速度。",
+    "BackgroundStory": "当昼夜切换湮灭将至，鞋尖交织出婚戒状光轮，于时光断层中开辟出三秒的栖身花园。",
+    "ItemType": 3,
+    "WeaponType": 0,
+    "QualityType": 5,
+    "Skills": {
+      "Active": null,
+      "Passives": [
+        {
+          "Id": 7222,
+          "Name": "永恒婚礼",
+          "SkillType": 3,
+          "Effects": [
+            {
+              "Id": 8032,
+              "exspd": 220
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "髓海轮迹": {
+    "Id": 13523,
+    "Name": "髓海轮迹",
+    "Description": "增加角色 185 点行动速度和 25% 加速系数。",
+    "BackgroundStory": "鲸椎骨雕琢的滚轮浸透骨髓冷光，碾过虚空时留下幽蓝冰痕。",
+    "ItemType": 3,
+    "WeaponType": 0,
+    "QualityType": 5,
+    "Skills": {
+      "Active": null,
+      "Passives": [
+        {
+          "Id": 7223,
+          "Name": "髓海轮迹",
+          "SkillType": 3,
+          "Effects": [
+            {
+              "Id": 8032,
+              "exspd": 185,
+              "exacc": 0.25
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "裂痕里的哨兵": {
+    "Id": 13524,
+    "Name": "裂痕里的哨兵",
+    "Description": "增加角色 160 点行动速度和 22% 暴击率。",
+    "BackgroundStory": "鞋跟嵌着冻结的时霜药滴，步伐间甩出冰晶沙粒。若在时钟哨塔倒转时起舞，鞋尖将滋生半透明的时间肿瘤，瘤内封存着穿戴者昨日的身影。",
+    "ItemType": 3,
+    "WeaponType": 0,
+    "QualityType": 5,
+    "Skills": {
+      "Active": null,
+      "Passives": [
+        {
+          "Id": 7224,
+          "Name": "裂痕里的哨兵",
+          "SkillType": 3,
+          "Effects": [
+            {
+              "Id": 8032,
+              "exspd": 160,
+              "excr": 0.22
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "谵妄探戈": {
+    "Id": 13525,
+    "Name": "谵妄探戈",
+    "Description": "增加角色 160 点行动速度和 44% 暴击伤害。",
+    "BackgroundStory": "鞋面流动着虹彩毒雾，每个鞋印都盛开致幻鸢尾。当思维寄生虫逼近，迷雾中伸出无数苍白手臂，牵引穿戴者跳出规避神经寄生的亡命舞步。",
+    "ItemType": 3,
+    "WeaponType": 0,
+    "QualityType": 5,
+    "Skills": {
+      "Active": null,
+      "Passives": [
+        {
+          "Id": 7225,
+          "Name": "谵妄探戈",
+          "SkillType": 3,
+          "Effects": [
+            {
+              "Id": 8032,
+              "exspd": 160,
+              "excrd": 0.44
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "母体脐滑屐": {
+    "Id": 13526,
+    "Name": "母体脐滑屐",
+    "Description": "增加角色 185 点行动速度和 15 点力量、敏捷、智力。",
+    "BackgroundStory": "它教你在深渊行走如履襁褓，菌丝每一寸伸展都在复刻母体失落的胞宫记忆。",
+    "ItemType": 3,
+    "WeaponType": 0,
+    "QualityType": 5,
+    "Skills": {
+      "Active": null,
+      "Passives": [
+        {
+          "Id": 7226,
+          "Name": "母体脐滑屐",
+          "SkillType": 3,
+          "Effects": [
+            {
+              "Id": 8032,
+              "exspd": 185,
+              "exstr": 15,
+              "exagi": 15,
+              "exint": 15
+            }
+          ]
+        }
+      ]
+    }
+  },
   "守护吊坠": {
     "Id": 14501,
     "Name": "守护吊坠",
-    "Description": "增加角色 4 点所有力量、敏捷、智力。",
+    "Description": "增加角色 4 点力量、敏捷、智力。",
     "BackgroundStory": "带着一丝丝念想。",
     "ItemType": 4,
     "WeaponType": 0,
@@ -1483,7 +2636,7 @@
   "银质手环": {
     "Id": 14505,
     "Name": "银质手环",
-    "Description": "增加角色 8 点所有力量、敏捷、智力。",
+    "Description": "增加角色 8 点力量、敏捷、智力。",
     "BackgroundStory": "素雅精致的银质手环。",
     "ItemType": 4,
     "WeaponType": 0,
@@ -1680,7 +2833,7 @@
             },
             {
               "Id": 8023,
-              "exatk": 0.15
+              "exatk": 0.10
             }
           ]
         }
@@ -1799,6 +2952,334 @@
             {
               "Id": 8015,
               "excrd": 0.4
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "星穹智核": {
+    "Id": 14516,
+    "Name": "星穹智核",
+    "Description": "增加角色 25% 智力和 10% 冷却缩减。",
+    "BackgroundStory": "银辉城核心「悖论引擎」的微型碎片，在星辰的辉光下被锻造成型，仿佛将整个星穹的智慧凝于一点。",
+    "ItemType": 4,
+    "WeaponType": 0,
+    "QualityType": 3,
+    "Skills": {
+      "Active": null,
+      "Passives": [
+        {
+          "Id": 7316,
+          "Name": "星穹智核",
+          "SkillType": 3,
+          "Effects": [
+            {
+              "Id": 8032,
+              "exint2": 0.25,
+              "excdr": 0.1
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "林海律动之心": {
+    "Id": 14517,
+    "Name": "林海律动之心",
+    "Description": "增加角色 5% 最大生命值和 10 点每秒生命回复。",
+    "BackgroundStory": "瑟兰薇歌林海深处，古老树木的生命精华与旋律古龙的低语交织，凝结成这颗荧蓝色的晶体。它跳动着森林的原始脉搏，每一次律动都为佩戴者注入源源不断的生机，使其与大地的根脉相连，坚不可摧。",
+    "ItemType": 4,
+    "WeaponType": 0,
+    "QualityType": 3,
+    "Skills": {
+      "Active": null,
+      "Passives": [
+        {
+          "Id": 7317,
+          "Name": "林海律动之心",
+          "SkillType": 3,
+          "Effects": [
+            {
+              "Id": 8032,
+              "exhp2": 0.05,
+              "exhr": 10
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "时空裂痕之眼": {
+    "Id": 14518,
+    "Name": "时空裂痕之眼",
+    "Description": "增加角色 12% 物理穿透和 8% 魔法穿透。",
+    "BackgroundStory": "永霜裂痕中，由无数冰封的战争残影与扭曲的时空碎片凝聚而成。佩戴者能从中窥见时间的缝隙，预判命运的轨迹，仿佛拥有了时空扭曲者的部分洞察力，让敌人在眼前化为虚无。",
+    "ItemType": 4,
+    "WeaponType": 0,
+    "QualityType": 3,
+    "Skills": {
+      "Active": null,
+      "Passives": [
+        {
+          "Id": 7318,
+          "Name": "时空裂痕之眼",
+          "SkillType": 3,
+          "Effects": [
+            {
+              "Id": 8032,
+              "exppt": 0.12,
+              "exmpt": 0.08
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "炽心熔炉": {
+    "Id": 14519,
+    "Name": "炽心熔炉",
+    "Description": "增加角色 25% 敏捷和 10% 加速系数。",
+    "BackgroundStory": "永燃坩埚的核心，由最纯粹的深渊火钻与活体金属苔藓在岩浆的洗礼下铸就。它燃烧着不灭的锻造之火，将佩戴者的意志与熔岩巨兽的蛮力融为一体，每一次挥击都带着足以融化钢铁的炽热威能。",
+    "ItemType": 4,
+    "WeaponType": 0,
+    "QualityType": 3,
+    "Skills": {
+      "Active": null,
+      "Passives": [
+        {
+          "Id": 7319,
+          "Name": "炽心熔炉",
+          "SkillType": 3,
+          "Effects": [
+            {
+              "Id": 8032,
+              "exagi2": 0.25,
+              "exacc": 0.1
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "畸变利刃": {
+    "Id": 14520,
+    "Name": "畸变利刃",
+    "Description": "增加角色 25% 力量和 5% 生命偷取。",
+    "BackgroundStory": "齿与血回廊的残酷产物，由被强制改造的闯入者最坚韧的骨骼与活体魔力血浸染而成。它不再是单纯的骨骼，而是承载着无尽痛苦与扭曲意志的锋刃。",
+    "ItemType": 4,
+    "WeaponType": 0,
+    "QualityType": 3,
+    "Skills": {
+      "Active": null,
+      "Passives": [
+        {
+          "Id": 7320,
+          "Name": "畸变利刃",
+          "SkillType": 3,
+          "Effects": [
+            {
+              "Id": 8032,
+              "exstr2": 0.25,
+              "exls": 0.05
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "虚空行者的残章": {
+    "Id": 14521,
+    "Name": "虚空行者的残章",
+    "Description": "增加角色 18% 智力，减少所有主动技能 2 秒硬直时间，但会减少 30% 物理护甲。",
+    "BackgroundStory": "一本失落的古老游记残篇，据传由一位曾漫游于虚空边缘的学者所著。它曾被遗弃在千瞳镜湖的深处，后被骨桥深渊的幽灵船队偶然拾起。",
+    "ItemType": 4,
+    "WeaponType": 0,
+    "QualityType": 3,
+    "Skills": {
+      "Active": null,
+      "Passives": [
+        {
+          "Id": 7321,
+          "Name": "虚空行者的残章",
+          "SkillType": 3,
+          "Effects": [
+            {
+              "Id": 8032,
+              "exint2": 0.18,
+              "shtr": -2,
+              "exdef2": -0.3
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "永燃之心": {
+    "Id": 14522,
+    "Name": "永燃之心",
+    "Description": "增加角色 20% 攻击力和 20% 暴击伤害，但是会减少 10% 魔法抗性。",
+    "BackgroundStory": "在永燃坩埚的深处，熔岩之王的心脏在无尽的火焰中锤炼而成。据说其诞生之初，赫菲斯托斯之喉的火山都为之颤抖，喷涌出前所未有的深渊火钻。",
+    "ItemType": 4,
+    "WeaponType": 0,
+    "QualityType": 3,
+    "Skills": {
+      "Active": null,
+      "Passives": [
+        {
+          "Id": 7322,
+          "Name": "永燃之心",
+          "SkillType": 3,
+          "Effects": [
+            {
+              "Id": 8032,
+              "exatk2": 0.20,
+              "excrd": 0.20,
+              "mdftype": 0,
+              "mdfvalue": -0.1
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "时之沙漏": {
+    "Id": 14523,
+    "Name": "时之沙漏",
+    "Description": "增加角色 80 点行动速度和 10% 冷却缩减、10% 加速系数，减少 10% 普通攻击和主动技能的硬直时间；但是会减少 10% 闪避率和 5% 物理伤害减免、5% 魔法抗性。",
+    "BackgroundStory": "在永霜裂痕的冰封记忆中，曾有记载一位时空扭曲者手持此物，在时间洪流中穿梭自如。",
+    "ItemType": 4,
+    "WeaponType": 0,
+    "QualityType": 3,
+    "Skills": {
+      "Active": null,
+      "Passives": [
+        {
+          "Id": 7323,
+          "Name": "时之沙漏",
+          "SkillType": 3,
+          "Effects": [
+            {
+              "Id": 8032,
+              "exspd": 80,
+              "excdr": 0.1,
+              "exacc": 0.1,
+              "nahtr2": 0.1,
+              "shtr2": 0.1,
+              "exer": -0.1,
+              "expdr": -0.05,
+              "mdftype": 0,
+              "mdfvalue": -0.05
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "苍穹之泪": {
+    "Id": 14524,
+    "Name": "苍穹之泪",
+    "Description": "增加角色 15% 最大魔法值，增加角色 10% 魔法穿透，但是会增加所有主动技能 2 秒硬直时间。",
+    "BackgroundStory": "这滴泪水曾坠入穹顶之泪湖，引发了星辉水母群的重力法则异变。",
+    "ItemType": 4,
+    "WeaponType": 0,
+    "QualityType": 3,
+    "Skills": {
+      "Active": null,
+      "Passives": [
+        {
+          "Id": 7324,
+          "Name": "苍穹之泪",
+          "SkillType": 3,
+          "Effects": [
+            {
+              "Id": 8032,
+              "exmp2": 0.15,
+              "exmpt": 0.10,
+              "shtr": -2
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "悲鸣矿核": {
+    "Id": 14525,
+    "Name": "悲鸣矿核",
+    "Description": "增加角色 20% 物理穿透和 10% 生命偷取，但是会减少 10% 攻击力和 10% 最大生命值。",
+    "BackgroundStory": "悲鸣矿脉深处，由无数神经宝石与矿脉神经纤维交织而成的核心。曾有传闻，齿与血回廊的造物车间曾试图将其改造，但最终以失败告终，只因其内部的悲鸣之力过于强大。",
+    "ItemType": 4,
+    "WeaponType": 0,
+    "QualityType": 3,
+    "Skills": {
+      "Active": null,
+      "Passives": [
+        {
+          "Id": 7325,
+          "Name": "悲鸣矿核",
+          "SkillType": 3,
+          "Effects": [
+            {
+              "Id": 8032,
+              "exppt": 0.20,
+              "exls": 0.1,
+              "exatk2": -0.1,
+              "exhp2": -0.1
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "泰坦回响之核": {
+    "Id": 14526,
+    "Name": "泰坦回响之核",
+    "Description": "增加角色 22 点力量、敏捷、智力。",
+    "BackgroundStory": "在雷霆王座山脉的裁决尖碑下发现的古老核心，其中封印着泰坦巨神在创世之初留下的回响。",
+    "ItemType": 4,
+    "WeaponType": 0,
+    "QualityType": 4,
+    "Skills": {
+      "Active": null,
+      "Passives": [
+        {
+          "Id": 7326,
+          "Name": "泰坦回响之核",
+          "SkillType": 3,
+          "Effects": [
+            {
+              "Id": 8032,
+              "exstr": 22,
+              "exagi": 22,
+              "exint": 22
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "虚空低语之石": {
+    "Id": 14527,
+    "Name": "虚空低语之石",
+    "Description": "增加角色 25% 生命偷取，增加角色 25% 攻击力，但是会减少 10% 最大魔法值和 10% 闪避率。",
+    "BackgroundStory": "一块从骨桥深渊中被无尽虚空能量侵蚀的诡异奇石。它无声地发出诱惑的低语，散发着吞噬一切的原始欲望。",
+    "ItemType": 4,
+    "WeaponType": 0,
+    "QualityType": 4,
+    "Skills": {
+      "Active": null,
+      "Passives": [
+        {
+          "Id": 7327,
+          "Name": "虚空低语之石",
+          "SkillType": 3,
+          "Effects": [
+            {
+              "Id": 8032,
+              "exls": 0.25,
+              "exatk2": 0.25,
+              "exmp2": -0.1,
+              "exer": -0.1
             }
           ]
         }

@@ -44,7 +44,7 @@ namespace Oshima.FunGame.OshimaServers.Service
 
             Dictionary<string, Item> exItems = Factory.GetGameModuleInstances<Item>(OshimaGameModuleConstant.General, OshimaGameModuleConstant.Item);
             FunGameConstant.Equipment.AddRange(exItems.Values.Where(i => (int)i.ItemType >= 0 && (int)i.ItemType < 5));
-            FunGameConstant.Equipment.AddRange([new 攻击之爪10(), new 攻击之爪20(), new 攻击之爪30(), new 攻击之爪40()]);
+            FunGameConstant.Equipment.AddRange([new 攻击之爪10(), new 攻击之爪25(), new 攻击之爪40(), new 攻击之爪55(), new 攻击之爪70(), new 攻击之爪85()]);
 
             FunGameConstant.Items.AddRange(exItems.Values.Where(i => (int)i.ItemType > 4));
             FunGameConstant.Items.AddRange([new 小经验书(), new 中经验书(), new 大经验书(), new 升华之印(), new 流光之印(), new 永恒之印(), new 技能卷轴(), new 智慧之果(), new 奥术符文(), new 混沌之核(),
@@ -111,13 +111,15 @@ namespace Oshima.FunGame.OshimaServers.Service
                     QualityType.Blue => Random.Shared.Next(13, 19),
                     QualityType.Purple => Random.Shared.Next(19, 25),
                     QualityType.Orange => Random.Shared.Next(25, 31),
+                    QualityType.Red => Random.Shared.Next(31, 37),
+                    QualityType.Gold => Random.Shared.Next(37, 43),
                     _ => Random.Shared.Next(1, 7)
                 };
                 item.QualityType = (QualityType)qualityType;
             }
             else
             {
-                total = Random.Shared.Next(1, 31);
+                total = Random.Shared.Next(1, 43);
                 if (total > 6 && total <= 12)
                 {
                     item.QualityType = QualityType.Green;
@@ -133,6 +135,14 @@ namespace Oshima.FunGame.OshimaServers.Service
                 else if (total > 24 && total <= 30)
                 {
                     item.QualityType = QualityType.Orange;
+                }
+                else if (total > 30 && total <= 36)
+                {
+                    item.QualityType = QualityType.Red;
+                }
+                else if (total > 36 && total <= 42)
+                {
+                    item.QualityType = QualityType.Gold;
                 }
             }
 
@@ -150,8 +160,8 @@ namespace Oshima.FunGame.OshimaServers.Service
                 2 => 2,
                 3 => 2,
                 4 => 3,
-                5 => 3,
-                6 => 4,
+                5 => 4,
+                6 => 5,
                 _ => 1
             };
             if (magic.Level > 1)
@@ -360,6 +370,14 @@ namespace Oshima.FunGame.OshimaServers.Service
                 else if (total > 72 && total <= 90)
                 {
                     item.QualityType = QualityType.Orange;
+                }
+                else if (total > 90 && total <= 108)
+                {
+                    item.QualityType = QualityType.Red;
+                }
+                else if (total > 108)
+                {
+                    item.QualityType = QualityType.Gold;
                 }
                 return item;
             }
@@ -1305,7 +1323,7 @@ namespace Oshima.FunGame.OshimaServers.Service
                     int naLevel = General.GameplayEquilibriumConstant.MaxNormalAttackLevel / cutRate;
                     boss.Level = cLevel;
                     boss.NormalAttack.Level = naLevel;
-                    boss.NormalAttack.HardnessTime = 6;
+                    boss.NormalAttack.ExHardnessTime = -4;
                     Item[] weapons = [.. FunGameConstant.Equipment.Where(i => i.Id.ToString().StartsWith("11") && (int)i.QualityType == 4)];
                     Item[] armors = [.. FunGameConstant.Equipment.Where(i => i.Id.ToString().StartsWith("12") && (int)i.QualityType == 1)];
                     Item[] shoes = [.. FunGameConstant.Equipment.Where(i => i.Id.ToString().StartsWith("13") && (int)i.QualityType == 1)];

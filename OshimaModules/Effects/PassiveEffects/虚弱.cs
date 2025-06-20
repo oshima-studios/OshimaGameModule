@@ -71,14 +71,14 @@ namespace Oshima.FunGame.OshimaModules.Effects.PassiveEffects
                 RemainDurationTurn = DurationTurn;
             }
             character.ExDEFPercentage -= _DEFReductionPercent;
-            character.MDF.AddAllValue(-_MDFReductionPercent);
+            character.MDF[character.MagicType] -= _MDFReductionPercent;
             AddEffectTypeToCharacter(character, [EffectType.Weaken, EffectType.GrievousWound]);
         }
 
         public override void OnEffectLost(Character character)
         {
             character.ExDEFPercentage += _DEFReductionPercent;
-            character.MDF.AddAllValue(_MDFReductionPercent);
+            character.MDF[character.MagicType] += _MDFReductionPercent;
             RemoveEffectTypesFromCharacter(character);
         }
     }

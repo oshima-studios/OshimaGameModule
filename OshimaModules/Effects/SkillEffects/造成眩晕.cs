@@ -34,7 +34,7 @@ namespace Oshima.FunGame.OshimaModules.Effects.SkillEffects
             {
                 if (enemy.HP <= 0) continue;
                 WriteLine($"[ {caster} ] 眩晕了 [ {enemy} ] ！持续时间：{眩晕时间}！");
-                眩晕 e = new(Skill, caster, _durative, _duration, _durationTurn);
+                眩晕 e = new(Skill, caster, _durative, _duration + _levelGrowth * (Level - 1), Convert.ToInt32(_durationTurn + _levelGrowth * (Level - 1)));
                 enemy.Effects.Add(e);
                 e.OnEffectGained(enemy);
                 GamingQueue?.LastRound.ApplyEffects.TryAdd(enemy, [e.EffectType]);
