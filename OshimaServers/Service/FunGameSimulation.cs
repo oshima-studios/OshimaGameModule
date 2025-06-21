@@ -125,6 +125,10 @@ namespace Oshima.FunGame.OshimaServers.Service
                             Level = slevel
                         };
                         c.Skills.Add(疾风步);
+                        foreach (Effect e in c.Effects)
+                        {
+                            e.OnEffectLost(c);
+                        }
                     }
 
                     // 创建顺序表并排序
@@ -201,9 +205,8 @@ namespace Oshima.FunGame.OshimaServers.Service
                     // 显示角色信息
                     if (PrintOut) characters.ForEach(c => Console.WriteLine(c.GetInfo()));
 
-                    // 因赋予了装备，所以清除排序重新排
-                    actionQueue.ClearQueue();
-                    actionQueue.InitCharacterQueue(characters);
+                    // 初始化队列，准备开始游戏
+                    actionQueue.InitActionQueue();
                     actionQueue.SetCharactersToAIControl(false, characters);
                     if (PrintOut) Console.WriteLine();
 
@@ -226,7 +229,7 @@ namespace Oshima.FunGame.OshimaServers.Service
                             user.Username = FunGameService.GenerateRandomChineseUserName();
                             user.Inventory.Credits = 20;
                             Character thisCharacter = shuffledCharacters[cid];
-                            thisCharacter.User = user;
+                            //thisCharacter.User = user;
 
                             if (cid % 2 == 0)
                             {
@@ -238,9 +241,9 @@ namespace Oshima.FunGame.OshimaServers.Service
                             }
                         }
 
-                        // 添加到团队字典，第一个用户为队长
-                        tg.AddTeam($"{group1.First().User.Username}的小队", group1);
-                        tg.AddTeam($"{group2.First().User.Username}的小队", group2);
+                        // 添加到团队字典，第一个为队长
+                        tg.AddTeam($"{group1.First()}的小队", group1);
+                        tg.AddTeam($"{group2.First()}的小队", group2);
 
                         foreach (string team in tg.Teams.Keys)
                         {

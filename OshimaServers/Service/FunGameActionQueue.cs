@@ -35,6 +35,7 @@ namespace Oshima.FunGame.OshimaServers.Service
                     MaxRespawnTimes = maxRespawnTimes,
                     MaxScoreToWin = maxScoreToWin
                 };
+                actionQueue.InitActionQueue();
                 actionQueue.SetCharactersToAIControl(false, characters);
                 foreach (Character dead in characters)
                 {
@@ -251,6 +252,7 @@ namespace Oshima.FunGame.OshimaServers.Service
                         MaxRespawnTimes = maxRespawnTimes,
                         MaxScoreToWin = maxScoreToWin
                     };
+                    actionQueue.InitActionQueue();
                     actionQueue.SetCharactersToAIControl(false, characters);
                     foreach (Character dead in characters)
                     {

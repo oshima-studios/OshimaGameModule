@@ -40,10 +40,7 @@ namespace Oshima.FunGame.OshimaModules.Skills
 
         public override void OnEffectLost(Character character)
         {
-            if (character.PrimaryAttribute == PrimaryAttribute.INT)
-            {
-                ResetEffect(character, false);
-            }
+            ResetEffect(character, false);
         }
 
         private void ResetEffect(Character character, bool isAdd)
@@ -107,10 +104,7 @@ namespace Oshima.FunGame.OshimaModules.Skills
                         c.ExINT -= 交换的基础智力;
                         c.ExSTR += 交换的基础智力;
                         c.Recovery(pastHP, pastMP, pastMaxHP, pastMaxMP);
-                        if (已经加过)
-                        {
-                            ResetEffect(character, false);
-                        }
+                        ResetEffect(character, false);
                     }
                 }
                 else
@@ -126,10 +120,7 @@ namespace Oshima.FunGame.OshimaModules.Skills
                         c.ExINT += 交换的基础智力;
                         交换的基础智力 = 0;
                         c.Recovery(pastHP, pastMP, pastMaxHP, pastMaxMP);
-                        if (!已经加过)
-                        {
-                            ResetEffect(character, true);
-                        }
+                        ResetEffect(character, true);
                     }
                 }
             }

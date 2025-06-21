@@ -171,6 +171,7 @@ namespace Oshima.FunGame.OshimaServers
                 {
                     SendAllGamingMessage(obj, data, str);
                 });
+                actionQueue.InitActionQueue();
                 actionQueue.SetCharactersToAIControl(false, inGameCharacters);
 
                 // 总游戏时长
