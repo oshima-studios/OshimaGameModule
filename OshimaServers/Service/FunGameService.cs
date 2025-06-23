@@ -1306,6 +1306,11 @@ namespace Oshima.FunGame.OshimaServers.Service
             {
                 int genCount = 10 - Bosses.Count;
 
+                Item[] weapons = [.. FunGameConstant.Equipment.Where(i => i.Id.ToString().StartsWith("11") && (int)i.QualityType == 5)];
+                Item[] armors = [.. FunGameConstant.Equipment.Where(i => i.Id.ToString().StartsWith("12") && (int)i.QualityType == 5)];
+                Item[] shoes = [.. FunGameConstant.Equipment.Where(i => i.Id.ToString().StartsWith("13") && (int)i.QualityType == 5)];
+                Item[] accessory = [.. FunGameConstant.Equipment.Where(i => i.Id.ToString().StartsWith("14") && (int)i.QualityType == 4)];
+                Item[] consumables = [.. FunGameConstant.AllItems.Where(i => i.ItemType == ItemType.Consumable && i.IsInGameItem)];
                 for (int i = 0; i < genCount; i++)
                 {
                     int nowIndex = Bosses.Count > 0 ? Bosses.Keys.Max() + 1 : 1;
@@ -1324,10 +1329,6 @@ namespace Oshima.FunGame.OshimaServers.Service
                     boss.Level = cLevel;
                     boss.NormalAttack.Level = naLevel;
                     boss.NormalAttack.ExHardnessTime = -4;
-                    Item[] weapons = [.. FunGameConstant.Equipment.Where(i => i.Id.ToString().StartsWith("11") && (int)i.QualityType == 4)];
-                    Item[] armors = [.. FunGameConstant.Equipment.Where(i => i.Id.ToString().StartsWith("12") && (int)i.QualityType == 1)];
-                    Item[] shoes = [.. FunGameConstant.Equipment.Where(i => i.Id.ToString().StartsWith("13") && (int)i.QualityType == 1)];
-                    Item[] accessory = [.. FunGameConstant.Equipment.Where(i => i.Id.ToString().StartsWith("14") && (int)i.QualityType == 3)];
                     Item? a = null, b = null, c = null, d = null, d2 = null;
                     if (weapons.Length > 0)
                     {
@@ -1358,7 +1359,7 @@ namespace Oshima.FunGame.OshimaServers.Service
                     Item? magicCardPack = GenerateMagicCardPack(5, (QualityType)4);
                     if (magicCardPack != null)
                     {
-                        magicCardPack.QualityType = QualityType.Red;
+                        magicCardPack.QualityType = QualityType.Gold;
                         foreach (Skill magic in magicCardPack.Skills.Magics)
                         {
                             magic.Level = mLevel;
@@ -1369,6 +1370,14 @@ namespace Oshima.FunGame.OshimaServers.Service
                     {
                         Item realItem = item.Copy();
                         boss.Equip(realItem);
+                    }
+                    if (consumables.Length > 0 && boss.Items.Count < 5)
+                    {
+                        for (int j = 0; j < 2; j++)
+                        {
+                            Item consumable = consumables[Random.Shared.Next(consumables.Length)].Copy();
+                            boss.Items.Add(consumable);
+                        }
                     }
                     Skill bossSkill = Factory.OpenFactory.GetInstance<Skill>(0, "BOSS专属被动", []);
                     bossSkill.Level = 1;

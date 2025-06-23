@@ -1007,7 +1007,7 @@ namespace Oshima.FunGame.OshimaServers.Service
             Item[] shoes = [.. FunGameConstant.Equipment.Where(i => i.Id.ToString().StartsWith("13") && (int)i.QualityType == sQuality)];
             Item[] accessories = [.. FunGameConstant.Equipment.Where(i => i.Id.ToString().StartsWith("14") && (int)i.QualityType == acQuality)];
             Item[] consumables = [.. FunGameConstant.AllItems.Where(i => i.ItemType == ItemType.Consumable && i.IsInGameItem)];
-            foreach (Character character in queue.HardnessTime.Keys)
+            foreach (Character character in queue.AllCharacters)
             {
                 if (addLevel)
                 {
