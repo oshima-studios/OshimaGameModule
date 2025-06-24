@@ -149,6 +149,7 @@ namespace Oshima.FunGame.OshimaModules.Skills
             {
                 if (caster.Effects.Contains(this))
                 {
+                    caster.Effects.Remove(this);
                     OnEffectLost(caster);
                 }
                 caster.Effects.Add(this);

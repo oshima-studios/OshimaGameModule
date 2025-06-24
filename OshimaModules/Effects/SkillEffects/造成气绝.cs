@@ -8,7 +8,7 @@ namespace Oshima.FunGame.OshimaModules.Effects.SkillEffects
     {
         public override long Id => Skill.Id;
         public override string Name => Skill.Name;
-        public override string Description => $"对目标{(Skill.CanSelectTargetCount > 1 ? $"至多 {Skill.CanSelectTargetCount} 个" : "")}敌人造成气绝 {气绝时间}。气绝期间，目标行动受限且每{GameplayEquilibriumConstant.InGameTime}持续{DamageString}，此生命流失效果不会导致角色死亡。";
+        public override string Description => $"对目标{(Skill.CanSelectTargetCount > 1 ? $"至多 {Skill.CanSelectTargetCount} 个" : "")}敌人造成气绝 {气绝时间}。气绝期间，目标行动受限且每{GameplayEquilibriumConstant.InGameTime}{DamageString}，此生命流失效果不会导致角色死亡。";
         public override DispelledType DispelledType => DispelledType.Strong;
 
         private string 气绝时间 => _durative && _duration > 0 ? 实际气绝时间 + $" {GameplayEquilibriumConstant.InGameTime}" : (!_durative && _durationTurn > 0 ? 实际气绝时间 + " 回合" : $"0 {GameplayEquilibriumConstant.InGameTime}");
