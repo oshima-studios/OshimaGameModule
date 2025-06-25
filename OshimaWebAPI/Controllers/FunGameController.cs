@@ -5129,6 +5129,50 @@ namespace Oshima.FunGame.WebAPI.Controllers
             }
             return regions;
         }
+        
+        [HttpGet("getplayerregion")]
+        public List<string> GetPlayerRegion([FromQuery] int? index = null, bool showDokyoDetail = true)
+        {
+            List<string> regions = [];
+            if (index != null)
+            {
+                if (FunGameConstant.PlayerRegions.FirstOrDefault(kv => kv.Id == index) is OshimaRegion region)
+                {
+                    regions.Add(region.ToString());
+                }
+                else
+                {
+                    regions.Add($"找不到指定编号的地区！");
+                }
+            }
+            else if (FunGameConstant.PlayerRegions.Count > 0)
+            {
+                regions.Add($"铎京城及周边地区地图：");
+                List<OshimaRegion> regionList = [.. FunGameConstant.PlayerRegions];
+                if (showDokyoDetail)
+                {
+                    OshimaRegion dokyo = regionList.First();
+                    regionList.Remove(dokyo);
+                    regions.Add(dokyo.ToString());
+                }
+                for (int i = 0; i < regionList.Count; i++)
+                {
+                    OshimaRegion region = regionList[i];
+                    List<Item> crops = [];
+                    if (FunGameConstant.ExploreItems.TryGetValue(region, out List<Item>? list) && list != null)
+                    {
+                        crops = list;
+                    }
+                    regions.Add($"{region.Id}. {region.Name}" + (crops.Count > 0 ? "（作物：" + string.Join("，", crops.Select(i => i.Name)) + "）" : ""));
+                }
+                regions.Add($"提示：使用【查地区+序号】指令来查看指定地区的信息。");
+            }
+            else
+            {
+                regions.Add($"铎京城及周边地区的地图遇到了问题，暂时无法显示……");
+            }
+            return regions;
+        }
 
         [HttpPost("exploreregion")]
         public string ExploreRegion([FromQuery] long? uid = null, [FromQuery] long? id = null)

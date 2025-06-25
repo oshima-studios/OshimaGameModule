@@ -2032,7 +2032,14 @@ namespace Oshima.FunGame.WebAPI.Services
                     List<string> msgs = [];
                     if (int.TryParse(detail, out int cid))
                     {
-                        msgs = Controller.GetRegion(cid);
+                        if (cid > 0 && cid <= 12)
+                        {
+                            msgs = Controller.GetRegion(cid);
+                        }
+                        else if (cid == 0 || cid > 12)
+                        {
+                            msgs = Controller.GetPlayerRegion(cid);
+                        }
                     }
                     else
                     {
@@ -2045,6 +2052,16 @@ namespace Oshima.FunGame.WebAPI.Services
                     return result;
                 }
 
+                if (e.Detail == "主城" || e.Detail == "铎京")
+                {
+                    List<string> msgs = Controller.GetPlayerRegion();
+                    if (msgs.Count > 0)
+                    {
+                        await SendAsync(e, "铎京", string.Join("\r\n", msgs));
+                    }
+                    return result;
+                }
+                
                 if (e.Detail == "世界地图")
                 {
                     List<string> msgs = Controller.GetRegion();
