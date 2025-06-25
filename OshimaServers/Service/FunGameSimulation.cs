@@ -196,7 +196,7 @@ namespace Oshima.FunGame.OshimaServers.Service
                         {
                             sQuality++;
                         }
-                        if (acQuality < 3)
+                        if (acQuality < 5)
                         {
                             acQuality++;
                         }
@@ -400,7 +400,7 @@ namespace Oshima.FunGame.OshimaServers.Service
                             {
                                 sQuality++;
                             }
-                            if (acQuality < 3)
+                            if (acQuality < 5)
                             {
                                 acQuality++;
                             }

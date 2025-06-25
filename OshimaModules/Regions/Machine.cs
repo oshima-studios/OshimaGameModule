@@ -6,33 +6,20 @@ namespace Oshima.FunGame.OshimaModules.Regions
     {
         public 齿轮坟场()
         {
-            Id = 12;
+            Id = 5;
             Name = "齿轮坟场";
-            Description = "堆积上古机械文明的金属荒漠，沙粒为微缩齿轮，构装巨龙在沙暴中游荡";
+            Description = "堆积上古机械文明的金属荒漠，沙粒为微缩齿轮。活体建筑群蔓延其中，齿轮血管输送液态魔力，造物车间不断改造闯入者。";
             Category = "机械";
             Weathers.Add("沙尘", 30);
+            Weathers.Add("阴暗", -5);
             ChangeRandomWeather();
-            Difficulty = RarityType.ThreeStar;
-            Characters.Add(new(11201, "报废的构装巨龙"));
-            Units.Add(new(21201, "齿轮傀儡"));
-            Crops.Add(new(181201, "机械核心碎片", "锻造物品的材料。", "齿轮坟场中构装巨龙残骸的动力核心碎片，蕴含着上古机械文明的能量，但可能带有自毁装置。"));
-        }
-    }
-
-    public class 齿与血回廊 : OshimaRegion
-    {
-        public 齿与血回廊()
-        {
-            Id = 10;
-            Name = "齿与血回廊";
-            Description = "自我扩建的活体建筑群，齿轮血管输送液态魔力，「造物车间」会强制改造闯入者";
-            Category = "机械";
-            Weathers.Add("阴暗", 12);
-            ChangeRandomWeather();
-            Difficulty = RarityType.FiveStar;
-            Characters.Add(new(11001, "回廊之心"));
-            Units.Add(new(21001, "改造士兵"));
-            Crops.Add(new(181001, "活体魔力血", "锻造物品的材料。", "齿与血回廊活体建筑中流动的液态魔力，具有自我修复和改造的能力，但接触可能导致身体异变。"));
+            Difficulty = RarityType.TwoStar;
+            Characters.Add(new(10501, "报废的构装巨龙"));
+            Characters.Add(new(10502, "回廊之心"));
+            Units.Add(new(20501, "齿轮傀儡"));
+            Units.Add(new(20502, "改造士兵"));
+            Crops.Add(new(180501, "机械核心碎片", "锻造物品的材料。", "上古机械文明的能量核心，蕴含强大动力但可能触发自毁程序。"));
+            Crops.Add(new(180502, "活体魔力血", "锻造物品的材料。", "具有自我修复能力的液态魔力，接触会导致身体不可预知的异变。"));
         }
     }
 }

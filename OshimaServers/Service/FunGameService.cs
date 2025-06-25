@@ -65,6 +65,32 @@ namespace Oshima.FunGame.OshimaServers.Service
 
             FunGameConstant.AllItems.AddRange(FunGameConstant.ExploreItems.Values.SelectMany(list => list));
 
+            foreach (OshimaRegion region in FunGameConstant.Regions)
+            {
+                IEnumerable<Item> items = FunGameConstant.AllItems.Where(i => i.Others.TryGetValue("region", out object? value) && int.TryParse(value.ToString(), out int rid) && rid == region.Id).Select(i => i.Copy()).OrderByDescending(i => i.QualityType);
+                foreach (Item item in items)
+                {
+                    region.Items.Add(item);
+                }
+            }
+            
+            foreach (OshimaRegion region in FunGameConstant.PlayerRegions)
+            {
+                IEnumerable<Item> items;
+                if (region.Id == 0)
+                {
+                    items = FunGameConstant.Equipment.Where(i => !i.Others.ContainsKey("region")).Select(i => i.Copy()).OrderByDescending(i => i.QualityType);
+                }
+                else
+                {
+                    items = FunGameConstant.AllItems.Where(i => i.Others.TryGetValue("region", out object? value) && int.TryParse(value.ToString(), out int rid) && rid == region.Id).Select(i => i.Copy()).OrderByDescending(i => i.QualityType);
+                }
+                foreach (Item item in items)
+                {
+                    region.Items.Add(item);
+                }
+            }
+
             Skill?[] activeSkills = [.. FunGameConstant.Equipment.Select(i => i.Skills.Active), .. FunGameConstant.Items.Select(i => i.Skills.Active)];
             foreach (Skill? skill in activeSkills)
             {
@@ -1309,7 +1335,7 @@ namespace Oshima.FunGame.OshimaServers.Service
                 Item[] weapons = [.. FunGameConstant.Equipment.Where(i => i.Id.ToString().StartsWith("11") && (int)i.QualityType == 5)];
                 Item[] armors = [.. FunGameConstant.Equipment.Where(i => i.Id.ToString().StartsWith("12") && (int)i.QualityType == 5)];
                 Item[] shoes = [.. FunGameConstant.Equipment.Where(i => i.Id.ToString().StartsWith("13") && (int)i.QualityType == 5)];
-                Item[] accessory = [.. FunGameConstant.Equipment.Where(i => i.Id.ToString().StartsWith("14") && (int)i.QualityType == 4)];
+                Item[] accessory = [.. FunGameConstant.Equipment.Where(i => i.Id.ToString().StartsWith("14") && (int)i.QualityType == 5)];
                 Item[] consumables = [.. FunGameConstant.AllItems.Where(i => i.ItemType == ItemType.Consumable && i.IsInGameItem)];
                 for (int i = 0; i < genCount; i++)
                 {
