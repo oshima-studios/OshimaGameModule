@@ -42,6 +42,11 @@ namespace Oshima.FunGame.WebAPI.Services
                 content = content.Trim();
                 await Service.SendC2CMessageAsync(msg.OpenId, content, msgType, media, msg.Id, msgSeq);
             }
+            if (msg.FunGameUID > 0 && FunGameService.FirstLoginDailyNotice.TryGetValue(msg.FunGameUID, out List<string>? msgs) && msgs != null)
+            {
+                FunGameService.FirstLoginDailyNotice.Remove(msg.FunGameUID);
+                await SendAsync(msg, "每日登录提醒", string.Join("\r\n", msgs), msgType, media, 5);
+            }
         }
 
         public async Task<bool> Handler(IBotMessage e)
@@ -63,6 +68,7 @@ namespace Oshima.FunGame.WebAPI.Services
                     if (MemoryCache.TryGetValue(openid, out object? value) && value is long uidTemp)
                     {
                         uid = uidTemp;
+                        e.FunGameUID = uid;
                     }
                     else
                     {
@@ -74,6 +80,7 @@ namespace Oshima.FunGame.WebAPI.Services
                             {
                                 User user = Factory.GetUser(sql.DataSet);
                                 uid = user.Id;
+                                e.FunGameUID = uid;
                                 MemoryCache.Set(openid, uid, TimeSpan.FromMinutes(10));
                             }
                         }
@@ -122,7 +129,7 @@ namespace Oshima.FunGame.WebAPI.Services
 
                 if (e.Detail == "帮助" || e.Detail == "帮助1")
                 {
-                    await SendAsync(e, "饭给木", @"《饭给木》游戏指令列表（第 1 / 7 页）
+                    await SendAsync(e, "筽祀牻", @"《筽祀牻》游戏指令列表（第 1 / 7 页）
 1、创建存档：创建存档，生成随机一个自建角色（序号固定为1）
 2、我的库存/我的背包/查看库存 [页码]：显示所有角色、物品库存，每个角色和物品都有一个专属序号
 3、我的库存 <物品类型> [页码]：卡包/武器/防具/鞋子/饰品/消耗品/魔法卡等...
@@ -140,7 +147,7 @@ namespace Oshima.FunGame.WebAPI.Services
 
                 if (e.Detail == "帮助2")
                 {
-                    await SendAsync(e, "饭给木", @"《饭给木》游戏指令列表（第 2 / 7 页）
+                    await SendAsync(e, "筽祀牻", @"《筽祀牻》游戏指令列表（第 2 / 7 页）
 12、装备 <角色序号> <物品序号>：装备指定物品给指定角色
 13、取消装备 <角色序号> <装备槽序号>：卸下角色指定装备槽上的物品
 * 装备槽序号从1开始，卡包/武器/防具/鞋子/饰品1/饰品2
@@ -157,7 +164,7 @@ namespace Oshima.FunGame.WebAPI.Services
 
                 if (e.Detail == "帮助3")
                 {
-                    await SendAsync(e, "饭给木", @"《饭给木》游戏指令列表（第 3 / 7 页）
+                    await SendAsync(e, "筽祀牻", @"《筽祀牻》游戏指令列表（第 3 / 7 页）
 22、普攻升级 [角色序号]：升级普攻等级
 23、查看普攻升级 [角色序号]：查看下一次普攻升级信息
 23、技能升级 <角色序号> <技能名称>：升级技能等级
@@ -175,7 +182,7 @@ namespace Oshima.FunGame.WebAPI.Services
 
                 if (e.Detail == "帮助4")
                 {
-                    await SendAsync(e, "饭给木", @"《饭给木》游戏指令列表（第 4 / 7 页）
+                    await SendAsync(e, "筽祀牻", @"《筽祀牻》游戏指令列表（第 4 / 7 页）
 33、兑换金币 <材料数>：1材料=200金币
 34、还原存档：没有后悔药
 35、我的主战：查看当前主战角色
@@ -191,7 +198,7 @@ namespace Oshima.FunGame.WebAPI.Services
 
                 if (e.Detail == "帮助5")
                 {
-                    await SendAsync(e, "饭给木", @"《饭给木》游戏指令列表（第 5 / 7 页）
+                    await SendAsync(e, "筽祀牻", @"《筽祀牻》游戏指令列表（第 5 / 7 页）
 43：任务列表：查看今日任务列表
 44：开始任务/做任务 <任务序号>
 45、任务信息：查看进行中任务的详细信息
@@ -206,7 +213,7 @@ namespace Oshima.FunGame.WebAPI.Services
 
                 if (e.Detail == "帮助6")
                 {
-                    await SendAsync(e, "饭给木", @"《饭给木》游戏指令列表（第 6 / 7 页）
+                    await SendAsync(e, "筽祀牻", @"《筽祀牻》游戏指令列表（第 6 / 7 页）
 52、我的社团：查看社团信息
 53、加入社团 <社团编号>：申请加入社团
 54、退出社团
@@ -224,7 +231,7 @@ namespace Oshima.FunGame.WebAPI.Services
 
                 if (e.Detail == "帮助7")
                 {
-                    await SendAsync(e, "饭给木", @"《饭给木》游戏指令列表（第 7 / 7 页）
+                    await SendAsync(e, "筽祀牻", @"《筽祀牻》游戏指令列表（第 7 / 7 页）
 63、每日商店
 64、商店查看 <商品序号>
 65、商店购买 <商品序号>
@@ -267,14 +274,14 @@ namespace Oshima.FunGame.WebAPI.Services
                         int count = 1;
                         foreach (string msg in real)
                         {
-                            await SendAsync(e, "饭给木", msg.Trim(), msgSeq: count++);
+                            await SendAsync(e, "筽祀牻", msg.Trim(), msgSeq: count++);
                             await Task.Delay(5500);
                         }
                         FunGameSimulation = false;
                     }
                     else
                     {
-                        await SendAsync(e, "饭给木", "游戏正在模拟中，请勿重复请求！");
+                        await SendAsync(e, "筽祀牻", "游戏正在模拟中，请勿重复请求！");
                     }
                     return result;
                 }
@@ -321,21 +328,21 @@ namespace Oshima.FunGame.WebAPI.Services
                         int count = 1;
                         foreach (string msg in real)
                         {
-                            await SendAsync(e, "饭给木", msg.Trim(), msgSeq: count++);
+                            await SendAsync(e, "筽祀牻", msg.Trim(), msgSeq: count++);
                             await Task.Delay(5500);
                         }
                         FunGameSimulation = false;
                     }
                     else
                     {
-                        await SendAsync(e, "饭给木", "游戏正在模拟中，请勿重复请求！");
+                        await SendAsync(e, "筽祀牻", "游戏正在模拟中，请勿重复请求！");
                     }
                     return result;
                 }
 
                 if (e.Detail == "上次的完整日志")
                 {
-                    await SendAsync(e, "饭给木", string.Join("\r\n", Controller.GetLast()));
+                    await SendAsync(e, "筽祀牻", string.Join("\r\n", Controller.GetLast()));
                     return result;
                 }
 
@@ -379,14 +386,14 @@ namespace Oshima.FunGame.WebAPI.Services
                         int count = 1;
                         foreach (string msg in real)
                         {
-                            await SendAsync(e, "饭给木", msg.Trim(), msgSeq: count++);
+                            await SendAsync(e, "筽祀牻", msg.Trim(), msgSeq: count++);
                             await Task.Delay(5500);
                         }
                         FunGameSimulation = false;
                     }
                     else
                     {
-                        await SendAsync(e, "饭给木", "游戏正在模拟中，请勿重复请求！");
+                        await SendAsync(e, "筽祀牻", "游戏正在模拟中，请勿重复请求！");
                     }
                     return result;
                 }

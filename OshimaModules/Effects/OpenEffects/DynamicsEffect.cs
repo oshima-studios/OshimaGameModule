@@ -126,24 +126,24 @@ namespace Oshima.FunGame.OshimaModules.Effects.OpenEffects
                             {
                                 foreach (Skill s in character.Skills)
                                 {
-                                    s.HardnessTime -= shtr;
+                                    s.ExHardnessTime -= shtr;
                                 }
                                 foreach (Skill? s in character.Items.Select(i => i.Skills.Active))
                                 {
                                     if (s != null)
-                                        s.HardnessTime -= shtr;
+                                        s.ExHardnessTime -= shtr;
                                 }
                             }
                             else if (RealDynamicsValues.TryGetValue("shtr", out double current))
                             {
                                 foreach (Skill s in character.Skills)
                                 {
-                                    s.HardnessTime += current;
+                                    s.ExHardnessTime += current;
                                 }
                                 foreach (Skill? s in character.Items.Select(i => i.Skills.Active))
                                 {
                                     if (s != null)
-                                        s.HardnessTime += current;
+                                        s.ExHardnessTime += current;
                                 }
                             }
                             RealDynamicsValues["shtr"] = shtr;
@@ -172,24 +172,24 @@ namespace Oshima.FunGame.OshimaModules.Effects.OpenEffects
                             {
                                 foreach (Skill s in character.Skills)
                                 {
-                                    s.HardnessTime -= s.HardnessTime * shtr2;
+                                    s.ExHardnessTime2 -= shtr2;
                                 }
                                 foreach (Skill? s in character.Items.Select(i => i.Skills.Active))
                                 {
                                     if (s != null)
-                                        s.HardnessTime -= s.HardnessTime * shtr2;
+                                        s.ExHardnessTime2 -= shtr2;
                                 }
                             }
                             else if (RealDynamicsValues.TryGetValue("shtr2", out double current))
                             {
                                 foreach (Skill s in character.Skills)
                                 {
-                                    s.HardnessTime += s.HardnessTime * current;
+                                    s.ExHardnessTime2 += current;
                                 }
                                 foreach (Skill? s in character.Items.Select(i => i.Skills.Active))
                                 {
                                     if (s != null)
-                                        s.HardnessTime += s.HardnessTime * current;
+                                        s.ExHardnessTime2 += current;
                                 }
                             }
                             RealDynamicsValues["shtr2"] = shtr2;

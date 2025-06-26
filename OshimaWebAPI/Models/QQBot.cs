@@ -82,6 +82,7 @@ namespace Oshima.FunGame.WebAPI.Models
         public string Timestamp { get; }
         public string OpenId { get; }
         public string AuthorOpenId { get; }
+        public long FunGameUID { get; set; }
     }
 
     public class ThirdPartyMessage : IBotMessage
@@ -109,6 +110,9 @@ namespace Oshima.FunGame.WebAPI.Models
 
         [JsonIgnore]
         public string Result { get; set; } = "";
+
+        [JsonIgnore]
+        public long FunGameUID { get; set; } = 0;
     }
 
     public class C2CMessage : IBotMessage
@@ -127,6 +131,9 @@ namespace Oshima.FunGame.WebAPI.Models
 
         [JsonPropertyName("attachments")]
         public Attachment[] Attachments { get; set; } = [];
+
+        [JsonIgnore]
+        public long FunGameUID { get; set; } = 0;
 
         public string Detail
         {
@@ -157,6 +164,9 @@ namespace Oshima.FunGame.WebAPI.Models
 
         [JsonPropertyName("attachments")]
         public Attachment[] Attachments { get; set; } = [];
+
+        [JsonIgnore]
+        public long FunGameUID { get; set; } = 0;
 
         public string Detail
         {

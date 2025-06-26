@@ -14,6 +14,7 @@ namespace Oshima.FunGame.OshimaServers.Service
 {
     public class FunGameService
     {
+        public static Dictionary<long, List<string>> FirstLoginDailyNotice { get; } = [];
         public static Dictionary<int, Character> Bosses { get; } = [];
         public static ServerPluginLoader? ServerPluginLoader { get; set; } = null;
         public static WebAPIPluginLoader? WebAPIPluginLoader { get; set; } = null;
@@ -39,8 +40,9 @@ namespace Oshima.FunGame.OshimaServers.Service
 
             FunGameConstant.PassiveSkills.AddRange([new META马(), new 心灵之火(), new 魔法震荡(), new 灵能反射(), new 智慧与力量(), new 致命打击(), new 毁灭之势(), new 枯竭打击(), new 破釜沉舟(), new 累积之压(), new 敏捷之刃(), new 弱者猎手()]);
 
-            FunGameConstant.Magics.AddRange([new 冰霜攻击(), new 火之矢(), new 水之矢(), new 风之轮(), new 石之锤(), new 心灵之霞(), new 次元上升(), new 暗物质(), new 回复术(), new 治愈术(), new 复苏术(), new 圣灵术(),
-                new 时间加速(), new 时间减速(), new 反魔法领域(), new 沉默十字(), new 虚弱领域(), new 混沌烙印(), new 凝胶稠絮(), new 大地之墙(), new 盖亚之盾(), new 风之守护(), new 结晶防护(), new 强音之力(), new 神圣祝福()]);
+            FunGameConstant.Magics.AddRange([new 冰霜攻击(), new 火之矢(), new 水之矢(), new 风之轮(), new 石之锤(), new 心灵之霞(), new 次元上升(), new 暗物质(),
+                new 回复术(), new 治愈术(), new 复苏术(), new 圣灵术(), new 时间加速(), new 时间减速(), new 反魔法领域(), new 沉默十字(), new 虚弱领域(), new 混沌烙印(), new 凝胶稠絮(),
+                new 大地之墙(), new 盖亚之盾(), new 风之守护(), new 结晶防护(), new 强音之力(), new 神圣祝福(), new 根源屏障(), new 灾难冲击波(), new 银色荆棘()]);
 
             Dictionary<string, Item> exItems = Factory.GetGameModuleInstances<Item>(OshimaGameModuleConstant.General, OshimaGameModuleConstant.Item);
             FunGameConstant.Equipment.AddRange(exItems.Values.Where(i => (int)i.ItemType >= 0 && (int)i.ItemType < 5));
@@ -585,6 +587,12 @@ namespace Oshima.FunGame.OshimaServers.Service
                 {
                     user.Inventory.Training[t.Id] = training[cid];
                 }
+            }
+
+            if (!pc.TryGetValue("logon", out object? value) || (value is bool logon && !logon))
+            {
+                pc.Add("logon", true);
+                FirstLoginDailyNotice[user.Id] = ["欢迎回到筽祀牻大陆！请发送【帮助】获取更多玩法指令哦～"];
             }
 
             return user;
@@ -1703,8 +1711,16 @@ namespace Oshima.FunGame.OshimaServers.Service
                 Store daily = new($"{(user != null ? user.Username + "的" : "")}每日商店");
                 for (int i = 0; i < 4; i++)
                 {
-                    int index = Random.Shared.Next(FunGameConstant.AllItems.Count);
-                    Item item = FunGameConstant.AllItems[index].Copy();
+                    Item item;
+                    if (Random.Shared.Next(3) < 1)
+                    {
+                        item = GenerateMagicCard((QualityType)Random.Shared.Next((int)QualityType.Gold + 1));
+                    }
+                    else
+                    {
+                        int index = Random.Shared.Next(FunGameConstant.AllItems.Count);
+                        item = FunGameConstant.AllItems[index].Copy();
+                    }
                     item.Character = null;
                     (int min, int max) = (0, 0);
                     if (FunGameConstant.PriceRanges.TryGetValue(item.QualityType, out (int Min, int Max) range))
@@ -1712,11 +1728,23 @@ namespace Oshima.FunGame.OshimaServers.Service
                         (min, max) = (range.Min, range.Max);
                     }
                     double price = Random.Shared.Next(min, max);
+                    if (item.ItemType == ItemType.MagicCard)
+                    {
+                        price *= 0.7;
+                    }
+                    else if (item.ItemType == ItemType.Consumable)
+                    {
+                        int prev = (int)item.QualityType - 1;
+                        int current = (int)item.QualityType;
+                        min = 300 * (1 + (prev * prev - prev));
+                        max = 300 * (1 + (current * current - current));
+                        price = Random.Shared.Next(min, max);
+                    }
                     if (price == 0)
                     {
                         price = (Random.Shared.NextDouble() + 0.1) * Random.Shared.Next(1000, 5000) * Random.Shared.Next((int)item.QualityType + 2, 6 + ((int)item.QualityType));
                     }
-                    item.Price = Calculation.Round2Digits(price);
+                    item.Price = (int)price;
                     daily.AddItem(item, Random.Shared.Next(1, 3));
                 }
                 store.Add("daily", daily);
@@ -1823,6 +1851,15 @@ namespace Oshima.FunGame.OshimaServers.Service
                     character.PrimaryAttribute = PrimaryAttribute.INT;
                 }
             }
+        }
+
+        public static async Task UpdateRegionWeather()
+        {
+            foreach (Region region in FunGameConstant.Regions.Union(FunGameConstant.PlayerRegions))
+            {
+                region.ChangeRandomWeather();
+            }
+            await Task.CompletedTask;
         }
     }
 }

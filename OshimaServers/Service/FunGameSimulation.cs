@@ -1011,22 +1011,22 @@ namespace Oshima.FunGame.OshimaServers.Service
             {
                 if (addLevel)
                 {
-                    character.SetLevel(character.Level + 10, false);
-                    character.NormalAttack.Level += 2;
+                    character.SetLevel(character.Level + 8, false);
+                    character.NormalAttack.Level += 1;
                     foreach (Skill skill in character.Skills)
                     {
                         if (skill.SkillType == SkillType.Passive) continue;
-                        skill.Level += 2;
+                        skill.Level += 1;
                     }
                     Character? original = queue.Original[character.Guid];
                     if (original != null)
                     {
-                        original.Level += 10;
-                        original.NormalAttack.Level += 2;
+                        original.Level += 8;
+                        original.NormalAttack.Level += 1;
                         foreach (Skill skill in original.Skills)
                         {
                             if (skill.SkillType == SkillType.Passive) continue;
-                            skill.Level += 2;
+                            skill.Level += 1;
                         }
                     }
                 }

@@ -592,13 +592,13 @@ namespace Oshima.FunGame.OshimaServers.Service
 
         public static Dictionary<QualityType, (int Min, int Max)> PriceRanges { get; } = new()
         {
-            { QualityType.White, (200, 2000) },
-            { QualityType.Green, (1500, 15000) },
-            { QualityType.Blue, (5000, 50000) },
-            { QualityType.Purple, (10000, 100000) },
-            { QualityType.Orange, (40000, 400000) },
-            { QualityType.Red, (100000, 1000000) },
-            { QualityType.Gold, (500000, 5000000) }
+            { QualityType.White, (200, 800) },
+            { QualityType.Green, (800, 3500) },
+            { QualityType.Blue, (3500, 8800) },
+            { QualityType.Purple, (8800, 15600) },
+            { QualityType.Orange, (15600, 32200) },
+            { QualityType.Red, (32200, 67000) },
+            { QualityType.Gold, (67000, 130000) }
         };
 
         public static string[] CommonSurnames { get; } = [

@@ -59,7 +59,7 @@ namespace Oshima.FunGame.OshimaModules.Skills
             }
         }
 
-        public override CharacterActionType AlterActionTypeBeforeAction(Character character, CharacterState state, ref bool canUseItem, ref bool canCastSkill, ref double pUseItem, ref double pCastSkill, ref double pNormalAttack)
+        public override CharacterActionType AlterActionTypeBeforeAction(Character character, CharacterState state, ref bool canUseItem, ref bool canCastSkill, ref double pUseItem, ref double pCastSkill, ref double pNormalAttack, ref bool forceAction)
         {
             pNormalAttack += 0.1;
             return CharacterActionType.None;

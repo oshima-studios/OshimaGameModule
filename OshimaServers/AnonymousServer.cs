@@ -111,15 +111,17 @@ namespace Oshima.FunGame.OshimaServers
                 Controller.WriteLine("已重置所有人的今日运势");
                 Daily.ClearDaily();
             });
-            TaskScheduler.Shared.AddTask("重置交易冷却1", new TimeSpan(9, 0, 0), () =>
+            TaskScheduler.Shared.AddTask("上九", new TimeSpan(9, 0, 0), () =>
             {
-                Controller.WriteLine("重置物品交易冷却时间");
+                Controller.WriteLine("重置物品交易冷却时间/刷新地区天气");
                 _ = FunGameService.AllowSellAndTrade();
+                _ = FunGameService.UpdateRegionWeather();
             });
-            TaskScheduler.Shared.AddTask("重置交易冷却2", new TimeSpan(15, 0, 0), () =>
+            TaskScheduler.Shared.AddTask("下三", new TimeSpan(15, 0, 0), () =>
             {
-                Controller.WriteLine("重置物品交易冷却时间");
+                Controller.WriteLine("重置物品交易冷却时间/刷新地区天气");
                 _ = FunGameService.AllowSellAndTrade();
+                _ = FunGameService.UpdateRegionWeather();
             });
             TaskScheduler.Shared.AddRecurringTask("刷新存档缓存", TimeSpan.FromMinutes(1), () =>
             {
@@ -205,7 +207,26 @@ namespace Oshima.FunGame.OshimaServers
                             FunGameService.CheckDailyStore(store);
                             store.SaveConfig();
                         }
-                        Controller.WriteLine("刷新签到");
+                        Controller.WriteLine("刷新商店");
+                    }
+                });
+                Task.Run(() =>
+                {
+                    // 刷新每天登录
+                    FunGameService.FirstLoginDailyNotice.Clear();
+                    string directoryPath = $@"{AppDomain.CurrentDomain.BaseDirectory}configs/saved";
+                    if (Directory.Exists(directoryPath))
+                    {
+                        string[] filePaths = Directory.GetFiles(directoryPath);
+                        foreach (string filePath in filePaths)
+                        {
+                            string fileName = Path.GetFileNameWithoutExtension(filePath);
+                            PluginConfig pc = new("saved", fileName);
+                            pc.LoadConfig();
+                            pc.Add("logon", false);
+                            pc.SaveConfig();
+                        }
+                        Controller.WriteLine("刷新每天登录");
                     }
                 });
             });

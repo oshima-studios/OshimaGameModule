@@ -4024,7 +4024,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
                 pc.Add("days", days + 1);
                 pc.Add("lastTime", newLastTime);
                 pc.SaveConfig();
-                return NetworkUtility.JsonSerialize(msg);
+                return NetworkUtility.JsonSerialize(msg + "\r\n>>> 请发送【帮助】来获取更多玩法指令！<<<");
             }
             else
             {

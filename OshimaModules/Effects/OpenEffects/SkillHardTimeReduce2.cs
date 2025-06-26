@@ -23,12 +23,12 @@ namespace Oshima.FunGame.OshimaModules.Effects.OpenEffects
             }
             foreach (Skill s in character.Skills)
             {
-                s.HardnessTime -= s.HardnessTime * 减少比例;
+                s.ExHardnessTime2 -= 减少比例;
             }
             foreach (Skill? s in character.Items.Select(i => i.Skills.Active))
             {
                 if (s != null)
-                    s.HardnessTime -= s.HardnessTime * 减少比例;
+                    s.ExHardnessTime2 -= 减少比例;
             }
         }
 
@@ -36,12 +36,12 @@ namespace Oshima.FunGame.OshimaModules.Effects.OpenEffects
         {
             foreach (Skill s in character.Skills)
             {
-                s.HardnessTime += s.HardnessTime * 减少比例;
+                s.ExHardnessTime2 += 减少比例;
             }
             foreach (Skill? s in character.Items.Select(i => i.Skills.Active))
             {
                 if (s != null)
-                    s.HardnessTime += s.HardnessTime * 减少比例;
+                    s.ExHardnessTime2 += 减少比例;
             }
         }
 
