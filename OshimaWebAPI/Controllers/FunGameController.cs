@@ -2519,6 +2519,25 @@ namespace Oshima.FunGame.WebAPI.Controllers
                             user2.Inventory.Materials += itemCount;
                             msg = $"已为 [ {user2} ] 生成 {itemCount} {General.GameplayEquilibriumConstant.InGameMaterial}";
                         }
+                        else if (itemName.Contains("魔法卡礼包"))
+                        {
+                            foreach (string type in ItemSet.QualityTypeNameArray)
+                            {
+                                if (itemName == $"{type}魔法卡礼包")
+                                {
+                                    for (int i = 0; i < itemCount; i++)
+                                    {
+                                        Item item = new 魔法卡礼包(ItemSet.GetQualityTypeFromName(type), 5)
+                                        {
+                                            User = user2
+                                        };
+                                        user2.Inventory.Items.Add(item);
+                                    }
+                                    msg = $"已为 [ {user2} ] 生成 {itemCount} 个{type}魔法卡礼包（打开获得随机同品质 5 张魔法卡）";
+                                    break;
+                                }
+                            }
+                        }
                         else if (itemName.Contains("魔法卡包"))
                         {
                             foreach (string type in ItemSet.QualityTypeNameArray)
