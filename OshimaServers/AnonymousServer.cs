@@ -110,6 +110,8 @@ namespace Oshima.FunGame.OshimaServers
             {
                 Controller.WriteLine("已重置所有人的今日运势");
                 Daily.ClearDaily();
+                // 刷新活动缓存
+                FunGameService.GetEventCenter();
             });
             TaskScheduler.Shared.AddTask("上九", new TimeSpan(9, 0, 0), () =>
             {
@@ -213,7 +215,7 @@ namespace Oshima.FunGame.OshimaServers
                 Task.Run(() =>
                 {
                     // 刷新每天登录
-                    FunGameService.FirstLoginDailyNotice.Clear();
+                    FunGameService.UserNotice.Clear();
                     string directoryPath = $@"{AppDomain.CurrentDomain.BaseDirectory}configs/saved";
                     if (Directory.Exists(directoryPath))
                     {
@@ -229,11 +231,18 @@ namespace Oshima.FunGame.OshimaServers
                         Controller.WriteLine("刷新每天登录");
                     }
                 });
+                // 刷新活动缓存
+                FunGameService.GetEventCenter();
             });
             TaskScheduler.Shared.AddRecurringTask("刷新boss", TimeSpan.FromHours(1), () =>
             {
                 FunGameService.GenerateBoss();
                 Controller.WriteLine("刷新boss");
+            }, true);
+            TaskScheduler.Shared.AddRecurringTask("刷新活动缓存", TimeSpan.FromHours(4), () =>
+            {
+                FunGameService.GetEventCenter();
+                Controller.WriteLine("刷新活动缓存");
             }, true);
         }
 

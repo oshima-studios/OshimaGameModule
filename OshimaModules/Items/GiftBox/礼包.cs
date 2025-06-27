@@ -157,6 +157,29 @@ namespace Oshima.FunGame.OshimaModules.Items
         }
     }
 
+    public class 魔法卡礼包 : Item, 礼包.GiftBox
+    {
+        public override long Id => (long)GiftBoxID.魔法卡礼包;
+        public override string Name => "魔法卡礼包";
+        public override string Description => Skills.Active?.Description ?? "";
+        public override QualityType QualityType => _type;
+        public int Count => _count;
+        public Dictionary<string, int> Gifts { get; set; } = [];
+        private readonly QualityType _type = QualityType.White;
+        private readonly int _count = 1;
+
+        public 魔法卡礼包(QualityType type = QualityType.White, int count = 1, User? user = null, int remainUseTimes = 1) : base(ItemType.GiftBox)
+        {
+            _type = type;
+            _count = count;
+            User = user;
+            礼包.Init(this, new()
+            {
+                { "与礼包同品质、随机属性、随机魔法技能的魔法卡", count }
+            }, remainUseTimes);
+        }
+    }
+
     public class 礼包技能 : Skill
     {
         public override long Id => (long)ItemActiveID.礼包;

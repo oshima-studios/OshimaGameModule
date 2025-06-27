@@ -1,9 +1,11 @@
-﻿using System.Text.RegularExpressions;
+﻿using System.Text;
+using System.Text.RegularExpressions;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
 using Milimoe.FunGame.Core.Api.Transmittal;
 using Milimoe.FunGame.Core.Api.Utility;
 using Milimoe.FunGame.Core.Entity;
+using Milimoe.FunGame.Core.Library.Constant;
 using Oshima.Core.Configs;
 using Oshima.FunGame.OshimaServers.Service;
 using Oshima.FunGame.WebAPI.Constant;
@@ -42,11 +44,33 @@ namespace Oshima.FunGame.WebAPI.Services
                 content = content.Trim();
                 await Service.SendC2CMessageAsync(msg.OpenId, content, msgType, media, msg.Id, msgSeq);
             }
-            if (msg.FunGameUID > 0 && FunGameService.FirstLoginDailyNotice.TryGetValue(msg.FunGameUID, out List<string>? msgs) && msgs != null)
+            if (msg.FunGameUID > 0 && FunGameService.UserNotice.TryGetValue(msg.FunGameUID, out List<string>? msgs) && msgs != null)
             {
-                FunGameService.FirstLoginDailyNotice.Remove(msg.FunGameUID);
+                FunGameService.UserNotice.Remove(msg.FunGameUID);
                 await SendAsync(msg, "每日登录提醒", string.Join("\r\n", msgs), msgType, media, 5);
             }
+        }
+
+        private async Task SendHelp(IBotMessage e, Dictionary<string, string> helpDict, string helpName, int currentPage)
+        {
+            int pageSize = 15;
+            int totalPages = (helpDict.Count + pageSize - 1) / pageSize;
+
+            StringBuilder result = new($"《筽祀牻》{helpName}指令（第 {currentPage}/{totalPages} 页）\n");
+
+            int index = (currentPage - 1) * pageSize + 1;
+            foreach ((string cmd, string desc) in FunGameOrderList.GetPage(helpDict, currentPage, pageSize))
+            {
+                result.AppendLine($"{index}. {cmd}{(desc != "" ? "：" + desc : "")}");
+                index++;
+            }
+
+            if (currentPage < totalPages)
+            {
+                result.AppendLine($"发送【{helpName}{currentPage + 1}】查看下一页");
+            }
+
+            await SendAsync(e, "筽祀牻", result.ToString());
         }
 
         public async Task<bool> Handler(IBotMessage e)
@@ -98,7 +122,7 @@ namespace Oshima.FunGame.WebAPI.Services
                 //    string msg = "";
                 //    if (long.TryParse(detail, out temp_qq))
                 //    {
-                //        msg = NetworkUtility.JsonDeserialize<string>(QQController.Bind(new(openid, temp_qq))) ?? "";
+                //        msg = QQController.Bind(new(openid, temp_qq));
                 //    }
                 //    else
                 //    {
@@ -115,127 +139,76 @@ namespace Oshima.FunGame.WebAPI.Services
 
                 if (e.Detail == "查询服务器启动时间")
                 {
-                    string msg = NetworkUtility.JsonDeserialize<string>(TestController.GetLastLoginTime()) ?? "";
+                    string msg = TestController.GetLastLoginTime();
                     await SendAsync(e, "查询服务器启动时间", msg);
                     return true;
                 }
 
                 if (e.Detail.StartsWith("查询任务计划"))
                 {
-                    string msg = NetworkUtility.JsonDeserialize<string>(TestController.GetTaskScheduler(e.Detail.Replace("查询任务计划", ""))) ?? "";
+                    string msg = TestController.GetTaskScheduler(e.Detail.Replace("查询任务计划", ""));
                     await SendAsync(e, "查询任务计划", msg);
                     return true;
                 }
 
-                if (e.Detail == "帮助" || e.Detail == "帮助1")
+                // 指令处理
+                if (e.Detail == "帮助")
                 {
-                    await SendAsync(e, "筽祀牻", @"《筽祀牻》游戏指令列表（第 1 / 7 页）
-1、创建存档：创建存档，生成随机一个自建角色（序号固定为1）
-2、我的库存/我的背包/查看库存 [页码]：显示所有角色、物品库存，每个角色和物品都有一个专属序号
-3、我的库存 <物品类型> [页码]：卡包/武器/防具/鞋子/饰品/消耗品/魔法卡等...
-4、分类库存 <物品索引> [页码]：物品索引从0开始，同上...
-5、物品库存 [页码]：显示所有角色
-* 上述三指令会将物品按品质倒序和数量倒序排序，整合物品序号和数量显示物品库存
-6、角色库存 [页码]：显示所有角色
-7、我角色 [角色序号]：查看指定序号角色的简略信息，缺省为1
-8、我的角色 [角色序号]：查看指定序号角色的详细信息，缺省为1
-9、角色重随：重新随机自建角色的属性，需要花材料
-10、我的物品 <物品序号>：查看指定序号物品的详细信息
-11、设置主战 <角色序号>：将指定序号角色设置为主战
-发送【帮助2】查看第 2 页");
+                    await SendAsync(e, "筽祀牻", @$"欢迎使用《筽祀牻》游戏指令帮助系统！
+核心库版本号：{FunGameInfo.FunGame_Version}
+《筽祀牻》是一款奇幻冒险回合制角色扮演游戏。
+在游戏中，你可以和其他角色组成小队，收集物品，在数十个独具风格的地区中冒险并战斗。
+因游戏内容、指令较多，我们将按游戏模块对指令分类，请输入以下指令查看具体分类的帮助内容：
+1、存档帮助
+2、角色帮助
+3、物品帮助
+4、战斗帮助
+5、任务帮助
+6、社团帮助
+7、活动帮助
+8、商店帮助
+在指令后面加数字即可跳转指定的页码，感谢游玩《筽祀牻》。");
                 }
 
-                if (e.Detail == "帮助2")
+                if (e.Detail.StartsWith("存档帮助"))
                 {
-                    await SendAsync(e, "筽祀牻", @"《筽祀牻》游戏指令列表（第 2 / 7 页）
-12、装备 <角色序号> <物品序号>：装备指定物品给指定角色
-13、取消装备 <角色序号> <装备槽序号>：卸下角色指定装备槽上的物品
-* 装备槽序号从1开始，卡包/武器/防具/鞋子/饰品1/饰品2
-14、角色改名：修改名字，需要金币
-15、抽卡/十连抽卡：2000金币一次，还有材料抽卡/材料十连抽卡，10材料1次
-16、开启练级 [角色序号]：让指定角色启动练级模式，缺省为1
-17、练级结算：收取奖励，最多累计24小时的收益
-18、练级信息：查看当前进度
-19、角色升级 [角色序号]：升到不能升为止
-20、角色突破 [角色序号]：每10/20/30/40/50/60级都要突破才可以继续升级
-21、突破信息 [角色序号]：查看下一次突破信息
-发送【帮助3】查看第 3 页");
+                    int page = e.Detail.Length > 4 && int.TryParse(e.Detail[4..], out int p) ? p : 1;
+                    await SendHelp(e, FunGameOrderList.ArchiveHelp, "存档帮助", page);
                 }
-
-                if (e.Detail == "帮助3")
+                else if (e.Detail.StartsWith("角色帮助"))
                 {
-                    await SendAsync(e, "筽祀牻", @"《筽祀牻》游戏指令列表（第 3 / 7 页）
-22、普攻升级 [角色序号]：升级普攻等级
-23、查看普攻升级 [角色序号]：查看下一次普攻升级信息
-23、技能升级 <角色序号> <技能名称>：升级技能等级
-24、查看技能升级 <角色序号> <技能名称>：查看下一次技能升级信息
-25、使用 <物品名称> <数量> [角色] [角色序号]
-26、使用 <物品序号> [角色] [角色序号]
-27、使用魔法卡 <魔法卡序号> <魔法卡包序号>
-28、合成魔法卡 <{物品序号...}>：要3张魔法卡，空格隔开
-29、分解物品 <{物品序号...}>
-30、分解 <物品名称> <数量>
-31、品质分解 <品质索引>：从0开始，普通/优秀/稀有/史诗/传说/神话/不朽
-32、决斗/完整决斗 <@对方>/<QQ号>/<昵称>：和对方切磋
-发送【帮助4】查看第 4 页");
+                    int page = e.Detail.Length > 4 && int.TryParse(e.Detail[4..], out int p) ? p : 1;
+                    await SendHelp(e, FunGameOrderList.CharacterHelp, "角色帮助", page);
                 }
-
-                if (e.Detail == "帮助4")
+                else if (e.Detail.StartsWith("物品帮助"))
                 {
-                    await SendAsync(e, "筽祀牻", @"《筽祀牻》游戏指令列表（第 4 / 7 页）
-33、兑换金币 <材料数>：1材料=200金币
-34、还原存档：没有后悔药
-35、我的主战：查看当前主战角色
-36、我的小队：查看小队角色名单
-37、我的存档：查看账号/存档信息
-38、设置小队 <{角色序号...}>：设置小队角色（1-4个参数）
-39、小队决斗/小队完整决斗 <@对方>/<QQ号>/<昵称>：用小队和对方切磋
-40、查询boss [boss序号]：查看指定序号boss的详细信息，缺省为boss名称列表
-41、讨伐/小队讨伐boss <boss序号>
-42、签到：每日签到
-发送【帮助5】查看第 5 页");
+                    int page = e.Detail.Length > 4 && int.TryParse(e.Detail[4..], out int p) ? p : 1;
+                    await SendHelp(e, FunGameOrderList.ItemHelp, "物品帮助", page);
                 }
-
-                if (e.Detail == "帮助5")
+                else if (e.Detail.StartsWith("战斗帮助"))
                 {
-                    await SendAsync(e, "筽祀牻", @"《筽祀牻》游戏指令列表（第 5 / 7 页）
-43：任务列表：查看今日任务列表
-44：开始任务/做任务 <任务序号>
-45、任务信息：查看进行中任务的详细信息
-46、任务结算：对进行中的任务进行结算
-47、我的状态：查看主战角色状态
-48、小队状态/我的小队状态：查看小队所有角色的状态
-49、小队添加 <角色序号>：将角色加入小队
-50、小队移除 <角色序号>：将角色移出小队
-51、清空小队
-发送【帮助6】查看第 6 页");
+                    int page = e.Detail.Length > 4 && int.TryParse(e.Detail[4..], out int p) ? p : 1;
+                    await SendHelp(e, FunGameOrderList.BattleHelp, "战斗帮助", page);
                 }
-
-                if (e.Detail == "帮助6")
+                else if (e.Detail.StartsWith("任务帮助"))
                 {
-                    await SendAsync(e, "筽祀牻", @"《筽祀牻》游戏指令列表（第 6 / 7 页）
-52、我的社团：查看社团信息
-53、加入社团 <社团编号>：申请加入社团
-54、退出社团
-55、创建社团 <社团前缀>：创建一个公开社团，若指令中包含私密一词，将创建私密社团
-社团前缀：3-4个字符，允许：英文字母和数字、部分特殊字符
-56、查看社团成员/查看社团管理/查看申请人列表：查看对应列表
-57、解散社团
-58、社团批准 <@对方>/<QQ号
-59、社团拒绝 <@对方>/<QQ号
-60、社团踢出 <@对方>/<QQ号
-61、社团转让 <@对方>/<QQ号
-62、社团设置 <设置项> <{参数...}>
-发送【帮助7】查看第 7 页");
+                    int page = e.Detail.Length > 4 && int.TryParse(e.Detail[4..], out int p) ? p : 1;
+                    await SendHelp(e, FunGameOrderList.QuestHelp, "任务帮助", page);
                 }
-
-                if (e.Detail == "帮助7")
+                else if (e.Detail.StartsWith("社团帮助"))
                 {
-                    await SendAsync(e, "筽祀牻", @"《筽祀牻》游戏指令列表（第 7 / 7 页）
-63、每日商店
-64、商店查看 <商品序号>
-65、商店购买 <商品序号>
-66、");
+                    int page = e.Detail.Length > 4 && int.TryParse(e.Detail[4..], out int p) ? p : 1;
+                    await SendHelp(e, FunGameOrderList.ClubHelp, "社团帮助", page);
+                }
+                else if (e.Detail.StartsWith("活动帮助"))
+                {
+                    int page = e.Detail.Length > 4 && int.TryParse(e.Detail[4..], out int p) ? p : 1;
+                    await SendHelp(e, FunGameOrderList.ActivityHelp, "活动帮助", page);
+                }
+                else if (e.Detail.StartsWith("商店帮助"))
+                {
+                    int page = e.Detail.Length > 4 && int.TryParse(e.Detail[4..], out int p) ? p : 1;
+                    await SendHelp(e, FunGameOrderList.StoreHelp, "商店帮助", page);
                 }
 
                 if (e.Detail.StartsWith("FunGame模拟", StringComparison.CurrentCultureIgnoreCase))
@@ -403,7 +376,7 @@ namespace Oshima.FunGame.WebAPI.Services
                     string detail = e.Detail.Replace("查数据", "").Trim();
                     if (int.TryParse(detail, out int id))
                     {
-                        string msg = NetworkUtility.JsonDeserialize<string>(Controller.GetStats(id)) ?? "";
+                        string msg = Controller.GetStats(id);
                         if (msg != "")
                         {
                             await SendAsync(e, "查数据", msg);
@@ -417,7 +390,7 @@ namespace Oshima.FunGame.WebAPI.Services
                     string detail = e.Detail.Replace("查团队数据", "").Trim();
                     if (int.TryParse(detail, out int id))
                     {
-                        string msg = NetworkUtility.JsonDeserialize<string>(Controller.GetTeamStats(id)) ?? "";
+                        string msg = Controller.GetTeamStats(id);
                         if (msg != "")
                         {
                             await SendAsync(e, "查团队数据", msg);
@@ -451,7 +424,7 @@ namespace Oshima.FunGame.WebAPI.Services
                     string detail = e.Detail.Replace("查角色", "").Trim();
                     if (int.TryParse(detail, out int id))
                     {
-                        string msg = NetworkUtility.JsonDeserialize<string>(Controller.GetCharacterInfo(id)) ?? "";
+                        string msg = Controller.GetCharacterInfo(id);
                         if (msg != "")
                         {
                             await SendAsync(e, "查角色", msg);
@@ -465,7 +438,7 @@ namespace Oshima.FunGame.WebAPI.Services
                     string detail = e.Detail.Replace("查技能", "").Trim();
                     if (int.TryParse(detail, out int id))
                     {
-                        string msg = NetworkUtility.JsonDeserialize<string>(Controller.GetSkillInfo(uid, id)) ?? "";
+                        string msg = Controller.GetSkillInfo(uid, id);
                         if (msg != "")
                         {
                             await SendAsync(e, "查技能", msg);
@@ -473,7 +446,7 @@ namespace Oshima.FunGame.WebAPI.Services
                     }
                     else
                     {
-                        string msg = NetworkUtility.JsonDeserialize<string>(Controller.GetSkillInfo_Name(uid, detail)) ?? "";
+                        string msg = Controller.GetSkillInfo_Name(uid, detail);
                         if (msg != "")
                         {
                             await SendAsync(e, "查技能", msg);
@@ -487,7 +460,7 @@ namespace Oshima.FunGame.WebAPI.Services
                     string detail = e.Detail.Replace("查物品", "").Trim();
                     if (int.TryParse(detail, out int id))
                     {
-                        string msg = NetworkUtility.JsonDeserialize<string>(Controller.GetItemInfo(uid, id)) ?? "";
+                        string msg = Controller.GetItemInfo(uid, id);
                         if (msg != "")
                         {
                             await SendAsync(e, "查物品", msg);
@@ -495,7 +468,7 @@ namespace Oshima.FunGame.WebAPI.Services
                     }
                     else
                     {
-                        string msg = NetworkUtility.JsonDeserialize<string>(Controller.GetItemInfo_Name(uid, detail)) ?? "";
+                        string msg = Controller.GetItemInfo_Name(uid, detail);
                         if (msg != "")
                         {
                             await SendAsync(e, "查物品", msg);
@@ -524,7 +497,7 @@ namespace Oshima.FunGame.WebAPI.Services
 
                         if (count > 0)
                         {
-                            string msg = NetworkUtility.JsonDeserialize<string>(Controller.CreateItem(uid, name, count, userid)) ?? "";
+                            string msg = Controller.CreateItem(uid, name, count, userid);
                             if (msg != "")
                             {
                                 await SendAsync(e, "熟圣之力", msg);
@@ -540,7 +513,7 @@ namespace Oshima.FunGame.WebAPI.Services
 
                 if (e.Detail == "生成魔法卡包")
                 {
-                    string msg = NetworkUtility.JsonDeserialize<string>(Controller.GenerateMagicCardPack()) ?? "";
+                    string msg = Controller.GenerateMagicCardPack();
                     if (msg != "")
                     {
                         await SendAsync(e, "生成魔法卡包", msg);
@@ -549,7 +522,7 @@ namespace Oshima.FunGame.WebAPI.Services
                 }
                 else if (e.Detail == "生成魔法卡")
                 {
-                    string msg = NetworkUtility.JsonDeserialize<string>(Controller.GenerateMagicCard()) ?? "";
+                    string msg = Controller.GenerateMagicCard();
                     if (msg != "")
                     {
                         await SendAsync(e, "生成魔法卡", msg);
@@ -559,7 +532,7 @@ namespace Oshima.FunGame.WebAPI.Services
 
                 if (e.Detail == "创建存档")
                 {
-                    string msg = NetworkUtility.JsonDeserialize<string>(Controller.CreateSaved(name: openid)) ?? "";
+                    string msg = Controller.CreateSaved(name: openid);
                     if (msg != "")
                     {
                         await SendAsync(e, "创建存档", "\r\n" + msg);
@@ -569,7 +542,7 @@ namespace Oshima.FunGame.WebAPI.Services
 
                 if (e.Detail == "我的存档")
                 {
-                    string msg = NetworkUtility.JsonDeserialize<string>(Controller.ShowSaved(uid)) ?? "";
+                    string msg = Controller.ShowSaved(uid);
                     if (msg != "")
                     {
                         await SendAsync(e, "我的存档", "\r\n" + msg);
@@ -579,7 +552,7 @@ namespace Oshima.FunGame.WebAPI.Services
 
                 if (e.Detail == "我的主战")
                 {
-                    string msg = NetworkUtility.JsonDeserialize<string>(Controller.GetCharacterInfoFromInventory(uid, 0)) ?? "";
+                    string msg = Controller.GetCharacterInfoFromInventory(uid, 0);
                     if (msg != "")
                     {
                         await SendAsync(e, "我的主战", "\r\n" + msg);
@@ -589,7 +562,7 @@ namespace Oshima.FunGame.WebAPI.Services
 
                 if (e.Detail == "我的状态")
                 {
-                    string msg = NetworkUtility.JsonDeserialize<string>(Controller.ShowMainCharacterOrSquadStatus(uid)) ?? "";
+                    string msg = Controller.ShowMainCharacterOrSquadStatus(uid);
                     if (msg != "")
                     {
                         await SendAsync(e, "我的状态", "\r\n" + msg);
@@ -599,7 +572,7 @@ namespace Oshima.FunGame.WebAPI.Services
 
                 if (e.Detail == "小队状态" || e.Detail == "我的小队状态")
                 {
-                    string msg = NetworkUtility.JsonDeserialize<string>(Controller.ShowMainCharacterOrSquadStatus(uid, true)) ?? "";
+                    string msg = Controller.ShowMainCharacterOrSquadStatus(uid, true);
                     if (msg != "")
                     {
                         await SendAsync(e, "我的小队状态", "\r\n" + msg);
@@ -609,7 +582,7 @@ namespace Oshima.FunGame.WebAPI.Services
 
                 if (e.Detail == "我的小队")
                 {
-                    string msg = NetworkUtility.JsonDeserialize<string>(Controller.ShowSquad(uid)) ?? "";
+                    string msg = Controller.ShowSquad(uid);
                     if (msg != "")
                     {
                         await SendAsync(e, "我的小队", "\r\n" + msg);
@@ -619,7 +592,7 @@ namespace Oshima.FunGame.WebAPI.Services
 
                 if (e.Detail == "清空小队")
                 {
-                    string msg = NetworkUtility.JsonDeserialize<string>(Controller.ClearSquad(uid)) ?? "";
+                    string msg = Controller.ClearSquad(uid);
                     if (msg != "")
                     {
                         await SendAsync(e, "清空小队", "\r\n" + msg);
@@ -629,7 +602,7 @@ namespace Oshima.FunGame.WebAPI.Services
 
                 if (e.Detail == "还原存档")
                 {
-                    string msg = NetworkUtility.JsonDeserialize<string>(Controller.RestoreSaved(uid)) ?? "";
+                    string msg = Controller.RestoreSaved(uid);
                     if (msg != "")
                     {
                         await SendAsync(e, "还原存档", "\r\n" + msg);
@@ -639,7 +612,7 @@ namespace Oshima.FunGame.WebAPI.Services
 
                 if (e.Detail == "生成自建角色")
                 {
-                    string msg = NetworkUtility.JsonDeserialize<string>(Controller.NewCustomCharacter(uid)) ?? "";
+                    string msg = Controller.NewCustomCharacter(uid);
                     if (msg != "")
                     {
                         await SendAsync(e, "抽卡", "\r\n" + msg);
@@ -649,7 +622,7 @@ namespace Oshima.FunGame.WebAPI.Services
 
                 if (e.Detail == "角色改名")
                 {
-                    string msg = NetworkUtility.JsonDeserialize<string>(Controller.ReName(uid)) ?? "";
+                    string msg = Controller.ReName(uid);
                     if (msg != "")
                     {
                         await SendAsync(e, "改名", "\r\n" + msg);
@@ -659,7 +632,7 @@ namespace Oshima.FunGame.WebAPI.Services
 
                 if (e.Detail == "角色重随")
                 {
-                    string msg = NetworkUtility.JsonDeserialize<string>(Controller.RandomCustomCharacter(uid, false)) ?? "";
+                    string msg = Controller.RandomCustomCharacter(uid, false);
                     if (msg != "")
                     {
                         await SendAsync(e, "角色重随", "\r\n" + msg);
@@ -669,7 +642,7 @@ namespace Oshima.FunGame.WebAPI.Services
 
                 if (e.Detail == "确认角色重随")
                 {
-                    string msg = NetworkUtility.JsonDeserialize<string>(Controller.RandomCustomCharacter(uid, true)) ?? "";
+                    string msg = Controller.RandomCustomCharacter(uid, true);
                     if (msg != "")
                     {
                         await SendAsync(e, "角色重随", "\r\n" + msg);
@@ -679,7 +652,7 @@ namespace Oshima.FunGame.WebAPI.Services
 
                 if (e.Detail == "取消角色重随")
                 {
-                    string msg = NetworkUtility.JsonDeserialize<string>(Controller.CancelRandomCustomCharacter(uid)) ?? "";
+                    string msg = Controller.CancelRandomCustomCharacter(uid);
                     if (msg != "")
                     {
                         await SendAsync(e, "角色重随", "\r\n" + msg);
@@ -689,7 +662,7 @@ namespace Oshima.FunGame.WebAPI.Services
 
                 if (e.Detail == "抽卡")
                 {
-                    string msg = NetworkUtility.JsonDeserialize<string>(Controller.DrawCard(uid)) ?? "";
+                    string msg = Controller.DrawCard(uid);
                     if (msg != "")
                     {
                         await SendAsync(e, "抽卡", "\r\n" + msg);
@@ -709,7 +682,7 @@ namespace Oshima.FunGame.WebAPI.Services
 
                 if (e.Detail == "材料抽卡")
                 {
-                    string msg = NetworkUtility.JsonDeserialize<string>(Controller.DrawCard_Material(uid)) ?? "";
+                    string msg = Controller.DrawCard_Material(uid);
                     if (msg != "")
                     {
                         await SendAsync(e, "材料抽卡", "\r\n" + msg);
@@ -827,11 +800,11 @@ namespace Oshima.FunGame.WebAPI.Services
                     string msg = "";
                     if (int.TryParse(detail, out int seq))
                     {
-                        msg = NetworkUtility.JsonDeserialize<string>(Controller.GetCharacterInfoFromInventory(uid, seq, true)) ?? "";
+                        msg = Controller.GetCharacterInfoFromInventory(uid, seq, true);
                     }
                     else
                     {
-                        msg = NetworkUtility.JsonDeserialize<string>(Controller.GetCharacterInfoFromInventory(uid, 1, true)) ?? "";
+                        msg = Controller.GetCharacterInfoFromInventory(uid, 1, true);
                     }
                     if (msg != "")
                     {
@@ -846,11 +819,11 @@ namespace Oshima.FunGame.WebAPI.Services
                     string msg = "";
                     if (int.TryParse(detail, out int seq))
                     {
-                        msg = NetworkUtility.JsonDeserialize<string>(Controller.GetCharacterInfoFromInventory(uid, seq, false)) ?? "";
+                        msg = Controller.GetCharacterInfoFromInventory(uid, seq, false);
                     }
                     else
                     {
-                        msg = NetworkUtility.JsonDeserialize<string>(Controller.GetCharacterInfoFromInventory(uid, 1, false)) ?? "";
+                        msg = Controller.GetCharacterInfoFromInventory(uid, 1, false);
                     }
                     if (msg != "")
                     {
@@ -865,11 +838,11 @@ namespace Oshima.FunGame.WebAPI.Services
                     string msg = "";
                     if (int.TryParse(detail, out int seq))
                     {
-                        msg = NetworkUtility.JsonDeserialize<string>(Controller.GetCharacterSkills(uid, seq)) ?? "";
+                        msg = Controller.GetCharacterSkills(uid, seq);
                     }
                     else
                     {
-                        msg = NetworkUtility.JsonDeserialize<string>(Controller.GetCharacterSkills(uid, 1)) ?? "";
+                        msg = Controller.GetCharacterSkills(uid, 1);
                     }
                     if (msg != "")
                     {
@@ -884,11 +857,11 @@ namespace Oshima.FunGame.WebAPI.Services
                     string msg = "";
                     if (int.TryParse(detail, out int seq))
                     {
-                        msg = NetworkUtility.JsonDeserialize<string>(Controller.GetCharacterItems(uid, seq)) ?? "";
+                        msg = Controller.GetCharacterItems(uid, seq);
                     }
                     else
                     {
-                        msg = NetworkUtility.JsonDeserialize<string>(Controller.GetCharacterItems(uid, 1)) ?? "";
+                        msg = Controller.GetCharacterItems(uid, 1);
                     }
                     if (msg != "")
                     {
@@ -903,11 +876,11 @@ namespace Oshima.FunGame.WebAPI.Services
                     string msg = "";
                     if (int.TryParse(detail, out int cid))
                     {
-                        msg = NetworkUtility.JsonDeserialize<string>(Controller.SetMain(uid, cid)) ?? "";
+                        msg = Controller.SetMain(uid, cid);
                     }
                     else
                     {
-                        msg = NetworkUtility.JsonDeserialize<string>(Controller.SetMain(uid, 1)) ?? "";
+                        msg = Controller.SetMain(uid, 1);
                     }
                     if (msg != "")
                     {
@@ -922,11 +895,11 @@ namespace Oshima.FunGame.WebAPI.Services
                     string msg = "";
                     if (int.TryParse(detail, out int cid))
                     {
-                        msg = NetworkUtility.JsonDeserialize<string>(Controller.StartTraining(uid, cid)) ?? "";
+                        msg = Controller.StartTraining(uid, cid);
                     }
                     else
                     {
-                        msg = NetworkUtility.JsonDeserialize<string>(Controller.StartTraining(uid, 1)) ?? "";
+                        msg = Controller.StartTraining(uid, 1);
                     }
                     if (msg != "")
                     {
@@ -937,7 +910,7 @@ namespace Oshima.FunGame.WebAPI.Services
 
                 if (e.Detail == "练级信息")
                 {
-                    string msg = NetworkUtility.JsonDeserialize<string>(Controller.GetTrainingInfo(uid)) ?? "";
+                    string msg = Controller.GetTrainingInfo(uid);
                     if (msg != "")
                     {
                         await SendAsync(e, "练级信息", "\r\n" + msg);
@@ -947,7 +920,7 @@ namespace Oshima.FunGame.WebAPI.Services
 
                 if (e.Detail == "练级结算")
                 {
-                    string msg = NetworkUtility.JsonDeserialize<string>(Controller.StopTraining(uid)) ?? "";
+                    string msg = Controller.StopTraining(uid);
                     if (msg != "")
                     {
                         await SendAsync(e, "练级结算", "\r\n" + msg);
@@ -957,7 +930,7 @@ namespace Oshima.FunGame.WebAPI.Services
 
                 if (e.Detail == "任务列表")
                 {
-                    string msg = NetworkUtility.JsonDeserialize<string>(Controller.CheckQuestList(uid)) ?? "";
+                    string msg = Controller.CheckQuestList(uid);
                     if (msg != "")
                     {
                         await SendAsync(e, "任务列表", "\r\n" + msg);
@@ -967,7 +940,7 @@ namespace Oshima.FunGame.WebAPI.Services
 
                 if (e.Detail == "任务信息")
                 {
-                    string msg = NetworkUtility.JsonDeserialize<string>(Controller.CheckWorkingQuest(uid)) ?? "";
+                    string msg = Controller.CheckWorkingQuest(uid);
                     if (msg != "")
                     {
                         await SendAsync(e, "任务信息", "\r\n" + msg);
@@ -977,7 +950,7 @@ namespace Oshima.FunGame.WebAPI.Services
 
                 if (e.Detail == "任务结算")
                 {
-                    string msg = NetworkUtility.JsonDeserialize<string>(Controller.SettleQuest(uid)) ?? "";
+                    string msg = Controller.SettleQuest(uid);
                     if (msg != "")
                     {
                         await SendAsync(e, "任务结算", "\r\n" + msg);
@@ -987,7 +960,7 @@ namespace Oshima.FunGame.WebAPI.Services
 
                 if (e.Detail == "签到")
                 {
-                    string msg = NetworkUtility.JsonDeserialize<string>(Controller.SignIn(uid)) ?? "";
+                    string msg = Controller.SignIn(uid);
                     if (msg != "")
                     {
                         await SendAsync(e, "签到", "\r\n" + msg);
@@ -1017,14 +990,14 @@ namespace Oshima.FunGame.WebAPI.Services
                     string msg;
                     if (int.TryParse(detail, out int index))
                     {
-                        msg = NetworkUtility.JsonDeserialize<string>(Controller.GetItemInfoFromInventory(uid, index)) ?? "";
+                        msg = Controller.GetItemInfoFromInventory(uid, index);
                         if (msg != "")
                         {
                             await SendAsync(e, "查库存物品", msg);
                             return result;
                         }
                     }
-                    msg = NetworkUtility.JsonDeserialize<string>(Controller.GetItemInfoFromInventory_Name(uid, detail)) ?? "";
+                    msg = Controller.GetItemInfoFromInventory_Name(uid, detail);
                     if (msg != "")
                     {
                         await SendAsync(e, "查库存物品", msg);
@@ -1037,7 +1010,7 @@ namespace Oshima.FunGame.WebAPI.Services
                     string detail = e.Detail.Replace("兑换金币", "").Trim();
                     if (int.TryParse(detail, out int materials))
                     {
-                        string msg = NetworkUtility.JsonDeserialize<string>(Controller.ExchangeCredits(uid, materials)) ?? "";
+                        string msg = Controller.ExchangeCredits(uid, materials);
                         if (msg != "")
                         {
                             await SendAsync(e, "兑换金币", msg);
@@ -1055,7 +1028,7 @@ namespace Oshima.FunGame.WebAPI.Services
                     {
                         if (c != -1 && i != -1)
                         {
-                            string msg = NetworkUtility.JsonDeserialize<string>(Controller.UnEquipItem(uid, c, i)) ?? "";
+                            string msg = Controller.UnEquipItem(uid, c, i);
                             if (msg != "")
                             {
                                 await SendAsync(e, "取消装备", msg);
@@ -1074,7 +1047,7 @@ namespace Oshima.FunGame.WebAPI.Services
                     {
                         if (c != -1 && i != -1)
                         {
-                            string msg = NetworkUtility.JsonDeserialize<string>(Controller.EquipItem(uid, c, i)) ?? "";
+                            string msg = Controller.EquipItem(uid, c, i);
                             if (msg != "")
                             {
                                 await SendAsync(e, "装备", msg);
@@ -1094,7 +1067,7 @@ namespace Oshima.FunGame.WebAPI.Services
                         string s = strings[1].Trim();
                         if (c != -1 && s != "")
                         {
-                            string msg = NetworkUtility.JsonDeserialize<string>(Controller.GetSkillLevelUpNeedy(uid, c, s)) ?? "";
+                            string msg = Controller.GetSkillLevelUpNeedy(uid, c, s);
                             if (msg != "")
                             {
                                 await SendAsync(e, "查看技能升级", msg);
@@ -1114,7 +1087,7 @@ namespace Oshima.FunGame.WebAPI.Services
                         string s = strings[1].Trim();
                         if (c != -1 && s != "")
                         {
-                            string msg = NetworkUtility.JsonDeserialize<string>(Controller.SkillLevelUp(uid, c, s)) ?? "";
+                            string msg = Controller.SkillLevelUp(uid, c, s);
                             if (msg != "")
                             {
                                 await SendAsync(e, "技能升级", msg);
@@ -1133,7 +1106,7 @@ namespace Oshima.FunGame.WebAPI.Services
                     {
                         if (id1 != -1 && id2 != -1 && id3 != -1)
                         {
-                            string msg = NetworkUtility.JsonDeserialize<string>(Controller.ConflateMagicCardPack(uid, [id1, id2, id3])) ?? "";
+                            string msg = Controller.ConflateMagicCardPack(uid, [id1, id2, id3]);
                             if (msg != "")
                             {
                                 await SendAsync(e, "合成魔法卡", msg);
@@ -1149,11 +1122,11 @@ namespace Oshima.FunGame.WebAPI.Services
                     string msg = "";
                     if (int.TryParse(detail, out int cid))
                     {
-                        msg = NetworkUtility.JsonDeserialize<string>(Controller.CharacterLevelUp(uid, cid)) ?? "";
+                        msg = Controller.CharacterLevelUp(uid, cid);
                     }
                     else
                     {
-                        msg = NetworkUtility.JsonDeserialize<string>(Controller.CharacterLevelUp(uid, 1)) ?? "";
+                        msg = Controller.CharacterLevelUp(uid, 1);
                     }
                     if (msg != "")
                     {
@@ -1168,11 +1141,11 @@ namespace Oshima.FunGame.WebAPI.Services
                     string msg = "";
                     if (int.TryParse(detail, out int cid))
                     {
-                        msg = NetworkUtility.JsonDeserialize<string>(Controller.GetNormalAttackLevelUpNeedy(uid, cid)) ?? "";
+                        msg = Controller.GetNormalAttackLevelUpNeedy(uid, cid);
                     }
                     else
                     {
-                        msg = NetworkUtility.JsonDeserialize<string>(Controller.GetNormalAttackLevelUpNeedy(uid, 1)) ?? "";
+                        msg = Controller.GetNormalAttackLevelUpNeedy(uid, 1);
                     }
                     if (msg != "")
                     {
@@ -1187,11 +1160,11 @@ namespace Oshima.FunGame.WebAPI.Services
                     string msg = "";
                     if (int.TryParse(detail, out int cid))
                     {
-                        msg = NetworkUtility.JsonDeserialize<string>(Controller.NormalAttackLevelUp(uid, cid)) ?? "";
+                        msg = Controller.NormalAttackLevelUp(uid, cid);
                     }
                     else
                     {
-                        msg = NetworkUtility.JsonDeserialize<string>(Controller.NormalAttackLevelUp(uid, 1)) ?? "";
+                        msg = Controller.NormalAttackLevelUp(uid, 1);
                     }
                     if (msg != "")
                     {
@@ -1206,11 +1179,11 @@ namespace Oshima.FunGame.WebAPI.Services
                     string msg = "";
                     if (int.TryParse(detail, out int cid))
                     {
-                        msg = NetworkUtility.JsonDeserialize<string>(Controller.CharacterLevelBreak(uid, cid)) ?? "";
+                        msg = Controller.CharacterLevelBreak(uid, cid);
                     }
                     else
                     {
-                        msg = NetworkUtility.JsonDeserialize<string>(Controller.CharacterLevelBreak(uid, 1)) ?? "";
+                        msg = Controller.CharacterLevelBreak(uid, 1);
                     }
                     if (msg != "")
                     {
@@ -1225,11 +1198,11 @@ namespace Oshima.FunGame.WebAPI.Services
                     string msg = "";
                     if (int.TryParse(detail, out int cid))
                     {
-                        msg = NetworkUtility.JsonDeserialize<string>(Controller.GetLevelBreakNeedy(uid, cid)) ?? "";
+                        msg = Controller.GetLevelBreakNeedy(uid, cid);
                     }
                     else
                     {
-                        msg = NetworkUtility.JsonDeserialize<string>(Controller.GetLevelBreakNeedy(uid, 1)) ?? "";
+                        msg = Controller.GetLevelBreakNeedy(uid, 1);
                     }
                     if (msg != "")
                     {
@@ -1254,7 +1227,7 @@ namespace Oshima.FunGame.WebAPI.Services
                             {
                                 if (id > 0 && id2 > 0)
                                 {
-                                    string msg = NetworkUtility.JsonDeserialize<string>(Controller.UseItem3(uid, id, id2, isCharacter)) ?? "";
+                                    string msg = Controller.UseItem3(uid, id, id2, isCharacter);
                                     if (msg != "")
                                     {
                                         await SendAsync(e, "使用魔法卡", msg);
@@ -1275,7 +1248,7 @@ namespace Oshima.FunGame.WebAPI.Services
                             {
                                 string characterIdsString = match.Groups["characterIds"].Value;
                                 int[] characterIds = characterIdsString != "" ? [.. characterIdsString.Split(chars, StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries).Select(int.Parse)] : [1];
-                                string msg = NetworkUtility.JsonDeserialize<string>(Controller.UseItem2(uid, itemName, count, characterIds)) ?? "";
+                                string msg = Controller.UseItem2(uid, itemName, count, characterIds);
                                 if (msg != "")
                                 {
                                     await SendAsync(e, "使用", msg);
@@ -1292,7 +1265,7 @@ namespace Oshima.FunGame.WebAPI.Services
                                 {
                                     string characterIdsString = match.Groups["characterIds"].Value;
                                     int[] characterIds = characterIdsString != "" ? [.. characterIdsString.Split(chars, StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries).Select(int.Parse)] : [1];
-                                    string msg = NetworkUtility.JsonDeserialize<string>(Controller.UseItem(uid, itemId, characterIds)) ?? "";
+                                    string msg = Controller.UseItem(uid, itemId, characterIds);
                                     if (msg != "")
                                     {
                                         await SendAsync(e, "使用", msg);
@@ -1308,7 +1281,7 @@ namespace Oshima.FunGame.WebAPI.Services
                                     string itemName = match.Groups["itemName"].Value.Trim();
                                     if (int.TryParse(match.Groups["count"].Value, out int count))
                                     {
-                                        string msg = NetworkUtility.JsonDeserialize<string>(Controller.UseItem2(uid, itemName, count)) ?? "";
+                                        string msg = Controller.UseItem2(uid, itemName, count);
                                         if (msg != "")
                                         {
                                             await SendAsync(e, "使用", msg);
@@ -1323,7 +1296,7 @@ namespace Oshima.FunGame.WebAPI.Services
                                     {
                                         if (int.TryParse(match.Groups["itemId"].Value, out int itemId))
                                         {
-                                            string msg = NetworkUtility.JsonDeserialize<string>(Controller.UseItem(uid, itemId)) ?? "";
+                                            string msg = Controller.UseItem(uid, itemId);
                                             if (msg != "")
                                             {
                                                 await SendAsync(e, "使用", msg);
@@ -1349,7 +1322,7 @@ namespace Oshima.FunGame.WebAPI.Services
                             ids.Add(id);
                         }
                     }
-                    string msg = NetworkUtility.JsonDeserialize<string>(Controller.DecomposeItem(uid, [.. ids])) ?? "";
+                    string msg = Controller.DecomposeItem(uid, [.. ids]);
                     if (msg != "")
                     {
                         await SendAsync(e, "分解物品", msg);
@@ -1368,7 +1341,7 @@ namespace Oshima.FunGame.WebAPI.Services
                         string itemName = match.Groups["itemName"].Value.Trim();
                         if (int.TryParse(match.Groups["count"].Value, out int count))
                         {
-                            string msg = NetworkUtility.JsonDeserialize<string>(Controller.DecomposeItem2(uid, itemName, count)) ?? "";
+                            string msg = Controller.DecomposeItem2(uid, itemName, count);
                             if (msg != "")
                             {
                                 await SendAsync(e, "分解", msg);
@@ -1384,7 +1357,7 @@ namespace Oshima.FunGame.WebAPI.Services
                     string detail = e.Detail.Replace("品质分解", "").Trim();
                     if (int.TryParse(detail, out int q))
                     {
-                        string msg = NetworkUtility.JsonDeserialize<string>(Controller.DecomposeItem3(uid, q)) ?? "";
+                        string msg = Controller.DecomposeItem3(uid, q);
                         if (msg != "")
                         {
                             await SendAsync(e, "品质分解", msg);
@@ -1409,7 +1382,7 @@ namespace Oshima.FunGame.WebAPI.Services
                             {
                                 userid = temp;
                             }
-                            string msg = NetworkUtility.JsonDeserialize<string>(Controller.CreateItem(uid, name, count, userid)) ?? "";
+                            string msg = Controller.CreateItem(uid, name, count, userid);
                             if (msg != "")
                             {
                                 await SendAsync(e, "熟圣之力", msg);
@@ -1733,7 +1706,7 @@ namespace Oshima.FunGame.WebAPI.Services
                     string detail = e.Detail.Replace("小队添加", "").Trim();
                     if (int.TryParse(detail, out int c))
                     {
-                        string msg = NetworkUtility.JsonDeserialize<string>(Controller.AddSquad(uid, c)) ?? "";
+                        string msg = Controller.AddSquad(uid, c);
                         if (msg != "")
                         {
                             await SendAsync(e, "小队", msg);
@@ -1747,7 +1720,7 @@ namespace Oshima.FunGame.WebAPI.Services
                     string detail = e.Detail.Replace("小队移除", "").Trim();
                     if (int.TryParse(detail, out int c))
                     {
-                        string msg = NetworkUtility.JsonDeserialize<string>(Controller.RemoveSquad(uid, c)) ?? "";
+                        string msg = Controller.RemoveSquad(uid, c);
                         if (msg != "")
                         {
                             await SendAsync(e, "小队", msg);
@@ -1768,7 +1741,7 @@ namespace Oshima.FunGame.WebAPI.Services
                             cindexs.Add(c);
                         }
                     }
-                    string msg = NetworkUtility.JsonDeserialize<string>(Controller.SetSquad(uid, [.. cindexs])) ?? "";
+                    string msg = Controller.SetSquad(uid, [.. cindexs]);
                     if (msg != "")
                     {
                         await SendAsync(e, "小队", msg);
@@ -1781,7 +1754,7 @@ namespace Oshima.FunGame.WebAPI.Services
                     string detail = e.Detail.Replace("加入社团", "").Trim();
                     if (int.TryParse(detail, out int c))
                     {
-                        string msg = NetworkUtility.JsonDeserialize<string>(Controller.JoinClub(uid, c)) ?? "";
+                        string msg = Controller.JoinClub(uid, c);
                         if (msg != "")
                         {
                             await SendAsync(e, "社团", msg);
@@ -1799,7 +1772,7 @@ namespace Oshima.FunGame.WebAPI.Services
                         isPublic = false;
                     }
                     detail = detail.Replace("私密", "").Trim();
-                    string msg = NetworkUtility.JsonDeserialize<string>(Controller.CreateClub(uid, isPublic, detail)) ?? "";
+                    string msg = Controller.CreateClub(uid, isPublic, detail);
                     if (msg != "")
                     {
                         await SendAsync(e, "社团", msg);
@@ -1809,7 +1782,7 @@ namespace Oshima.FunGame.WebAPI.Services
 
                 if (e.Detail == "退出社团")
                 {
-                    string msg = NetworkUtility.JsonDeserialize<string>(Controller.QuitClub(uid)) ?? "";
+                    string msg = Controller.QuitClub(uid);
                     if (msg != "")
                     {
                         await SendAsync(e, "社团", "\r\n" + msg);
@@ -1819,7 +1792,7 @@ namespace Oshima.FunGame.WebAPI.Services
 
                 if (e.Detail == "我的社团")
                 {
-                    string msg = NetworkUtility.JsonDeserialize<string>(Controller.ShowClubInfo(uid)) ?? "";
+                    string msg = Controller.ShowClubInfo(uid);
                     if (msg != "")
                     {
                         await SendAsync(e, "社团", "\r\n" + msg);
@@ -1829,7 +1802,7 @@ namespace Oshima.FunGame.WebAPI.Services
 
                 if (e.Detail == "解散社团")
                 {
-                    string msg = NetworkUtility.JsonDeserialize<string>(Controller.DisbandClub(uid)) ?? "";
+                    string msg = Controller.DisbandClub(uid);
                     if (msg != "")
                     {
                         await SendAsync(e, "社团", "\r\n" + msg);
@@ -1842,7 +1815,7 @@ namespace Oshima.FunGame.WebAPI.Services
                     string detail = e.Detail.Replace("查看社团成员", "").Trim();
                     if (int.TryParse(detail, out int page) && page > 0)
                     {
-                        string msg = NetworkUtility.JsonDeserialize<string>(Controller.ShowClubMemberList(uid, 0, page)) ?? "";
+                        string msg = Controller.ShowClubMemberList(uid, 0, page);
                         if (msg != "")
                         {
                             await SendAsync(e, "社团", "\r\n" + msg);
@@ -1850,7 +1823,7 @@ namespace Oshima.FunGame.WebAPI.Services
                     }
                     else
                     {
-                        string msg = NetworkUtility.JsonDeserialize<string>(Controller.ShowClubMemberList(uid, 0, 1)) ?? "";
+                        string msg = Controller.ShowClubMemberList(uid, 0, 1);
                         if (msg != "")
                         {
                             await SendAsync(e, "社团", "\r\n" + msg);
@@ -1864,7 +1837,7 @@ namespace Oshima.FunGame.WebAPI.Services
                     string detail = e.Detail.Replace("查看社团管理", "").Trim();
                     if (int.TryParse(detail, out int page) && page > 0)
                     {
-                        string msg = NetworkUtility.JsonDeserialize<string>(Controller.ShowClubMemberList(uid, 1, page)) ?? "";
+                        string msg = Controller.ShowClubMemberList(uid, 1, page);
                         if (msg != "")
                         {
                             await SendAsync(e, "社团", "\r\n" + msg);
@@ -1872,7 +1845,7 @@ namespace Oshima.FunGame.WebAPI.Services
                     }
                     else
                     {
-                        string msg = NetworkUtility.JsonDeserialize<string>(Controller.ShowClubMemberList(uid, 1, 1)) ?? "";
+                        string msg = Controller.ShowClubMemberList(uid, 1, 1);
                         if (msg != "")
                         {
                             await SendAsync(e, "社团", "\r\n" + msg);
@@ -1886,7 +1859,7 @@ namespace Oshima.FunGame.WebAPI.Services
                     string detail = e.Detail.Replace("查看申请人列表", "").Trim();
                     if (int.TryParse(detail, out int page) && page > 0)
                     {
-                        string msg = NetworkUtility.JsonDeserialize<string>(Controller.ShowClubMemberList(uid, 2, page)) ?? "";
+                        string msg = Controller.ShowClubMemberList(uid, 2, page);
                         if (msg != "")
                         {
                             await SendAsync(e, "社团", "\r\n" + msg);
@@ -1894,7 +1867,7 @@ namespace Oshima.FunGame.WebAPI.Services
                     }
                     else
                     {
-                        string msg = NetworkUtility.JsonDeserialize<string>(Controller.ShowClubMemberList(uid, 2, 1)) ?? "";
+                        string msg = Controller.ShowClubMemberList(uid, 2, 1);
                         if (msg != "")
                         {
                             await SendAsync(e, "社团", "\r\n" + msg);
@@ -1908,7 +1881,7 @@ namespace Oshima.FunGame.WebAPI.Services
                     string detail = e.Detail.Replace("社团批准", "").Replace("@", "").Trim();
                     if (long.TryParse(detail, out long id))
                     {
-                        string msg = NetworkUtility.JsonDeserialize<string>(Controller.ApproveClub(uid, id, true)) ?? "";
+                        string msg = Controller.ApproveClub(uid, id, true);
                         if (msg != "")
                         {
                             await SendAsync(e, "社团", msg);
@@ -1922,7 +1895,7 @@ namespace Oshima.FunGame.WebAPI.Services
                     string detail = e.Detail.Replace("社团拒绝", "").Replace("@", "").Trim();
                     if (long.TryParse(detail, out long id))
                     {
-                        string msg = NetworkUtility.JsonDeserialize<string>(Controller.ApproveClub(uid, id, false)) ?? "";
+                        string msg = Controller.ApproveClub(uid, id, false);
                         if (msg != "")
                         {
                             await SendAsync(e, "社团", msg);
@@ -1936,7 +1909,7 @@ namespace Oshima.FunGame.WebAPI.Services
                     string detail = e.Detail.Replace("社团踢出", "").Replace("@", "").Trim();
                     if (long.TryParse(detail, out long id))
                     {
-                        string msg = NetworkUtility.JsonDeserialize<string>(Controller.KickClub(uid, id)) ?? "";
+                        string msg = Controller.KickClub(uid, id);
                         if (msg != "")
                         {
                             await SendAsync(e, "社团", msg);
@@ -1968,7 +1941,7 @@ namespace Oshima.FunGame.WebAPI.Services
                         {
                             args = [.. strings[1..]];
                         }
-                        string msg = NetworkUtility.JsonDeserialize<string>(Controller.ChangeClub(uid, part, [.. args])) ?? "";
+                        string msg = Controller.ChangeClub(uid, part, [.. args]);
                         if (msg != "")
                         {
                             await SendAsync(e, "社团", msg);
@@ -1981,7 +1954,7 @@ namespace Oshima.FunGame.WebAPI.Services
                 {
                     string detail = e.Detail.Replace("社团转让", "").Replace("@", "").Trim();
                     List<string> args = [detail];
-                    string msg = NetworkUtility.JsonDeserialize<string>(Controller.ChangeClub(uid, "setmaster", [.. args])) ?? "";
+                    string msg = Controller.ChangeClub(uid, "setmaster", [.. args]);
                     if (msg != "")
                     {
                         await SendAsync(e, "社团", msg);
@@ -1991,7 +1964,7 @@ namespace Oshima.FunGame.WebAPI.Services
 
                 if (e.Detail == "每日商店")
                 {
-                    string msg = NetworkUtility.JsonDeserialize<string>(Controller.ShowDailyStore(uid)) ?? "";
+                    string msg = Controller.ShowDailyStore(uid);
                     if (msg != "")
                     {
                         await SendAsync(e, "商店", "\r\n" + msg);
@@ -2010,7 +1983,7 @@ namespace Oshima.FunGame.WebAPI.Services
                         {
                             count = temp;
                         }
-                        string msg = NetworkUtility.JsonDeserialize<string>(Controller.DailyStoreBuy(uid, id, count)) ?? "";
+                        string msg = Controller.DailyStoreBuy(uid, id, count);
                         if (msg != "")
                         {
                             await SendAsync(e, "商店购买", msg);
@@ -2024,7 +1997,7 @@ namespace Oshima.FunGame.WebAPI.Services
                     string detail = e.Detail.Replace("商店查看", "").Trim();
                     if (int.TryParse(detail, out int id))
                     {
-                        string msg = NetworkUtility.JsonDeserialize<string>(Controller.DailyStoreShowInfo(uid, id)) ?? "";
+                        string msg = Controller.DailyStoreShowInfo(uid, id);
                         if (msg != "")
                         {
                             await SendAsync(e, "商店", msg);
@@ -2079,7 +2052,7 @@ namespace Oshima.FunGame.WebAPI.Services
                     return result;
                 }
 
-                if (e.Detail.StartsWith("探索", StringComparison.CurrentCultureIgnoreCase) || e.Detail.StartsWith("前往", StringComparison.CurrentCultureIgnoreCase))
+                if (e.Detail.StartsWith("探索") || e.Detail.StartsWith("前往"))
                 {
                     string detail = e.Detail.Replace("探索", "").Replace("前往", "").Trim();
                     string msg = "";
@@ -2106,10 +2079,35 @@ namespace Oshima.FunGame.WebAPI.Services
 
                 if (e.Detail == "毕业礼包")
                 {
-                    string msg = Controller.CreateGiftBox(uid, "毕业礼包");
+                    string msg = Controller.CreateGiftBox(uid, "毕业礼包", true, 2);
                     if (msg != "")
                     {
                         await SendAsync(e, "毕业礼包", string.Join("\r\n", msg));
+                    }
+                    return result;
+                }
+
+                if (e.Detail == "活动" || e.Detail == "活动中心")
+                {
+                    string msg = Controller.GetEvents();
+                    if (msg != "")
+                    {
+                        await SendAsync(e, "活动中心", string.Join("\r\n", msg));
+                    }
+                    return result;
+                }
+
+                if (e.Detail.StartsWith("查活动"))
+                {
+                    string detail = e.Detail.Replace("查活动", "").Trim();
+                    string msg = "";
+                    if (int.TryParse(detail, out int eid))
+                    {
+                        msg = Controller.GetEvents(eid);
+                        if (msg.Trim() != "")
+                        {
+                            await SendAsync(e, "查活动", msg);
+                        }
                     }
                     return result;
                 }

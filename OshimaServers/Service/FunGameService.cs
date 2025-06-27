@@ -14,7 +14,8 @@ namespace Oshima.FunGame.OshimaServers.Service
 {
     public class FunGameService
     {
-        public static Dictionary<long, List<string>> FirstLoginDailyNotice { get; } = [];
+        public static HashSet<Activity> Activities { get; } = [];
+        public static Dictionary<long, List<string>> UserNotice { get; } = [];
         public static Dictionary<int, Character> Bosses { get; } = [];
         public static ServerPluginLoader? ServerPluginLoader { get; set; } = null;
         public static WebAPIPluginLoader? WebAPIPluginLoader { get; set; } = null;
@@ -51,7 +52,7 @@ namespace Oshima.FunGame.OshimaServers.Service
             FunGameConstant.Items.AddRange(exItems.Values.Where(i => (int)i.ItemType > 4));
             FunGameConstant.Items.AddRange([new 小经验书(), new 中经验书(), new 大经验书(), new 升华之印(), new 流光之印(), new 永恒之印(), new 技能卷轴(), new 智慧之果(), new 奥术符文(), new 混沌之核(),
                 new 小回复药(), new 中回复药(), new 大回复药(), new 魔力填充剂1(), new 魔力填充剂2(), new 魔力填充剂3(), new 能量饮料1(), new 能量饮料2(), new 能量饮料3(), new 年夜饭(), new 蛇年大吉(), new 新春快乐(), new 毕业礼包(),
-                new 复苏药1(), new 复苏药2(), new 复苏药3(), new 全回复药()
+                new 复苏药1(), new 复苏药2(), new 复苏药3(), new 全回复药(), new 魔法卡礼包()
             ]);
 
             FunGameConstant.AllItems.AddRange(FunGameConstant.Equipment);
@@ -592,10 +593,20 @@ namespace Oshima.FunGame.OshimaServers.Service
             if (!pc.TryGetValue("logon", out object? value) || (value is bool logon && !logon))
             {
                 pc.Add("logon", true);
-                FirstLoginDailyNotice[user.Id] = ["欢迎回到筽祀牻大陆！请发送【帮助】获取更多玩法指令哦～"];
+                AddNotice(user.Id, "欢迎回到筽祀牻大陆！请发送【帮助】获取更多玩法指令哦～");
+                AddNotice(user.Id, GetEvents());
             }
 
             return user;
+        }
+
+        public static void AddNotice(long userId, params string[] notices)
+        {
+            if (UserNotice.TryGetValue(userId, out List<string>? list) && list != null)
+            {
+                list.AddRange(notices);
+            }
+            else UserNotice[userId] = [.. notices];
         }
 
         public static IEnumerable<T> GetPage<T>(IEnumerable<T> list, int showPage, int pageSize)
@@ -1134,7 +1145,20 @@ namespace Oshima.FunGame.OshimaServers.Service
             msg = "";
             if (item.ItemType == ItemType.GiftBox)
             {
-                if (item is 礼包.GiftBox box && box.Gifts.Count > 0)
+                if (item is 魔法卡礼包 cardBox)
+                {
+                    List<string> cards = [];
+                    for (int i = 0; i< cardBox.Count; i++)
+                    {
+                        Item newItem = GenerateMagicCard(item.QualityType);
+                        SetSellAndTradeTime(newItem);
+                        newItem.User = user;
+                        user.Inventory.Items.Add(newItem);
+                        cards.Add(newItem.ToStringInventory(false));
+                    }
+                    msg = "打开礼包成功！获得了以下物品：\r\n" + string.Join("\r\n", cards);
+                }
+                else if (item is 礼包.GiftBox box && box.Gifts.Count > 0)
                 {
                     foreach (string name in box.Gifts.Keys)
                     {
@@ -1860,6 +1884,91 @@ namespace Oshima.FunGame.OshimaServers.Service
                 region.ChangeRandomWeather();
             }
             await Task.CompletedTask;
+        }
+
+        public static string GetEventCenter()
+        {
+            EntityModuleConfig<Activity> activities = new("activities", "activities");
+            activities.LoadConfig();
+            if (activities.Count == 0)
+            {
+                return "当前没有任何活动，敬请期待。";
+            }
+            Activities.Clear();
+            foreach (Activity activity in activities.Values)
+            {
+                Activities.Add(activity);
+            }
+            StringBuilder builder = new();
+            builder.AppendLine("★☆★ 活动中心 ★☆★");
+
+            ActivityState[] status = [ActivityState.InProgress, ActivityState.Upcoming, ActivityState.Future, ActivityState.Ended];
+            foreach (ActivityState state in status)
+            {
+                IEnumerable<Activity> filteredActivities = activities.Values.Where(a => a.Status == state);
+                if (filteredActivities.Any())
+                {
+                    builder.AppendLine($"【{CommonSet.GetActivityStatus(state)}】");
+                    builder.AppendLine($"{string.Join("\r\n", filteredActivities.Select(a => a.GetIdName() + $"（{a.GetTimeString(false)}）"))}");
+                }
+            }
+
+            builder.AppendLine("请使用【查活动+活动序号】指令查询活动详细信息。");
+
+            return builder.ToString().Trim();
+        }
+        
+        public static string GetEvents(ActivityState status = ActivityState.InProgress)
+        {
+            EntityModuleConfig<Activity> activities = new("activities", "activities");
+            activities.LoadConfig();
+            IEnumerable<Activity> filteredActivities = activities.Values.Where(a => a.Status == status);
+            if (!filteredActivities.Any())
+            {
+                return $"当前没有任何{CommonSet.GetActivityStatus(status)}的活动，敬请期待。";
+            }
+            return $"★☆★ {CommonSet.GetActivityStatus(status)}活动列表 ★☆★\r\n" +
+                $"{string.Join("\r\n", filteredActivities.Select(a => a.GetIdName() + $"（{a.GetTimeString(false)}）"))}\r\n" +
+                $"请使用【查活动+活动序号】指令查询活动详细信息。";
+        }
+
+        public static string GetEvent(long id)
+        {
+            EntityModuleConfig<Activity> activities = new("activities", "activities");
+            activities.LoadConfig();
+            if (activities.Values.FirstOrDefault(a => a.Id == id) is Activity activity)
+            {
+                return $"{activity}";
+            }
+            return "该活动不存在。";
+        }
+
+        public static string AddEvent(Activity activity)
+        {
+            EntityModuleConfig<Activity> activities = new("activities", "activities");
+            activities.LoadConfig();
+            activity.UpdateState();
+            activities.Add(activity.Id.ToString(), activity);
+            activities.SaveConfig();
+            return "该活动已添加！";
+        }
+
+        public static string RemoveEvent(Activity activity)
+        {
+            EntityModuleConfig<Activity> activities = new("activities", "activities");
+            activities.LoadConfig();
+            activities.Remove(activity.Id.ToString());
+            activities.SaveConfig();
+            return "该活动已删除！";
+        }
+
+        public static string GetSquadInfo(IEnumerable<Character> inventory, HashSet<long> squadIds)
+        {
+            Character[] squad = [.. inventory.Where(c => squadIds.Contains(c.Id))];
+            Dictionary<Character, int> characters = inventory
+                .Select((character, index) => new { character, index })
+                .ToDictionary(x => x.character, x => x.index + 1);
+            return $"{(squad.Length > 0 ? string.Join("\r\n", squad.Select(c => $"#{characters[c]}. {c}")) : "空")}";
         }
     }
 }

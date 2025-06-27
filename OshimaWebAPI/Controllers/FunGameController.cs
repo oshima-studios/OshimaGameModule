@@ -28,6 +28,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
         private const int drawCardReduce_Material = 5;
         private const string noSaved = "你还没有创建存档！请发送【创建存档】创建。";
         private const string refused = "暂时无法使用此指令。";
+        private const string busy = "服务器繁忙，请稍后再试。";
 
         [AllowAnonymous]
         [HttpGet("test")]
@@ -78,6 +79,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
                     builder.AppendLine($"每秒伤害：{stats.DamagePerSecond:0.##}");
                     builder.AppendLine($"总计击杀数：{stats.Kills}" + (stats.Plays != 0 ? $" / 场均：{(double)stats.Kills / stats.Plays:0.##}" : ""));
                     builder.AppendLine($"总计死亡数：{stats.Deaths}" + (stats.Plays != 0 ? $" / 场均：{(double)stats.Deaths / stats.Plays:0.##}" : ""));
+                    builder.AppendLine($"击杀死亡比：{(stats.Deaths == 0 ? stats.Kills : ((double)stats.Kills / stats.Deaths)):0.##}");
                     builder.AppendLine($"总计助攻数：{stats.Assists}" + (stats.Plays != 0 ? $" / 场均：{(double)stats.Assists / stats.Plays:0.##}" : ""));
                     builder.AppendLine($"总计首杀数：{stats.FirstKills}" + (stats.Plays != 0 ? $" / 首杀率：{(double)stats.FirstKills / stats.Plays * 100:0.##}%" : ""));
                     builder.AppendLine($"总计首死数：{stats.FirstDeaths}" + (stats.Plays != 0 ? $" / 首死率：{(double)stats.FirstDeaths / stats.Plays * 100:0.##}%" : ""));
@@ -98,10 +100,10 @@ namespace Oshima.FunGame.WebAPI.Controllers
 
                     builder.AppendLine($"上次排名：{stats.LastRank} / 场均名次：{stats.AvgRank:0.##}");
 
-                    return NetworkUtility.JsonSerialize(builder.ToString());
+                    return builder.ToString();
                 }
             }
-            return NetworkUtility.JsonSerialize("");
+            return "";
         }
 
         [AllowAnonymous]
@@ -151,10 +153,10 @@ namespace Oshima.FunGame.WebAPI.Controllers
                     names = [.. FunGameSimulation.TeamCharacterStatistics.OrderByDescending(kv => kv.Value.Rating).Select(kv => kv.Key.GetName())];
                     builder.AppendLine($"技术得分：{stats.Rating:0.0#}（#{names.IndexOf(character.GetName()) + 1}）");
 
-                    return NetworkUtility.JsonSerialize(builder.ToString());
+                    return builder.ToString();
                 }
             }
-            return NetworkUtility.JsonSerialize("");
+            return "";
         }
 
         [AllowAnonymous]
@@ -204,7 +206,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
 
         [AllowAnonymous]
         [HttpGet("ratingrank")]
-        public string GetRatingRank([FromQuery] bool? isteam = null)
+        public List<string> GetRatingRank([FromQuery] bool? isteam = null)
         {
             bool team = isteam ?? false;
             if (team)
@@ -223,7 +225,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
                     builder.AppendLine($"MVP次数：{stats.MVPs}");
                     strings.Add(builder.ToString());
                 }
-                return NetworkUtility.JsonSerialize(strings);
+                return strings;
             }
             else
             {
@@ -243,7 +245,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
                     builder.AppendLine($"MVP次数：{stats.MVPs}");
                     strings.Add(builder.ToString());
                 }
-                return NetworkUtility.JsonSerialize(strings);
+                return strings;
             }
         }
 
@@ -258,9 +260,9 @@ namespace Oshima.FunGame.WebAPI.Controllers
                 c.NormalAttack.Level = General.GameplayEquilibriumConstant.MaxNormalAttackLevel;
                 FunGameService.AddCharacterSkills(c, 1, General.GameplayEquilibriumConstant.MaxSkillLevel, General.GameplayEquilibriumConstant.MaxSuperSkillLevel);
 
-                return NetworkUtility.JsonSerialize(c.GetInfo().Trim());
+                return c.GetInfo().Trim();
             }
-            return NetworkUtility.JsonSerialize("");
+            return "";
         }
 
         [AllowAnonymous]
@@ -297,11 +299,11 @@ namespace Oshima.FunGame.WebAPI.Controllers
                     skill.Level = skill.IsMagic ? General.GameplayEquilibriumConstant.MaxMagicLevel : General.GameplayEquilibriumConstant.MaxSkillLevel;
                     msg.Add(character.ToStringWithLevel() + "\r\n" + skill.ToString());
 
-                    return NetworkUtility.JsonSerialize(string.Join("\r\n", msg));
+                    return string.Join("\r\n", msg);
                 }
             }
 
-            return NetworkUtility.JsonSerialize("");
+            return "";
         }
 
         [AllowAnonymous]
@@ -338,11 +340,11 @@ namespace Oshima.FunGame.WebAPI.Controllers
                     skill.Level = skill.IsMagic ? General.GameplayEquilibriumConstant.MaxMagicLevel : General.GameplayEquilibriumConstant.MaxSkillLevel;
                     msg.Add(character.ToStringWithLevel() + "\r\n" + skill.ToString());
 
-                    return NetworkUtility.JsonSerialize(string.Join("\r\n", msg));
+                    return string.Join("\r\n", msg);
                 }
             }
 
-            return NetworkUtility.JsonSerialize("");
+            return "";
         }
 
         [AllowAnonymous]
@@ -375,10 +377,10 @@ namespace Oshima.FunGame.WebAPI.Controllers
                     item.SetLevel(1);
                     msg.Add(item.ToString(false, true));
 
-                    return NetworkUtility.JsonSerialize(string.Join("\r\n", msg));
+                    return string.Join("\r\n", msg);
                 }
             }
-            return NetworkUtility.JsonSerialize("");
+            return "";
         }
 
         [AllowAnonymous]
@@ -411,10 +413,10 @@ namespace Oshima.FunGame.WebAPI.Controllers
                     item.SetLevel(1);
                     msg.Add(item.ToString(false, true));
 
-                    return NetworkUtility.JsonSerialize(string.Join("\r\n", msg));
+                    return string.Join("\r\n", msg);
                 }
             }
-            return NetworkUtility.JsonSerialize("");
+            return "";
         }
 
         [AllowAnonymous]
@@ -422,7 +424,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
         public string GenerateMagicCard()
         {
             Item i = FunGameService.GenerateMagicCard();
-            return NetworkUtility.JsonSerialize(i.ToString(false, true));
+            return i.ToString(false, true);
         }
 
         [AllowAnonymous]
@@ -432,9 +434,9 @@ namespace Oshima.FunGame.WebAPI.Controllers
             Item? i = FunGameService.GenerateMagicCardPack(3);
             if (i != null)
             {
-                return NetworkUtility.JsonSerialize(i.ToString(false, true));
+                return i.ToString(false, true);
             }
-            return NetworkUtility.JsonSerialize("");
+            return "";
         }
 
         [HttpPost("createsaved")]
@@ -449,13 +451,13 @@ namespace Oshima.FunGame.WebAPI.Controllers
                 {
                     if (name.Trim() == "")
                     {
-                        return NetworkUtility.JsonSerialize("未提供接入ID！");
+                        return "未提供接入ID！";
                     }
                     Logger.LogInformation("[Reg] 接入ID：{name}", name);
                     sqlHelper.ExecuteDataSet(FunGameService.Select_CheckAutoKey(sqlHelper, name));
                     if (sqlHelper.Success)
                     {
-                        return NetworkUtility.JsonSerialize("你已经创建过存档！");
+                        return "你已经创建过存档！";
                     }
                     string password = name.Encrypt(name);
                     sqlHelper.NewTransaction();
@@ -476,11 +478,11 @@ namespace Oshima.FunGame.WebAPI.Controllers
                             pc.LoadConfig();
                             pc.Add("user", user);
                             pc.SaveConfig();
-                            return NetworkUtility.JsonSerialize($"创建存档成功！你的昵称是【{username}】。");
+                            return $"创建存档成功！你的昵称是【{username}】。";
                         }
                         else
                         {
-                            return NetworkUtility.JsonSerialize("无法处理注册，创建存档失败！");
+                            return "无法处理注册，创建存档失败！";
                         }
                     }
                     else
@@ -493,7 +495,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
                     sqlHelper.Rollback();
                     Logger.LogError(e, "Error: ");
                 }
-                return NetworkUtility.JsonSerialize("无法处理注册，创建存档失败！");
+                return "无法处理注册，创建存档失败！";
             }
             else if (uid != null && uid != 0)
             {
@@ -508,14 +510,14 @@ namespace Oshima.FunGame.WebAPI.Controllers
                     FunGameConstant.UserIdAndUsername[uid.Value] = user;
                     pc.Add("user", user);
                     pc.SaveConfig();
-                    return NetworkUtility.JsonSerialize($"创建存档成功！你的昵称是【{username}】。");
+                    return $"创建存档成功！你的昵称是【{username}】。";
                 }
                 else
                 {
-                    return NetworkUtility.JsonSerialize("你已经创建过存档！");
+                    return "你已经创建过存档！";
                 }
             }
-            return NetworkUtility.JsonSerialize("创建存档失败！");
+            return "创建存档失败！";
         }
 
         [HttpPost("restoresaved")]
@@ -537,13 +539,13 @@ namespace Oshima.FunGame.WebAPI.Controllers
             //    user.LastTime = DateTime.Now;
             //    pc.Add("user", user);
             //    pc.SaveConfig();
-            //    return NetworkUtility.JsonSerialize($"你的存档已还原成功。");
+            //    return $"你的存档已还原成功。";
             //}
             //else
             //{
-            //    return NetworkUtility.JsonSerialize(noSaved);
+            //    return noSaved;
             //}
-            return NetworkUtility.JsonSerialize($"无法还原用户 {uid} 的存档，此功能维护中。");
+            return $"无法还原用户 {uid} 的存档，此功能维护中。";
         }
 
         [HttpPost("showsaved")]
@@ -597,11 +599,11 @@ namespace Oshima.FunGame.WebAPI.Controllers
                 user.LastTime = DateTime.Now;
                 pc.Add("user", user);
                 pc.SaveConfig();
-                return NetworkUtility.JsonSerialize(builder.ToString().Trim());
+                return builder.ToString().Trim();
             }
             else
             {
-                return NetworkUtility.JsonSerialize(noSaved);
+                return noSaved;
             }
         }
 
@@ -624,7 +626,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
                 }
                 else
                 {
-                    return NetworkUtility.JsonSerialize($"你的{General.GameplayEquilibriumConstant.InGameCurrency}不足 {reduce} 呢，无法改名！");
+                    return $"你的{General.GameplayEquilibriumConstant.InGameCurrency}不足 {reduce} 呢，无法改名！";
                 }
 
                 user.Username = FunGameService.GenerateRandomChineseUserName();
@@ -642,11 +644,11 @@ namespace Oshima.FunGame.WebAPI.Controllers
                 user.LastTime = DateTime.Now;
                 pc.Add("user", user);
                 pc.SaveConfig();
-                return NetworkUtility.JsonSerialize($"消耗 {reduce} {General.GameplayEquilibriumConstant.InGameCurrency}，你的新昵称是【{user.Username}】");
+                return $"消耗 {reduce} {General.GameplayEquilibriumConstant.InGameCurrency}，你的新昵称是【{user.Username}】";
             }
             else
             {
-                return NetworkUtility.JsonSerialize(noSaved);
+                return noSaved;
             }
         }
 
@@ -704,7 +706,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
                             pc.SaveConfig();
                             emc.Clear();
                             emc.SaveConfig();
-                            return NetworkUtility.JsonSerialize($"你已完成重随属性确认，新的自建角色属性如下：\r\n" +
+                            return $"你已完成重随属性确认，新的自建角色属性如下：\r\n" +
                                 $"核心属性：{CharacterSet.GetPrimaryAttributeName(oldPA)} => {CharacterSet.GetPrimaryAttributeName(character.PrimaryAttribute)}\r\n" +
                                 $"初始生命：{oldHP} => {character.InitialHP}\r\n" +
                                 $"初始魔法：{oldMP} => {character.InitialMP}\r\n" +
@@ -714,11 +716,11 @@ namespace Oshima.FunGame.WebAPI.Controllers
                                 $"初始智力：{oldINT}（+{oldINTG}/Lv）=> {character.InitialINT}（+{character.INTGrowth}/Lv）\r\n" +
                                 $"初始速度：{oldSPD} => {character.InitialSPD}\r\n" +
                                 $"生命回复：{oldHR} => {character.InitialHR}\r\n" +
-                                $"魔法回复：{oldMR} => {character.InitialMR}\r\n");
+                                $"魔法回复：{oldMR} => {character.InitialMR}\r\n";
                         }
                         else
                         {
-                            return NetworkUtility.JsonSerialize($"你还没有获取过重随属性预览！");
+                            return $"你还没有获取过重随属性预览！";
                         }
                     }
                     else
@@ -732,7 +734,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
                             }
                             else
                             {
-                                return NetworkUtility.JsonSerialize($"你的{General.GameplayEquilibriumConstant.InGameMaterial}不足 {reduce} 呢，无法重随自建角色属性！");
+                                return $"你的{General.GameplayEquilibriumConstant.InGameMaterial}不足 {reduce} 呢，无法重随自建角色属性！";
                             }
                             newCustom = new CustomCharacter(FunGameConstant.CustomCharacterId, "");
                             FunGameService.SetCharacterPrimaryAttribute(newCustom);
@@ -741,7 +743,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
                             pc.SaveConfig();
                             emc.Add("newCustom", newCustom);
                             emc.SaveConfig();
-                            return NetworkUtility.JsonSerialize($"消耗 {reduce} {General.GameplayEquilibriumConstant.InGameMaterial}，获取到重随属性预览如下：\r\n" +
+                            return $"消耗 {reduce} {General.GameplayEquilibriumConstant.InGameMaterial}，获取到重随属性预览如下：\r\n" +
                                 $"核心属性：{CharacterSet.GetPrimaryAttributeName(oldPA)} => {CharacterSet.GetPrimaryAttributeName(newCustom.PrimaryAttribute)}\r\n" +
                                 $"初始生命：{oldHP} => {newCustom.InitialHP}\r\n" +
                                 $"初始魔法：{oldMP} => {newCustom.InitialMP}\r\n" +
@@ -752,11 +754,11 @@ namespace Oshima.FunGame.WebAPI.Controllers
                                 $"初始速度：{oldSPD} => {newCustom.InitialSPD}\r\n" +
                                 $"生命回复：{oldHR} => {newCustom.InitialHR}\r\n" +
                                 $"魔法回复：{oldMR} => {newCustom.InitialMR}\r\n" +
-                                $"请发送【确认角色重随】来确认更新，或者发送【取消角色重随】来取消操作。");
+                                $"请发送【确认角色重随】来确认更新，或者发送【取消角色重随】来取消操作。";
                         }
                         else if (newCustom.Id == FunGameConstant.CustomCharacterId)
                         {
-                            return NetworkUtility.JsonSerialize($"你已经有一个待确认的重随属性如下：\r\n" +
+                            return $"你已经有一个待确认的重随属性如下：\r\n" +
                                 $"核心属性：{CharacterSet.GetPrimaryAttributeName(oldPA)} => {CharacterSet.GetPrimaryAttributeName(newCustom.PrimaryAttribute)}\r\n" +
                                 $"初始生命：{oldHP} => {newCustom.InitialHP}\r\n" +
                                 $"初始魔法：{oldMP} => {newCustom.InitialMP}\r\n" +
@@ -767,22 +769,22 @@ namespace Oshima.FunGame.WebAPI.Controllers
                                 $"初始速度：{oldSPD} => {newCustom.InitialSPD}\r\n" +
                                 $"生命回复：{oldHR} => {newCustom.InitialHR}\r\n" +
                                 $"魔法回复：{oldMR} => {newCustom.InitialMR}\r\n" +
-                                $"请发送【确认角色重随】来确认更新，或者发送【取消角色重随】来取消操作。");
+                                $"请发送【确认角色重随】来确认更新，或者发送【取消角色重随】来取消操作。";
                         }
                         else
                         {
-                            return NetworkUtility.JsonSerialize($"重随自建角色属性失败！");
+                            return $"重随自建角色属性失败！";
                         }
                     }
                 }
                 else
                 {
-                    return NetworkUtility.JsonSerialize($"你似乎没有自建角色，请发送【生成自建角色】创建！");
+                    return $"你似乎没有自建角色，请发送【生成自建角色】创建！";
                 }
             }
             else
             {
-                return NetworkUtility.JsonSerialize(noSaved);
+                return noSaved;
             }
         }
 
@@ -802,16 +804,16 @@ namespace Oshima.FunGame.WebAPI.Controllers
                 {
                     emc.Clear();
                     emc.SaveConfig();
-                    return NetworkUtility.JsonSerialize($"已取消角色重随。");
+                    return $"已取消角色重随。";
                 }
                 else
                 {
-                    return NetworkUtility.JsonSerialize($"你目前没有待确认的角色重随。");
+                    return $"你目前没有待确认的角色重随。";
                 }
             }
             else
             {
-                return NetworkUtility.JsonSerialize(noSaved);
+                return noSaved;
             }
         }
 
@@ -827,11 +829,11 @@ namespace Oshima.FunGame.WebAPI.Controllers
             {
                 User user = FunGameService.GetUser(pc);
 
-                return NetworkUtility.JsonSerialize(user.Inventory.ToString(false));
+                return user.Inventory.ToString(false);
             }
             else
             {
-                return NetworkUtility.JsonSerialize(noSaved);
+                return noSaved;
             }
         }
 
@@ -1207,7 +1209,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
                 User user = FunGameService.GetUser(pc);
                 if (user.Inventory.Characters.Any(c => c.Id == FunGameConstant.CustomCharacterId))
                 {
-                    return NetworkUtility.JsonSerialize($"你已经拥有一个自建角色【{user.Username}】，无法再创建！");
+                    return $"你已经拥有一个自建角色【{user.Username}】，无法再创建！";
                 }
                 else
                 {
@@ -1215,12 +1217,12 @@ namespace Oshima.FunGame.WebAPI.Controllers
                     user.LastTime = DateTime.Now;
                     pc.Add("user", user);
                     pc.SaveConfig();
-                    return NetworkUtility.JsonSerialize($"恭喜你成功创建了一个自建角色【{user.Username}】，请查看你的角色库存！");
+                    return $"恭喜你成功创建了一个自建角色【{user.Username}】，请查看你的角色库存！";
                 }
             }
             else
             {
-                return NetworkUtility.JsonSerialize(noSaved);
+                return noSaved;
             }
         }
 
@@ -1243,7 +1245,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
                 }
                 else
                 {
-                    return NetworkUtility.JsonSerialize($"你的{General.GameplayEquilibriumConstant.InGameCurrency}不足 {reduce} 呢，无法抽卡！");
+                    return $"你的{General.GameplayEquilibriumConstant.InGameCurrency}不足 {reduce} 呢，无法抽卡！";
                 }
 
                 double dice = Random.Shared.NextDouble();
@@ -1253,17 +1255,17 @@ namespace Oshima.FunGame.WebAPI.Controllers
                     user.LastTime = DateTime.Now;
                     pc.Add("user", user);
                     pc.SaveConfig();
-                    return NetworkUtility.JsonSerialize(msg);
+                    return msg;
                 }
                 else
                 {
                     pc.SaveConfig();
-                    return NetworkUtility.JsonSerialize($"消耗 {reduce} {General.GameplayEquilibriumConstant.InGameCurrency}，你什么也没抽中……");
+                    return $"消耗 {reduce} {General.GameplayEquilibriumConstant.InGameCurrency}，你什么也没抽中……";
                 }
             }
             else
             {
-                return NetworkUtility.JsonSerialize(noSaved);
+                return noSaved;
             }
         }
 
@@ -1334,7 +1336,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
                 }
                 else
                 {
-                    return NetworkUtility.JsonSerialize($"你的{General.GameplayEquilibriumConstant.InGameMaterial}不足 {reduce} 呢，无法抽卡！");
+                    return $"你的{General.GameplayEquilibriumConstant.InGameMaterial}不足 {reduce} 呢，无法抽卡！";
                 }
 
                 double dice = Random.Shared.NextDouble();
@@ -1344,17 +1346,17 @@ namespace Oshima.FunGame.WebAPI.Controllers
                     user.LastTime = DateTime.Now;
                     pc.Add("user", user);
                     pc.SaveConfig();
-                    return NetworkUtility.JsonSerialize(msg);
+                    return msg;
                 }
                 else
                 {
                     pc.SaveConfig();
-                    return NetworkUtility.JsonSerialize($"消耗 {reduce} {General.GameplayEquilibriumConstant.InGameMaterial}，你什么也没抽中……");
+                    return $"消耗 {reduce} {General.GameplayEquilibriumConstant.InGameMaterial}，你什么也没抽中……";
                 }
             }
             else
             {
-                return NetworkUtility.JsonSerialize(noSaved);
+                return noSaved;
             }
         }
 
@@ -1429,16 +1431,16 @@ namespace Oshima.FunGame.WebAPI.Controllers
                     user.LastTime = DateTime.Now;
                     pc.Add("user", user);
                     pc.SaveConfig();
-                    return NetworkUtility.JsonSerialize($"兑换成功！你消耗了 {reduce} {General.GameplayEquilibriumConstant.InGameMaterial}，增加了 {reward} {General.GameplayEquilibriumConstant.InGameCurrency}！");
+                    return $"兑换成功！你消耗了 {reduce} {General.GameplayEquilibriumConstant.InGameMaterial}，增加了 {reward} {General.GameplayEquilibriumConstant.InGameCurrency}！";
                 }
                 else
                 {
-                    return NetworkUtility.JsonSerialize($"你的{General.GameplayEquilibriumConstant.InGameMaterial}不足 {reduce}，最低消耗 10 {General.GameplayEquilibriumConstant.InGameMaterial}兑换 2000 {General.GameplayEquilibriumConstant.InGameCurrency}！");
+                    return $"你的{General.GameplayEquilibriumConstant.InGameMaterial}不足 {reduce}，最低消耗 10 {General.GameplayEquilibriumConstant.InGameMaterial}兑换 2000 {General.GameplayEquilibriumConstant.InGameCurrency}！";
                 }
             }
             else
             {
-                return NetworkUtility.JsonSerialize(noSaved);
+                return noSaved;
             }
         }
 
@@ -1462,9 +1464,9 @@ namespace Oshima.FunGame.WebAPI.Controllers
                     {
                         if (isSimple)
                         {
-                            return NetworkUtility.JsonSerialize($"这是你的主战角色简略信息：\r\n{user.Inventory.MainCharacter.GetSimpleInfo(showEXP: true).Trim()}");
+                            return $"这是你的主战角色简略信息：\r\n{user.Inventory.MainCharacter.GetSimpleInfo(showEXP: true).Trim()}";
                         }
-                        return NetworkUtility.JsonSerialize($"这是你的主战角色详细信息：\r\n{user.Inventory.MainCharacter.GetInfo().Trim()}");
+                        return $"这是你的主战角色详细信息：\r\n{user.Inventory.MainCharacter.GetInfo().Trim()}";
                     }
                     else
                     {
@@ -1473,24 +1475,25 @@ namespace Oshima.FunGame.WebAPI.Controllers
                             Character character = user.Inventory.Characters.ToList()[cIndex - 1];
                             if (isSimple)
                             {
-                                return NetworkUtility.JsonSerialize($"这是你库存中序号为 {cIndex} 的角色简略信息：\r\n{character.GetSimpleInfo(showEXP: true).Trim()}");
+                                return $"这是你库存中序号为 {cIndex} 的角色简略信息：\r\n{character.GetSimpleInfo(showEXP: true).Trim()}";
                             }
-                            return NetworkUtility.JsonSerialize($"这是你库存中序号为 {cIndex} 的角色详细信息：\r\n{character.GetInfo().Trim()}");
+                            return $"这是你库存中序号为 {cIndex} 的角色详细信息：\r\n{character.GetInfo().Trim()}";
                         }
                         else
                         {
-                            return NetworkUtility.JsonSerialize($"没有找到与这个序号相对应的角色！");
+                            return $"没有找到与这个序号相对应的角色！";
                         }
                     }
                 }
                 else
                 {
-                    return NetworkUtility.JsonSerialize(noSaved);
+                    return noSaved;
                 }
             }
             catch (Exception e)
             {
-                return NetworkUtility.JsonSerialize(e.ToString());
+                Logger.LogError(e, "Error: ");
+                return busy;
             }
         }
 
@@ -1511,29 +1514,30 @@ namespace Oshima.FunGame.WebAPI.Controllers
 
                     if (cIndex == 0)
                     {
-                        return NetworkUtility.JsonSerialize($"这是你的主战角色技能信息：\r\n{user.Inventory.MainCharacter.GetSkillInfo().Trim()}");
+                        return $"这是你的主战角色技能信息：\r\n{user.Inventory.MainCharacter.GetSkillInfo().Trim()}";
                     }
                     else
                     {
                         if (cIndex > 0 && cIndex <= user.Inventory.Characters.Count)
                         {
                             Character character = user.Inventory.Characters.ToList()[cIndex - 1];
-                            return NetworkUtility.JsonSerialize($"这是你库存中序号为 {cIndex} 的角色技能信息：\r\n{character.GetSkillInfo().Trim()}");
+                            return $"这是你库存中序号为 {cIndex} 的角色技能信息：\r\n{character.GetSkillInfo().Trim()}";
                         }
                         else
                         {
-                            return NetworkUtility.JsonSerialize($"没有找到与这个序号相对应的角色！");
+                            return $"没有找到与这个序号相对应的角色！";
                         }
                     }
                 }
                 else
                 {
-                    return NetworkUtility.JsonSerialize(noSaved);
+                    return noSaved;
                 }
             }
             catch (Exception e)
             {
-                return NetworkUtility.JsonSerialize(e.ToString());
+                Logger.LogError(e, "Error: ");
+                return busy;
             }
         }
 
@@ -1554,29 +1558,30 @@ namespace Oshima.FunGame.WebAPI.Controllers
 
                     if (cIndex == 0)
                     {
-                        return NetworkUtility.JsonSerialize($"这是你的主战角色装备物品信息：\r\n{user.Inventory.MainCharacter.GetItemInfo(showEXP: true).Trim()}");
+                        return $"这是你的主战角色装备物品信息：\r\n{user.Inventory.MainCharacter.GetItemInfo(showEXP: true).Trim()}";
                     }
                     else
                     {
                         if (cIndex > 0 && cIndex <= user.Inventory.Characters.Count)
                         {
                             Character character = user.Inventory.Characters.ToList()[cIndex - 1];
-                            return NetworkUtility.JsonSerialize($"这是你库存中序号为 {cIndex} 的角色装备物品信息：\r\n{character.GetItemInfo(showEXP: true).Trim()}");
+                            return $"这是你库存中序号为 {cIndex} 的角色装备物品信息：\r\n{character.GetItemInfo(showEXP: true).Trim()}";
                         }
                         else
                         {
-                            return NetworkUtility.JsonSerialize($"没有找到与这个序号相对应的角色！");
+                            return $"没有找到与这个序号相对应的角色！";
                         }
                     }
                 }
                 else
                 {
-                    return NetworkUtility.JsonSerialize(noSaved);
+                    return noSaved;
                 }
             }
             catch (Exception e)
             {
-                return NetworkUtility.JsonSerialize(e.ToString());
+                Logger.LogError(e, "Error: ");
+                return busy;
             }
         }
 
@@ -1598,21 +1603,22 @@ namespace Oshima.FunGame.WebAPI.Controllers
                     if (itemIndex > 0 && itemIndex <= user.Inventory.Items.Count)
                     {
                         Item item = user.Inventory.Items.ToList()[itemIndex - 1];
-                        return NetworkUtility.JsonSerialize($"这是你库存中序号为 {itemIndex} 的物品详细信息：\r\n{item.ToStringInventory(true).Trim()}");
+                        return $"这是你库存中序号为 {itemIndex} 的物品详细信息：\r\n{item.ToStringInventory(true).Trim()}";
                     }
                     else
                     {
-                        return NetworkUtility.JsonSerialize($"没有找到与这个序号相对应的物品！");
+                        return $"没有找到与这个序号相对应的物品！";
                     }
                 }
                 else
                 {
-                    return NetworkUtility.JsonSerialize(noSaved);
+                    return noSaved;
                 }
             }
             catch (Exception e)
             {
-                return NetworkUtility.JsonSerialize(e.ToString());
+                Logger.LogError(e, "Error: ");
+                return busy;
             }
         }
 
@@ -1643,7 +1649,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
                     }
                     else
                     {
-                        return NetworkUtility.JsonSerialize($"你库存中没有任何名为【{itemName}】的物品！");
+                        return $"你库存中没有任何名为【{itemName}】的物品！";
                     }
 
                     int total = items.Count;
@@ -1704,26 +1710,27 @@ namespace Oshima.FunGame.WebAPI.Controllers
                             }
                             str += $"可出售数量：{itemsSellable.Count()}，可交易数量：{itemsTradable.Count()}）\r\n";
                             str += $"页数：{showPage} / {maxPage}";
-                            return NetworkUtility.JsonSerialize(str.Trim());
+                            return str.Trim();
                         }
                         else
                         {
-                            return NetworkUtility.JsonSerialize($"你库存中没有任何名为【{itemName}】的物品！");
+                            return $"你库存中没有任何名为【{itemName}】的物品！";
                         }
                     }
                     else
                     {
-                        return NetworkUtility.JsonSerialize($"没有这么多页！当前总页数为 {maxPage}，但你请求的是第 {showPage} 页。");
+                        return $"没有这么多页！当前总页数为 {maxPage}，但你请求的是第 {showPage} 页。";
                     }
                 }
                 else
                 {
-                    return NetworkUtility.JsonSerialize(noSaved);
+                    return noSaved;
                 }
             }
             catch (Exception e)
             {
-                return NetworkUtility.JsonSerialize(e.ToString());
+                Logger.LogError(e, "Error: ");
+                return busy;
             }
         }
 
@@ -1751,45 +1758,46 @@ namespace Oshima.FunGame.WebAPI.Controllers
                     }
                     else
                     {
-                        return NetworkUtility.JsonSerialize($"没有找到与这个序号相对应的角色！");
+                        return $"没有找到与这个序号相对应的角色！";
                     }
                     if (itemIndex > 0 && itemIndex <= user.Inventory.Items.Count)
                     {
                         item = user.Inventory.Items.ToList()[itemIndex - 1];
                         if ((int)item.ItemType < (int)ItemType.MagicCardPack || (int)item.ItemType > (int)ItemType.Accessory)
                         {
-                            return NetworkUtility.JsonSerialize($"这个物品无法被装备！");
+                            return $"这个物品无法被装备！";
                         }
                         else if (item.Character != null)
                         {
-                            return NetworkUtility.JsonSerialize($"这个物品无法被装备！[ {item.Character.ToStringWithLevelWithOutUser()} ] 已装备此物品。");
+                            return $"这个物品无法被装备！[ {item.Character.ToStringWithLevelWithOutUser()} ] 已装备此物品。";
                         }
                     }
                     else
                     {
-                        return NetworkUtility.JsonSerialize($"没有找到与这个序号相对应的物品！");
+                        return $"没有找到与这个序号相对应的物品！";
                     }
                     if (character != null && item != null && character.Equip(item))
                     {
                         user.LastTime = DateTime.Now;
                         pc.Add("user", user);
                         pc.SaveConfig();
-                        return NetworkUtility.JsonSerialize($"装备{ItemSet.GetQualityTypeName(item.QualityType)}{ItemSet.GetItemTypeName(item.ItemType)}【{item.Name}】成功！" +
-                            $"（{ItemSet.GetEquipSlotTypeName(item.EquipSlotType)}栏位）\r\n物品描述：{item.Description}");
+                        return $"装备{ItemSet.GetQualityTypeName(item.QualityType)}{ItemSet.GetItemTypeName(item.ItemType)}【{item.Name}】成功！" +
+                            $"（{ItemSet.GetEquipSlotTypeName(item.EquipSlotType)}栏位）\r\n物品描述：{item.Description}";
                     }
                     else
                     {
-                        return NetworkUtility.JsonSerialize($"装备失败！可能是角色、物品不存在或者其他原因。");
+                        return $"装备失败！可能是角色、物品不存在或者其他原因。";
                     }
                 }
                 else
                 {
-                    return NetworkUtility.JsonSerialize(noSaved);
+                    return noSaved;
                 }
             }
             catch (Exception e)
             {
-                return NetworkUtility.JsonSerialize(e.ToString());
+                Logger.LogError(e, "Error: ");
+                return busy;
             }
         }
 
@@ -1820,23 +1828,24 @@ namespace Oshima.FunGame.WebAPI.Controllers
                             user.LastTime = DateTime.Now;
                             pc.Add("user", user);
                             pc.SaveConfig();
-                            return NetworkUtility.JsonSerialize($"取消装备{ItemSet.GetQualityTypeName(item.QualityType)}{ItemSet.GetItemTypeName(item.ItemType)}【{item.Name}】成功！（{ItemSet.GetEquipSlotTypeName(type)}栏位）");
+                            return $"取消装备{ItemSet.GetQualityTypeName(item.QualityType)}{ItemSet.GetItemTypeName(item.ItemType)}【{item.Name}】成功！（{ItemSet.GetEquipSlotTypeName(type)}栏位）";
                         }
-                        else return NetworkUtility.JsonSerialize($"取消装备失败！角色并没有装备{ItemSet.GetEquipSlotTypeName(type)}，或者库存中不存在此物品！");
+                        else return $"取消装备失败！角色并没有装备{ItemSet.GetEquipSlotTypeName(type)}，或者库存中不存在此物品！";
                     }
                     else
                     {
-                        return NetworkUtility.JsonSerialize($"没有找到与这个序号相对应的角色！");
+                        return $"没有找到与这个序号相对应的角色！";
                     }
                 }
                 else
                 {
-                    return NetworkUtility.JsonSerialize(noSaved);
+                    return noSaved;
                 }
             }
             catch (Exception e)
             {
-                return NetworkUtility.JsonSerialize(e.ToString());
+                Logger.LogError(e, "Error: ");
+                return busy;
             }
         }
 
@@ -1894,7 +1903,8 @@ namespace Oshima.FunGame.WebAPI.Controllers
             }
             catch (Exception e)
             {
-                return [e.ToString()];
+                Logger.LogError(e, "Error: ");
+                return [busy];
             }
         }
 
@@ -1916,7 +1926,8 @@ namespace Oshima.FunGame.WebAPI.Controllers
             }
             catch (Exception e)
             {
-                return [e.ToString()];
+                Logger.LogError(e, "Error: ");
+                return [busy];
             }
         }
 
@@ -1992,7 +2003,8 @@ namespace Oshima.FunGame.WebAPI.Controllers
             }
             catch (Exception e)
             {
-                return [e.ToString()];
+                Logger.LogError(e, "Error: ");
+                return [busy];
             }
         }
 
@@ -2014,7 +2026,8 @@ namespace Oshima.FunGame.WebAPI.Controllers
             }
             catch (Exception e)
             {
-                return [e.ToString()];
+                Logger.LogError(e, "Error: ");
+                return [busy];
             }
         }
 
@@ -2043,7 +2056,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
                         {
                             if (item.RemainUseTimes <= 0)
                             {
-                                return NetworkUtility.JsonSerialize("此物品剩余使用次数为0，无法使用！");
+                                return "此物品剩余使用次数为0，无法使用！";
                             }
 
                             List<Character> targets = [];
@@ -2062,26 +2075,27 @@ namespace Oshima.FunGame.WebAPI.Controllers
                                 pc.Add("user", user);
                                 pc.SaveConfig();
                             }
-                            return NetworkUtility.JsonSerialize(msg);
+                            return msg;
                         }
                         else
                         {
-                            return NetworkUtility.JsonSerialize($"这个物品无法使用！");
+                            return $"这个物品无法使用！";
                         }
                     }
                     else
                     {
-                        return NetworkUtility.JsonSerialize($"没有找到与这个序号相对应的物品！");
+                        return $"没有找到与这个序号相对应的物品！";
                     }
                 }
                 else
                 {
-                    return NetworkUtility.JsonSerialize(noSaved);
+                    return noSaved;
                 }
             }
             catch (Exception e)
             {
-                return NetworkUtility.JsonSerialize(e.ToString());
+                Logger.LogError(e, "Error: ");
+                return busy;
             }
         }
 
@@ -2095,7 +2109,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
                 int useCount = count ?? 0;
                 if (useCount <= 0)
                 {
-                    return NetworkUtility.JsonSerialize("数量必须大于0！");
+                    return "数量必须大于0！";
                 }
                 List<int> charactersIndex = characters?.ToList() ?? [];
 
@@ -2109,7 +2123,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
                     IEnumerable<Item> items = user.Inventory.Items.Where(i => i.Name == name && i.Character is null && i.ItemType != ItemType.MagicCard);
                     if (!items.Any())
                     {
-                        return NetworkUtility.JsonSerialize($"库存中不存在名称为【{name}】的物品！如果是魔法卡，请用【使用魔法卡】指令。");
+                        return $"库存中不存在名称为【{name}】的物品！如果是魔法卡，请用【使用魔法卡】指令。";
                     }
 
                     if (items.Count() >= useCount)
@@ -2139,21 +2153,22 @@ namespace Oshima.FunGame.WebAPI.Controllers
                             pc.Add("user", user);
                             pc.SaveConfig();
                         }
-                        return NetworkUtility.JsonSerialize($"成功使用 {useCount} 件物品！\r\n" + string.Join("\r\n", msgs.Count > 30 ? msgs.Take(30) : msgs));
+                        return $"成功使用 {useCount} 件物品！\r\n" + string.Join("\r\n", msgs.Count > 30 ? msgs.Take(30) : msgs);
                     }
                     else
                     {
-                        return NetworkUtility.JsonSerialize("此物品的可使用数量小于你想要使用的数量！");
+                        return "此物品的可使用数量小于你想要使用的数量！";
                     }
                 }
                 else
                 {
-                    return NetworkUtility.JsonSerialize(noSaved);
+                    return noSaved;
                 }
             }
             catch (Exception e)
             {
-                return NetworkUtility.JsonSerialize(e.ToString());
+                Logger.LogError(e, "Error: ");
+                return busy;
             }
         }
 
@@ -2182,7 +2197,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
                         {
                             if (item.RemainUseTimes <= 0)
                             {
-                                return NetworkUtility.JsonSerialize("此物品剩余使用次数为0，无法使用！");
+                                return "此物品剩余使用次数为0，无法使用！";
                             }
 
                             string msg = "";
@@ -2201,17 +2216,17 @@ namespace Oshima.FunGame.WebAPI.Controllers
                                         }
                                         else
                                         {
-                                            return NetworkUtility.JsonSerialize($"库存中没有找到此角色对应的魔法卡包！");
+                                            return $"库存中没有找到此角色对应的魔法卡包！";
                                         }
                                     }
                                     else
                                     {
-                                        return NetworkUtility.JsonSerialize($"这个角色没有装备魔法卡包，无法对其使用魔法卡！");
+                                        return $"这个角色没有装备魔法卡包，无法对其使用魔法卡！";
                                     }
                                 }
                                 else
                                 {
-                                    return NetworkUtility.JsonSerialize($"没有找到与这个序号相对应的角色！");
+                                    return $"没有找到与这个序号相对应的角色！";
                                 }
                             }
                             else
@@ -2225,38 +2240,39 @@ namespace Oshima.FunGame.WebAPI.Controllers
                                     }
                                     else
                                     {
-                                        return NetworkUtility.JsonSerialize($"与目标序号相对应的物品不是魔法卡包！");
+                                        return $"与目标序号相对应的物品不是魔法卡包！";
                                     }
                                 }
                                 else
                                 {
-                                    return NetworkUtility.JsonSerialize($"没有找到与目标序号相对应的物品！");
+                                    return $"没有找到与目标序号相对应的物品！";
                                 }
                             }
 
                             user.LastTime = DateTime.Now;
                             pc.Add("user", user);
                             pc.SaveConfig();
-                            return NetworkUtility.JsonSerialize(msg);
+                            return msg;
                         }
                         else
                         {
-                            return NetworkUtility.JsonSerialize($"这个物品不是魔法卡！");
+                            return $"这个物品不是魔法卡！";
                         }
                     }
                     else
                     {
-                        return NetworkUtility.JsonSerialize($"没有找到与目标序号相对应的物品！");
+                        return $"没有找到与目标序号相对应的物品！";
                     }
                 }
                 else
                 {
-                    return NetworkUtility.JsonSerialize(noSaved);
+                    return noSaved;
                 }
             }
             catch (Exception e)
             {
-                return NetworkUtility.JsonSerialize(e.ToString());
+                Logger.LogError(e, "Error: ");
+                return busy;
             }
         }
 
@@ -2283,12 +2299,12 @@ namespace Oshima.FunGame.WebAPI.Controllers
                     }
                     else
                     {
-                        return NetworkUtility.JsonSerialize($"没有找到与这个序号相对应的角色！");
+                        return $"没有找到与这个序号相对应的角色！";
                     }
 
                     if (character.Level == General.GameplayEquilibriumConstant.MaxLevel)
                     {
-                        return NetworkUtility.JsonSerialize($"该角色等级已满，无需再升级！");
+                        return $"该角色等级已满，无需再升级！";
                     }
 
                     int originalLevel = character.Level;
@@ -2316,16 +2332,17 @@ namespace Oshima.FunGame.WebAPI.Controllers
                     user.LastTime = DateTime.Now;
                     pc.Add("user", user);
                     pc.SaveConfig();
-                    return NetworkUtility.JsonSerialize(msg);
+                    return msg;
                 }
                 else
                 {
-                    return NetworkUtility.JsonSerialize(noSaved);
+                    return noSaved;
                 }
             }
             catch (Exception e)
             {
-                return NetworkUtility.JsonSerialize(e.ToString());
+                Logger.LogError(e, "Error: ");
+                return busy;
             }
         }
 
@@ -2348,20 +2365,20 @@ namespace Oshima.FunGame.WebAPI.Controllers
                 }
                 else
                 {
-                    return NetworkUtility.JsonSerialize($"没有找到与这个序号相对应的角色！");
+                    return $"没有找到与这个序号相对应的角色！";
                 }
 
                 if (character.LevelBreak + 1 == General.GameplayEquilibriumConstant.LevelBreakList.Count)
                 {
-                    return NetworkUtility.JsonSerialize($"该角色已完成全部的突破阶段，无需再突破！");
+                    return $"该角色已完成全部的突破阶段，无需再突破！";
                 }
 
-                return NetworkUtility.JsonSerialize($"角色 [ {character} ] 目前突破进度：{character.LevelBreak + 1}/{General.GameplayEquilibriumConstant.LevelBreakList.Count}" +
-                    $"\r\n该角色下一个等级突破阶段在 {General.GameplayEquilibriumConstant.LevelBreakList.ToArray()[character.LevelBreak + 1]} 级，所需材料：\r\n" + FunGameService.GetLevelBreakNeedy(character.LevelBreak + 1));
+                return $"角色 [ {character} ] 目前突破进度：{character.LevelBreak + 1}/{General.GameplayEquilibriumConstant.LevelBreakList.Count}" +
+                    $"\r\n该角色下一个等级突破阶段在 {General.GameplayEquilibriumConstant.LevelBreakList.ToArray()[character.LevelBreak + 1]} 级，所需材料：\r\n" + FunGameService.GetLevelBreakNeedy(character.LevelBreak + 1);
             }
             else
             {
-                return NetworkUtility.JsonSerialize(noSaved);
+                return noSaved;
             }
         }
 
@@ -2387,12 +2404,12 @@ namespace Oshima.FunGame.WebAPI.Controllers
                     }
                     else
                     {
-                        return NetworkUtility.JsonSerialize($"没有找到与这个序号相对应的角色！");
+                        return $"没有找到与这个序号相对应的角色！";
                     }
 
                     if (character.LevelBreak + 1 == General.GameplayEquilibriumConstant.LevelBreakList.Count)
                     {
-                        return NetworkUtility.JsonSerialize($"该角色已完成全部的突破阶段，无需再突破！");
+                        return $"该角色已完成全部的突破阶段，无需再突破！";
                     }
 
                     int originalBreak = character.LevelBreak;
@@ -2410,7 +2427,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
                                 }
                                 else
                                 {
-                                    return NetworkUtility.JsonSerialize($"你的{General.GameplayEquilibriumConstant.InGameMaterial}不足 {needCount} 呢，不满足突破条件！");
+                                    return $"你的{General.GameplayEquilibriumConstant.InGameMaterial}不足 {needCount} 呢，不满足突破条件！";
                                 }
                             }
                             else
@@ -2428,7 +2445,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
                                     }
                                     else
                                     {
-                                        return NetworkUtility.JsonSerialize($"你的物品【{key}】数量不足 {needCount} 呢，不满足突破条件！");
+                                        return $"你的物品【{key}】数量不足 {needCount} 呢，不满足突破条件！";
                                     }
                                 }
                             }
@@ -2439,28 +2456,29 @@ namespace Oshima.FunGame.WebAPI.Controllers
 
                     if (originalBreak == character.LevelBreak)
                     {
-                        return NetworkUtility.JsonSerialize($"突破失败！角色 [ {character} ] 目前突破进度：{character.LevelBreak + 1}/{General.GameplayEquilibriumConstant.LevelBreakList.Count}。" +
-                            $"\r\n该角色下一个等级突破阶段在 {General.GameplayEquilibriumConstant.LevelBreakList.ToArray()[character.LevelBreak + 1]} 级，所需材料：\r\n" + FunGameService.GetLevelBreakNeedy(character.LevelBreak + 1));
+                        return $"突破失败！角色 [ {character} ] 目前突破进度：{character.LevelBreak + 1}/{General.GameplayEquilibriumConstant.LevelBreakList.Count}。" +
+                            $"\r\n该角色下一个等级突破阶段在 {General.GameplayEquilibriumConstant.LevelBreakList.ToArray()[character.LevelBreak + 1]} 级，所需材料：\r\n" + FunGameService.GetLevelBreakNeedy(character.LevelBreak + 1);
                     }
                     else
                     {
                         user.LastTime = DateTime.Now;
                         pc.Add("user", user);
                         pc.SaveConfig();
-                        return NetworkUtility.JsonSerialize($"突破成功！角色 [ {character} ] 目前突破进度：{character.LevelBreak + 1}/{General.GameplayEquilibriumConstant.LevelBreakList.Count}。" +
+                        return $"突破成功！角色 [ {character} ] 目前突破进度：{character.LevelBreak + 1}/{General.GameplayEquilibriumConstant.LevelBreakList.Count}。" +
                             $"{(character.LevelBreak + 1 == General.GameplayEquilibriumConstant.LevelBreakList.Count ?
                             "\r\n该角色已完成全部的突破阶段，恭喜！" :
-                            $"\r\n该角色下一个等级突破阶段在 {General.GameplayEquilibriumConstant.LevelBreakList.ToArray()[character.LevelBreak + 1]} 级，所需材料：\r\n" + FunGameService.GetLevelBreakNeedy(character.LevelBreak + 1))}");
+                            $"\r\n该角色下一个等级突破阶段在 {General.GameplayEquilibriumConstant.LevelBreakList.ToArray()[character.LevelBreak + 1]} 级，所需材料：\r\n" + FunGameService.GetLevelBreakNeedy(character.LevelBreak + 1))}";
                     }
                 }
                 else
                 {
-                    return NetworkUtility.JsonSerialize(noSaved);
+                    return noSaved;
                 }
             }
             catch (Exception e)
             {
-                return NetworkUtility.JsonSerialize(e.ToString());
+                Logger.LogError(e, "Error: ");
+                return busy;
             }
         }
 
@@ -2472,7 +2490,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
             int itemCount = count ?? 0;
             if (itemCount <= 0)
             {
-                return NetworkUtility.JsonSerialize("数量必须大于0！");
+                return "数量必须大于0！";
             }
             long targetid = target ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
 
@@ -2552,26 +2570,26 @@ namespace Oshima.FunGame.WebAPI.Controllers
                         }
                         else
                         {
-                            return NetworkUtility.JsonSerialize($"此物品不存在！");
+                            return $"此物品不存在！";
                         }
                         pc2.Add("user", user2);
                         pc2.SaveConfig();
                     }
                     else
                     {
-                        return NetworkUtility.JsonSerialize($"目标 UID 不存在！");
+                        return $"目标 UID 不存在！";
                     }
                 }
                 else
                 {
-                    return NetworkUtility.JsonSerialize($"你没有权限使用此指令！");
+                    return $"你没有权限使用此指令！";
                 }
 
-                return NetworkUtility.JsonSerialize(msg);
+                return msg;
             }
             else
             {
-                return NetworkUtility.JsonSerialize(noSaved);
+                return noSaved;
             }
         }
 
@@ -2625,16 +2643,17 @@ namespace Oshima.FunGame.WebAPI.Controllers
                         pc.Add("user", user);
                         pc.SaveConfig();
                     }
-                    return NetworkUtility.JsonSerialize($"分解完毕！分解 {ids.Length} 件，成功 {successCount} 件，得到了 {totalGained} {General.GameplayEquilibriumConstant.InGameMaterial}！");
+                    return $"分解完毕！分解 {ids.Length} 件，成功 {successCount} 件，得到了 {totalGained} {General.GameplayEquilibriumConstant.InGameMaterial}！";
                 }
                 else
                 {
-                    return NetworkUtility.JsonSerialize(noSaved);
+                    return noSaved;
                 }
             }
             catch (Exception e)
             {
-                return NetworkUtility.JsonSerialize(e.ToString());
+                Logger.LogError(e, "Error: ");
+                return busy;
             }
         }
 
@@ -2648,7 +2667,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
                 int useCount = count ?? 0;
                 if (useCount <= 0)
                 {
-                    return NetworkUtility.JsonSerialize("数量必须大于0！");
+                    return "数量必须大于0！";
                 }
 
                 PluginConfig pc = new("saved", userid.ToString());
@@ -2661,7 +2680,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
                     IEnumerable<Item> items = user.Inventory.Items.Where(i => i.Name == name && i.Character is null);
                     if (!items.Any())
                     {
-                        return NetworkUtility.JsonSerialize($"库存中不存在名称为【{name}】的物品！");
+                        return $"库存中不存在名称为【{name}】的物品！";
                     }
 
                     if (items.Count() >= useCount)
@@ -2696,21 +2715,22 @@ namespace Oshima.FunGame.WebAPI.Controllers
                             pc.Add("user", user);
                             pc.SaveConfig();
                         }
-                        return NetworkUtility.JsonSerialize($"分解完毕！分解 {useCount} 件物品，成功 {successCount} 件，得到了 {totalGained} {General.GameplayEquilibriumConstant.InGameMaterial}！");
+                        return $"分解完毕！分解 {useCount} 件物品，成功 {successCount} 件，得到了 {totalGained} {General.GameplayEquilibriumConstant.InGameMaterial}！";
                     }
                     else
                     {
-                        return NetworkUtility.JsonSerialize("此物品的可分解数量小于你想要分解的数量！");
+                        return "此物品的可分解数量小于你想要分解的数量！";
                     }
                 }
                 else
                 {
-                    return NetworkUtility.JsonSerialize(noSaved);
+                    return noSaved;
                 }
             }
             catch (Exception e)
             {
-                return NetworkUtility.JsonSerialize(e.ToString());
+                Logger.LogError(e, "Error: ");
+                return busy;
             }
         }
 
@@ -2724,7 +2744,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
 
                 if (qType < 0 || qType > (int)QualityType.Gold)
                 {
-                    return NetworkUtility.JsonSerialize($"品质序号输入错误！");
+                    return $"品质序号输入错误！";
                 }
 
                 PluginConfig pc = new("saved", userid.ToString());
@@ -2738,7 +2758,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
                     IEnumerable<Item> items = user.Inventory.Items.Where(i => (int)i.QualityType == qType && i.Character is null);
                     if (!items.Any())
                     {
-                        return NetworkUtility.JsonSerialize($"库存中{qualityName}物品数量为零！");
+                        return $"库存中{qualityName}物品数量为零！";
                     }
 
                     List<string> msgs = [];
@@ -2771,16 +2791,17 @@ namespace Oshima.FunGame.WebAPI.Controllers
                         pc.Add("user", user);
                         pc.SaveConfig();
                     }
-                    return NetworkUtility.JsonSerialize($"分解完毕！成功分解 {successCount} 件{qualityName}物品，得到了 {totalGained} {General.GameplayEquilibriumConstant.InGameMaterial}！");
+                    return $"分解完毕！成功分解 {successCount} 件{qualityName}物品，得到了 {totalGained} {General.GameplayEquilibriumConstant.InGameMaterial}！";
                 }
                 else
                 {
-                    return NetworkUtility.JsonSerialize(noSaved);
+                    return noSaved;
                 }
             }
             catch (Exception e)
             {
-                return NetworkUtility.JsonSerialize(e.ToString());
+                Logger.LogError(e, "Error: ");
+                return busy;
             }
         }
 
@@ -2812,12 +2833,12 @@ namespace Oshima.FunGame.WebAPI.Controllers
                             }
                             else
                             {
-                                return NetworkUtility.JsonSerialize($"此物品不是魔法卡或者使用次数为0：{itemIndex}. {item.Name}");
+                                return $"此物品不是魔法卡或者使用次数为0：{itemIndex}. {item.Name}";
                             }
                         }
                         else
                         {
-                            return NetworkUtility.JsonSerialize($"没有找到与这个序号相对应的物品：{itemIndex}");
+                            return $"没有找到与这个序号相对应的物品：{itemIndex}";
                         }
                     }
                     if (mfks.Count >= 3)
@@ -2834,26 +2855,27 @@ namespace Oshima.FunGame.WebAPI.Controllers
                             user.LastTime = DateTime.Now;
                             pc.Add("user", user);
                             pc.SaveConfig();
-                            return NetworkUtility.JsonSerialize($"合成魔法卡包成功！获得魔法卡包：\r\n{item.ToStringInventory(true)}");
+                            return $"合成魔法卡包成功！获得魔法卡包：\r\n{item.ToStringInventory(true)}";
                         }
                         else
                         {
-                            return NetworkUtility.JsonSerialize($"合成魔法卡包失败！");
+                            return $"合成魔法卡包失败！";
                         }
                     }
                     else
                     {
-                        return NetworkUtility.JsonSerialize($"选用的魔法卡不足 3 张，请重新选择！");
+                        return $"选用的魔法卡不足 3 张，请重新选择！";
                     }
                 }
                 else
                 {
-                    return NetworkUtility.JsonSerialize(noSaved);
+                    return noSaved;
                 }
             }
             catch (Exception e)
             {
-                return NetworkUtility.JsonSerialize(e.ToString());
+                Logger.LogError(e, "Error: ");
+                return busy;
             }
         }
 
@@ -2879,23 +2901,24 @@ namespace Oshima.FunGame.WebAPI.Controllers
                     }
                     else
                     {
-                        return NetworkUtility.JsonSerialize($"没有找到与这个序号相对应的角色！");
+                        return $"没有找到与这个序号相对应的角色！";
                     }
 
                     user.Inventory.MainCharacter = character;
                     user.LastTime = DateTime.Now;
                     pc.Add("user", user);
                     pc.SaveConfig();
-                    return NetworkUtility.JsonSerialize($"设置主战角色成功：{character}");
+                    return $"设置主战角色成功：{character}";
                 }
                 else
                 {
-                    return NetworkUtility.JsonSerialize(noSaved);
+                    return noSaved;
                 }
             }
             catch (Exception e)
             {
-                return NetworkUtility.JsonSerialize(e.ToString());
+                Logger.LogError(e, "Error: ");
+                return busy;
             }
         }
 
@@ -2921,28 +2944,29 @@ namespace Oshima.FunGame.WebAPI.Controllers
                     }
                     else
                     {
-                        return NetworkUtility.JsonSerialize($"没有找到与这个序号相对应的角色！");
+                        return $"没有找到与这个序号相对应的角色！";
                     }
 
                     if (user.Inventory.Training.Count > 0)
                     {
-                        return NetworkUtility.JsonSerialize($"你已经有角色在练级中，请使用【练级结算】指令结束并获取奖励：{user.Inventory.Training.First()}！");
+                        return $"你已经有角色在练级中，请使用【练级结算】指令结束并获取奖励：{user.Inventory.Training.First()}！";
                     }
 
                     user.Inventory.Training[character.Id] = DateTime.Now;
                     user.LastTime = DateTime.Now;
                     pc.Add("user", user);
                     pc.SaveConfig();
-                    return NetworkUtility.JsonSerialize($"角色 [{character}] 开始练级，请过一段时间后进行【练级结算】，时间越长奖励越丰盛！练级时间上限 1440 分钟（24小时），超时将不会再产生收益，请按时领取奖励！");
+                    return $"角色 [{character}] 开始练级，请过一段时间后进行【练级结算】，时间越长奖励越丰盛！练级时间上限 1440 分钟（24小时），超时将不会再产生收益，请按时领取奖励！";
                 }
                 else
                 {
-                    return NetworkUtility.JsonSerialize(noSaved);
+                    return noSaved;
                 }
             }
             catch (Exception e)
             {
-                return NetworkUtility.JsonSerialize(e.ToString());
+                Logger.LogError(e, "Error: ");
+                return busy;
             }
         }
 
@@ -2962,7 +2986,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
 
                     if (user.Inventory.Training.Count == 0)
                     {
-                        return NetworkUtility.JsonSerialize($"你目前没有角色在练级中，请使用【开启练级+角色序号】指令进行练级。");
+                        return $"你目前没有角色在练级中，请使用【开启练级+角色序号】指令进行练级。";
                     }
 
                     long cid = user.Inventory.Training.Keys.First();
@@ -3002,21 +3026,22 @@ namespace Oshima.FunGame.WebAPI.Controllers
                         user.LastTime = DateTime.Now;
                         pc.Add("user", user);
                         pc.SaveConfig();
-                        return NetworkUtility.JsonSerialize($"角色 [ {character} ] 练级结束，{msg}");
+                        return $"角色 [ {character} ] 练级结束，{msg}";
                     }
                     else
                     {
-                        return NetworkUtility.JsonSerialize($"你目前没有角色在练级中，也可能是库存信息获取异常，请稍后再试。");
+                        return $"你目前没有角色在练级中，也可能是库存信息获取异常，请稍后再试。";
                     }
                 }
                 else
                 {
-                    return NetworkUtility.JsonSerialize(noSaved);
+                    return noSaved;
                 }
             }
             catch (Exception e)
             {
-                return NetworkUtility.JsonSerialize(e.ToString());
+                Logger.LogError(e, "Error: ");
+                return busy;
             }
         }
 
@@ -3036,7 +3061,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
 
                     if (user.Inventory.Training.Count == 0)
                     {
-                        return NetworkUtility.JsonSerialize($"你目前没有角色在练级中，请使用【开启练级+角色序号】指令进行练级。");
+                        return $"你目前没有角色在练级中，请使用【开启练级+角色序号】指令进行练级。";
                     }
 
                     long cid = user.Inventory.Training.Keys.First();
@@ -3048,21 +3073,22 @@ namespace Oshima.FunGame.WebAPI.Controllers
                         TimeSpan diff = now - time;
                         string msg = FunGameService.GetTrainingInfo(diff, true, out int totalExperience, out int smallBookCount, out int mediumBookCount, out int largeBookCount);
 
-                        return NetworkUtility.JsonSerialize($"角色 [ {character} ] 正在练级中，{msg}\r\n确认无误后请输入【练级结算】领取奖励！");
+                        return $"角色 [ {character} ] 正在练级中，{msg}\r\n确认无误后请输入【练级结算】领取奖励！";
                     }
                     else
                     {
-                        return NetworkUtility.JsonSerialize($"你目前没有角色在练级中，也可能是库存信息获取异常，请稍后再试。");
+                        return $"你目前没有角色在练级中，也可能是库存信息获取异常，请稍后再试。";
                     }
                 }
                 else
                 {
-                    return NetworkUtility.JsonSerialize(noSaved);
+                    return noSaved;
                 }
             }
             catch (Exception e)
             {
-                return NetworkUtility.JsonSerialize(e.ToString());
+                Logger.LogError(e, "Error: ");
+                return busy;
             }
         }
 
@@ -3086,7 +3112,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
                 }
                 else
                 {
-                    return NetworkUtility.JsonSerialize($"没有找到与这个序号相对应的角色！");
+                    return $"没有找到与这个序号相对应的角色！";
                 }
 
                 if (character.Skills.FirstOrDefault(s => s.Name == skillName) is Skill skill)
@@ -3095,22 +3121,22 @@ namespace Oshima.FunGame.WebAPI.Controllers
                     {
                         if (skill.Level + 1 == General.GameplayEquilibriumConstant.MaxSkillLevel)
                         {
-                            return NetworkUtility.JsonSerialize($"此技能【{skill.Name}】已经升至满级！");
+                            return $"此技能【{skill.Name}】已经升至满级！";
                         }
 
-                        return NetworkUtility.JsonSerialize($"角色 [ {character} ] 的【{skill.Name}】技能等级：{skill.Level} / {General.GameplayEquilibriumConstant.MaxSkillLevel}" +
-                            $"\r\n下一级所需升级材料：\r\n" + FunGameService.GetSkillLevelUpNeedy(skill.Level + 1));
+                        return $"角色 [ {character} ] 的【{skill.Name}】技能等级：{skill.Level} / {General.GameplayEquilibriumConstant.MaxSkillLevel}" +
+                            $"\r\n下一级所需升级材料：\r\n" + FunGameService.GetSkillLevelUpNeedy(skill.Level + 1);
                     }
-                    return NetworkUtility.JsonSerialize($"此技能无法升级！");
+                    return $"此技能无法升级！";
                 }
                 else
                 {
-                    return NetworkUtility.JsonSerialize($"此角色没有【{skillName}】技能！");
+                    return $"此角色没有【{skillName}】技能！";
                 }
             }
             else
             {
-                return NetworkUtility.JsonSerialize(noSaved);
+                return noSaved;
             }
         }
 
@@ -3137,7 +3163,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
                     }
                     else
                     {
-                        return NetworkUtility.JsonSerialize($"没有找到与这个序号相对应的角色！");
+                        return $"没有找到与这个序号相对应的角色！";
                     }
 
                     if (character.Skills.FirstOrDefault(s => s.Name == skillName) is Skill skill)
@@ -3148,7 +3174,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
                         {
                             if (skill.Level == General.GameplayEquilibriumConstant.MaxSkillLevel)
                             {
-                                return NetworkUtility.JsonSerialize($"此技能【{skill.Name}】已经升至满级！");
+                                return $"此技能【{skill.Name}】已经升至满级！";
                             }
 
                             if (FunGameConstant.SkillLevelUpList.TryGetValue(skill.Level + 1, out Dictionary<string, int>? needy) && needy != null && needy.Count > 0)
@@ -3160,14 +3186,14 @@ namespace Oshima.FunGame.WebAPI.Controllers
                                     {
                                         if (character.Level < needCount)
                                         {
-                                            return NetworkUtility.JsonSerialize($"角色 [ {character} ] 等级不足 {needCount} 级，无法{isStudy}此技能！");
+                                            return $"角色 [ {character} ] 等级不足 {needCount} 级，无法{isStudy}此技能！";
                                         }
                                     }
                                     else if (key == "角色突破进度")
                                     {
                                         if (character.LevelBreak + 1 < needCount)
                                         {
-                                            return NetworkUtility.JsonSerialize($"角色 [ {character} ] 等级突破进度不足 {needCount} 等阶，无法{isStudy}此技能！");
+                                            return $"角色 [ {character} ] 等级突破进度不足 {needCount} 等阶，无法{isStudy}此技能！";
                                         }
                                     }
                                     else if (key == General.GameplayEquilibriumConstant.InGameCurrency)
@@ -3178,7 +3204,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
                                         }
                                         else
                                         {
-                                            return NetworkUtility.JsonSerialize($"你的{General.GameplayEquilibriumConstant.InGameCurrency}不足 {needCount} 呢，不满足{isStudy}条件！");
+                                            return $"你的{General.GameplayEquilibriumConstant.InGameCurrency}不足 {needCount} 呢，不满足{isStudy}条件！";
                                         }
                                     }
                                     else if (key == General.GameplayEquilibriumConstant.InGameMaterial)
@@ -3189,7 +3215,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
                                         }
                                         else
                                         {
-                                            return NetworkUtility.JsonSerialize($"你的{General.GameplayEquilibriumConstant.InGameMaterial}不足 {needCount} 呢，不满足{isStudy}条件！");
+                                            return $"你的{General.GameplayEquilibriumConstant.InGameMaterial}不足 {needCount} 呢，不满足{isStudy}条件！";
                                         }
                                     }
                                     else
@@ -3207,7 +3233,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
                                             }
                                             else
                                             {
-                                                return NetworkUtility.JsonSerialize($"你的物品【{key}】数量不足 {needCount} 呢，不满足{isStudy}条件！");
+                                                return $"你的物品【{key}】数量不足 {needCount} 呢，不满足{isStudy}条件！";
                                             }
                                         }
                                     }
@@ -3231,27 +3257,28 @@ namespace Oshima.FunGame.WebAPI.Controllers
                                     msg += $"\r\n下一级所需升级材料：\r\n" + FunGameService.GetSkillLevelUpNeedy(skill.Level + 1);
                                 }
 
-                                return NetworkUtility.JsonSerialize(msg);
+                                return msg;
                             }
 
-                            return NetworkUtility.JsonSerialize($"{isStudy}技能失败！角色 [ {character} ] 的【{skill.Name}】技能当前等级：{skill.Level}/{General.GameplayEquilibriumConstant.MaxSkillLevel}" +
-                                $"\r\n下一级所需升级材料：\r\n" + FunGameService.GetSkillLevelUpNeedy(skill.Level + 1));
+                            return $"{isStudy}技能失败！角色 [ {character} ] 的【{skill.Name}】技能当前等级：{skill.Level}/{General.GameplayEquilibriumConstant.MaxSkillLevel}" +
+                                $"\r\n下一级所需升级材料：\r\n" + FunGameService.GetSkillLevelUpNeedy(skill.Level + 1);
                         }
-                        return NetworkUtility.JsonSerialize($"此技能无法{isStudy}！");
+                        return $"此技能无法{isStudy}！";
                     }
                     else
                     {
-                        return NetworkUtility.JsonSerialize($"此角色没有【{skillName}】技能！");
+                        return $"此角色没有【{skillName}】技能！";
                     }
                 }
                 else
                 {
-                    return NetworkUtility.JsonSerialize(noSaved);
+                    return noSaved;
                 }
             }
             catch (Exception e)
             {
-                return NetworkUtility.JsonSerialize(e.ToString());
+                Logger.LogError(e, "Error: ");
+                return busy;
             }
         }
 
@@ -3274,21 +3301,21 @@ namespace Oshima.FunGame.WebAPI.Controllers
                 }
                 else
                 {
-                    return NetworkUtility.JsonSerialize($"没有找到与这个序号相对应的角色！");
+                    return $"没有找到与这个序号相对应的角色！";
                 }
 
                 NormalAttack na = character.NormalAttack;
 
                 if (na.Level + 1 == General.GameplayEquilibriumConstant.MaxNormalAttackLevel)
                 {
-                    return NetworkUtility.JsonSerialize($"角色 [ {character} ] 的【{na.Name}】已经升至满级！");
+                    return $"角色 [ {character} ] 的【{na.Name}】已经升至满级！";
                 }
-                return NetworkUtility.JsonSerialize($"角色 [ {character} ] 的【{na.Name}】等级：{na.Level} / {General.GameplayEquilibriumConstant.MaxNormalAttackLevel}" +
-                    $"\r\n下一级所需升级材料：\r\n" + FunGameService.GetNormalAttackLevelUpNeedy(na.Level + 1));
+                return $"角色 [ {character} ] 的【{na.Name}】等级：{na.Level} / {General.GameplayEquilibriumConstant.MaxNormalAttackLevel}" +
+                    $"\r\n下一级所需升级材料：\r\n" + FunGameService.GetNormalAttackLevelUpNeedy(na.Level + 1);
             }
             else
             {
-                return NetworkUtility.JsonSerialize(noSaved);
+                return noSaved;
             }
         }
 
@@ -3314,13 +3341,13 @@ namespace Oshima.FunGame.WebAPI.Controllers
                     }
                     else
                     {
-                        return NetworkUtility.JsonSerialize($"没有找到与这个序号相对应的角色！");
+                        return $"没有找到与这个序号相对应的角色！";
                     }
 
                     NormalAttack na = character.NormalAttack;
                     if (na.Level == General.GameplayEquilibriumConstant.MaxNormalAttackLevel)
                     {
-                        return NetworkUtility.JsonSerialize($"角色 [ {character} ] 的【{na.Name}】已经升至满级！");
+                        return $"角色 [ {character} ] 的【{na.Name}】已经升至满级！";
                     }
 
                     if (FunGameConstant.NormalAttackLevelUpList.TryGetValue(na.Level + 1, out Dictionary<string, int>? needy) && needy != null && needy.Count > 0)
@@ -3332,14 +3359,14 @@ namespace Oshima.FunGame.WebAPI.Controllers
                             {
                                 if (character.Level < needCount)
                                 {
-                                    return NetworkUtility.JsonSerialize($"角色 [ {character} ] 等级不足 {needCount} 级，无法升级此技能！");
+                                    return $"角色 [ {character} ] 等级不足 {needCount} 级，无法升级此技能！";
                                 }
                             }
                             else if (key == "角色突破进度")
                             {
                                 if (character.LevelBreak + 1 < needCount)
                                 {
-                                    return NetworkUtility.JsonSerialize($"角色 [ {character} ] 等级突破进度不足 {needCount} 等阶，无法升级此技能！");
+                                    return $"角色 [ {character} ] 等级突破进度不足 {needCount} 等阶，无法升级此技能！";
                                 }
                             }
                             else if (key == General.GameplayEquilibriumConstant.InGameCurrency)
@@ -3350,7 +3377,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
                                 }
                                 else
                                 {
-                                    return NetworkUtility.JsonSerialize($"你的{General.GameplayEquilibriumConstant.InGameCurrency}不足 {needCount} 呢，不满足升级条件！");
+                                    return $"你的{General.GameplayEquilibriumConstant.InGameCurrency}不足 {needCount} 呢，不满足升级条件！";
                                 }
                             }
                             else if (key == General.GameplayEquilibriumConstant.InGameMaterial)
@@ -3361,7 +3388,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
                                 }
                                 else
                                 {
-                                    return NetworkUtility.JsonSerialize($"你的{General.GameplayEquilibriumConstant.InGameMaterial}不足 {needCount} 呢，不满足升级条件！");
+                                    return $"你的{General.GameplayEquilibriumConstant.InGameMaterial}不足 {needCount} 呢，不满足升级条件！";
                                 }
                             }
                             else
@@ -3379,7 +3406,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
                                     }
                                     else
                                     {
-                                        return NetworkUtility.JsonSerialize($"你的物品【{key}】数量不足 {needCount} 呢，不满足升级条件！");
+                                        return $"你的物品【{key}】数量不足 {needCount} 呢，不满足升级条件！";
                                     }
                                 }
                             }
@@ -3403,20 +3430,21 @@ namespace Oshima.FunGame.WebAPI.Controllers
                             msg += $"\r\n下一级所需升级材料：\r\n" + FunGameService.GetNormalAttackLevelUpNeedy(na.Level + 1);
                         }
 
-                        return NetworkUtility.JsonSerialize(msg);
+                        return msg;
                     }
 
-                    return NetworkUtility.JsonSerialize($"升级{na.Name}失败！角色 [ {character} ] 的【{na.Name}】当前等级：{na.Level}/{General.GameplayEquilibriumConstant.MaxNormalAttackLevel}" +
-                        $"\r\n下一级所需升级材料：\r\n" + FunGameService.GetSkillLevelUpNeedy(na.Level + 1));
+                    return $"升级{na.Name}失败！角色 [ {character} ] 的【{na.Name}】当前等级：{na.Level}/{General.GameplayEquilibriumConstant.MaxNormalAttackLevel}" +
+                        $"\r\n下一级所需升级材料：\r\n" + FunGameService.GetSkillLevelUpNeedy(na.Level + 1);
                 }
                 else
                 {
-                    return NetworkUtility.JsonSerialize(noSaved);
+                    return noSaved;
                 }
             }
             catch (Exception e)
             {
-                return NetworkUtility.JsonSerialize(e.ToString());
+                Logger.LogError(e, "Error: ");
+                return busy;
             }
         }
 
@@ -3528,35 +3556,34 @@ namespace Oshima.FunGame.WebAPI.Controllers
                     }
                     else
                     {
-                        return NetworkUtility.JsonSerialize($"没有找到与这个序号相对应的角色！");
+                        return $"没有找到与这个序号相对应的角色！";
                     }
 
                     if (user.Inventory.Squad.Count >= 4)
                     {
-                        return NetworkUtility.JsonSerialize($"小队人数已满 4 人，无法继续添加角色！当前小队角色如下：\r\n" +
-                            string.Join("\r\n", user.Inventory.Characters.Where(c => user.Inventory.Squad.Contains(c.Id))));
+                        return $"小队人数已满 4 人，无法继续添加角色！当前小队角色如下：\r\n{FunGameService.GetSquadInfo(user.Inventory.Characters, user.Inventory.Squad)}";
                     }
 
                     if (user.Inventory.Squad.Contains(character.Id))
                     {
-                        return NetworkUtility.JsonSerialize($"此角色已经在小队中了！");
+                        return $"此角色已经在小队中了！";
                     }
 
                     user.Inventory.Squad.Add(character.Id);
                     user.LastTime = DateTime.Now;
                     pc.Add("user", user);
                     pc.SaveConfig();
-                    return NetworkUtility.JsonSerialize($"添加小队角色成功：{character}\r\n当前小队角色如下：\r\n" +
-                            string.Join("\r\n", user.Inventory.Characters.Where(c => user.Inventory.Squad.Contains(c.Id))));
+                    return $"添加小队角色成功：{character}\r\n当前小队角色如下：\r\n{FunGameService.GetSquadInfo(user.Inventory.Characters, user.Inventory.Squad)}";
                 }
                 else
                 {
-                    return NetworkUtility.JsonSerialize(noSaved);
+                    return noSaved;
                 }
             }
             catch (Exception e)
             {
-                return NetworkUtility.JsonSerialize(e.ToString());
+                Logger.LogError(e, "Error: ");
+                return busy;
             }
         }
 
@@ -3582,29 +3609,29 @@ namespace Oshima.FunGame.WebAPI.Controllers
                     }
                     else
                     {
-                        return NetworkUtility.JsonSerialize($"没有找到与这个序号相对应的角色！");
+                        return $"没有找到与这个序号相对应的角色！";
                     }
 
                     if (!user.Inventory.Squad.Contains(character.Id))
                     {
-                        return NetworkUtility.JsonSerialize($"此角色不在小队中！");
+                        return $"此角色不在小队中！";
                     }
 
                     user.Inventory.Squad.Remove(character.Id);
                     user.LastTime = DateTime.Now;
                     pc.Add("user", user);
                     pc.SaveConfig();
-                    return NetworkUtility.JsonSerialize($"移除小队角色成功：{character}\r\n当前小队角色如下：\r\n" +
-                            string.Join("\r\n", user.Inventory.Characters.Where(c => user.Inventory.Squad.Contains(c.Id))));
+                    return $"移除小队角色成功：{character}\r\n当前小队角色如下：\r\n{FunGameService.GetSquadInfo(user.Inventory.Characters, user.Inventory.Squad)}";
                 }
                 else
                 {
-                    return NetworkUtility.JsonSerialize(noSaved);
+                    return noSaved;
                 }
             }
             catch (Exception e)
             {
-                return NetworkUtility.JsonSerialize(e.ToString());
+                Logger.LogError(e, "Error: ");
+                return busy;
             }
         }
 
@@ -3633,7 +3660,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
                         }
                         else
                         {
-                            return NetworkUtility.JsonSerialize($"设置失败：没有找到与序号 {characterIndex} 相对应的角色！");
+                            return $"设置失败：没有找到与序号 {characterIndex} 相对应的角色！";
                         }
                         user.Inventory.Squad.Add(character.Id);
                     }
@@ -3641,17 +3668,17 @@ namespace Oshima.FunGame.WebAPI.Controllers
                     user.LastTime = DateTime.Now;
                     pc.Add("user", user);
                     pc.SaveConfig();
-                    return NetworkUtility.JsonSerialize($"设置小队成员成功！当前小队角色如下：\r\n" +
-                            string.Join("\r\n", user.Inventory.Characters.Where(c => user.Inventory.Squad.Contains(c.Id))));
+                    return $"设置小队成员成功！当前小队角色如下：\r\n{FunGameService.GetSquadInfo(user.Inventory.Characters, user.Inventory.Squad)}";
                 }
                 else
                 {
-                    return NetworkUtility.JsonSerialize(noSaved);
+                    return noSaved;
                 }
             }
             catch (Exception e)
             {
-                return NetworkUtility.JsonSerialize(e.ToString());
+                Logger.LogError(e, "Error: ");
+                return busy;
             }
         }
 
@@ -3674,16 +3701,17 @@ namespace Oshima.FunGame.WebAPI.Controllers
                     user.LastTime = DateTime.Now;
                     pc.Add("user", user);
                     pc.SaveConfig();
-                    return NetworkUtility.JsonSerialize($"清空小队成员成功！");
+                    return $"清空小队成员成功！";
                 }
                 else
                 {
-                    return NetworkUtility.JsonSerialize(noSaved);
+                    return noSaved;
                 }
             }
             catch (Exception e)
             {
-                return NetworkUtility.JsonSerialize(e.ToString());
+                Logger.LogError(e, "Error: ");
+                return busy;
             }
         }
 
@@ -3700,17 +3728,17 @@ namespace Oshima.FunGame.WebAPI.Controllers
                 if (pc.Count > 0)
                 {
                     User user = FunGameService.GetUser(pc);
-                    return NetworkUtility.JsonSerialize($"你的当前小队角色如下：\r\n" +
-                            string.Join("\r\n", user.Inventory.Characters.Where(c => user.Inventory.Squad.Contains(c.Id))));
+                    return $"你的当前小队角色如下：\r\n{FunGameService.GetSquadInfo(user.Inventory.Characters, user.Inventory.Squad)}";
                 }
                 else
                 {
-                    return NetworkUtility.JsonSerialize(noSaved);
+                    return noSaved;
                 }
             }
             catch (Exception e)
             {
-                return NetworkUtility.JsonSerialize(e.ToString());
+                Logger.LogError(e, "Error: ");
+                return busy;
             }
         }
 
@@ -3735,8 +3763,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
                     if (squad.All(c => c.HP < c.MaxHP * 0.1))
                     {
                         return [$"小队角色均重伤未愈，当前生命值低于 10%，请先等待生命值自动回复或重组小队！\r\n" +
-                            "当前小队角色如下：\r\n" +
-                            string.Join("\r\n", user.Inventory.Characters.Where(c => user.Inventory.Squad.Contains(c.Id)))];
+                            $"当前小队角色如下：\r\n{FunGameService.GetSquadInfo(user.Inventory.Characters, user.Inventory.Squad)}"];
                     }
 
                     Character boss2 = CharacterBuilder.Build(boss, false, true, null, FunGameConstant.AllItems, FunGameConstant.AllSkills, false);
@@ -3796,11 +3823,11 @@ namespace Oshima.FunGame.WebAPI.Controllers
                 pc.Add("user", user);
                 pc.SaveConfig();
 
-                return NetworkUtility.JsonSerialize(msg);
+                return msg;
             }
             else
             {
-                return NetworkUtility.JsonSerialize(noSaved);
+                return noSaved;
             }
         }
 
@@ -3833,11 +3860,11 @@ namespace Oshima.FunGame.WebAPI.Controllers
                 pc.Add("user", user);
                 pc.SaveConfig();
 
-                return NetworkUtility.JsonSerialize(msg);
+                return msg;
             }
             else
             {
-                return NetworkUtility.JsonSerialize(noSaved);
+                return noSaved;
             }
         }
 
@@ -3862,7 +3889,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
                     IEnumerable<Quest> workingQuests = quests.Values.Where(q => q.QuestType != QuestType.Progressive && q.Status == QuestState.InProgress);
                     if (workingQuests.Any())
                     {
-                        msgs.Add($"你正在进行任务【{string.Join("，【", workingQuests.Select(q => q.Name))}】，无法开始新任务！\r\n{quest}");
+                        msgs.Add($"你正在进行任务【{string.Join("，【", workingQuests.Select(q => q.Name))}】，无法开始新任务！\r\n请使用【任务列表】指令来检查你的任务列表！");
                     }
                     else if (quest.Status == QuestState.Completed)
                     {
@@ -3938,11 +3965,11 @@ namespace Oshima.FunGame.WebAPI.Controllers
                     pc.SaveConfig();
                 }
 
-                return NetworkUtility.JsonSerialize("任务结算已完成，请查看你的任务列表！");
+                return "任务结算已完成，请查看你的任务列表！";
             }
             else
             {
-                return NetworkUtility.JsonSerialize(noSaved);
+                return noSaved;
             }
         }
 
@@ -3974,11 +4001,11 @@ namespace Oshima.FunGame.WebAPI.Controllers
                     msg = user.Inventory.MainCharacter.GetSimpleInfo(true, false, false, true);
                 }
 
-                return NetworkUtility.JsonSerialize(msg);
+                return msg;
             }
             else
             {
-                return NetworkUtility.JsonSerialize(noSaved);
+                return noSaved;
             }
         }
 
@@ -4013,8 +4040,8 @@ namespace Oshima.FunGame.WebAPI.Controllers
 
                 if (sign)
                 {
-                    return NetworkUtility.JsonSerialize($"你今天已经签过到了哦！" +
-                        (lastTime != DateTime.MinValue ? $"\r\n你上一次签到时间：{lastTime.ToString(General.GeneralDateTimeFormatChinese)}，连续签到：{days} 天。" : ""));
+                    return $"你今天已经签过到了哦！" +
+                        (lastTime != DateTime.MinValue ? $"\r\n你上一次签到时间：{lastTime.ToString(General.GeneralDateTimeFormatChinese)}，连续签到：{days} 天。" : "");
                 }
 
                 string msg = FunGameService.GetSignInResult(user, days);
@@ -4024,11 +4051,11 @@ namespace Oshima.FunGame.WebAPI.Controllers
                 pc.Add("days", days + 1);
                 pc.Add("lastTime", newLastTime);
                 pc.SaveConfig();
-                return NetworkUtility.JsonSerialize(msg + "\r\n>>> 请发送【帮助】来获取更多玩法指令！<<<");
+                return msg + "\r\n>>> 请发送【帮助】来获取更多玩法指令！<<<";
             }
             else
             {
-                return NetworkUtility.JsonSerialize(noSaved);
+                return noSaved;
             }
         }
 
@@ -4046,7 +4073,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
                 User user = FunGameService.GetUser(pc);
                 if (pc.TryGetValue("club", out object? value) && long.TryParse(value.ToString(), out long userClub) && userClub != 0)
                 {
-                    return NetworkUtility.JsonSerialize($"你需要先退出当前社团才可以加入新社团。");
+                    return $"你需要先退出当前社团才可以加入新社团。";
                 }
 
                 EntityModuleConfig<Club> emc = new("clubs", clubid.ToString());
@@ -4054,12 +4081,12 @@ namespace Oshima.FunGame.WebAPI.Controllers
                 Club? club = emc.Get("club");
                 if (club is null)
                 {
-                    return NetworkUtility.JsonSerialize($"不存在编号为 {clubid} 的社团！");
+                    return $"不存在编号为 {clubid} 的社团！";
                 }
 
                 if (!club.IsPublic)
                 {
-                    return NetworkUtility.JsonSerialize($"社团 [ {club.Name} ] 未公开，只能通过邀请加入。");
+                    return $"社团 [ {club.Name} ] 未公开，只能通过邀请加入。";
                 }
 
                 string msg = "";
@@ -4083,11 +4110,11 @@ namespace Oshima.FunGame.WebAPI.Controllers
                 user.LastTime = DateTime.Now;
                 pc.Add("user", user);
                 pc.SaveConfig();
-                return NetworkUtility.JsonSerialize(msg);
+                return msg;
             }
             else
             {
-                return NetworkUtility.JsonSerialize(noSaved);
+                return noSaved;
             }
         }
 
@@ -4110,7 +4137,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
 
                 if (clubid == 0)
                 {
-                    return NetworkUtility.JsonSerialize($"你当前没有加入任何社团！");
+                    return $"你当前没有加入任何社团！";
                 }
 
                 EntityModuleConfig<Club> emc = new("clubs", clubid.ToString());
@@ -4118,17 +4145,17 @@ namespace Oshima.FunGame.WebAPI.Controllers
                 Club? club = emc.Get("club");
                 if (club is null)
                 {
-                    return NetworkUtility.JsonSerialize($"不存在编号为 {clubid} 的社团！");
+                    return $"不存在编号为 {clubid} 的社团！";
                 }
 
                 if (club.Master?.Id == userid)
                 {
-                    return NetworkUtility.JsonSerialize($"你是社团的社长，不能退出社团，请转让社长或【解散社团】！");
+                    return $"你是社团的社长，不能退出社团，请转让社长或【解散社团】！";
                 }
 
                 if (!club.Members.Remove(userid))
                 {
-                    return NetworkUtility.JsonSerialize($"你不是此社团的成员，请联系管理员处理。");
+                    return $"你不是此社团的成员，请联系管理员处理。";
                 }
 
                 club.MemberJoinTime.Remove(userid);
@@ -4140,11 +4167,11 @@ namespace Oshima.FunGame.WebAPI.Controllers
                 pc.Add("user", user);
                 pc.Add("club", 0);
                 pc.SaveConfig();
-                return NetworkUtility.JsonSerialize(msg);
+                return msg;
             }
             else
             {
-                return NetworkUtility.JsonSerialize(noSaved);
+                return noSaved;
             }
         }
 
@@ -4163,13 +4190,13 @@ namespace Oshima.FunGame.WebAPI.Controllers
                 User user = FunGameService.GetUser(pc);
                 if (pc.TryGetValue("club", out object? value) && long.TryParse(value.ToString(), out long userClub) && userClub != 0)
                 {
-                    return NetworkUtility.JsonSerialize($"你需要先退出当前社团才可以创建新社团。");
+                    return $"你需要先退出当前社团才可以创建新社团。";
                 }
 
                 string pattern = @"^[a-zA-Z-_=+*%#^~.?!;:'"",]{3,4}$";
                 if (!Regex.IsMatch(clubPrefix, pattern))
                 {
-                    return NetworkUtility.JsonSerialize($"社团的前缀只能包含总共3-4个英文字母和数字、允许的特殊字符，此前缀不满足条件。");
+                    return $"社团的前缀只能包含总共3-4个英文字母和数字、允许的特殊字符，此前缀不满足条件。";
                 }
 
                 HashSet<long> clubids = [];
@@ -4217,11 +4244,11 @@ namespace Oshima.FunGame.WebAPI.Controllers
                 pc.Add("user", user);
                 pc.Add("club", clubid);
                 pc.SaveConfig();
-                return NetworkUtility.JsonSerialize(msg);
+                return msg;
             }
             else
             {
-                return NetworkUtility.JsonSerialize(noSaved);
+                return noSaved;
             }
         }
 
@@ -4284,11 +4311,11 @@ namespace Oshima.FunGame.WebAPI.Controllers
                     msg = $"你目前还没有加入任何社团。";
                 }
 
-                return NetworkUtility.JsonSerialize(msg);
+                return msg;
             }
             else
             {
-                return NetworkUtility.JsonSerialize(noSaved);
+                return noSaved;
             }
         }
 
@@ -4352,7 +4379,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
                             }
                             else
                             {
-                                NetworkUtility.JsonSerialize($"没有这么多页！当前总页数为 {maxPage}，但你请求的是第 {showPage} 页。");
+                                builer.Append($"没有这么多页！当前总页数为 {maxPage}，但你请求的是第 {showPage} 页。");
                             }
                             break;
                         case 2:
@@ -4380,7 +4407,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
                                 }
                                 else
                                 {
-                                    NetworkUtility.JsonSerialize($"没有这么多页！当前总页数为 {maxPage}，但你请求的是第 {showPage} 页。");
+                                    builer.Append($"没有这么多页！当前总页数为 {maxPage}，但你请求的是第 {showPage} 页。");
                                 }
                             }
                             else
@@ -4422,7 +4449,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
                             }
                             else
                             {
-                                NetworkUtility.JsonSerialize($"没有这么多页！当前总页数为 {maxPage}，但你请求的是第 {showPage} 页。");
+                                builer.Append($"没有这么多页！当前总页数为 {maxPage}，但你请求的是第 {showPage} 页。");
                             }
                             break;
                     }
@@ -4434,11 +4461,11 @@ namespace Oshima.FunGame.WebAPI.Controllers
                     msg = $"你目前还没有加入任何社团。";
                 }
 
-                return NetworkUtility.JsonSerialize(msg);
+                return msg;
             }
             else
             {
-                return NetworkUtility.JsonSerialize(noSaved);
+                return noSaved;
             }
         }
 
@@ -4461,7 +4488,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
 
                 if (clubid == 0)
                 {
-                    return NetworkUtility.JsonSerialize($"你当前没有加入任何社团！");
+                    return $"你当前没有加入任何社团！";
                 }
 
                 EntityModuleConfig<Club> emc = new("clubs", clubid.ToString());
@@ -4469,12 +4496,12 @@ namespace Oshima.FunGame.WebAPI.Controllers
                 Club? club = emc.Get("club");
                 if (club is null)
                 {
-                    return NetworkUtility.JsonSerialize($"不存在编号为 {clubid} 的社团！");
+                    return $"不存在编号为 {clubid} 的社团！";
                 }
 
                 if (club.Master?.Id != userid)
                 {
-                    return NetworkUtility.JsonSerialize($"你不是社团的社长，没有权限使用此指令！");
+                    return $"你不是社团的社长，没有权限使用此指令！";
                 }
 
                 string msg;
@@ -4511,11 +4538,11 @@ namespace Oshima.FunGame.WebAPI.Controllers
                 {
                     msg = $"解散社团 [ {club.Name} ] 失败，请联系服务器管理员处理！";
                 }
-                return NetworkUtility.JsonSerialize(msg);
+                return msg;
             }
             else
             {
-                return NetworkUtility.JsonSerialize(noSaved);
+                return noSaved;
             }
         }
 
@@ -4541,7 +4568,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
                     Club? club = emc.Get("club");
                     if (club is null)
                     {
-                        return NetworkUtility.JsonSerialize($"你当前没有加入任何社团！");
+                        return $"你当前没有加入任何社团！";
                     }
 
                     if (club.Master?.Id == userid || club.Admins.ContainsKey(userid))
@@ -4583,32 +4610,32 @@ namespace Oshima.FunGame.WebAPI.Controllers
                             }
                             else
                             {
-                                return NetworkUtility.JsonSerialize($"对方并没有申请此社团！");
+                                return $"对方并没有申请此社团！";
                             }
                         }
                         else
                         {
-                            return NetworkUtility.JsonSerialize($"对方似乎还没创建存档呢！");
+                            return $"对方似乎还没创建存档呢！";
                         }
                     }
                     else
                     {
-                        return NetworkUtility.JsonSerialize($"你没有权限审批申请人！");
+                        return $"你没有权限审批申请人！";
                     }
                 }
                 else
                 {
-                    return NetworkUtility.JsonSerialize($"你当前没有加入任何社团！");
+                    return $"你当前没有加入任何社团！";
                 }
 
                 user.LastTime = DateTime.Now;
                 pc.Add("user", user);
                 pc.SaveConfig();
-                return NetworkUtility.JsonSerialize(msg);
+                return msg;
             }
             else
             {
-                return NetworkUtility.JsonSerialize(noSaved);
+                return noSaved;
             }
         }
 
@@ -4633,7 +4660,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
                     Club? club = emc.Get("club");
                     if (club is null)
                     {
-                        return NetworkUtility.JsonSerialize($"你当前没有加入任何社团！");
+                        return $"你当前没有加入任何社团！";
                     }
 
                     if (club.Master?.Id == userid || club.Admins.ContainsKey(userid))
@@ -4662,37 +4689,37 @@ namespace Oshima.FunGame.WebAPI.Controllers
                                 }
                                 else
                                 {
-                                    return NetworkUtility.JsonSerialize($"对方并不在此社团中，无法踢出！");
+                                    return $"对方并不在此社团中，无法踢出！";
                                 }
                             }
                             else
                             {
-                                return NetworkUtility.JsonSerialize($"对方似乎还没创建存档呢！");
+                                return $"对方似乎还没创建存档呢！";
                             }
                         }
                         else
                         {
-                            return NetworkUtility.JsonSerialize($"你没有权限踢出管理员！");
+                            return $"你没有权限踢出管理员！";
                         }
                     }
                     else
                     {
-                        return NetworkUtility.JsonSerialize($"你没有权限踢出成员！");
+                        return $"你没有权限踢出成员！";
                     }
                 }
                 else
                 {
-                    return NetworkUtility.JsonSerialize($"你当前没有加入任何社团！");
+                    return $"你当前没有加入任何社团！";
                 }
 
                 user.LastTime = DateTime.Now;
                 pc.Add("user", user);
                 pc.SaveConfig();
-                return NetworkUtility.JsonSerialize(msg);
+                return msg;
             }
             else
             {
-                return NetworkUtility.JsonSerialize(noSaved);
+                return noSaved;
             }
         }
 
@@ -4718,7 +4745,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
                     Club? club = emc.Get("club");
                     if (club is null)
                     {
-                        return NetworkUtility.JsonSerialize($"你当前没有加入任何社团！");
+                        return $"你当前没有加入任何社团！";
                     }
 
                     bool isMaster = club.Master?.Id == userid;
@@ -4731,7 +4758,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
                             case "name":
                                 if (!isMaster)
                                 {
-                                    return NetworkUtility.JsonSerialize("只有社长可以修改社团名称！");
+                                    return "只有社长可以修改社团名称！";
                                 }
                                 if (values.Length > 0)
                                 {
@@ -4740,17 +4767,17 @@ namespace Oshima.FunGame.WebAPI.Controllers
                                         club.Name = values[0];
                                         msg = "修改成功，新的社团名称是：" + club.Name;
                                     }
-                                    else return NetworkUtility.JsonSerialize("社团名称只能包含2至15个字符！");
+                                    else return "社团名称只能包含2至15个字符！";
                                 }
                                 else
                                 {
-                                    return NetworkUtility.JsonSerialize("请提供新的社团名称！");
+                                    return "请提供新的社团名称！";
                                 }
                                 break;
                             case "prefix":
                                 if (!isMaster)
                                 {
-                                    return NetworkUtility.JsonSerialize("只有社长可以修改社团前缀！");
+                                    return "只有社长可以修改社团前缀！";
                                 }
                                 string pattern = @"^[a-zA-Z0-9-_=+*%#^~.?!;:'"",]{3,4}$";
                                 if (values.Length > 0)
@@ -4758,14 +4785,14 @@ namespace Oshima.FunGame.WebAPI.Controllers
                                     string clubPrefix = values[0];
                                     if (!Regex.IsMatch(clubPrefix, pattern))
                                     {
-                                        return NetworkUtility.JsonSerialize($"社团的前缀只能包含总共3-4个英文字母和数字、允许的特殊字符，此前缀不满足条件。");
+                                        return $"社团的前缀只能包含总共3-4个英文字母和数字、允许的特殊字符，此前缀不满足条件。";
                                     }
                                     club.Prefix = clubPrefix;
                                     msg = "修改成功，新的社团前缀是：" + club.Prefix;
                                 }
                                 else
                                 {
-                                    return NetworkUtility.JsonSerialize("请提供新的社团前缀！");
+                                    return "请提供新的社团前缀！";
                                 }
                                 break;
                             case "description":
@@ -4777,7 +4804,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
                                 }
                                 else
                                 {
-                                    return NetworkUtility.JsonSerialize("请提供新的社团描述！");
+                                    return "请提供新的社团描述！";
                                 }
                                 break;
                             case "isneedapproval":
@@ -4788,7 +4815,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
                                 }
                                 else
                                 {
-                                    return NetworkUtility.JsonSerialize("请提供正确的布尔值（true 或 false）来设置加入是否需要批准！");
+                                    return "请提供正确的布尔值（true 或 false）来设置加入是否需要批准！";
                                 }
                                 break;
                             case "ispublic":
@@ -4799,13 +4826,13 @@ namespace Oshima.FunGame.WebAPI.Controllers
                                 }
                                 else
                                 {
-                                    return NetworkUtility.JsonSerialize("请提供正确的布尔值（true 或 false）来设置社团是否公开/私密！");
+                                    return "请提供正确的布尔值（true 或 false）来设置社团是否公开/私密！";
                                 }
                                 break;
                             case "setadmin":
                                 if (!isMaster)
                                 {
-                                    return NetworkUtility.JsonSerialize("只有社长可以设置社团管理员！");
+                                    return "只有社长可以设置社团管理员！";
                                 }
                                 if (values.Length > 0 && long.TryParse(values[0], out long id) && club.Members.ContainsKey(id) && FunGameConstant.UserIdAndUsername.TryGetValue(id, out User? user2) && user2 != null)
                                 {
@@ -4814,13 +4841,13 @@ namespace Oshima.FunGame.WebAPI.Controllers
                                 }
                                 else
                                 {
-                                    return NetworkUtility.JsonSerialize("指定的用户不是此社团的成员！");
+                                    return "指定的用户不是此社团的成员！";
                                 }
                                 break;
                             case "setnotadmin":
                                 if (!isMaster)
                                 {
-                                    return NetworkUtility.JsonSerialize("只有社长可以取消社团管理员！");
+                                    return "只有社长可以取消社团管理员！";
                                 }
                                 if (values.Length > 0 && long.TryParse(values[0], out id) && club.Members.ContainsKey(id) && FunGameConstant.UserIdAndUsername.TryGetValue(id, out user2) && user2 != null)
                                 {
@@ -4835,13 +4862,13 @@ namespace Oshima.FunGame.WebAPI.Controllers
                                 }
                                 else
                                 {
-                                    return NetworkUtility.JsonSerialize("指定的用户不是此社团的成员！");
+                                    return "指定的用户不是此社团的成员！";
                                 }
                                 break;
                             case "setmaster":
                                 if (!isMaster)
                                 {
-                                    return NetworkUtility.JsonSerialize("只有社长可以转让社团！");
+                                    return "只有社长可以转让社团！";
                                 }
                                 if (values.Length > 0 && long.TryParse(values[0], out id) && club.Members.ContainsKey(id) && FunGameConstant.UserIdAndUsername.TryGetValue(id, out user2) && user2 != null)
                                 {
@@ -4852,11 +4879,11 @@ namespace Oshima.FunGame.WebAPI.Controllers
                                 }
                                 else
                                 {
-                                    return NetworkUtility.JsonSerialize("指定的用户不是此社团的成员！");
+                                    return "指定的用户不是此社团的成员！";
                                 }
                                 break;
                             default:
-                                return NetworkUtility.JsonSerialize("未知的社团设置项，设置失败。");
+                                return "未知的社团设置项，设置失败。";
                         }
 
                         emc.Add("club", club);
@@ -4864,22 +4891,22 @@ namespace Oshima.FunGame.WebAPI.Controllers
                     }
                     else
                     {
-                        return NetworkUtility.JsonSerialize($"你没有权限修改社团设置！");
+                        return $"你没有权限修改社团设置！";
                     }
                 }
                 else
                 {
-                    return NetworkUtility.JsonSerialize($"你当前没有加入任何社团！");
+                    return $"你当前没有加入任何社团！";
                 }
 
                 user.LastTime = DateTime.Now;
                 pc.Add("user", user);
                 pc.SaveConfig();
-                return NetworkUtility.JsonSerialize(msg);
+                return msg;
             }
             else
             {
-                return NetworkUtility.JsonSerialize(noSaved);
+                return noSaved;
             }
         }
 
@@ -4902,7 +4929,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
                 FunGameService.ServerPluginLoader?.OnBeforeOpenStoreEvent(user, e);
                 if (e.Cancel)
                 {
-                    return NetworkUtility.JsonSerialize(refused + (e.EventMsg != "" ? $"原因：{e.EventMsg}" : ""));
+                    return refused + (e.EventMsg != "" ? $"原因：{e.EventMsg}" : "");
                 }
 
                 EntityModuleConfig<Store> store = new("stores", userid.ToString());
@@ -4917,11 +4944,11 @@ namespace Oshima.FunGame.WebAPI.Controllers
                 e.EventMsg = $"{user.Username}访问每日商店成功";
                 FunGameService.ServerPluginLoader?.OnAfterOpenStoreEvent(user, e);
 
-                return NetworkUtility.JsonSerialize(msg);
+                return msg;
             }
             else
             {
-                return NetworkUtility.JsonSerialize(noSaved);
+                return noSaved;
             }
         }
 
@@ -4933,7 +4960,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
             int buycount = count ?? 1;
             if (buycount <= 0)
             {
-                return NetworkUtility.JsonSerialize("数量必须大于0！");
+                return "数量必须大于0！";
             }
 
             PluginConfig pc = new("saved", userid.ToString());
@@ -4956,13 +4983,13 @@ namespace Oshima.FunGame.WebAPI.Controllers
                     }
                     else
                     {
-                        return NetworkUtility.JsonSerialize($"没有对应编号的商品！");
+                        return $"没有对应编号的商品！";
                     }
 
                 }
                 else
                 {
-                    return NetworkUtility.JsonSerialize($"商品列表为空，请使用【每日商店】指令来获取商品列表！");
+                    return $"商品列表为空，请使用【每日商店】指令来获取商品列表！";
                 }
 
                 store.Add("daily", daily);
@@ -4970,11 +4997,11 @@ namespace Oshima.FunGame.WebAPI.Controllers
                 user.LastTime = DateTime.Now;
                 pc.Add("user", user);
                 pc.SaveConfig();
-                return NetworkUtility.JsonSerialize(msg);
+                return msg;
             }
             else
             {
-                return NetworkUtility.JsonSerialize(noSaved);
+                return noSaved;
             }
         }
 
@@ -5016,25 +5043,25 @@ namespace Oshima.FunGame.WebAPI.Controllers
                     }
                     else
                     {
-                        return NetworkUtility.JsonSerialize($"没有对应编号的物品！");
+                        return $"没有对应编号的物品！";
                     }
 
                 }
                 else
                 {
-                    return NetworkUtility.JsonSerialize($"商品列表不存在，请刷新！");
+                    return $"商品列表不存在，请刷新！";
                 }
 
-                return NetworkUtility.JsonSerialize(msg);
+                return msg;
             }
             else
             {
-                return NetworkUtility.JsonSerialize(noSaved);
+                return noSaved;
             }
         }
 
         [HttpPost("creategiftbox")]
-        public string CreateGiftBox([FromQuery] long? uid = null, [FromQuery] string? name = null, [FromQuery] bool? checkRepeat = null)
+        public string CreateGiftBox([FromQuery] long? uid = null, [FromQuery] string? name = null, [FromQuery] bool? checkRepeat = null, [FromQuery] int? maxRepeat = null)
         {
             long userid = uid ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
             string itemName = name ?? "";
@@ -5059,9 +5086,13 @@ namespace Oshima.FunGame.WebAPI.Controllers
                             list = [.. tempList];
                         }
 
-                        if (list.Contains(user.Id))
+                        if ((maxRepeat is null || maxRepeat == 0) && list.Contains(user.Id))
                         {
                             return $"你已经领取过这个礼包【{itemName}】啦，不能重复领取哦！";
+                        }
+                        else if (list.Count(id => id == user.Id) >= maxRepeat)
+                        {
+                            return $"礼包【{itemName}】的领取次数已经达到上限 {maxRepeat} 次，无法继续领取了！";
                         }
 
                         list.Add(user.Id);
@@ -5267,6 +5298,46 @@ namespace Oshima.FunGame.WebAPI.Controllers
             }
         }
 
+        [HttpGet("getevents")]
+        public string GetEvents([FromQuery] long? id = null)
+        {
+            if (id != null)
+            {
+                return FunGameService.GetEvent(id.Value);
+            }
+            else
+            {
+                return FunGameService.GetEventCenter();
+            }
+        }
+
+        [HttpPost("performevent")]
+        public string PerformEvent([FromQuery] long? uid = null, [FromQuery] long? aid = null, [FromQuery] long? qid = null)
+        {
+            long userid = uid ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
+            long activityid = aid ?? 0;
+            long questid = qid ?? 0;
+
+            PluginConfig pc = new("saved", userid.ToString());
+            pc.LoadConfig();
+
+            string msg = "";
+            if (pc.Count > 0)
+            {
+                User user = FunGameService.GetUser(pc);
+
+                user.LastTime = DateTime.Now;
+                pc.Add("user", user);
+                pc.SaveConfig();
+
+                return msg;
+            }
+            else
+            {
+                return noSaved;
+            }
+        }
+        
         [HttpPost("template")]
         public string Template([FromQuery] long? uid = null)
         {
