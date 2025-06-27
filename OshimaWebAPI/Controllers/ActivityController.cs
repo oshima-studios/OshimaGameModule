@@ -51,29 +51,29 @@ namespace Oshima.FunGame.WebAPI.Controllers
             }
         }
 
-        [HttpPut("{id}")]
-        public IActionResult UpdateActivity(long id, [FromBody] Activity? activity = null)
-        {
-            try
-            {
-                if (activity is null || activity.Id != id)
-                {
-                    return BadRequest("活动更新失败，活动 ID 与请求体 ID 不匹配或请求体格式错误。");
-                }
+        //[HttpPut("{id}")]
+        //public IActionResult UpdateActivity(long id, [FromBody] Activity? activity = null)
+        //{
+        //    try
+        //    {
+        //        if (activity is null || activity.Id != id)
+        //        {
+        //            return BadRequest("活动更新失败，活动 ID 与请求体 ID 不匹配或请求体格式错误。");
+        //        }
 
-                EntityModuleConfig<Activity> activities = new("activities", "activities");
-                activities.LoadConfig();
-                activities.Add(activity.Id.ToString(), activity);
-                activities.SaveConfig();
+        //        EntityModuleConfig<Activity> activities = new("activities", "activities");
+        //        activities.LoadConfig();
+        //        activities.Add(activity.Id.ToString(), activity);
+        //        activities.SaveConfig();
 
-                return Ok($"活动 {activity.GetIdName()} 更新成功。");
-            }
-            catch (Exception e)
-            {
-                _logger.LogError(e, "Error: ");
-                return StatusCode(500, "更新活动时发生错误，请检查日志。");
-            }
-        }
+        //        return Ok($"活动 {activity.GetIdName()} 更新成功。");
+        //    }
+        //    catch (Exception e)
+        //    {
+        //        _logger.LogError(e, "Error: ");
+        //        return StatusCode(500, "更新活动时发生错误，请检查日志。");
+        //    }
+        //}
 
         [HttpDelete("{id}")]
         public IActionResult RemoveActivity(long id)
@@ -125,39 +125,39 @@ namespace Oshima.FunGame.WebAPI.Controllers
             }
         }
 
-        [HttpPut("{id}/{questId}")]
-        public IActionResult UpdateQuest(long id, long questId, [FromBody] Quest? quest = null)
-        {
-            try
-            {
-                if (quest is null || quest.Id != questId)
-                {
-                    return BadRequest("任务更新失败，任务 ID 与请求体 ID 不匹配或请求体格式错误。");
-                }
+        //[HttpPut("{id}/{questId}")]
+        //public IActionResult UpdateQuest(long id, long questId, [FromBody] Quest? quest = null)
+        //{
+        //    try
+        //    {
+        //        if (quest is null || quest.Id != questId)
+        //        {
+        //            return BadRequest("任务更新失败，任务 ID 与请求体 ID 不匹配或请求体格式错误。");
+        //        }
 
-                EntityModuleConfig<Activity> activities = new("activities", "activities");
-                activities.LoadConfig();
-                Activity? activity = activities.Values.FirstOrDefault(a => a.Id == id);
-                if (activity != null)
-                {
-                    if (activity.Quests.FirstOrDefault(q => q.Id == quest.Id) is Quest current)
-                    {
-                        activity.Quests.Remove(quest);
-                    }
-                    activity.Quests.Add(quest);
-                    activities.Add(activity.Id.ToString(), activity);
-                    activities.SaveConfig();
-                    return Ok($"任务 {quest.GetIdName()}（属于活动【{activity.Name}】）更新成功。");
-                }
+        //        EntityModuleConfig<Activity> activities = new("activities", "activities");
+        //        activities.LoadConfig();
+        //        Activity? activity = activities.Values.FirstOrDefault(a => a.Id == id);
+        //        if (activity != null)
+        //        {
+        //            if (activity.Quests.FirstOrDefault(q => q.Id == quest.Id) is Quest current)
+        //            {
+        //                activity.Quests.Remove(quest);
+        //            }
+        //            activity.Quests.Add(quest);
+        //            activities.Add(activity.Id.ToString(), activity);
+        //            activities.SaveConfig();
+        //            return Ok($"任务 {quest.GetIdName()}（属于活动【{activity.Name}】）更新成功。");
+        //        }
 
-                return NotFound($"活动编号 {id} 不存在。");
-            }
-            catch (Exception e)
-            {
-                _logger.LogError(e, "Error: ");
-                return StatusCode(500, "更新任务时发生错误，请检查日志。");
-            }
-        }
+        //        return NotFound($"活动编号 {id} 不存在。");
+        //    }
+        //    catch (Exception e)
+        //    {
+        //        _logger.LogError(e, "Error: ");
+        //        return StatusCode(500, "更新任务时发生错误，请检查日志。");
+        //    }
+        //}
 
         [HttpDelete("{id}/{questId}")]
         public IActionResult RemoveQuest(long id, long questId)

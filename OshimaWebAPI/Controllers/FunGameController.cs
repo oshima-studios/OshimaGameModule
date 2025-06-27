@@ -2054,6 +2054,11 @@ namespace Oshima.FunGame.WebAPI.Controllers
                         item = user.Inventory.Items.ToList()[itemIndex - 1];
                         if (FunGameConstant.ItemCanUsed.Contains(item.ItemType))
                         {
+                            if (item.ItemType == ItemType.MagicCard)
+                            {
+                                return "此物品为魔法卡，请使用【使用魔法卡】指令！";
+                            }
+                            
                             if (item.RemainUseTimes <= 0)
                             {
                                 return "此物品剩余使用次数为0，无法使用！";

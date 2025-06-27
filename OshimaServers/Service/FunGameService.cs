@@ -490,7 +490,7 @@ namespace Oshima.FunGame.OshimaServers.Service
 
             foreach (Item inventoryItem in items)
             {
-                Item realItem = inventoryItem.Copy(true, true, true, FunGameConstant.AllItems, FunGameConstant.AllSkills);
+                Item realItem = inventoryItem.Copy(true, true, true, true, FunGameConstant.AllItems, FunGameConstant.AllSkills);
                 realItem.User = user;
                 user.Inventory.Items.Add(realItem);
             }
@@ -1154,9 +1154,16 @@ namespace Oshima.FunGame.OshimaServers.Service
                         SetSellAndTradeTime(newItem);
                         newItem.User = user;
                         user.Inventory.Items.Add(newItem);
-                        cards.Add(newItem.ToStringInventory(false));
+                        cards.Add($"[{ItemSet.GetQualityTypeName(item.QualityType)}|魔法卡] {newItem.Name}\r\n{newItem.ToStringInventory(false)}");
                     }
                     msg = "打开礼包成功！获得了以下物品：\r\n" + string.Join("\r\n", cards);
+                    item.RemainUseTimes--;
+                    if (item.RemainUseTimes < 0) item.RemainUseTimes = 0;
+                    if (item.RemainUseTimes == 0)
+                    {
+                        user.Inventory.Items.Remove(item);
+                    }
+                    return true;
                 }
                 else if (item is 礼包.GiftBox box && box.Gifts.Count > 0)
                 {
