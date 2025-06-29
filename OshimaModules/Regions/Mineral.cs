@@ -24,6 +24,12 @@ namespace Oshima.FunGame.OshimaModules.Regions
             NPCs.Add("苔丝夫人");
             Areas.Add("鱿熔血池​​");
             Areas.Add("活体锻炉");
+            ContinuousQuestList.Add("元素裂隙的熵增警告", new("使用抗魔探针扫描永燃坩埚第47层矿道，绘制元素裂缝的扩张轨迹，评估其引发位面坍缩的风险等级。"));
+            ContinuousQuestList.Add("坩埚熔岩的生命观测", new("在永燃坩埚的火山灰层建立实验室，监测活体金属苔藓与岩浆鱿鱼的共生进化过程。"));
+            ImmediateQuestList.Add("深渊火种收容危机", new("永燃坩埚矿道底层的深渊火钻因元素污染进入链式裂变，引发全矿道魔能过载，立即部署熵减力场遏制反应。"));
+            ImmediateQuestList.Add("坩埚金属瘟疫爆发", new("永燃坩埚的活体金属苔藓变异为吞噬性瘟疫，正沿岩浆通道快速扩散，必须立即启动熔断隔离机制。"));
+            ProgressiveQuestList.Add("火钻精炼协议", new("在永燃坩埚矿工灵魂烙印的指引下获取 {0} 颗深渊火钻（未烙印者触碰火钻将引发元素爆燃）。", item: "深渊火钻"));
+            ProgressiveQuestList.Add("坩埚活体金属培育", new("在永燃坩埚培育 {0} 份活体金属苔藓（注意培育环境需保持600℃以上恒温）。", item: "活体金属苔藓"));
         }
     }
 }

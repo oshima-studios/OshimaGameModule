@@ -12,6 +12,9 @@ namespace Oshima.FunGame.OshimaModules.Regions
         public new HashSet<RegionCharacter> Characters { get; } = [];
         public new HashSet<RegionUnit> Units { get; } = [];
         public new HashSet<RegionItem> Crops { get; } = [];
+        public Dictionary<string, QuestExploration> ContinuousQuestList { get; set; } = [];
+        public Dictionary<string, QuestExploration> ImmediateQuestList { get; set; } = [];
+        public Dictionary<string, QuestExploration> ProgressiveQuestList { get; set; } = [];
 
         public override bool Equals(IBaseEntity? other)
         {

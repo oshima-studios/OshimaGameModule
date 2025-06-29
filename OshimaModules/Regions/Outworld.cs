@@ -26,6 +26,12 @@ namespace Oshima.FunGame.OshimaModules.Regions
             Areas.Add("神经矿脉​​");
             Areas.Add("雷霆王座");
             Areas.Add("裁决矩阵");
+            ContinuousQuestList.Add("泰坦遗迹的符文解读", new("攀登泰坦遗迹，记录裁决尖碑在月圆之夜投射的泰坦符文，破译其蕴含的宇宙法则。"));
+            ContinuousQuestList.Add("矿脉神经的止痛研究", new("在泰坦遗迹的悲鸣矿脉区开发神经缓冲装置，减轻开采神经宝石引发的山体剧痛反应。"));
+            ImmediateQuestList.Add("泰坦遗迹的磁场危机", new("泰坦遗迹的悬浮岩块因神经宝石共振引发磁场紊乱，必须在半小时内稳定能量场防止区域崩塌。"));
+            ImmediateQuestList.Add("矿脉神经共鸣失控", new("泰坦遗迹悲鸣矿脉的神经宝石集体共振，引发山体结构崩解，必须立即部署阻尼力场稳定矿脉。"));
+            ProgressiveQuestList.Add("泰坦符文拓印", new("在泰坦遗迹的裁决尖碑上拓印 {0} 份不同的泰坦符文石（避开雷暴时段/每逢子时）。", item: "泰坦符文石"));
+            ProgressiveQuestList.Add("矿脉神经镇痛研究", new("在泰坦遗迹的悲鸣矿脉区采集 {0} 份神经宝石样本（开采时会引发山体剧痛反应）。", item: "神经宝石"));
         }
     }
 }

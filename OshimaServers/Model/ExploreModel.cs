@@ -1,6 +1,7 @@
 ﻿using System.Text;
 using Milimoe.FunGame.Core.Entity;
 using Milimoe.FunGame.Core.Library.Constant;
+using Oshima.Core.Constant;
 using Oshima.FunGame.OshimaServers.Service;
 
 namespace Oshima.FunGame.OshimaServers.Model

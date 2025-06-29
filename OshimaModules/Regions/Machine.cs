@@ -24,6 +24,12 @@ namespace Oshima.FunGame.OshimaModules.Regions
             NPCs.Add("7号改造体");
             Areas.Add("​​忏悔教堂​​");
             Areas.Add("造物车间");
+            ContinuousQuestList.Add("机械坟场的改造危机", new("潜入齿轮坟场被活体建筑同化的造物车间，研究其机械与生物融合的改造机制，寻找控制方法。"));
+            ContinuousQuestList.Add("齿轮活血的污染控制", new("在齿轮坟场建立液态魔力隔离区，防止活体魔力血的生物污染扩散至外部环境。"));
+            ImmediateQuestList.Add("活体建筑增殖警报", new("齿轮坟场的活体建筑开始暴走式增殖，必须在三刻钟内切断核心供能管道遏制扩张。"));
+            ImmediateQuestList.Add("机械坟场核心熔毁", new("齿轮坟场的上古机械核心因活体魔力血污染进入熔毁倒计时，需立即执行冷却协议防止爆炸。"));
+            ProgressiveQuestList.Add("活体建筑解析计划", new("在齿轮坟场研究 {0} 个活体建筑样本（活体魔力血）。", item: "活体魔力血"));
+            ProgressiveQuestList.Add("机械核心解密行动", new("在齿轮坟场解析 {0} 个上古机械核心（机械核心碎片）。", item: "机械核心碎片"));
         }
     }
 }

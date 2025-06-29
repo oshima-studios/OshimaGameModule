@@ -1,4 +1,5 @@
 ﻿using Milimoe.FunGame.Core.Library.Constant;
+using Oshima.Core.Constant;
 
 namespace Oshima.FunGame.OshimaModules.Regions
 {
@@ -25,6 +26,15 @@ namespace Oshima.FunGame.OshimaModules.Regions
             NPCs.Add("沉默守卫G-7");
             Areas.Add("悖论深井");
             Areas.Add("星屑回廊");
+            Areas.Add("星辉水域");
+            Areas.Add("上城区");
+            Areas.Add("旧街道");
+            ContinuousQuestList.Add("悖论引擎的暗涌之息", new("穿梭于银辉城流淌液态月光的街道，侦测悖论引擎释放的异常能量潮汐，揭开可能撕裂现实结构的危险谜团。"));
+            ContinuousQuestList.Add("镜湖星辉的引力观察", new("在银辉城折射星空的水域边缘建立观测点，记录星辉水母群在午夜重构重力法则时的空间涟漪。"));
+            ImmediateQuestList.Add("星银警戒协议·弎级响应", new("星银合金守卫在悖论引擎周边暴走，形成包围核心区的杀戮矩阵，必须在三刻钟内解除警戒协议。"));
+            ImmediateQuestList.Add("液态月光洪流预警", new("银辉城街道的液态月光进入异常涨潮期，即将淹没悖论引擎控制中枢，必须立即启动排水协议。"));
+            ProgressiveQuestList.Add("月光萃取计划", new("前往银辉城，采集 {0} 份液态月光（避开月光洪流的**时段/每夜丑时三刻）。", item: "液态月光"));
+            ProgressiveQuestList.Add("湖底重力场测绘", new("在银辉城星辉水域测绘 {0} 个重力异常点（星银合金），注意避开午夜水母重构期。", item: "星银合金"));
         }
     }
 
@@ -47,6 +57,9 @@ namespace Oshima.FunGame.OshimaModules.Regions
             NPCs.Add("冻伤的信使");
             Areas.Add("时钟哨塔");
             Areas.Add("记忆回廊");
+            ContinuousQuestList.Add("时间琥珀中的战争回响", new("在永霜裂痕建立时滞力场实验室，分析冻结在冰壁中的古代战争幻象，还原时霜药剂对观察者认知体系的扭曲机制。"));
+            ImmediateQuestList.Add("时霜逆流救援行动", new("科研小组被困在永霜裂痕加速百倍的时间泡内，其肉体正以肉眼可见的速度衰老，必须校准哨塔时钟恢复时间流速。"));
+            ProgressiveQuestList.Add("时霜逆向工程", new("通过时间镜像收集 {0} 份来自永霜裂痕不同历史断片的时霜药剂样本（注意时空回响对记忆的覆盖效应）。", item: "时霜药剂"));
         }
     }
 
@@ -69,6 +82,9 @@ namespace Oshima.FunGame.OshimaModules.Regions
             NPCs.Add("溺亡观测者");
             Areas.Add("倒影城");
             Areas.Add("千瞳之巢");
+            ContinuousQuestList.Add("镜像维度的认知污染", new("佩戴反重力拘束装置潜入千瞳镜湖，测绘镜像城的拓扑结构，警惕瞳孔状传送门对记忆模块的逆向写入现象。"));
+            ImmediateQuestList.Add("镜像侵蚀净化指令", new("千瞳镜湖的镜像守卫突破维度屏障入侵现实，携带的认知病毒正在改写物理法则，启动空间净化协议隔离威胁。"));
+            ProgressiveQuestList.Add("瞳孔密钥重构计划", new("前往千瞳镜湖，从 {0} 个瞳孔状传送门提取量子纠缠碎片（保持镜像对称操作以避免维度塌缩）。", item: "量子纠缠碎片"));
         }
     }
 
@@ -94,6 +110,13 @@ namespace Oshima.FunGame.OshimaModules.Regions
             NPCs.Add("循环勘探队");
             Areas.Add("昨日之城");
             Areas.Add("时漏绿洲");
+            Areas.Add("沙丘核心");
+            ContinuousQuestList.Add("流沙时计的昨日寻踪", new("在时之荒漠中寻找海市蜃楼般的昨日之城，收集散落在其中的时间碎片，还原历史真相。"));
+            ContinuousQuestList.Add("时沙陷阱的预警系统", new("在时之荒漠部署时间流沙监测网，预测沙丘重组周期并标记高危区域，保障探索者安全。"));
+            ImmediateQuestList.Add("流沙陷阱紧急救援", new("勘探队被困在时之荒漠重组的沙丘核心，必须在沙暴吞噬前开辟逃生通道。"));
+            ImmediateQuestList.Add("时之蝎群时空侵染", new("时之荒漠的时之蝎因时凝液泄漏引发群体狂暴，其时间加速能力正在污染周边空间，需立即净化。"));
+            ProgressiveQuestList.Add("时间碎片收集", new("在时之荒漠的昨日之城中收集 {0} 份不同的时间碎片（注意时间碎片会随机重组）。", item: "时间碎片"));
+            ProgressiveQuestList.Add("时凝液时效研究", new("在时之荒漠提纯 {0} 份时凝液（操作需在时间加速器防护罩内完成）。", item: "时凝液"));
         }
     }
 
@@ -115,6 +138,9 @@ namespace Oshima.FunGame.OshimaModules.Regions
             NPCs.Add("洛伦佐");
             Areas.Add("梦境交易所");
             Areas.Add("​​幻疡医院");
+            ContinuousQuestList.Add("谵妄梦境的思维隔离", new("在谵妄海市建立认知过滤系统，阻断思维寄生虫对市民意识的寄生感染路径。"));
+            ImmediateQuestList.Add("谵妄认知病毒爆发", new("谵妄海市的思维寄生虫释放II型认知病毒，感染市民产生现实扭曲能力，必须一小时内建立精神隔离区。"));
+            ProgressiveQuestList.Add("梦境碎片毒性分析", new("在谵妄海市分析 {0} 份不同的梦境碎片（需全程佩戴认知过滤器）。", item: "梦境碎片"));
         }
     }
 }

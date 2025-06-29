@@ -24,6 +24,12 @@ namespace Oshima.FunGame.OshimaModules.Regions
             NPCs.Add("封喉歌者");
             Areas.Add("古龙沉眠地穴");
             Areas.Add("立体蜂巢市集");
+            ContinuousQuestList.Add("林海深处的记忆协奏曲", new("在瑟兰薇歌林海水晶化的树冠建立观测站，记录春季地貌重组时树木根系发出的低频共振波，破译其与旋律古龙苏醒周期的关联。"));
+            ContinuousQuestList.Add("圣树蜜蜡的数据加密", new("在瑟兰薇歌林海脉轮圣树区部署安全协议，防止可编程蜜蜡的数据泄露事件再次发生。"));
+            ImmediateQuestList.Add("音律囚笼突破作战", new("苏醒的旋律古龙释放出高频震波，将精灵们困在水晶共振牢笼中，需在下次地貌重组前切断声波共鸣节点。"));
+            ImmediateQuestList.Add("圣树蜜蜡数据泄漏", new("瑟兰薇歌林海脉轮圣树区的可编程蜜蜡核心数据被盗，需在加密密钥失效前追回数据包。"));
+            ProgressiveQuestList.Add("林海汁液采收行动", new("使用抗腐蚀容器收集瑟兰薇歌林海的 {0} 份荧蓝汁液（树木自卫系统激活时汁液会转化为神经毒素）。", item: "荧蓝汁液"));
+            ProgressiveQuestList.Add("圣树蜜蜡编程实验", new("在瑟兰薇歌林海的脉轮圣树区进行 {0} 次蜜蜡编程（收集可编程蜜蜡）。", item: "可编程蜜蜡"));
         }
     }
 
@@ -45,6 +51,10 @@ namespace Oshima.FunGame.OshimaModules.Regions
             NPCs.Add("溃烂猎人");
             Areas.Add("母体神经丛​​");
             Areas.Add("诱捕菌林");
+            ContinuousQuestList.Add("腐萤沼渊的共生调查", new("深入腐萤沼渊，研究共生母体的生态系统，记录菌类模仿动物叫声的频率和模式。"));
+            ContinuousQuestList.Add("腐沼菌群的声波分析", new("在腐萤沼渊建立声纹实验室，解析共生母体菌类发出的动物模拟叫声，建立声波防御系统。"));
+            ImmediateQuestList.Add("腐沼毒气中和行动", new("腐萤沼渊共生母体排出的毒气云正在快速扩散，需在十分钟内启动应急中和装置保护周边生态。"));
+            ProgressiveQuestList.Add("共生母体样本采集", new("从腐萤沼渊的共生母体采集 {0} 份不同的菌类样本（注意菌类会释放麻痹毒素）。", item: "菌类样本"));
         }
     }
 
@@ -72,6 +82,12 @@ namespace Oshima.FunGame.OshimaModules.Regions
             Areas.Add("永夜墓园");
             Areas.Add("星锚之地");
             Areas.Add("中央之岛");
+            ContinuousQuestList.Add("星锚之地的束缚警戒", new("前往双生月崖永夜侧的星锚之地，加固引雷柱的能量场，防止星空巨兽挣脱时空束缚。"));
+            ContinuousQuestList.Add("双生湮灭的边界探测", new("在双生月崖建立空间稳定站，研究昼夜切换时湮灭边界产生的空间畸变现象。"));
+            ImmediateQuestList.Add("星空巨兽狂怒预警", new("双生月崖星锚之地的引雷柱遭到破坏，星空巨兽即将挣脱束缚，必须立即修复能量矩阵。"));
+            ImmediateQuestList.Add("湮灭边界扩张警报", new("双生月崖昼夜切换窗口期异常延迟，湮灭边界以每分钟5米速度扩张，必须立即撤离滞留学生团。"));
+            ProgressiveQuestList.Add("星锚晶石加固任务", new("在双生月崖的星锚之地校准 {0} 个不同的引雷柱，收集星锚晶石。", item: "星锚晶石"));
+            ProgressiveQuestList.Add("湮灭边界观测记录", new("在双生月崖收集 {0} 份影玫瑰。", item: "影玫瑰"));
         }
     }
 
@@ -94,10 +110,16 @@ namespace Oshima.FunGame.OshimaModules.Regions
             Crops.Add(new(181101, "晶化记忆孢子", "锻造物品的材料。", "红杉散发的记忆载体，吸入后可能体验亡者临终经历。"));
             Crops.Add(new(181102, "虚空骨髓", "锻造物品的材料。", "骨骼深处的虚空物质，散发扭曲精神的空间能量。"));
             Crops.Add(new(181103, "神经蕨类", "锻造物品的材料。", "寄生在骸骨上的蕨类植物，根系连接骸骨神经，触碰引发剧烈幻觉。"));
+            Crops.Add(new(181104, "龙骨碎片", "锻造物品的材料。", "幽灵船的龙骨半埋于桥底虚空泥沼中，其扭曲的脊椎骨刺穿雾层，船体残骸散发幽蓝磷光。"));
             NPCs.Add("骸骨诗人");
             NPCs.Add("\"船长\"");
             Areas.Add("骸鲸观星台");
             Areas.Add("幽灵船坞");
+            ContinuousQuestList.Add("骨桥记忆的精神共鸣", new("进入棱镜骨桥，收集晶体化红杉中储存的亡者记忆，调查空间褶皱对现实结构的影响。"));
+            ImmediateQuestList.Add("骨桥幽灵舰队突袭", new("棱镜骨桥下方的幽灵船队突破虚空屏障，对现实维度发动突袭，必须在半小时内建立反制防线。"));
+            ImmediateQuestList.Add("棱镜记忆过载危机", new("棱镜骨桥的红杉晶体因记忆过载即将爆发共感冲击波，必须在五分钟内疏散周边观测人员。"));
+            ProgressiveQuestList.Add("骨桥记忆共鸣实验", new("在棱镜骨桥提取 {0} 份不同的亡者记忆（晶化记忆孢子）。", item: "晶化记忆孢子"));
+            ProgressiveQuestList.Add("幽灵航线能量测绘", new("在棱镜骨桥下方收集 {0} 份幽灵船能量数据（龙骨碎片）。", item: "龙骨碎片"));
         }
     }
 }

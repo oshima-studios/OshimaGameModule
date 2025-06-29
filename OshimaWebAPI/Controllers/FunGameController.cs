@@ -1343,7 +1343,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
                 double dice = Random.Shared.NextDouble();
                 if (dice > 0.8)
                 {
-                    string msg = FunGameService.GetDrawCardResult(reduce, user);
+                    string msg = FunGameService.GetDrawCardResult(reduce, user, useCurrency: false);
                     user.LastTime = DateTime.Now;
                     pc.Add("user", user);
                     pc.SaveConfig();
@@ -1391,7 +1391,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
                     if (dice > 0.8)
                     {
                         count++;
-                        result.Add(FunGameService.GetDrawCardResult(reduce, user, true, count));
+                        result.Add(FunGameService.GetDrawCardResult(reduce, user, true, count, useCurrency: false));
                     }
                 }
                 if (result.Count == 1)
@@ -3926,6 +3926,10 @@ namespace Oshima.FunGame.WebAPI.Controllers
                     {
                         msgs.Add($"任务【{quest.Name}】已经结算并发放奖励了哦！\r\n{quest}");
                     }
+                    else if (quest.Status == QuestState.InProgress)
+                    {
+                        msgs.Add($"任务【{quest.Name}】已经在进行中，请根据任务要求完成任务。\r\n{quest}");
+                    }
                     else
                     {
                         quest.StartTime = DateTime.Now;
@@ -3942,13 +3946,9 @@ namespace Oshima.FunGame.WebAPI.Controllers
                             quest.Status = QuestState.Completed;
                             msgs.Add("在任务过程中，你碰巧遇到了米莉，任务直接完成了！");
                         }
-                        else
+                        else if (quest.QuestType == QuestType.Progressive)
                         {
                             msgs.Add($"开始任务【{quest.Name}】成功！任务信息如下：\r\n{quest}");
-                            // TODO：进度条任务需要完成任务的指标，实现任务逻辑
-                            quest.Progress = quest.MaxProgress;
-                            quest.Status = QuestState.Completed;
-                            msgs.Add("在任务过程中，你碰巧遇到了米莉，任务直接完成了！");
                         }
                         quests.SaveConfig();
                     }
@@ -5059,9 +5059,9 @@ namespace Oshima.FunGame.WebAPI.Controllers
                         foreach (Item item in good.Items)
                         {
                             count++;
-                            Item newItem = item.Copy();
+                            Item newItem = item.Copy(true);
                             newItem.Character = user.Inventory.MainCharacter;
-                            newItem.SetLevel(1);
+                            if (newItem.ItemType != ItemType.MagicCard) newItem.SetLevel(1);
                             itemMsg += $"[ {count} ] {newItem.ToString(false, true)}".Trim();
                         }
                         msg = good.ToString().Split("包含物品：")[0].Trim();
@@ -5328,25 +5328,26 @@ namespace Oshima.FunGame.WebAPI.Controllers
 
                 if (msg == "")
                 {
-                    exploreTimes -= characterCount;
                     if (regionid > 0 && regionid <= FunGameConstant.Regions.Count && FunGameConstant.Regions.FirstOrDefault(r => r.Id == regionid) is OshimaRegion region)
                     {
+                        exploreTimes -= characterCount;
+
                         msg = $"开始探索【{region.Name}】，探索时间预计 {FunGameConstant.ExploreTime} 分钟（系统会自动结算，届时会有提示）。" +
                             $"探索成员：[ {FunGameService.GetCharacterGroupInfoByInventorySequence(user.Inventory.Characters, characterIds, " ] / [ ")} ]";
                         ExploreModel model = await FunGameService.GenerateExploreModel(region, characterIds, user);
                         exploreId = model.Guid;
                         list.Add(model);
+
+                        if (exploreTimes > 0)
+                        {
+                            if (msg != "") msg += "\r\n";
+                            msg += $"本次扣除探索次数 {characterCount} 次，你的剩余探索次数：{exploreTimes} 次。需要注意：探索角色越多，奖励越多，但是会扣除相应的探索次数。";
+                        }
                     }
                     else
                     {
                         return ($"没有找到与这个序号相对应的地区！", exploreId);
                     }
-                }
-
-                if (exploreTimes > 0)
-                {
-                    if (msg != "") msg += "\r\n";
-                    msg += $"本次扣除探索次数 {characterCount} 次，你的剩余探索次数：{exploreTimes} 次。需要注意：探索角色越多，奖励越多，但是会扣除相应的探索次数。";
                 }
 
                 user.LastTime = DateTime.Now;

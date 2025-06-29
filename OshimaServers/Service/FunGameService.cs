@@ -16,7 +16,9 @@ namespace Oshima.FunGame.OshimaServers.Service
 {
     public class FunGameService
     {
+        public static Dictionary<long, List<string>> UserExploreItemCache { get; } = [];
         public static HashSet<Activity> Activities { get; } = [];
+        public static List<string> ActivitiesItemCache { get; } = [];
         public static Dictionary<long, HashSet<string>> UserNotice { get; } = [];
         public static Dictionary<int, Character> Bosses { get; } = [];
         public static ServerPluginLoader? ServerPluginLoader { get; set; } = null;
@@ -619,12 +621,13 @@ namespace Oshima.FunGame.OshimaServers.Service
             return [.. list.Skip((showPage - 1) * pageSize).Take(pageSize)];
         }
 
-        public static string GetDrawCardResult(int reduce, User user, bool isMulti = false, int multiCount = 1)
+        public static string GetDrawCardResult(int reduce, User user, bool isMulti = false, int multiCount = 1, bool useCurrency = true)
         {
             string msg = "";
+            string reduceUnit = useCurrency ? General.GameplayEquilibriumConstant.InGameCurrency : General.GameplayEquilibriumConstant.InGameMaterial;
             if (!isMulti)
             {
-                msg = $"消耗 {reduce} {General.GameplayEquilibriumConstant.InGameCurrency}，恭喜你抽到了：";
+                msg = $"消耗 {reduce} {reduceUnit}，恭喜你抽到了：";
             }
 
             int r = Random.Shared.Next(8);
@@ -1644,16 +1647,22 @@ namespace Oshima.FunGame.OshimaServers.Service
                         itemsCount[item2.Name]++;
                     }
 
+                    // 随机筛选地区
+                    OshimaRegion region = FunGameConstant.Regions.OrderBy(o => Random.Shared.Next()).First();
+
                     Quest quest;
                     if (type == QuestType.Continuous)
                     {
-                        string name = FunGameConstant.ContinuousQuestList.Keys.OrderBy(o => Random.Shared.Next()).First();
+                        string name = region.ContinuousQuestList.Keys.OrderBy(o => Random.Shared.Next()).First();
+                        QuestExploration exploration = region.ContinuousQuestList[name];
                         int minutes = Random.Shared.Next(10, 41);
                         quest = new()
                         {
                             Id = id,
                             Name = name,
-                            Description = FunGameConstant.ContinuousQuestList[name],
+                            Description = exploration.Description,
+                            RegionId = region.Id,
+                            NeedyExploreItemName = exploration.Item,
                             QuestType = QuestType.Continuous,
                             EstimatedMinutes = minutes,
                             CreditsAward = minutes * 20,
@@ -1664,13 +1673,16 @@ namespace Oshima.FunGame.OshimaServers.Service
                     }
                     else if (type == QuestType.Immediate)
                     {
-                        string name = FunGameConstant.ImmediateQuestList.Keys.OrderBy(o => Random.Shared.Next()).First();
+                        string name = region.ImmediateQuestList.Keys.OrderBy(o => Random.Shared.Next()).First();
+                        QuestExploration exploration = region.ImmediateQuestList[name];
                         int difficulty = Random.Shared.Next(3, 11);
                         quest = new()
                         {
                             Id = id,
                             Name = name,
-                            Description = FunGameConstant.ImmediateQuestList[name],
+                            Description = exploration.Description,
+                            RegionId = region.Id,
+                            NeedyExploreItemName = exploration.Item,
                             QuestType = QuestType.Immediate,
                             CreditsAward = difficulty * 80,
                             MaterialsAward = difficulty / 2 * 1,
@@ -1680,13 +1692,16 @@ namespace Oshima.FunGame.OshimaServers.Service
                     }
                     else
                     {
-                        string name = FunGameConstant.ProgressiveQuestList.Keys.OrderBy(o => Random.Shared.Next()).First();
+                        string name = region.ProgressiveQuestList.Keys.OrderBy(o => Random.Shared.Next()).First();
+                        QuestExploration exploration = region.ProgressiveQuestList[name];
                         int maxProgress = Random.Shared.Next(3, 11);
                         quest = new()
                         {
                             Id = id,
                             Name = name,
-                            Description = string.Format(FunGameConstant.ProgressiveQuestList[name], maxProgress),
+                            Description = string.Format(exploration.Description, maxProgress),
+                            RegionId = region.Id,
+                            NeedyExploreItemName = exploration.Item,
                             QuestType = QuestType.Progressive,
                             Progress = 0,
                             MaxProgress = maxProgress,
@@ -1727,6 +1742,31 @@ namespace Oshima.FunGame.OshimaServers.Service
                     result = true;
                 }
             }
+            if (UserExploreItemCache.TryGetValue(user.Id, out List<string>? value) && value != null && value.Count > 0)
+            {
+                // 从缓存中获取收集的物品
+                List<string> willRemove = [];
+                foreach (string item in value.Distinct())
+                {
+                    IEnumerable<string> items = value.Where(str => str == item);
+                    IEnumerable<Quest> progressiveQuests = quests.Values.Where(q => q.QuestType == QuestType.Progressive && q.Status == QuestState.InProgress);
+                    foreach (Quest quest in progressiveQuests)
+                    {
+                        if (quest.NeedyExploreItemName == item)
+                        {
+                            quest.Progress += items.Count();
+                            if (quest.Progress >= quest.MaxProgress)
+                            {
+                                quest.Progress = quest.MaxProgress;
+                                quest.Status = QuestState.Completed;
+                                result = true;
+                            }
+                        }
+                    }
+                    willRemove.Add(item);
+                }
+                value.RemoveAll(willRemove.Contains);
+            }
             IEnumerable<Quest> finishQuests = quests.Values.Where(q => q.Status == QuestState.Completed);
             foreach (Quest quest in finishQuests)
             {
@@ -1752,6 +1792,10 @@ namespace Oshima.FunGame.OshimaServers.Service
                                 newItem.User = user;
                                 SetSellAndTradeTime(newItem);
                                 user.Inventory.Items.Add(newItem);
+                                // 连接到任务系统
+                                AddExploreItemCache(user.Id, item.Name);
+                                // 连接到活动系统
+                                ActivitiesItemCache.Add(item.Name);
                             }
                         }
                     }
@@ -1761,6 +1805,18 @@ namespace Oshima.FunGame.OshimaServers.Service
                 result = true;
             }
             return result;
+        }
+
+        public static void AddExploreItemCache(long userid, string item)
+        {
+            if (UserExploreItemCache.TryGetValue(userid, out List<string>? value) && value != null)
+            {
+                value.Add(item);
+            }
+            else
+            {
+                UserExploreItemCache[userid] = [item];
+            }
         }
 
         public static string CheckDailyStore(EntityModuleConfig<Store> store, User? user = null)
@@ -1863,7 +1919,7 @@ namespace Oshima.FunGame.OshimaServers.Service
             {
                 for (int i = 0; i < count; i++)
                 {
-                    Item newItem = item.Copy();
+                    Item newItem = item.Copy(true);
                     SetSellAndTradeTime(newItem);
                     if (goods.GetPrice(General.GameplayEquilibriumConstant.InGameCurrency, out double price) && price > 0)
                     {
@@ -1934,6 +1990,39 @@ namespace Oshima.FunGame.OshimaServers.Service
             foreach (Activity activity in activities.Values)
             {
                 Activities.Add(activity);
+            }
+            bool update = false;
+            if (ActivitiesItemCache.Count > 0)
+            {
+                List<string> willRemove = [];
+                IEnumerable<Activity> activityList = Activities.Where(a => a.Status == ActivityState.InProgress);
+                foreach (string item in ActivitiesItemCache.Distinct())
+                {
+                    IEnumerable<string> items = ActivitiesItemCache.Where(str => str == item);
+                    foreach (Quest quest in activityList.SelectMany(a => a.Quests))
+                    {
+                        if (quest.NeedyExploreItemName == item)
+                        {
+                            update = true;
+                            quest.Progress += items.Count();
+                            if (quest.Progress >= quest.MaxProgress)
+                            {
+                                quest.Progress = quest.MaxProgress;
+                                quest.Status = QuestState.Completed;
+                            }
+                        }
+                    }
+                    willRemove.Add(item);
+                }
+                ActivitiesItemCache.RemoveAll(willRemove.Contains);
+            }
+            if (update)
+            {
+                foreach (Activity activity in Activities)
+                {
+                    activities.Add(activity.Id.ToString(), activity);
+                }
+                activities.SaveConfig();
             }
             StringBuilder builder = new();
             builder.AppendLine("★☆★ 活动中心 ★☆★");
@@ -2192,7 +2281,7 @@ namespace Oshima.FunGame.OshimaServers.Service
                         {
                             msgs = msgs[^2..];
                         }
-                        if (enemy.HP <= 0)
+                        if (enemys.All(c => c.HP <= 0))
                         {
                             model.FightWin = true;
                             int credits = 0;
@@ -2222,6 +2311,17 @@ namespace Oshima.FunGame.OshimaServers.Service
                             model.Awards[item.Name] = count;
                             award = $"{credits} {General.GameplayEquilibriumConstant.InGameCurrency}，" + $"{exp} 点经验值（探索队员们平分），" +
                                 $"{materials} {General.GameplayEquilibriumConstant.InGameMaterial}，" + $"以及 {count} 个{item.Name}";
+                            if (Random.Shared.NextDouble() > 0.6)
+                            {
+                                Item? itemDrop = region.Items.OrderBy(o => Random.Shared.Next()).FirstOrDefault();
+                                if (itemDrop != null)
+                                {
+                                    string itemquality = ItemSet.GetQualityTypeName(itemDrop.QualityType);
+                                    string itemtype = ItemSet.GetItemTypeName(itemDrop.ItemType) + (itemDrop.ItemType == ItemType.Weapon && itemDrop.WeaponType != WeaponType.None ? "-" + ItemSet.GetWeaponTypeName(itemDrop.WeaponType) : "");
+                                    if (itemtype != "") itemtype = $"|{itemtype}";
+                                    award += $"！额外获得了：[{itemquality + itemtype}] {itemDrop.Name}";
+                                }
+                            }
                             exploreString = $"{exploreString}\r\n{string.Join("\r\n", msgs)}\r\n探索小队战胜了{enemy.Name}！获得了：{award}！";
                         }
                         else
@@ -2244,7 +2344,10 @@ namespace Oshima.FunGame.OshimaServers.Service
                     else
                     {
                         model.Awards[itemEarned.Name] = 1;
-                        award = itemEarned.Name;
+                        string itemquality = ItemSet.GetQualityTypeName(itemEarned.QualityType);
+                        string itemtype = ItemSet.GetItemTypeName(itemEarned.ItemType) + (itemEarned.ItemType == ItemType.Weapon && itemEarned.WeaponType != WeaponType.None ? "-" + ItemSet.GetWeaponTypeName(itemEarned.WeaponType) : "");
+                        if (itemtype != "") itemtype = $"|{itemtype}";
+                        award += $"[{itemquality + itemtype}] {itemEarned.Name}";
                     }
                     break;
                 case ExploreResult.Event:
@@ -2300,6 +2403,10 @@ namespace Oshima.FunGame.OshimaServers.Service
                             newItem.User = user;
                             SetSellAndTradeTime(newItem);
                             user.Inventory.Items.Add(newItem);
+                            // 连接到任务系统
+                            AddExploreItemCache(user.Id, item.Name);
+                            // 连接到活动系统
+                            ActivitiesItemCache.Add(item.Name);
                         }
                     }
                 }
