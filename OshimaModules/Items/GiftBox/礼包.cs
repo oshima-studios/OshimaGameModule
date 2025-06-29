@@ -162,19 +162,20 @@ namespace Oshima.FunGame.OshimaModules.Items
         public override long Id => (long)GiftBoxID.魔法卡礼包;
         public override string Name => "魔法卡礼包";
         public override string Description => Skills.Active?.Description ?? "";
-        public int Count => _count;
+        public int Count { get; set; } = 1;
         public Dictionary<string, int> Gifts { get; set; } = [];
-        private readonly int _count = 1;
+        private const string GiftName = "与礼包同品质、随机属性、随机魔法技能的魔法卡";
 
         public 魔法卡礼包(QualityType type = QualityType.White, int count = 1, User? user = null, int remainUseTimes = 1) : base(ItemType.GiftBox)
         {
             QualityType = type;
             Others.Add("QualityType", (int)type);
-            _count = count;
+            Count = count;
+            Others.Add("Count", count);
             User = user;
             礼包.Init(this, new()
             {
-                { "与礼包同品质、随机属性、随机魔法技能的魔法卡", count }
+                { GiftName, count }
             }, remainUseTimes);
         }
 
@@ -183,6 +184,11 @@ namespace Oshima.FunGame.OshimaModules.Items
             if (Others.TryGetValue("QualityType", out object? value) && int.TryParse(value.ToString(), out int qualityType))
             {
                 QualityType = (QualityType)qualityType;
+            }
+            if (Others.TryGetValue("Count", out value) && int.TryParse(value.ToString(), out int count))
+            {
+                Count = count;
+                Gifts[GiftName] = count;
             }
         }
     }

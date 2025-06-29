@@ -20,6 +20,10 @@ namespace Oshima.FunGame.OshimaModules.Regions
             Units.Add(new(20502, "改造士兵"));
             Crops.Add(new(180501, "机械核心碎片", "锻造物品的材料。", "上古机械文明的能量核心，蕴含强大动力但可能触发自毁程序。"));
             Crops.Add(new(180502, "活体魔力血", "锻造物品的材料。", "具有自我修复能力的液态魔力，接触会导致身体不可预知的异变。"));
+            NPCs.Add("\"噬罪者\"");
+            NPCs.Add("7号改造体");
+            Areas.Add("​​忏悔教堂​​");
+            Areas.Add("造物车间");
         }
     }
 }

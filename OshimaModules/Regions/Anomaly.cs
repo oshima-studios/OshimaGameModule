@@ -21,6 +21,10 @@ namespace Oshima.FunGame.OshimaModules.Regions
             Crops.Add(new(180101, "星银合金", "锻造物品的材料。", "银辉城特有的金属材料，拥有银色的光泽和坚固的质地。能够吸收和储存能量，是建造城市和制造武器的理想材料。"));
             Crops.Add(new(180102, "液态月光", "锻造物品的材料。", "散发着柔和光芒的液体，如同月光般清澈。蕴含悖论引擎的能量，能够影响现实的结构。"));
             Crops.Add(new(180103, "星辉凝露", "锻造物品的材料。", "星辉水母散发的凝露，蕴含重构重力的能量，能够暂时扭曲局部空间法则。"));
+            NPCs.Add("莉娅");
+            NPCs.Add("沉默守卫G-7");
+            Areas.Add("悖论深井");
+            Areas.Add("星屑回廊");
         }
     }
 
@@ -39,6 +43,10 @@ namespace Oshima.FunGame.OshimaModules.Regions
             Units.Add(new(20401, "冰霜傀儡"));
             Crops.Add(new(180401, "时霜药剂", "锻造物品的材料。", "能够减缓时间流逝的药剂，维持神智清醒但可能导致记忆混乱和时间感知错乱。"));
             Crops.Add(new(180402, "冰封记忆", "锻造物品的材料。", "冰封的古代战争幻象碎片，触碰时引发强烈记忆回溯与认知扭曲。"));
+            NPCs.Add("艾萨克");
+            NPCs.Add("冻伤的信使");
+            Areas.Add("时钟哨塔");
+            Areas.Add("记忆回廊");
         }
     }
 
@@ -57,6 +65,10 @@ namespace Oshima.FunGame.OshimaModules.Regions
             Characters.Add(new(10601, "镜像之主"));
             Units.Add(new(20601, "镜像守卫"));
             Crops.Add(new(180601, "量子纠缠碎片", "锻造物品的材料。", "瞳孔状传送门的微观残片，能够引发量子纠缠现象，连接平行时空。"));
+            NPCs.Add("奥尔加");
+            NPCs.Add("溺亡观测者");
+            Areas.Add("倒影城");
+            Areas.Add("千瞳之巢");
         }
     }
 
@@ -78,6 +90,10 @@ namespace Oshima.FunGame.OshimaModules.Regions
             Units.Add(new(20702, "时之蝎"));
             Crops.Add(new(180701, "时间碎片", "锻造物品的材料。", "时间残骸形成的晶体，拥有不规则形状和模糊纹路，会随机重组周围时空。"));
             Crops.Add(new(180702, "时凝液", "锻造物品的材料。", "时漏仙人掌分泌的粘稠液体，能够加速或减缓局部时间流逝，但难以控制。"));
+            NPCs.Add("卖沙人");
+            NPCs.Add("循环勘探队");
+            Areas.Add("昨日之城");
+            Areas.Add("时漏绿洲");
         }
     }
 
@@ -95,6 +111,10 @@ namespace Oshima.FunGame.OshimaModules.Regions
             Characters.Add(new(10801, "梦魇之主"));
             Units.Add(new(20801, "思维寄生虫"));
             Crops.Add(new(180801, "梦境碎片", "锻造物品的材料。", "能够改变认知的梦境残留物，摄入后会混淆现实与虚幻的边界。"));
+            NPCs.Add("认知矫正师");
+            NPCs.Add("洛伦佐");
+            Areas.Add("梦境交易所");
+            Areas.Add("​​幻疡医院");
         }
     }
 }

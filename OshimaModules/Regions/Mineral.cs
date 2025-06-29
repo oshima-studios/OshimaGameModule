@@ -20,6 +20,10 @@ namespace Oshima.FunGame.OshimaModules.Regions
             Units.Add(new(20302, "火焰元素"));
             Crops.Add(new(180301, "活体金属苔藓", "锻造物品的材料。", "具有金属质感的生命体，能够自我修复和繁殖，是研究金属生命的珍贵样本。"));
             Crops.Add(new(180302, "深渊火钻", "锻造物品的材料。", "火山深处开采的珍稀矿石，只有被矿工灵魂烙印认可者才能安全触碰。"));
+            NPCs.Add("\"铁颚\"巴拉克");
+            NPCs.Add("苔丝夫人");
+            Areas.Add("鱿熔血池​​");
+            Areas.Add("活体锻炉");
         }
     }
 }

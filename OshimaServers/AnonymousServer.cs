@@ -7,6 +7,7 @@ using Milimoe.FunGame.Core.Library.Common.Addon;
 using Milimoe.FunGame.Core.Library.Constant;
 using Oshima.Core.Configs;
 using Oshima.Core.Constant;
+using Oshima.FunGame.OshimaServers.Model;
 using Oshima.FunGame.OshimaServers.Service;
 using TaskScheduler = Milimoe.FunGame.Core.Api.Utility.TaskScheduler;
 
@@ -141,12 +142,28 @@ namespace Oshima.FunGame.OshimaServers
                             User user = FunGameService.GetUser(pc);
                             // 将用户存入缓存
                             FunGameConstant.UserIdAndUsername[user.Id] = user;
+                            bool updateQuest = false;
+                            bool updateExplore = false;
                             // 任务结算
                             EntityModuleConfig<Quest> quests = new("quests", user.Id.ToString());
                             quests.LoadConfig();
                             if (quests.Count > 0 && FunGameService.SettleQuest(user, quests))
                             {
                                 quests.SaveConfig();
+                                updateQuest = true;
+                            }
+                            // 探索结算
+                            List<ExploreModel> list = pc.Get<List<ExploreModel>>("exploring") ?? [];
+                            if (list.Count > 0)
+                            {
+                                updateExplore = FunGameService.SettleExploreAll(list, user);
+                                if (updateExplore)
+                                {
+                                    pc.Add("exploring", list);
+                                }
+                            }
+                            if (updateQuest || updateExplore)
+                            {
                                 user.LastTime = DateTime.Now;
                                 pc.Add("user", user);
                                 pc.SaveConfig();
@@ -178,6 +195,8 @@ namespace Oshima.FunGame.OshimaServers
                 });
                 Task.Run(() =>
                 {
+                    // 刷新每天登录
+                    FunGameService.UserNotice.Clear();
                     // 刷新签到
                     string directoryPath = $@"{AppDomain.CurrentDomain.BaseDirectory}configs/saved";
                     if (Directory.Exists(directoryPath))
@@ -189,6 +208,8 @@ namespace Oshima.FunGame.OshimaServers
                             PluginConfig pc = new("saved", fileName);
                             pc.LoadConfig();
                             pc.Add("signed", false);
+                            pc.Add("logon", false);
+                            pc.Add("exploreTimes", FunGameConstant.MaxExploreTimes);
                             pc.SaveConfig();
                         }
                         Controller.WriteLine("刷新签到");
@@ -210,25 +231,6 @@ namespace Oshima.FunGame.OshimaServers
                             store.SaveConfig();
                         }
                         Controller.WriteLine("刷新商店");
-                    }
-                });
-                Task.Run(() =>
-                {
-                    // 刷新每天登录
-                    FunGameService.UserNotice.Clear();
-                    string directoryPath = $@"{AppDomain.CurrentDomain.BaseDirectory}configs/saved";
-                    if (Directory.Exists(directoryPath))
-                    {
-                        string[] filePaths = Directory.GetFiles(directoryPath);
-                        foreach (string filePath in filePaths)
-                        {
-                            string fileName = Path.GetFileNameWithoutExtension(filePath);
-                            PluginConfig pc = new("saved", fileName);
-                            pc.LoadConfig();
-                            pc.Add("logon", false);
-                            pc.SaveConfig();
-                        }
-                        Controller.WriteLine("刷新每天登录");
                     }
                 });
                 // 刷新活动缓存

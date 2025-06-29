@@ -20,6 +20,10 @@ namespace Oshima.FunGame.OshimaModules.Regions
             Units.Add(new(20202, "蜜蜡蜂"));
             Crops.Add(new(180201, "荧蓝汁液", "锻造物品的材料。", "林海特有树木的汁液，拥有荧蓝色的光泽。能够吸收和储存能量，是珍贵的炼金材料。"));
             Crops.Add(new(180202, "可编程蜜蜡", "锻造物品的材料。", "脉轮圣树分泌的树脂，拥有记忆塑性能力，能够编程实现特定功能。"));
+            NPCs.Add("老祭司苔藓须");
+            NPCs.Add("封喉歌者");
+            Areas.Add("古龙沉眠地穴");
+            Areas.Add("立体蜂巢市集");
         }
     }
 
@@ -37,6 +41,10 @@ namespace Oshima.FunGame.OshimaModules.Regions
             Characters.Add(new(10901, "共生母体"));
             Units.Add(new(20901, "沼泽毒虫"));
             Crops.Add(new(180901, "菌类样本", "锻造物品的材料。", "共生母体上生长的奇异菌类，能释放麻痹毒素，具有高度研究价值。"));
+            NPCs.Add("伊芙琳");
+            NPCs.Add("溃烂猎人");
+            Areas.Add("母体神经丛​​");
+            Areas.Add("诱捕菌林");
         }
     }
 
@@ -58,6 +66,12 @@ namespace Oshima.FunGame.OshimaModules.Regions
             Units.Add(new(21002, "浮空岛灵", [(r => r.Weather == "永夜")]));
             Crops.Add(new(181001, "影玫瑰", "锻造物品的材料。", "永夜侧绽放的奇异植物，散发幽光，只在绝对黑暗中盛开。", QualityType.White, [(r => r.Weather == "永夜")]));
             Crops.Add(new(181002, "星锚晶石", "锻造物品的材料。", "引雷柱上脱落的晶体碎片，蕴含空间束缚能量，能暂时固定空间结构。", QualityType.White, [(r => r.Weather == "永昼")]));
+            NPCs.Add("守夜人卡尔");
+            NPCs.Add("星锚祭司​​");
+            Areas.Add("永昼庭园​​");
+            Areas.Add("永夜墓园");
+            Areas.Add("星锚之地");
+            Areas.Add("中央之岛");
         }
     }
 
@@ -80,6 +94,10 @@ namespace Oshima.FunGame.OshimaModules.Regions
             Crops.Add(new(181101, "晶化记忆孢子", "锻造物品的材料。", "红杉散发的记忆载体，吸入后可能体验亡者临终经历。"));
             Crops.Add(new(181102, "虚空骨髓", "锻造物品的材料。", "骨骼深处的虚空物质，散发扭曲精神的空间能量。"));
             Crops.Add(new(181103, "神经蕨类", "锻造物品的材料。", "寄生在骸骨上的蕨类植物，根系连接骸骨神经，触碰引发剧烈幻觉。"));
+            NPCs.Add("骸骨诗人");
+            NPCs.Add("\"船长\"");
+            Areas.Add("骸鲸观星台");
+            Areas.Add("幽灵船坞");
         }
     }
 }

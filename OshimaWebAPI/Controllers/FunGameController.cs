@@ -13,6 +13,7 @@ using Oshima.Core.Configs;
 using Oshima.FunGame.OshimaModules.Characters;
 using Oshima.FunGame.OshimaModules.Items;
 using Oshima.FunGame.OshimaModules.Regions;
+using Oshima.FunGame.OshimaServers.Model;
 using Oshima.FunGame.OshimaServers.Service;
 
 namespace Oshima.FunGame.WebAPI.Controllers
@@ -3022,11 +3023,13 @@ namespace Oshima.FunGame.WebAPI.Controllers
                         user.Inventory.Training.Remove(cid);
 
                         TimeSpan diff = now - time;
-                        string msg = FunGameService.GetTrainingInfo(diff, false, out int totalExperience, out int smallBookCount, out int mediumBookCount, out int largeBookCount);
+                        string msg = FunGameService.GetTrainingInfo(diff, character, false, out int totalExperience, out int smallBookCount, out int mediumBookCount, out int largeBookCount);
 
                         if (totalExperience > 0)
                         {
                             character.EXP += totalExperience;
+                            character.HP += character.HR * diff.TotalSeconds;
+                            character.MP += character.MR * diff.TotalSeconds;
                         }
 
                         for (int i = 0; i < smallBookCount; i++)
@@ -3095,7 +3098,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
                     if (character != null)
                     {
                         TimeSpan diff = now - time;
-                        string msg = FunGameService.GetTrainingInfo(diff, true, out int totalExperience, out int smallBookCount, out int mediumBookCount, out int largeBookCount);
+                        string msg = FunGameService.GetTrainingInfo(diff, character, true, out int totalExperience, out int smallBookCount, out int mediumBookCount, out int largeBookCount);
 
                         return $"角色 [ {character} ] 正在练级中，{msg}\r\n确认无误后请输入【练级结算】领取奖励！";
                     }
@@ -5230,10 +5233,13 @@ namespace Oshima.FunGame.WebAPI.Controllers
         }
 
         [HttpPost("exploreregion")]
-        public string ExploreRegion([FromQuery] long? uid = null, [FromQuery] long? id = null)
+        public async Task<(string, Guid)> ExploreRegion([FromQuery] long? uid = null, [FromQuery] long? id = null, [FromBody] long[]? cids = null)
         {
+            Guid exploreId = Guid.Empty;
             long userid = uid ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
             long regionid = id ?? 0;
+            long[] characterIds = cids ?? [];
+            int characterCount = characterIds.Length;
 
             PluginConfig pc = new("saved", userid.ToString());
             pc.LoadConfig();
@@ -5243,13 +5249,249 @@ namespace Oshima.FunGame.WebAPI.Controllers
             {
                 User user = FunGameService.GetUser(pc);
 
-                if (regionid > 0 && regionid <= FunGameConstant.Regions.Count && FunGameConstant.Regions.FirstOrDefault(r => r.Id == regionid) is OshimaRegion region)
+                // 检查角色存在
+                List<long> invalid = [];
+                foreach (long cid in characterIds)
                 {
-                    msg = $"开始探索【{region.Name}】，探索时间：{FunGameConstant.ExploreTime} 分钟。（骗你的，其实还没做）";
+                    if (cid > 0 && cid <= user.Inventory.Characters.Count)
+                    {
+                        // do nothing
+                    }
+                    else
+                    {
+                        invalid.Add(cid);
+                    }
+                }
+                if (invalid.Count > 0)
+                {
+                    msg = $"没有找到与输入序号相对应的角色：{string.Join("，", invalid)}。";
+                }
+
+                // 检查探索次数
+                if (pc.TryGetValue("exploreTimes", out object? value) && int.TryParse(value.ToString(), out int exploreTimes))
+                {
+                    if (exploreTimes <= 0)
+                    {
+                        exploreTimes = 0;
+                        msg = $"今日的探索次数已用完，无法再继续探索。";
+                    }
+                    else if (characterCount > exploreTimes)
+                    {
+                        msg = $"你选择的角色数量超过了剩余的探索次数（{exploreTimes} 次），请减少选择的角色数量。需要注意：探索角色越多，奖励越多，但是会扣除相应的探索次数。";
+                    }
                 }
                 else
                 {
-                    return $"没有找到与这个序号相对应的地区！";
+                    exploreTimes = FunGameConstant.MaxExploreTimes;
+                }
+
+                // 检查角色是否正在探索
+                List<ExploreModel> list = pc.Get<List<ExploreModel>>("exploring") ?? [];
+                if (list.Count > 0)
+                {
+                    string msg2 = "";
+                    List<Guid> remove = [];
+                    foreach (ExploreModel model in list)
+                    {
+                        // 可能要结算先前的超时探索
+                        if (model.StartTime.HasValue && (DateTime.Now - model.StartTime.Value).TotalMinutes > FunGameConstant.ExploreTime + 5)
+                        {
+                            if (FunGameService.SettleExplore(model.Guid, list, user, out string notice))
+                            {
+                                if (notice != "")
+                                {
+                                    if (msg2 != "") msg2 += "\r\n";
+                                    msg2 += $"你上次未完成的探索已被自动结算{notice}";
+                                }
+                                remove.Add(model.Guid);
+                            }
+                        }
+
+                        IEnumerable<long> exploring = model.CharacterIds.Intersect(characterIds);
+                        if (exploring.Any())
+                        {
+                            if (msg2 != "") msg2 += "\r\n";
+                            msg2 += $"你暂时无法使用以下角色进行探索：[ {FunGameService.GetCharacterGroupInfoByInventorySequence(user.Inventory.Characters, exploring, " ] / [ ")} ]，" +
+                                $"因为这些角色已经参与了另一场探索：\r\n{model.GetExploreInfo(user.Inventory.Characters, FunGameConstant.Regions)}";
+                        }
+                    }
+                    foreach (Guid guid in remove)
+                    {
+                        list.RemoveAll(m => m.Guid == guid);
+                    }
+                    if (msg2 != "")
+                    {
+                        if (msg != "") msg += "\r\n";
+                        msg += msg2;
+                    }
+                }
+
+                if (msg == "")
+                {
+                    exploreTimes -= characterCount;
+                    if (regionid > 0 && regionid <= FunGameConstant.Regions.Count && FunGameConstant.Regions.FirstOrDefault(r => r.Id == regionid) is OshimaRegion region)
+                    {
+                        msg = $"开始探索【{region.Name}】，探索时间预计 {FunGameConstant.ExploreTime} 分钟（系统会自动结算，届时会有提示）。" +
+                            $"探索成员：[ {FunGameService.GetCharacterGroupInfoByInventorySequence(user.Inventory.Characters, characterIds, " ] / [ ")} ]";
+                        ExploreModel model = await FunGameService.GenerateExploreModel(region, characterIds, user);
+                        exploreId = model.Guid;
+                        list.Add(model);
+                    }
+                    else
+                    {
+                        return ($"没有找到与这个序号相对应的地区！", exploreId);
+                    }
+                }
+
+                if (exploreTimes > 0)
+                {
+                    if (msg != "") msg += "\r\n";
+                    msg += $"本次扣除探索次数 {characterCount} 次，你的剩余探索次数：{exploreTimes} 次。需要注意：探索角色越多，奖励越多，但是会扣除相应的探索次数。";
+                }
+
+                user.LastTime = DateTime.Now;
+                pc.Add("user", user);
+                pc.Add("exploreTimes", exploreTimes);
+                pc.Add("exploring", list);
+                pc.SaveConfig();
+
+                return (msg, exploreId);
+            }
+            else
+            {
+                return (noSaved, exploreId);
+            }
+        }
+
+        [HttpGet("exploreinfo")]
+        public string GetExploreInfo([FromQuery] long? uid = null)
+        {
+            long userid = uid ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
+
+            PluginConfig pc = new("saved", userid.ToString());
+            pc.LoadConfig();
+
+            string msg = "";
+            if (pc.Count > 0)
+            {
+                User user = FunGameService.GetUser(pc);
+
+                // 检查探索次数
+                if (pc.TryGetValue("exploreTimes", out object? value) && int.TryParse(value.ToString(), out int exploreTimes))
+                {
+                    if (exploreTimes <= 0)
+                    {
+                        exploreTimes = 0;
+                        msg = $"今日的探索次数已用完，无法再继续探索。";
+                    }
+                }
+                else
+                {
+                    exploreTimes = FunGameConstant.MaxExploreTimes;
+                }
+
+                List<ExploreModel> list = pc.Get<List<ExploreModel>>("exploring") ?? [];
+                if (list.Count > 0)
+                {
+                    string msg2 = "";
+                    foreach (ExploreModel model in list)
+                    {
+                        if (msg2 != "") msg2 += "\r\n";
+                        msg2 += model.GetExploreInfo(user.Inventory.Characters, FunGameConstant.Regions);
+                    }
+                    if (msg2 != "")
+                    {
+                        if (msg != "") msg += "\r\n";
+                        msg += $"你目前有以下角色正在探索中：\r\n{msg2}";
+                    }
+                }
+                else
+                {
+                    msg = $"你目前没有角色正在探索。";
+                }
+
+                if (exploreTimes > 0)
+                {
+                    if (msg != "") msg += "\r\n";
+                    msg += $"你的剩余探索次数：{exploreTimes} 次。";
+                }
+
+                user.LastTime = DateTime.Now;
+                pc.Add("user", user);
+                pc.SaveConfig();
+
+                return msg;
+            }
+            else
+            {
+                return noSaved;
+            }
+        }
+        
+        [HttpPost("exploresettleall")]
+        public string SettleExploreAll([FromQuery] long? uid = null)
+        {
+            long userid = uid ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
+
+            PluginConfig pc = new("saved", userid.ToString());
+            pc.LoadConfig();
+
+            string msg;
+            if (pc.Count > 0)
+            {
+                User user = FunGameService.GetUser(pc);
+
+                List<ExploreModel> list = pc.Get<List<ExploreModel>>("exploring") ?? [];
+                if (list.Count > 0)
+                {
+                    if (FunGameService.SettleExploreAll(list, user))
+                    {
+                        pc.Add("exploring", list);
+                        msg = $"已完成探索结算。";
+                    }
+                    else
+                    {
+                        msg = $"没有需要结算的探索。";
+                    }
+                }
+                else
+                {
+                    msg = $"你目前没有角色正在探索。";
+                }
+
+                user.LastTime = DateTime.Now;
+                pc.Add("user", user);
+                pc.SaveConfig();
+
+                return msg;
+            }
+            else
+            {
+                return noSaved;
+            }
+        }
+        
+        [HttpPost("exploresettle")]
+        public string SettleExplore(Guid exploreId, [FromQuery] long? uid = null)
+        {
+            long userid = uid ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
+
+            PluginConfig pc = new("saved", userid.ToString());
+            pc.LoadConfig();
+
+            string msg = "";
+            if (pc.Count > 0)
+            {
+                User user = FunGameService.GetUser(pc);
+
+                List<ExploreModel> list = pc.Get<List<ExploreModel>>("exploring") ?? [];
+                if (list.Count > 0)
+                {
+                    if (FunGameService.SettleExplore(exploreId, list, user, out msg))
+                    {
+                        list.RemoveAll(m => m.Guid == exploreId);
+                    }
+                    pc.Add("exploring", list);
                 }
 
                 user.LastTime = DateTime.Now;

@@ -9,13 +9,15 @@ using Oshima.FunGame.OshimaModules.Effects.OpenEffects;
 using Oshima.FunGame.OshimaModules.Items;
 using Oshima.FunGame.OshimaModules.Regions;
 using Oshima.FunGame.OshimaModules.Skills;
+using Oshima.FunGame.OshimaModules.Units;
+using Oshima.FunGame.OshimaServers.Model;
 
 namespace Oshima.FunGame.OshimaServers.Service
 {
     public class FunGameService
     {
         public static HashSet<Activity> Activities { get; } = [];
-        public static Dictionary<long, List<string>> UserNotice { get; } = [];
+        public static Dictionary<long, HashSet<string>> UserNotice { get; } = [];
         public static Dictionary<int, Character> Bosses { get; } = [];
         public static ServerPluginLoader? ServerPluginLoader { get; set; } = null;
         public static WebAPIPluginLoader? WebAPIPluginLoader { get; set; } = null;
@@ -602,9 +604,12 @@ namespace Oshima.FunGame.OshimaServers.Service
 
         public static void AddNotice(long userId, params string[] notices)
         {
-            if (UserNotice.TryGetValue(userId, out List<string>? list) && list != null)
+            if (UserNotice.TryGetValue(userId, out HashSet<string>? list) && list != null)
             {
-                list.AddRange(notices);
+                foreach (string notice in notices)
+                {
+                    list.Add(notice);
+                }
             }
             else UserNotice[userId] = [.. notices];
         }
@@ -1281,7 +1286,7 @@ namespace Oshima.FunGame.OshimaServers.Service
             }
         }
 
-        public static string GetTrainingInfo(TimeSpan diff, bool isPre, out int totalExperience, out int smallBookCount, out int mediumBookCount, out int largeBookCount)
+        public static string GetTrainingInfo(TimeSpan diff, Character character, bool isPre, out int totalExperience, out int smallBookCount, out int mediumBookCount, out int largeBookCount)
         {
             int totalMinutes = (int)diff.TotalMinutes;
 
@@ -1317,7 +1322,11 @@ namespace Oshima.FunGame.OshimaServers.Service
                 largeBookCount = Math.Min(1, (trainingHours - 24) / 1);
             }
 
+            double TotalHR = Math.Min(character.MaxHP, character.HR * diff.TotalSeconds);
+            double TotalMR = Math.Min(character.MaxMP, character.MR * diff.TotalSeconds);
+
             return $"练级时长：{totalMinutes} 分钟，{(isPre ? "预计可" : "")}获得：{totalExperience} 点经验值，{smallBookCount} 本小经验书，{mediumBookCount} 本中经验书，{largeBookCount} 本大经验书。" +
+                $"回复角色 {TotalHR:0.##} 点生命值和 {TotalMR:0.##} 点魔法值。" +
                 $"{(isPre ? "练级时间上限 1440 分钟（24小时），超时将不会再产生收益，请按时领取奖励！" : "")}";
         }
 
@@ -1391,115 +1400,135 @@ namespace Oshima.FunGame.OshimaServers.Service
                     int sLevel = General.GameplayEquilibriumConstant.MaxSkillLevel / cutRate;
                     int mLevel = General.GameplayEquilibriumConstant.MaxMagicLevel / cutRate;
                     int naLevel = General.GameplayEquilibriumConstant.MaxNormalAttackLevel / cutRate;
-                    boss.Level = cLevel;
-                    boss.NormalAttack.Level = naLevel;
                     boss.NormalAttack.ExHardnessTime = -4;
-                    Item? a = null, b = null, c = null, d = null, d2 = null;
-                    if (weapons.Length > 0)
-                    {
-                        a = weapons[Random.Shared.Next(weapons.Length)];
-                    }
-                    if (armors.Length > 0)
-                    {
-                        b = armors[Random.Shared.Next(armors.Length)];
-                    }
-                    if (shoes.Length > 0)
-                    {
-                        c = shoes[Random.Shared.Next(shoes.Length)];
-                    }
-                    if (accessory.Length > 0)
-                    {
-                        d = accessory[Random.Shared.Next(accessory.Length)];
-                    }
-                    if (accessory.Length > 0)
-                    {
-                        d2 = accessory[Random.Shared.Next(accessory.Length)];
-                    }
-                    List<Item> dropItems = [];
-                    if (a != null) dropItems.Add(a);
-                    if (b != null) dropItems.Add(b);
-                    if (c != null) dropItems.Add(c);
-                    if (d != null) dropItems.Add(d);
-                    if (d2 != null) dropItems.Add(d2);
-                    Item? magicCardPack = GenerateMagicCardPack(5, (QualityType)4);
-                    if (magicCardPack != null)
-                    {
-                        magicCardPack.QualityType = QualityType.Gold;
-                        foreach (Skill magic in magicCardPack.Skills.Magics)
-                        {
-                            magic.Level = mLevel;
-                        }
-                        boss.Equip(magicCardPack);
-                    }
-                    foreach (Item item in dropItems)
-                    {
-                        Item realItem = item.Copy();
-                        boss.Equip(realItem);
-                    }
-                    if (consumables.Length > 0 && boss.Items.Count < 5)
-                    {
-                        for (int j = 0; j < 2; j++)
-                        {
-                            Item consumable = consumables[Random.Shared.Next(consumables.Length)].Copy();
-                            boss.Items.Add(consumable);
-                        }
-                    }
-                    Skill bossSkill = Factory.OpenFactory.GetInstance<Skill>(0, "BOSS专属被动", []);
-                    bossSkill.Level = 1;
-                    bossSkill.Character = boss;
-                    Effect effect = Factory.OpenFactory.GetInstance<Effect>((long)EffectID.DynamicsEffect, "", new()
-                    {
-                        { "skill", bossSkill },
-                        {
-                            "values",
-                            new Dictionary<string, object>()
-                            {
-                                { "exatk", 200 / cutRate },
-                                { "exdef", 200 / cutRate },
-                                { "exhp2", 1.5 },
-                                { "exmp2", 0.8 },
-                                { "exhr", 8 / cutRate },
-                                { "exmr", 4 / cutRate },
-                                { "excr", 0.35 },
-                                { "excrd", 0.9 },
-                                { "excdr", 0.25 },
-                                { "exacc", 0.25 }
-                            }
-                        }
-                    });
-                    effect.OnEffectGained(boss);
-                    bossSkill.Effects.Add(effect);
-                    boss.Skills.Add(bossSkill);
-                    effect = Factory.OpenFactory.GetInstance<Effect>((long)EffectID.ExMDF, "", new()
-                    {
-                        { "skill", bossSkill },
-                        {
-                            "values",
-                            new Dictionary<string, object>()
-                            {
-                                { "mdftype", 0 },
-                                { "mdfvalue", 0.15 }
-                            }
-                        }
-                    });
-                    effect.OnEffectGained(boss);
-                    bossSkill.Effects.Add(effect);
-                    boss.Skills.Add(bossSkill);
-                    Skill passive = Factory.OpenFactory.GetInstance<Skill>(Random.Shared.Next(4001, 4013), "", []);
-                    passive.Character = boss;
-                    passive.Level = 1;
-                    boss.Skills.Add(passive);
-                    Skill super = Factory.OpenFactory.GetInstance<Skill>(Random.Shared.Next(3001, 3013), "", []);
-                    super.Character = boss;
-                    super.Level = sLevel;
-                    boss.Skills.Add(super);
-
-                    boss.Recovery();
-                    SetCharacterPrimaryAttribute(boss);
+                    EnhanceBoss(boss, weapons, armors, shoes, accessory, consumables, cLevel, sLevel, mLevel, naLevel);
 
                     Bosses[nowIndex] = boss;
                 }
             }
+        }
+
+        private static void EnhanceBoss(Character boss, Item[] weapons, Item[] armors, Item[] shoes, Item[] accessory, Item[] consumables,
+            int cLevel, int sLevel, int mLevel, int naLevel, bool enhanceHPMP = true, bool enhanceCRCRD = true)
+        {
+            boss.Level = cLevel;
+            boss.NormalAttack.Level = naLevel;
+            Item? a = null, b = null, c = null, d = null, d2 = null;
+            if (weapons.Length > 0)
+            {
+                a = weapons[Random.Shared.Next(weapons.Length)];
+            }
+            if (armors.Length > 0)
+            {
+                b = armors[Random.Shared.Next(armors.Length)];
+            }
+            if (shoes.Length > 0)
+            {
+                c = shoes[Random.Shared.Next(shoes.Length)];
+            }
+            if (accessory.Length > 0)
+            {
+                d = accessory[Random.Shared.Next(accessory.Length)];
+            }
+            if (accessory.Length > 0)
+            {
+                d2 = accessory[Random.Shared.Next(accessory.Length)];
+            }
+            List<Item> dropItems = [];
+            if (a != null) dropItems.Add(a);
+            if (b != null) dropItems.Add(b);
+            if (c != null) dropItems.Add(c);
+            if (d != null) dropItems.Add(d);
+            if (d2 != null) dropItems.Add(d2);
+            Item? magicCardPack = GenerateMagicCardPack(5, (QualityType)4);
+            if (magicCardPack != null)
+            {
+                magicCardPack.QualityType = QualityType.Gold;
+                foreach (Skill magic in magicCardPack.Skills.Magics)
+                {
+                    magic.Level = mLevel;
+                }
+                boss.Equip(magicCardPack);
+            }
+            foreach (Item item in dropItems)
+            {
+                Item realItem = item.Copy();
+                boss.Equip(realItem);
+            }
+            if (consumables.Length > 0 && boss.Items.Count < 5)
+            {
+                for (int j = 0; j < 2; j++)
+                {
+                    Item consumable = consumables[Random.Shared.Next(consumables.Length)].Copy();
+                    boss.Items.Add(consumable);
+                }
+            }
+            Skill bossSkill = Factory.OpenFactory.GetInstance<Skill>(0, "BOSS专属被动", []);
+            bossSkill.Level = 1;
+            bossSkill.Character = boss;
+            double exHP2 = 1.5;
+            double exMP2 = 0.8;
+            if (!enhanceHPMP)
+            {
+                exHP2 = 0;
+                exMP2 = 0;
+            }
+            double exCR = 0.35;
+            double exCRD = 0.9;
+            if (!enhanceCRCRD)
+            {
+                exCR = 0.15;
+                exCRD = 0.4;
+            }
+            Effect effect = Factory.OpenFactory.GetInstance<Effect>((long)EffectID.DynamicsEffect, "", new()
+            {
+                { "skill", bossSkill },
+                {
+                    "values",
+                    new Dictionary<string, object>()
+                    {
+                        { "exatk", 3.4 * cLevel },
+                        { "exdef", 3.4 * cLevel },
+                        { "exhp2", exHP2 },
+                        { "exmp2", exMP2 },
+                        { "exhr", 0.15 * cLevel },
+                        { "exmr", 0.1 * cLevel },
+                        { "excr", exCR },
+                        { "excrd", exCRD },
+                        { "excdr", 0.25 },
+                        { "exacc", 0.25 }
+                    }
+                }
+            });
+            effect.OnEffectGained(boss);
+            bossSkill.Effects.Add(effect);
+            boss.Skills.Add(bossSkill);
+            effect = Factory.OpenFactory.GetInstance<Effect>((long)EffectID.ExMDF, "", new()
+            {
+                { "skill", bossSkill },
+                {
+                    "values",
+                    new Dictionary<string, object>()
+                    {
+                        { "mdftype", 0 },
+                        { "mdfvalue", 0.15 }
+                    }
+                }
+            });
+            effect.OnEffectGained(boss);
+            bossSkill.Effects.Add(effect);
+            boss.Skills.Add(bossSkill);
+            Skill passive = Factory.OpenFactory.GetInstance<Skill>(Random.Shared.Next(4001, 4013), "", []);
+            passive.Character = boss;
+            passive.Level = 1;
+            boss.Skills.Add(passive);
+            Skill super = Factory.OpenFactory.GetInstance<Skill>(Random.Shared.Next(3001, 3013), "", []);
+            super.Character = boss;
+            super.Level = sLevel;
+            boss.Skills.Add(super);
+
+            boss.Recovery();
+            SetCharacterPrimaryAttribute(boss);
         }
 
         public static Dictionary<int, List<Skill>> GenerateRoundRewards(int maxRound)
@@ -1969,13 +1998,348 @@ namespace Oshima.FunGame.OshimaServers.Service
             return "该活动已删除！";
         }
 
-        public static string GetSquadInfo(IEnumerable<Character> inventory, HashSet<long> squadIds)
+        public static string GetSquadInfo(IEnumerable<Character> inventory, IEnumerable<long> squadIds, string separator = "\r\n")
         {
             Character[] squad = [.. inventory.Where(c => squadIds.Contains(c.Id))];
             Dictionary<Character, int> characters = inventory
                 .Select((character, index) => new { character, index })
                 .ToDictionary(x => x.character, x => x.index + 1);
-            return $"{(squad.Length > 0 ? string.Join("\r\n", squad.Select(c => $"#{characters[c]}. {c}")) : "空")}";
+            return $"{(squad.Length > 0 ? string.Join(separator, squad.Select(c => $"#{characters[c]}. {c}")) : "空")}";
+        }
+        
+        public static string GetCharacterGroupInfoByInventorySequence(IEnumerable<Character> inventory, IEnumerable<long> characterIds, string separator = "\r\n")
+        {
+            Dictionary<Character, int> characters = [];
+            Character[] loop = [.. inventory];
+            for (int i = 1; i <= loop.Length; i++)
+            {
+                if (characterIds.Contains(i))
+                {
+                    characters[loop[i - 1]] = i;
+                }
+            }
+            return $"{(characters.Count > 0 ? string.Join(separator, characters.Keys.Select(c => $"#{characters[c]}. {c}")) : "空")}";
+        }
+
+        public static async Task<ExploreModel> GenerateExploreModel(OshimaRegion region, long[] characterIds, User user)
+        {
+            int characterCount = characterIds.Length;
+            ExploreModel model = new()
+            {
+                RegionId = region.Id,
+                CharacterIds = characterIds,
+                StartTime = DateTime.Now
+            };
+
+            // 直接保存探索奖励，但是要等到探索结束后发放
+            int random = Random.Shared.Next(FunGameConstant.ExploreString.Count);
+            string exploreString = FunGameConstant.ExploreString.Keys.ToArray()[random];
+
+            // 出现的NPC
+            random = Random.Shared.Next(region.NPCs.Count + 1);
+            string npc = random == region.NPCs.Count ? GenerateRandomChineseUserName() : region.NPCs[random];
+
+            // 探索的子区域
+            random = Random.Shared.Next(region.Areas.Count);
+            string area1 = region.Areas[random];
+            random = Random.Shared.Next(region.Areas.Count);
+            string area2 = region.Areas[random];
+
+            // 出现的物品
+            List<Item> items = [.. region.Crops.Union(region.Items)];
+            random = Random.Shared.Next(items.Count);
+            string item1 = items[random].Name;
+            random = Random.Shared.Next(items.Count);
+            string item2 = items[random].Name;
+
+            // 筛选敌人
+            int diff = region.Difficulty switch
+            {
+                RarityType.OneStar => 1,
+                RarityType.TwoStar => 2,
+                RarityType.ThreeStar => 3,
+                RarityType.FourStar => 4,
+                _ => 5
+            };
+            List<Character> enemys = [];
+            Character enemy;
+            if (region.Characters.Count > 0 && region.Units.Count > 0)
+            {
+                random = Random.Shared.Next(2);
+                if (random == 0)
+                {
+                    enemy = region.Characters.OrderBy(o => Random.Shared.Next()).First().Copy();
+                    enemy.ExHPPercentage += 0.5;
+                    enemys.Add(enemy);
+                }
+                else
+                {
+                    switch (diff)
+                    {
+                        case 1:
+                        case 2:
+                            enemy = region.Units.OrderBy(o => Random.Shared.Next()).First();
+                            enemys.Add(enemy.Copy());
+                            break;
+                        case 3:
+                        case 4:
+                            enemy = region.Units.OrderBy(o => Random.Shared.Next()).First();
+                            enemys.Add(enemy.Copy());
+                            enemy = region.Units.OrderBy(o => Random.Shared.Next()).First();
+                            enemys.Add(enemy.Copy());
+                            break;
+                        case 5:
+                        default:
+                            enemy = region.Units.OrderBy(o => Random.Shared.Next()).First();
+                            enemys.Add(enemy.Copy());
+                            enemy = region.Units.OrderBy(o => Random.Shared.Next()).First();
+                            enemys.Add(enemy.Copy());
+                            enemy = region.Units.OrderBy(o => Random.Shared.Next()).First();
+                            enemys.Add(enemy.Copy());
+                            break;
+                    }
+                }
+            }
+            else
+            {
+                enemy = new RegionCharacter(long.Parse(Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 8)), GenerateRandomChineseUserName());
+                enemys.Add(enemy);
+            }
+
+            // 生成奖励
+            string award = "";
+            model.Result = FunGameConstant.ExploreString[exploreString];
+            switch (model.Result)
+            {
+                case ExploreResult.General:
+                    switch (Random.Shared.Next(3))
+                    {
+                        case 0:
+                            int credits = 0;
+                            for (int i = 0; i < characterCount; i++)
+                            {
+                                credits += Random.Shared.Next(500, 1000) * diff;
+                            }
+                            model.CreditsAward = credits;
+                            award = $" {credits} {General.GameplayEquilibriumConstant.InGameCurrency}";
+                            break;
+                        case 1:
+                            int materials = 0;
+                            for (int i = 0; i < characterCount; i++)
+                            {
+                                materials += 2 * diff;
+                            }
+                            model.MaterialsAward = materials;
+                            award = $" {materials} {General.GameplayEquilibriumConstant.InGameMaterial}";
+                            break;
+                        case 2:
+                            Item item = FunGameConstant.ExploreItems[region][Random.Shared.Next(FunGameConstant.ExploreItems[region].Count)];
+                            int count = 0;
+                            for (int i = 0; i < characterCount; i++)
+                            {
+                                count += Math.Max(1, Random.Shared.Next(1, 4) * diff / 2);
+                            }
+                            model.Awards[item.Name] = count;
+                            award = $" {count} 个{item.Name}";
+                            break;
+                        default:
+                            break;
+                    }
+                    int exp = 0;
+                    for (int i = 0; i < characterCount; i++)
+                    {
+                        exp += Random.Shared.Next(300, 700) * diff;
+                    }
+                    model.Awards["exp"] = exp;
+                    award += $"，并额外获得了 {exp} 点经验值（探索队员们平分）";
+                    break;
+                case ExploreResult.Fight:
+                    // 小队信息
+                    Character[] squad = [.. user.Inventory.Characters.Where((c, index) => characterIds.Contains(index + 1)).Select(c => CharacterBuilder.Build(c, false, true, user.Inventory, FunGameConstant.AllItems, FunGameConstant.AllSkills, false))];
+                    if (squad.All(c => c.HP <= 0))
+                    {
+                        model.Result = ExploreResult.Nothing;
+                        exploreString = $"探索小队遭遇强大的敌人{enemy.Name}偷袭，狼狈而逃！（什么也没有获得，请检查角色的状态）";
+                    }
+                    else
+                    {
+                        // 生成敌人
+                        Item[] weapons = [.. FunGameConstant.Equipment.Where(i => i.Id.ToString().StartsWith("11") && (int)i.QualityType == 5)];
+                        Item[] armors = [.. FunGameConstant.Equipment.Where(i => i.Id.ToString().StartsWith("12") && (int)i.QualityType == 5)];
+                        Item[] shoes = [.. FunGameConstant.Equipment.Where(i => i.Id.ToString().StartsWith("13") && (int)i.QualityType == 5)];
+                        Item[] accessory = [.. FunGameConstant.Equipment.Where(i => i.Id.ToString().StartsWith("14") && (int)i.QualityType == 5)];
+                        Item[] consumables = [.. FunGameConstant.AllItems.Where(i => i.ItemType == ItemType.Consumable && i.IsInGameItem)];
+                        int cLevel = diff * 12;
+                        int sLevel = diff + 1;
+                        int mLevel = region.Difficulty switch
+                        {
+                            RarityType.OneStar => 1,
+                            RarityType.TwoStar => 2,
+                            RarityType.ThreeStar => 4,
+                            RarityType.FourStar => 6,
+                            _ => 8
+                        };
+                        int naLevel = mLevel;
+                        foreach (Character enemy_loop in enemys)
+                        {
+                            EnhanceBoss(enemy_loop, weapons, armors, shoes, accessory, consumables, cLevel, sLevel, mLevel, naLevel, false, false);
+                        }
+                        // 开始战斗
+                        Team team1 = new($"{user.Username}的探索小队", squad);
+                        Team team2 = new($"{region.Name}", enemys);
+                        List<string> msgs = await FunGameActionQueue.NewAndStartTeamGame([team1, team2], showAllRound: true);
+                        if (msgs.Count > 2)
+                        {
+                            msgs = msgs[^2..];
+                        }
+                        if (enemy.HP <= 0)
+                        {
+                            model.FightWin = true;
+                            int credits = 0;
+                            for (int i = 0; i < characterCount; i++)
+                            {
+                                credits += Random.Shared.Next(1000, 1500) * diff;
+                            }
+                            model.CreditsAward = credits;
+                            exp = 0;
+                            for (int i = 0; i < characterCount; i++)
+                            {
+                                exp += Random.Shared.Next(600, 1000) * diff;
+                            }
+                            model.Awards["exp"] = exp;
+                            int materials = 0;
+                            for (int i = 0; i < characterCount; i++)
+                            {
+                                materials += Random.Shared.Next(4, 7) * diff;
+                            }
+                            model.MaterialsAward = materials;
+                            Item item = FunGameConstant.ExploreItems[region][Random.Shared.Next(FunGameConstant.ExploreItems[region].Count)];
+                            int count = 0;
+                            for (int i = 0; i < characterCount; i++)
+                            {
+                                count += Math.Max(1, Random.Shared.Next(1, 4) * diff / 2);
+                            }
+                            model.Awards[item.Name] = count;
+                            award = $"{credits} {General.GameplayEquilibriumConstant.InGameCurrency}，" + $"{exp} 点经验值（探索队员们平分），" +
+                                $"{materials} {General.GameplayEquilibriumConstant.InGameMaterial}，" + $"以及 {count} 个{item.Name}";
+                            exploreString = $"{exploreString}\r\n{string.Join("\r\n", msgs)}\r\n探索小队战胜了{enemy.Name}！获得了：{award}！";
+                        }
+                        else
+                        {
+                            Item item = FunGameConstant.ExploreItems[region][Random.Shared.Next(FunGameConstant.ExploreItems[region].Count)];
+                            model.Awards[item.Name] = characterCount;
+                            award = $"{characterCount} 个{item.Name}";
+                            exploreString = $"{exploreString}\r\n{string.Join("\r\n", msgs)}\r\n探索小队未能战胜{enemy.Name}，但是获得了补偿：{award}！";
+                        }
+                        model.AfterFightHPs = [.. squad.Select(c => c.HP)];
+                    }
+                    break;
+                case ExploreResult.Earned:
+                    Item? itemEarned = region.Items.OrderBy(o => Random.Shared.Next()).FirstOrDefault();
+                    if (itemEarned is null)
+                    {
+                        model.Result = ExploreResult.Nothing;
+                        exploreString = "你在探索中发现了一个神秘的物品，但它似乎无法辨认。（什么也没有获得）";
+                    }
+                    else
+                    {
+                        model.Awards[itemEarned.Name] = 1;
+                        award = itemEarned.Name;
+                    }
+                    break;
+                case ExploreResult.Event:
+                    break;
+                case ExploreResult.Nothing:
+                default:
+                    break;
+            }
+
+            model.String = string.Format(exploreString, award, enemy.Name, npc, item1, area1, item2, area2);
+            return model;
+        }
+
+        public static bool SettleExplore(Guid exploreId, List<ExploreModel> list, User user, out string msg)
+        {
+            bool result = false;
+            msg = "";
+            ExploreModel? model = list.FirstOrDefault(m => m.Guid == exploreId);
+            if (model != null)
+            {
+                result = true;
+                msg = model.String;
+                if (model.CreditsAward > 0)
+                {
+                    user.Inventory.Credits += model.CreditsAward;
+                }
+                if (model.MaterialsAward > 0)
+                {
+                    user.Inventory.Materials += model.MaterialsAward;
+                }
+                Character[] inventory = [.. user.Inventory.Characters];
+                foreach (string name in model.Awards.Keys)
+                {
+                    if (name == "exp")
+                    {
+                        double exp = (double)model.Awards[name] / model.CharacterIds.Count();
+                        foreach (long cid in model.CharacterIds)
+                        {
+                            if (cid > 0 && cid <= inventory.Length)
+                            {
+                                Character character = inventory[(int)cid - 1];
+                                character.EXP += exp;
+                            }
+                        }
+                        continue;
+                    }
+                    Item? item = FunGameConstant.AllItems.FirstOrDefault(i => i.Name == name);
+                    if (item != null)
+                    {
+                        for (int i = 0; i < model.Awards[name]; i++)
+                        {
+                            Item newItem = item.Copy();
+                            newItem.User = user;
+                            SetSellAndTradeTime(newItem);
+                            user.Inventory.Items.Add(newItem);
+                        }
+                    }
+                }
+                if (model.AfterFightHPs.Length > 0)
+                {
+                    int hpIndex = 0;
+                    foreach (long cid in model.CharacterIds)
+                    {
+                        if (cid > 0 && cid <= inventory.Length && hpIndex < model.AfterFightHPs.Length)
+                        {
+                            Character character = inventory[(int)cid - 1];
+                            character.HP = model.AfterFightHPs[hpIndex++];
+                        }
+                    }
+                }
+            }
+            return result;
+        }
+
+        public static bool SettleExploreAll(List<ExploreModel> list, User user)
+        {
+            bool settle = false;
+            List<Guid> remove = [];
+            foreach (ExploreModel model in list)
+            {
+                if (model.StartTime.HasValue && (DateTime.Now - model.StartTime.Value).TotalMinutes > FunGameConstant.ExploreTime + 5)
+                {
+                    if (SettleExplore(model.Guid, list, user, out string msg))
+                    {
+                        settle = true;
+                        AddNotice(user.Id, $"你上次未完成的探索已被自动结算：{msg}");
+                        remove.Add(model.Guid);
+                    }
+                }
+            }
+            foreach (Guid guid in remove)
+            {
+                list.RemoveAll(m => m.Guid == guid);
+            }
+            return settle;
         }
     }
 }

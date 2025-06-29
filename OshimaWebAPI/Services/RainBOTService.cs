@@ -44,7 +44,7 @@ namespace Oshima.FunGame.WebAPI.Services
                 content = content.Trim();
                 await Service.SendC2CMessageAsync(msg.OpenId, content, msgType, media, msg.Id, msgSeq);
             }
-            if (msg.FunGameUID > 0 && FunGameService.UserNotice.TryGetValue(msg.FunGameUID, out List<string>? msgs) && msgs != null)
+            if (msg.FunGameUID > 0 && FunGameService.UserNotice.TryGetValue(msg.FunGameUID, out HashSet<string>? msgs) && msgs != null)
             {
                 FunGameService.UserNotice.Remove(msg.FunGameUID);
                 await SendAsync(msg, "每日登录提醒", string.Join("\r\n", msgs), msgType, media, 5);
@@ -2052,17 +2052,64 @@ namespace Oshima.FunGame.WebAPI.Services
                     return result;
                 }
 
+                if (e.Detail == "探索信息")
+                {
+                    string msg = Controller.GetExploreInfo(uid);
+                    if (msg != "")
+                    {
+                        await SendAsync(e, "探索信息", string.Join("\r\n", msg));
+                    }
+                    return result;
+                }
+
+                if (e.Detail == "探索结算")
+                {
+                    string msg = Controller.SettleExploreAll(uid);
+                    if (msg != "")
+                    {
+                        await SendAsync(e, "探索结算", string.Join("\r\n", msg));
+                    }
+                    return result;
+                }
+
                 if (e.Detail.StartsWith("探索") || e.Detail.StartsWith("前往"))
                 {
                     string detail = e.Detail.Replace("探索", "").Replace("前往", "").Trim();
                     string msg = "";
-                    if (int.TryParse(detail, out int cid))
+                    Guid eid = Guid.Empty;
+                    string[] strings = detail.Split(' ', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
+                    List<int> cindexs = [];
+                    foreach (string s in strings)
                     {
-                        msg = Controller.ExploreRegion(uid, cid);
+                        if (int.TryParse(s, out int c))
+                        {
+                            cindexs.Add(c);
+                        }
+                    }
+                    if (cindexs.Count > 1 && cindexs.Count <= 5)
+                    {
+                        (msg, eid) = await Controller.ExploreRegion(uid, cindexs[0], [.. cindexs.Skip(1).Select(id => (long)id)]);
                         if (msg.Trim() != "")
                         {
                             await SendAsync(e, "探索", msg);
                         }
+                        _ = Task.Run(async () =>
+                        {
+                            await Task.Delay(FunGameConstant.ExploreTime * 60 * 1000);
+                            msg = Controller.SettleExplore(eid, uid);
+                            if (msg.Trim() != "")
+                            {
+                                await SendAsync(e, "探索", msg, msgSeq: 2);
+                            }
+                        });
+                    }
+                    else if (cindexs.Count > 5)
+                    {
+                        await SendAsync(e, "探索", "一次探索只能指定至多 4 个角色，需要注意：探索角色越多，奖励越多，但是会扣除相应的探索次数。");
+                    }
+                    else
+                    {
+                        await SendAsync(e, "探索", "探索指令格式错误，正确格式为：探索 <地区序号> <{角色序号...}>");
                     }
                     return result;
                 }
@@ -2079,10 +2126,17 @@ namespace Oshima.FunGame.WebAPI.Services
 
                 if (e.Detail == "毕业礼包")
                 {
-                    string msg = Controller.CreateGiftBox(uid, "毕业礼包", true, 2);
-                    if (msg != "")
+                    if (FunGameService.Activities.FirstOrDefault(a => a.Name == "毕业季") is Activity activity && activity.Status == ActivityState.InProgress)
                     {
-                        await SendAsync(e, "毕业礼包", string.Join("\r\n", msg));
+                        string msg = Controller.CreateGiftBox(uid, "毕业礼包", true, 2);
+                        if (msg != "")
+                        {
+                            await SendAsync(e, "毕业礼包", string.Join("\r\n", msg));
+                        }
+                    }
+                    else
+                    {
+                        await SendAsync(e, "毕业礼包", "活动不存在或已过期。");
                     }
                     return result;
                 }
