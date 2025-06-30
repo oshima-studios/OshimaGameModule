@@ -13,7 +13,7 @@ namespace Oshima.FunGame.OshimaServers.Service
         public const int ItemsPerPage1 = 6;
         public const int ItemsPerPage2 = 10;
         public const int ExploreTime = 2;
-        public const int MaxExploreTimes = 12;
+        public const int MaxExploreTimes = 60;
         public static List<Character> Characters { get; } = [];
         public static List<Skill> Skills { get; } = [];
         public static List<Skill> PassiveSkills { get; } = [];
@@ -300,38 +300,56 @@ namespace Oshima.FunGame.OshimaServers.Service
             new 铎京城()
         ];
 
+        public static Dictionary<ExploreResult, double> ExploreResultProbabilities { get; } = new()
+        {
+            { ExploreResult.General, 40 },
+            { ExploreResult.Nothing, 20 },
+            { ExploreResult.Fight, 20 },
+            { ExploreResult.Earned, 20 },
+            { ExploreResult.Event, 0 }
+        };
+
         /// <summary>
         /// 参数说明：{0} 奖励内容字符串，{1} 敌人名称，{2} NPC名称，{3} 物品名称1，{4} 地点名称1，{5} 物品名称1，{6} 地点名称2
         /// </summary>
-        public static Dictionary<string, ExploreResult> ExploreString { get; } = new()
+        public static Dictionary<ExploreResult, List<string>> ExploreString { get; } = new()
         {
-            // General - 带奖励的普通结果
-            { "当{3}的光芒洒满{4}时，{6}显露出了被封印的{0}，你快马加鞭冲了上去夺走！", ExploreResult.General },
-            { "{2}的低语在风中消散，但留在你手中的是闪耀的{0}！", ExploreResult.General },
-            { "恭喜你！成功在荒野中迷路！奖励…等等，好像是：{0}？至少不是空手而归…", ExploreResult.General },
-            { "你凝视着远方，远方也凝视着你…然后，你获得了：{0}！这大概就是命运吧。", ExploreResult.General },
-            { "探索结果：空气，阳光，还有…奖励：{0}！看来今天运气还不错？", ExploreResult.General },
-
-            // Nothing - 无收获
-            { "风沙抹去了所有痕迹，只有{3}见证过你的到来。（什么也没有获得）", ExploreResult.Nothing },
-            { "{4}地牢里的封印纹丝未动，仿佛在嘲笑着你的徒劳……（什么也没有获得）", ExploreResult.Nothing },
-            { "在你的注视下，{4}的宝藏已被{2}掠夺一空。（什么也没有获得）", ExploreResult.Nothing },
-            { "你对着空地发呆了半天，只剩冰冷的{4}和你的失望。（什么也没有获得）", ExploreResult.Nothing },
-            { "在空荡的回响中传来讥笑，原来{4}的秘宝不过是个传说。（什么也没有获得）", ExploreResult.Nothing },
-
-            // Fight - 遭遇敌人
-            { "{4}的地面突然裂开，{1}扑向了你！迎接战斗吧！", ExploreResult.Fight },
-            { "当你触碰{3}时，{1}的咆哮震撼着{4}！", ExploreResult.Fight },
-            { "原来这里真的有危险……是{1}守卫着{4}，不得不战了！", ExploreResult.Fight },
-            { "在探索{4}的某处时，身旁的墙突然破裂，{1}从阴影中降临！", ExploreResult.Fight },
-            { "你惊动了{1}！{4}瞬间化作战场！", ExploreResult.Fight },
-
-            // Earned - 珍贵收获
-            { "当{3}发出诡异的光芒照亮{4}时，藏在其中的{0}突然落入你手中！", ExploreResult.Earned },
-            { "祝福应验！{4}深处的{0}为你所有！", ExploreResult.Earned },
-            { "解开{4}地牢中的谜题后，{0}终于显现！", ExploreResult.Earned },
-            { "屏障消散，至宝{0}光芒万丈，自觉地飞进了你的口袋！", ExploreResult.Earned },
-            { "在偶遇{1}和{2}的遭遇战时，你渔翁得利抢到了：{0}！", ExploreResult.Earned }
+            {
+                ExploreResult.General, [
+                    "当{3}的光芒洒满{4}时，{6}显露出了被封印的{0}，你快马加鞭冲了上去夺走！",
+                    "{2}的低语在风中消散，但留在你手中的是闪耀的{0}！",
+                    "恭喜你！成功在荒野中迷路！奖励…等等，好像是：{0}？至少不是空手而归…",
+                    "你凝视着远方，远方也凝视着你…然后，你获得了：{0}！这大概就是命运吧。",
+                    "探索结果：空气，阳光，还有…奖励：{0}！看来今天运气还不错？"
+                ]
+            },
+            {
+                ExploreResult.Nothing, [
+                    "风沙抹去了所有痕迹，只有{3}见证过你的到来。（什么也没有获得）",
+                    "{4}地牢里的封印纹丝未动，仿佛在嘲笑着你的徒劳……（什么也没有获得）",
+                    "在你的注视下，{4}的宝藏已被{2}掠夺一空。（什么也没有获得）",
+                    "你对着空地发呆了半天，只剩冰冷的{4}和你的失望。（什么也没有获得）",
+                    "在空荡的回响中传来讥笑，原来{4}的秘宝不过是个传说。（什么也没有获得）"
+                ]
+            },
+            {
+                ExploreResult.Fight, [
+                    "{4}的地面突然裂开，{1}扑向了你！迎接战斗吧！",
+                    "当你触碰{3}时，{1}的咆哮震撼着{4}！",
+                    "原来这里真的有危险……是{1}守卫着{4}，不得不战了！",
+                    "在探索{4}的某处时，身旁的墙突然破裂，{1}从阴影中降临！",
+                    "你惊动了{1}！{4}瞬间化作战场！"
+                ]
+            },
+            {
+                ExploreResult.Earned, [
+                    "当{3}发出诡异的光芒照亮{4}时，藏在其中的{0}突然落入你手中！",
+                    "祝福应验！{4}深处的{0}为你所有！",
+                    "解开{4}地牢中的谜题后，{0}终于显现！",
+                    "屏障消散，至宝{0}光芒万丈，自觉地飞进了你的口袋！",
+                    "在偶遇{1}和{2}的遭遇战时，你渔翁得利抢到了：{0}！"
+                ]
+            }
         };
 
         public static Dictionary<QualityType, double> DrawCardProbabilities { get; } = new()

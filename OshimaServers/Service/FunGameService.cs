@@ -16,9 +16,13 @@ namespace Oshima.FunGame.OshimaServers.Service
 {
     public class FunGameService
     {
+        public static Dictionary<long, List<string>> UserExploreCharacterCache { get; } = [];
         public static Dictionary<long, List<string>> UserExploreItemCache { get; } = [];
+        public static Dictionary<long, List<string>> UserExploreEventCache { get; } = [];
         public static HashSet<Activity> Activities { get; } = [];
+        public static List<string> ActivitiesCharacterCache { get; } = [];
         public static List<string> ActivitiesItemCache { get; } = [];
+        public static List<string> ActivitiesEventCache { get; } = [];
         public static Dictionary<long, HashSet<string>> UserNotice { get; } = [];
         public static Dictionary<int, Character> Bosses { get; } = [];
         public static ServerPluginLoader? ServerPluginLoader { get; set; } = null;
@@ -1754,12 +1758,12 @@ namespace Oshima.FunGame.OshimaServers.Service
                     {
                         if (quest.NeedyExploreItemName == item)
                         {
+                            result = true;
                             quest.Progress += items.Count();
                             if (quest.Progress >= quest.MaxProgress)
                             {
                                 quest.Progress = quest.MaxProgress;
                                 quest.Status = QuestState.Completed;
-                                result = true;
                             }
                         }
                     }
@@ -1986,43 +1990,94 @@ namespace Oshima.FunGame.OshimaServers.Service
             {
                 return "当前没有任何活动，敬请期待。";
             }
-            Activities.Clear();
-            foreach (Activity activity in activities.Values)
+            lock (Activities)
             {
-                Activities.Add(activity);
-            }
-            bool update = false;
-            if (ActivitiesItemCache.Count > 0)
-            {
-                List<string> willRemove = [];
-                IEnumerable<Activity> activityList = Activities.Where(a => a.Status == ActivityState.InProgress);
-                foreach (string item in ActivitiesItemCache.Distinct())
+                Activities.Clear();
+                foreach (Activity activity in activities.Values)
                 {
-                    IEnumerable<string> items = ActivitiesItemCache.Where(str => str == item);
-                    foreach (Quest quest in activityList.SelectMany(a => a.Quests))
+                    Activities.Add(activity);
+                }
+                bool update = false;
+                if (ActivitiesCharacterCache.Count > 0)
+                {
+                    List<string> willRemove = [];
+                    IEnumerable<Activity> activityList = Activities.Where(a => a.Status == ActivityState.InProgress);
+                    foreach (string item in ActivitiesCharacterCache.Distinct())
                     {
-                        if (quest.NeedyExploreItemName == item)
+                        IEnumerable<string> items = ActivitiesCharacterCache.Where(str => str == item);
+                        foreach (Quest quest in activityList.SelectMany(a => a.Quests).Where(q => q.Status == QuestState.InProgress))
                         {
-                            update = true;
-                            quest.Progress += items.Count();
-                            if (quest.Progress >= quest.MaxProgress)
+                            if (quest.NeedyExploreCharacterName == item)
                             {
-                                quest.Progress = quest.MaxProgress;
-                                quest.Status = QuestState.Completed;
+                                update = true;
+                                quest.Progress += items.Count();
+                                if (quest.Progress >= quest.MaxProgress)
+                                {
+                                    quest.Progress = quest.MaxProgress;
+                                    quest.Status = QuestState.Completed;
+                                }
                             }
                         }
+                        willRemove.Add(item);
                     }
-                    willRemove.Add(item);
+                    ActivitiesCharacterCache.RemoveAll(willRemove.Contains);
                 }
-                ActivitiesItemCache.RemoveAll(willRemove.Contains);
-            }
-            if (update)
-            {
-                foreach (Activity activity in Activities)
+                if (ActivitiesItemCache.Count > 0)
                 {
-                    activities.Add(activity.Id.ToString(), activity);
+                    List<string> willRemove = [];
+                    IEnumerable<Activity> activityList = Activities.Where(a => a.Status == ActivityState.InProgress);
+                    foreach (string item in ActivitiesItemCache.Distinct())
+                    {
+                        IEnumerable<string> items = ActivitiesItemCache.Where(str => str == item);
+                        foreach (Quest quest in activityList.SelectMany(a => a.Quests).Where(q => q.Status == QuestState.InProgress))
+                        {
+                            if (quest.NeedyExploreItemName == item)
+                            {
+                                update = true;
+                                quest.Progress += items.Count();
+                                if (quest.Progress >= quest.MaxProgress)
+                                {
+                                    quest.Progress = quest.MaxProgress;
+                                    quest.Status = QuestState.Completed;
+                                }
+                            }
+                        }
+                        willRemove.Add(item);
+                    }
+                    ActivitiesItemCache.RemoveAll(willRemove.Contains);
                 }
-                activities.SaveConfig();
+                if (ActivitiesEventCache.Count > 0)
+                {
+                    List<string> willRemove = [];
+                    IEnumerable<Activity> activityList = Activities.Where(a => a.Status == ActivityState.InProgress);
+                    foreach (string item in ActivitiesEventCache.Distinct())
+                    {
+                        IEnumerable<string> items = ActivitiesEventCache.Where(str => str == item);
+                        foreach (Quest quest in activityList.SelectMany(a => a.Quests).Where(q => q.Status == QuestState.InProgress))
+                        {
+                            if (quest.NeedyExploreEventName == item)
+                            {
+                                update = true;
+                                quest.Progress += items.Count();
+                                if (quest.Progress >= quest.MaxProgress)
+                                {
+                                    quest.Progress = quest.MaxProgress;
+                                    quest.Status = QuestState.Completed;
+                                }
+                            }
+                        }
+                        willRemove.Add(item);
+                    }
+                    ActivitiesEventCache.RemoveAll(willRemove.Contains);
+                }
+                if (update)
+                {
+                    foreach (Activity activity in Activities)
+                    {
+                        activities.Add(activity.Id.ToString(), activity);
+                    }
+                    activities.SaveConfig();
+                }
             }
             StringBuilder builder = new();
             builder.AppendLine("★☆★ 活动中心 ★☆★");
@@ -2042,7 +2097,7 @@ namespace Oshima.FunGame.OshimaServers.Service
 
             return builder.ToString().Trim();
         }
-        
+
         public static string GetEvents(ActivityState status = ActivityState.InProgress)
         {
             EntityModuleConfig<Activity> activities = new("activities", "activities");
@@ -2093,9 +2148,9 @@ namespace Oshima.FunGame.OshimaServers.Service
             Dictionary<Character, int> characters = inventory
                 .Select((character, index) => new { character, index })
                 .ToDictionary(x => x.character, x => x.index + 1);
-            return $"{(squad.Length > 0 ? string.Join(separator, squad.Select(c => $"#{characters[c]}. {c}")) : "空")}";
+            return $"{(squad.Length > 0 ? string.Join(separator, squad.Select(c => $"#{characters[c]}. {c.ToStringWithLevelWithOutUser()}")) : "空")}";
         }
-        
+
         public static string GetCharacterGroupInfoByInventorySequence(IEnumerable<Character> inventory, IEnumerable<long> characterIds, string separator = "\r\n")
         {
             Dictionary<Character, int> characters = [];
@@ -2107,7 +2162,7 @@ namespace Oshima.FunGame.OshimaServers.Service
                     characters[loop[i - 1]] = i;
                 }
             }
-            return $"{(characters.Count > 0 ? string.Join(separator, characters.Keys.Select(c => $"#{characters[c]}. {c}")) : "空")}";
+            return $"{(characters.Count > 0 ? string.Join(separator, characters.Keys.Select(c => $"#{characters[c]}. {c.ToStringWithLevelWithOutUser()}")) : "空")}";
         }
 
         public static async Task<ExploreModel> GenerateExploreModel(OshimaRegion region, long[] characterIds, User user)
@@ -2119,13 +2174,61 @@ namespace Oshima.FunGame.OshimaServers.Service
                 CharacterIds = characterIds,
                 StartTime = DateTime.Now
             };
+            int diff = region.Difficulty switch
+            {
+                RarityType.OneStar => 1,
+                RarityType.TwoStar => 2,
+                RarityType.ThreeStar => 3,
+                RarityType.FourStar => 4,
+                _ => 5
+            };
 
             // 直接保存探索奖励，但是要等到探索结束后发放
-            int random = Random.Shared.Next(FunGameConstant.ExploreString.Count);
-            string exploreString = FunGameConstant.ExploreString.Keys.ToArray()[random];
+            double randomDouble = Random.Shared.NextDouble();
+            Dictionary<ExploreResult, double> probabilities = new(FunGameConstant.ExploreResultProbabilities);
+            switch (diff)
+            {
+                case 2:
+                    probabilities[ExploreResult.General] -= 0.05;
+                    probabilities[ExploreResult.Earned] -= 0.05;
+                    probabilities[ExploreResult.Fight] += 0.1;
+                    break;
+                case 3:
+                    probabilities[ExploreResult.General] -= 0.1;
+                    probabilities[ExploreResult.Earned] -= 0.05;
+                    probabilities[ExploreResult.Nothing] -= 0.05;
+                    probabilities[ExploreResult.Fight] += 0.2;
+                    break;
+                case 4:
+                    probabilities[ExploreResult.General] -= 0.2;
+                    probabilities[ExploreResult.Earned] -= 0.1;
+                    probabilities[ExploreResult.Nothing] -= 0.05;
+                    probabilities[ExploreResult.Fight] += 0.35;
+                    break;
+                case 5:
+                    probabilities[ExploreResult.General] -= 0.3;
+                    probabilities[ExploreResult.Earned] -= 0.15;
+                    probabilities[ExploreResult.Nothing] -= 0.05;
+                    probabilities[ExploreResult.Fight] += 0.5;
+                    break;
+                default:
+                    break;
+            }
+            double cumulative = 0;
+            model.Result = ExploreResult.Nothing;
+            foreach (ExploreResult key in probabilities.Keys)
+            {
+                cumulative += probabilities[key];
+                if (randomDouble <= cumulative)
+                {
+                    model.Result = key;
+                    break;
+                }
+            }
+            string exploreString = FunGameConstant.ExploreString[model.Result].OrderBy(o => Random.Shared.Next()).First();
 
             // 出现的NPC
-            random = Random.Shared.Next(region.NPCs.Count + 1);
+            int random = Random.Shared.Next(region.NPCs.Count + 1);
             string npc = random == region.NPCs.Count ? GenerateRandomChineseUserName() : region.NPCs[random];
 
             // 探索的子区域
@@ -2142,14 +2245,6 @@ namespace Oshima.FunGame.OshimaServers.Service
             string item2 = items[random].Name;
 
             // 筛选敌人
-            int diff = region.Difficulty switch
-            {
-                RarityType.OneStar => 1,
-                RarityType.TwoStar => 2,
-                RarityType.ThreeStar => 3,
-                RarityType.FourStar => 4,
-                _ => 5
-            };
             List<Character> enemys = [];
             Character enemy;
             if (region.Characters.Count > 0 && region.Units.Count > 0)
@@ -2197,7 +2292,6 @@ namespace Oshima.FunGame.OshimaServers.Service
 
             // 生成奖励
             string award = "";
-            model.Result = FunGameConstant.ExploreString[exploreString];
             switch (model.Result)
             {
                 case ExploreResult.General:
@@ -2207,7 +2301,7 @@ namespace Oshima.FunGame.OshimaServers.Service
                             int credits = 0;
                             for (int i = 0; i < characterCount; i++)
                             {
-                                credits += Random.Shared.Next(500, 1000) * diff;
+                                credits += Random.Shared.Next(250, 400) * diff;
                             }
                             model.CreditsAward = credits;
                             award = $" {credits} {General.GameplayEquilibriumConstant.InGameCurrency}";
@@ -2237,10 +2331,10 @@ namespace Oshima.FunGame.OshimaServers.Service
                     int exp = 0;
                     for (int i = 0; i < characterCount; i++)
                     {
-                        exp += Random.Shared.Next(300, 700) * diff;
+                        exp += Random.Shared.Next(100, 300) * diff;
                     }
                     model.Awards["exp"] = exp;
-                    award += $"，并额外获得了 {exp} 点经验值（探索队员们平分）";
+                    exploreString += $"额外获得了：{exp} 点经验值（探索队员们平分）！";
                     break;
                 case ExploreResult.Fight:
                     // 小队信息
@@ -2287,19 +2381,19 @@ namespace Oshima.FunGame.OshimaServers.Service
                             int credits = 0;
                             for (int i = 0; i < characterCount; i++)
                             {
-                                credits += Random.Shared.Next(1000, 1500) * diff;
+                                credits += Random.Shared.Next(400, 650) * diff;
                             }
                             model.CreditsAward = credits;
                             exp = 0;
                             for (int i = 0; i < characterCount; i++)
                             {
-                                exp += Random.Shared.Next(600, 1000) * diff;
+                                exp += Random.Shared.Next(250, 520) * diff;
                             }
                             model.Awards["exp"] = exp;
                             int materials = 0;
                             for (int i = 0; i < characterCount; i++)
                             {
-                                materials += Random.Shared.Next(4, 7) * diff;
+                                materials += Random.Shared.Next(3, 7) * diff;
                             }
                             model.MaterialsAward = materials;
                             Item item = FunGameConstant.ExploreItems[region][Random.Shared.Next(FunGameConstant.ExploreItems[region].Count)];
@@ -2319,7 +2413,7 @@ namespace Oshima.FunGame.OshimaServers.Service
                                     string itemquality = ItemSet.GetQualityTypeName(itemDrop.QualityType);
                                     string itemtype = ItemSet.GetItemTypeName(itemDrop.ItemType) + (itemDrop.ItemType == ItemType.Weapon && itemDrop.WeaponType != WeaponType.None ? "-" + ItemSet.GetWeaponTypeName(itemDrop.WeaponType) : "");
                                     if (itemtype != "") itemtype = $"|{itemtype}";
-                                    award += $"！额外获得了：[{itemquality + itemtype}] {itemDrop.Name}";
+                                    award += $"！额外获得了：[{itemquality + itemtype}]{itemDrop.Name}";
                                 }
                             }
                             exploreString = $"{exploreString}\r\n{string.Join("\r\n", msgs)}\r\n探索小队战胜了{enemy.Name}！获得了：{award}！";
@@ -2347,7 +2441,7 @@ namespace Oshima.FunGame.OshimaServers.Service
                         string itemquality = ItemSet.GetQualityTypeName(itemEarned.QualityType);
                         string itemtype = ItemSet.GetItemTypeName(itemEarned.ItemType) + (itemEarned.ItemType == ItemType.Weapon && itemEarned.WeaponType != WeaponType.None ? "-" + ItemSet.GetWeaponTypeName(itemEarned.WeaponType) : "");
                         if (itemtype != "") itemtype = $"|{itemtype}";
-                        award += $"[{itemquality + itemtype}] {itemEarned.Name}";
+                        award += $"[{itemquality + itemtype}]{itemEarned.Name}";
                     }
                     break;
                 case ExploreResult.Event:
@@ -2432,7 +2526,7 @@ namespace Oshima.FunGame.OshimaServers.Service
             List<Guid> remove = [];
             foreach (ExploreModel model in list)
             {
-                if (model.StartTime.HasValue && (DateTime.Now - model.StartTime.Value).TotalMinutes > FunGameConstant.ExploreTime + 5)
+                if (model.StartTime.HasValue && (DateTime.Now - model.StartTime.Value).TotalMinutes > FunGameConstant.ExploreTime + 2)
                 {
                     if (SettleExplore(model.Guid, list, user, out string msg))
                     {

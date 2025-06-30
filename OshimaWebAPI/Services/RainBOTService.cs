@@ -44,7 +44,7 @@ namespace Oshima.FunGame.WebAPI.Services
                 content = content.Trim();
                 await Service.SendC2CMessageAsync(msg.OpenId, content, msgType, media, msg.Id, msgSeq);
             }
-            if (msg.FunGameUID > 0 && FunGameService.UserNotice.TryGetValue(msg.FunGameUID, out HashSet<string>? msgs) && msgs != null)
+            if (msg.UseNotice && msg.FunGameUID > 0 && FunGameService.UserNotice.TryGetValue(msg.FunGameUID, out HashSet<string>? msgs) && msgs != null)
             {
                 FunGameService.UserNotice.Remove(msg.FunGameUID);
                 await SendAsync(msg, "每日登录提醒", string.Join("\r\n", msgs), msgType, media, 5);
@@ -52,8 +52,9 @@ namespace Oshima.FunGame.WebAPI.Services
         }
 
         private async Task SendHelp(IBotMessage e, Dictionary<string, string> helpDict, string helpName, int currentPage)
-        {
-            int pageSize = 15;
+		{
+			e.UseNotice = false;
+			int pageSize = 15;
             int totalPages = (helpDict.Count + pageSize - 1) / pageSize;
 
             StringBuilder result = new($"《筽祀牻》{helpName}指令（第 {currentPage}/{totalPages} 页）\n");
@@ -133,28 +134,32 @@ namespace Oshima.FunGame.WebAPI.Services
 
                 if (!e.IsGroup && e.Detail == "获取接入码")
                 {
-                    await SendAsync(e, "获取接入码", $"你的接入码为 {openid}，请妥善保存！");
+                    e.UseNotice = false;
+					await SendAsync(e, "获取接入码", $"你的接入码为 {openid}，请妥善保存！");
                     return true;
                 }
 
                 if (e.Detail == "查询服务器启动时间")
-                {
-                    string msg = TestController.GetLastLoginTime();
+				{
+					e.UseNotice = false;
+					string msg = TestController.GetLastLoginTime();
                     await SendAsync(e, "查询服务器启动时间", msg);
                     return true;
                 }
 
                 if (e.Detail.StartsWith("查询任务计划"))
-                {
-                    string msg = TestController.GetTaskScheduler(e.Detail.Replace("查询任务计划", ""));
+				{
+					e.UseNotice = false;
+					string msg = TestController.GetTaskScheduler(e.Detail.Replace("查询任务计划", ""));
                     await SendAsync(e, "查询任务计划", msg);
                     return true;
                 }
 
                 // 指令处理
                 if (e.Detail == "帮助")
-                {
-                    await SendAsync(e, "筽祀牻", @$"欢迎使用《筽祀牻》游戏指令帮助系统！
+				{
+					e.UseNotice = false;
+					await SendAsync(e, "筽祀牻", @$"欢迎使用《筽祀牻》游戏指令帮助系统！
 核心库版本号：{FunGameInfo.FunGame_Version}
 《筽祀牻》是一款奇幻冒险回合制角色扮演游戏。
 在游戏中，你可以和其他角色组成小队，收集物品，在数十个独具风格的地区中冒险并战斗。
@@ -212,8 +217,9 @@ namespace Oshima.FunGame.WebAPI.Services
                 }
 
                 if (e.Detail.StartsWith("FunGame模拟", StringComparison.CurrentCultureIgnoreCase))
-                {
-                    if (!FunGameSimulation)
+				{
+					e.UseNotice = false;
+					if (!FunGameSimulation)
                     {
                         FunGameSimulation = true;
                         List<string> msgs = await Controller.GetTest(false, maxRespawnTimesMix: 0);
@@ -260,8 +266,9 @@ namespace Oshima.FunGame.WebAPI.Services
                 }
 
                 if (e.Detail.StartsWith("混战模拟"))
-                {
-                    int maxRespawnTimesMix = 1;
+				{
+					e.UseNotice = false;
+					int maxRespawnTimesMix = 1;
                     string detail = e.Detail.Replace("混战模拟", "").Trim();
                     if (int.TryParse(detail, out int times))
                     {
@@ -314,14 +321,16 @@ namespace Oshima.FunGame.WebAPI.Services
                 }
 
                 if (e.Detail == "上次的完整日志")
-                {
-                    await SendAsync(e, "筽祀牻", string.Join("\r\n", Controller.GetLast()));
+				{
+					e.UseNotice = false;
+					await SendAsync(e, "筽祀牻", string.Join("\r\n", Controller.GetLast()));
                     return result;
                 }
 
                 if (e.Detail.StartsWith("FunGame团队模拟", StringComparison.CurrentCultureIgnoreCase))
-                {
-                    if (!FunGameSimulation)
+				{
+					e.UseNotice = false;
+					if (!FunGameSimulation)
                     {
                         FunGameSimulation = true;
                         List<string> msgs = await Controller.GetTest(false, true);
@@ -372,8 +381,9 @@ namespace Oshima.FunGame.WebAPI.Services
                 }
 
                 if (e.Detail.StartsWith("查数据", StringComparison.CurrentCultureIgnoreCase))
-                {
-                    string detail = e.Detail.Replace("查数据", "").Trim();
+				{
+					e.UseNotice = false;
+					string detail = e.Detail.Replace("查数据", "").Trim();
                     if (int.TryParse(detail, out int id))
                     {
                         string msg = Controller.GetStats(id);
@@ -386,8 +396,9 @@ namespace Oshima.FunGame.WebAPI.Services
                 }
 
                 if (e.Detail.StartsWith("查团队数据", StringComparison.CurrentCultureIgnoreCase))
-                {
-                    string detail = e.Detail.Replace("查团队数据", "").Trim();
+				{
+					e.UseNotice = false;
+					string detail = e.Detail.Replace("查团队数据", "").Trim();
                     if (int.TryParse(detail, out int id))
                     {
                         string msg = Controller.GetTeamStats(id);
@@ -400,8 +411,9 @@ namespace Oshima.FunGame.WebAPI.Services
                 }
 
                 if (e.Detail.StartsWith("查个人胜率", StringComparison.CurrentCultureIgnoreCase))
-                {
-                    List<string> msgs = Controller.GetWinrateRank();
+				{
+					e.UseNotice = false;
+					List<string> msgs = Controller.GetWinrateRank();
                     if (msgs.Count > 0)
                     {
                         await SendAsync(e, "查个人胜率", string.Join("\r\n\r\n", msgs));
@@ -410,8 +422,9 @@ namespace Oshima.FunGame.WebAPI.Services
                 }
 
                 if (e.Detail.StartsWith("查团队胜率", StringComparison.CurrentCultureIgnoreCase))
-                {
-                    List<string> msgs = Controller.GetWinrateRank(true);
+				{
+					e.UseNotice = false;
+					List<string> msgs = Controller.GetWinrateRank(true);
                     if (msgs.Count > 0)
                     {
                         await SendAsync(e, "查团队胜率", string.Join("\r\n\r\n", msgs));
@@ -420,8 +433,9 @@ namespace Oshima.FunGame.WebAPI.Services
                 }
 
                 if (e.Detail.StartsWith("查角色", StringComparison.CurrentCultureIgnoreCase))
-                {
-                    string detail = e.Detail.Replace("查角色", "").Trim();
+				{
+					e.UseNotice = false;
+					string detail = e.Detail.Replace("查角色", "").Trim();
                     if (int.TryParse(detail, out int id))
                     {
                         string msg = Controller.GetCharacterInfo(id);
@@ -434,8 +448,9 @@ namespace Oshima.FunGame.WebAPI.Services
                 }
 
                 if (e.Detail.StartsWith("查技能", StringComparison.CurrentCultureIgnoreCase))
-                {
-                    string detail = e.Detail.Replace("查技能", "").Trim();
+				{
+					e.UseNotice = false;
+					string detail = e.Detail.Replace("查技能", "").Trim();
                     if (int.TryParse(detail, out int id))
                     {
                         string msg = Controller.GetSkillInfo(uid, id);
@@ -456,8 +471,9 @@ namespace Oshima.FunGame.WebAPI.Services
                 }
 
                 if (e.Detail.StartsWith("查物品", StringComparison.CurrentCultureIgnoreCase))
-                {
-                    string detail = e.Detail.Replace("查物品", "").Trim();
+				{
+					e.UseNotice = false;
+					string detail = e.Detail.Replace("查物品", "").Trim();
                     if (int.TryParse(detail, out int id))
                     {
                         string msg = Controller.GetItemInfo(uid, id);
@@ -478,8 +494,9 @@ namespace Oshima.FunGame.WebAPI.Services
                 }
 
                 if (e.Detail.StartsWith("生成"))
-                {
-                    string pattern = @"生成\s*(\d+)\s*个\s*([\s\S]+)(?:\s*给\s*(\d+))";
+				{
+					e.UseNotice = false;
+					string pattern = @"生成\s*(\d+)\s*个\s*([\s\S]+)(?:\s*给\s*(\d+))";
                     Regex regex = new(pattern, RegexOptions.IgnoreCase);
                     Match match = regex.Match(e.Detail);
 
@@ -512,8 +529,9 @@ namespace Oshima.FunGame.WebAPI.Services
                 }
 
                 if (e.Detail == "生成魔法卡包")
-                {
-                    string msg = Controller.GenerateMagicCardPack();
+				{
+					e.UseNotice = false;
+					string msg = Controller.GenerateMagicCardPack();
                     if (msg != "")
                     {
                         await SendAsync(e, "生成魔法卡包", msg);
@@ -521,8 +539,9 @@ namespace Oshima.FunGame.WebAPI.Services
                     return result;
                 }
                 else if (e.Detail == "生成魔法卡")
-                {
-                    string msg = Controller.GenerateMagicCard();
+				{
+					e.UseNotice = false;
+					string msg = Controller.GenerateMagicCard();
                     if (msg != "")
                     {
                         await SendAsync(e, "生成魔法卡", msg);
@@ -531,8 +550,9 @@ namespace Oshima.FunGame.WebAPI.Services
                 }
 
                 if (e.Detail == "创建存档")
-                {
-                    string msg = Controller.CreateSaved(name: openid);
+				{
+					e.UseNotice = false;
+					string msg = Controller.CreateSaved(name: openid);
                     if (msg != "")
                     {
                         await SendAsync(e, "创建存档", "\r\n" + msg);
@@ -551,8 +571,9 @@ namespace Oshima.FunGame.WebAPI.Services
                 }
 
                 if (e.Detail == "我的主战")
-                {
-                    string msg = Controller.GetCharacterInfoFromInventory(uid, 0);
+				{
+					e.UseNotice = false;
+					string msg = Controller.GetCharacterInfoFromInventory(uid, 0);
                     if (msg != "")
                     {
                         await SendAsync(e, "我的主战", "\r\n" + msg);
@@ -561,8 +582,9 @@ namespace Oshima.FunGame.WebAPI.Services
                 }
 
                 if (e.Detail == "我的状态")
-                {
-                    string msg = Controller.ShowMainCharacterOrSquadStatus(uid);
+				{
+					e.UseNotice = false;
+					string msg = Controller.ShowMainCharacterOrSquadStatus(uid);
                     if (msg != "")
                     {
                         await SendAsync(e, "我的状态", "\r\n" + msg);
@@ -571,8 +593,9 @@ namespace Oshima.FunGame.WebAPI.Services
                 }
 
                 if (e.Detail == "小队状态" || e.Detail == "我的小队状态")
-                {
-                    string msg = Controller.ShowMainCharacterOrSquadStatus(uid, true);
+				{
+					e.UseNotice = false;
+					string msg = Controller.ShowMainCharacterOrSquadStatus(uid, true);
                     if (msg != "")
                     {
                         await SendAsync(e, "我的小队状态", "\r\n" + msg);
@@ -581,8 +604,9 @@ namespace Oshima.FunGame.WebAPI.Services
                 }
 
                 if (e.Detail == "我的小队")
-                {
-                    string msg = Controller.ShowSquad(uid);
+				{
+					e.UseNotice = false;
+					string msg = Controller.ShowSquad(uid);
                     if (msg != "")
                     {
                         await SendAsync(e, "我的小队", "\r\n" + msg);

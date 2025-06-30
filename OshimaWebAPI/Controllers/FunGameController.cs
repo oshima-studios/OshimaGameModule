@@ -2525,6 +2525,19 @@ namespace Oshima.FunGame.WebAPI.Controllers
                             user2.Inventory.Materials += itemCount;
                             msg = $"已为 [ {user2} ] 生成 {itemCount} {General.GameplayEquilibriumConstant.InGameMaterial}";
                         }
+                        else if (itemName == "探索许可")
+                        {
+                            if (pc.TryGetValue("exploreTimes", out object? value) && int.TryParse(value.ToString(), out int exploreTimes))
+                            {
+                                exploreTimes += itemCount;
+                            }
+                            else
+                            {
+                                exploreTimes = FunGameConstant.MaxExploreTimes + itemCount;
+                            }
+                            pc.Add("exploreTimes", exploreTimes);
+                            msg = $"已为 [ {user2} ] 生成 {itemCount} 个探索许可";
+                        }
                         else if (itemName.Contains("魔法卡礼包"))
                         {
                             foreach (string type in ItemSet.QualityTypeNameArray)
@@ -5267,22 +5280,41 @@ namespace Oshima.FunGame.WebAPI.Controllers
                     msg = $"没有找到与输入序号相对应的角色：{string.Join("，", invalid)}。";
                 }
 
-                // 检查探索次数
-                if (pc.TryGetValue("exploreTimes", out object? value) && int.TryParse(value.ToString(), out int exploreTimes))
+                // 检查探索许可
+                int exploreTimes = 0;
+                int reduce = 1;
+                if (regionid > 0 && regionid <= FunGameConstant.Regions.Count && FunGameConstant.Regions.FirstOrDefault(r => r.Id == regionid) is OshimaRegion region)
                 {
-                    if (exploreTimes <= 0)
+                    int diff = region.Difficulty switch
                     {
-                        exploreTimes = 0;
-                        msg = $"今日的探索次数已用完，无法再继续探索。";
+                        RarityType.OneStar => 1,
+                        RarityType.TwoStar => 2,
+                        RarityType.ThreeStar => 3,
+                        RarityType.FourStar => 4,
+                        _ => 5
+                    };
+                    reduce = characterCount * diff;
+                    if (pc.TryGetValue("exploreTimes", out object? value) && int.TryParse(value.ToString(), out exploreTimes))
+                    {
+                        if (exploreTimes <= 0)
+                        {
+                            exploreTimes = 0;
+                            msg = $"今日的探索许可已用完，无法再继续探索。";
+                        }
+                        else if (reduce > exploreTimes)
+                        {
+                            msg = $"本次探索需要消耗 {reduce} 个探索许可，超过了你的剩余探索许可数量（{exploreTimes} 个），请减少选择的角色数量或更换探索地区。" +
+                                $"\r\n需要注意：探索难度星级一比一兑换探索许可，并且参与探索的角色，都需要消耗相同数量的探索许可。";
+                        }
                     }
-                    else if (characterCount > exploreTimes)
+                    else
                     {
-                        msg = $"你选择的角色数量超过了剩余的探索次数（{exploreTimes} 次），请减少选择的角色数量。需要注意：探索角色越多，奖励越多，但是会扣除相应的探索次数。";
+                        exploreTimes = FunGameConstant.MaxExploreTimes;
                     }
                 }
                 else
                 {
-                    exploreTimes = FunGameConstant.MaxExploreTimes;
+                    return ($"没有找到与这个序号相对应的地区！", exploreId);
                 }
 
                 // 检查角色是否正在探索
@@ -5294,14 +5326,14 @@ namespace Oshima.FunGame.WebAPI.Controllers
                     foreach (ExploreModel model in list)
                     {
                         // 可能要结算先前的超时探索
-                        if (model.StartTime.HasValue && (DateTime.Now - model.StartTime.Value).TotalMinutes > FunGameConstant.ExploreTime + 5)
+                        if (model.StartTime.HasValue && (DateTime.Now - model.StartTime.Value).TotalMinutes > FunGameConstant.ExploreTime + 2)
                         {
                             if (FunGameService.SettleExplore(model.Guid, list, user, out string notice))
                             {
                                 if (notice != "")
                                 {
                                     if (msg2 != "") msg2 += "\r\n";
-                                    msg2 += $"你上次未完成的探索已被自动结算{notice}";
+                                    msg2 += $"你上次未完成的探索已被自动结算：{notice}";
                                 }
                                 remove.Add(model.Guid);
                             }
@@ -5328,26 +5360,16 @@ namespace Oshima.FunGame.WebAPI.Controllers
 
                 if (msg == "")
                 {
-                    if (regionid > 0 && regionid <= FunGameConstant.Regions.Count && FunGameConstant.Regions.FirstOrDefault(r => r.Id == regionid) is OshimaRegion region)
-                    {
-                        exploreTimes -= characterCount;
+                    exploreTimes -= reduce;
 
-                        msg = $"开始探索【{region.Name}】，探索时间预计 {FunGameConstant.ExploreTime} 分钟（系统会自动结算，届时会有提示）。" +
-                            $"探索成员：[ {FunGameService.GetCharacterGroupInfoByInventorySequence(user.Inventory.Characters, characterIds, " ] / [ ")} ]";
-                        ExploreModel model = await FunGameService.GenerateExploreModel(region, characterIds, user);
-                        exploreId = model.Guid;
-                        list.Add(model);
+                    msg = $"开始探索【{region.Name}】，探索时间预计 {FunGameConstant.ExploreTime} 分钟（系统会自动结算，届时会有提示）。" +
+                        $"探索成员：[ {FunGameService.GetCharacterGroupInfoByInventorySequence(user.Inventory.Characters, characterIds, " ] / [ ")} ]";
+                    ExploreModel model = await FunGameService.GenerateExploreModel(region, characterIds, user);
+                    exploreId = model.Guid;
+                    list.Add(model);
 
-                        if (exploreTimes > 0)
-                        {
-                            if (msg != "") msg += "\r\n";
-                            msg += $"本次扣除探索次数 {characterCount} 次，你的剩余探索次数：{exploreTimes} 次。需要注意：探索角色越多，奖励越多，但是会扣除相应的探索次数。";
-                        }
-                    }
-                    else
-                    {
-                        return ($"没有找到与这个序号相对应的地区！", exploreId);
-                    }
+                    if (msg != "") msg += "\r\n";
+                    msg += $"本次消耗探索许可 {reduce} 个，你的剩余探索许可：{exploreTimes} 个。需要注意：探索难度星级一比一兑换探索许可，并且参与探索的角色，都需要消耗相同数量的探索许可。";
                 }
 
                 user.LastTime = DateTime.Now;
@@ -5377,13 +5399,13 @@ namespace Oshima.FunGame.WebAPI.Controllers
             {
                 User user = FunGameService.GetUser(pc);
 
-                // 检查探索次数
+                // 检查探索许可
                 if (pc.TryGetValue("exploreTimes", out object? value) && int.TryParse(value.ToString(), out int exploreTimes))
                 {
                     if (exploreTimes <= 0)
                     {
                         exploreTimes = 0;
-                        msg = $"今日的探索次数已用完，无法再继续探索。";
+                        msg = $"今日的探索许可已用完，无法再继续探索。";
                     }
                 }
                 else
@@ -5414,7 +5436,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
                 if (exploreTimes > 0)
                 {
                     if (msg != "") msg += "\r\n";
-                    msg += $"你的剩余探索次数：{exploreTimes} 次。";
+                    msg += $"你的剩余探索许可：{exploreTimes} 个。";
                 }
 
                 user.LastTime = DateTime.Now;
