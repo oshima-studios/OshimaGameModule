@@ -302,10 +302,10 @@ namespace Oshima.FunGame.OshimaServers.Service
 
         public static Dictionary<ExploreResult, double> ExploreResultProbabilities { get; } = new()
         {
-            { ExploreResult.General, 40 },
-            { ExploreResult.Nothing, 20 },
-            { ExploreResult.Fight, 20 },
-            { ExploreResult.Earned, 20 },
+            { ExploreResult.General, 0.4 },
+            { ExploreResult.Nothing, 0.2 },
+            { ExploreResult.Fight, 0.2 },
+            { ExploreResult.Earned, 0.2 },
             { ExploreResult.Event, 0 }
         };
 

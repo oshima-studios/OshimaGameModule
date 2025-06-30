@@ -2535,7 +2535,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
                             {
                                 exploreTimes = FunGameConstant.MaxExploreTimes + itemCount;
                             }
-                            pc.Add("exploreTimes", exploreTimes);
+                            pc2.Add("exploreTimes", exploreTimes);
                             msg = $"已为 [ {user2} ] 生成 {itemCount} 个探索许可";
                         }
                         else if (itemName.Contains("魔法卡礼包"))
