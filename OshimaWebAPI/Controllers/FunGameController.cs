@@ -5433,11 +5433,8 @@ namespace Oshima.FunGame.WebAPI.Controllers
                     msg = $"你目前没有角色正在探索。";
                 }
 
-                if (exploreTimes > 0)
-                {
-                    if (msg != "") msg += "\r\n";
-                    msg += $"你的剩余探索许可：{exploreTimes} 个。";
-                }
+                if (msg != "") msg += "\r\n";
+                msg += $"你的剩余探索许可：{exploreTimes} 个。";
 
                 user.LastTime = DateTime.Now;
                 pc.Add("user", user);
