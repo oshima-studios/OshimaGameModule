@@ -1416,7 +1416,7 @@ namespace Oshima.FunGame.OshimaServers.Service
         }
 
         private static void EnhanceBoss(Character boss, Item[] weapons, Item[] armors, Item[] shoes, Item[] accessory, Item[] consumables,
-            int cLevel, int sLevel, int mLevel, int naLevel, bool enhanceHPMP = true, bool enhanceCRCRD = true)
+            int cLevel, int sLevel, int mLevel, int naLevel, bool enhanceHPMP = true, bool enhanceCRCRD = true, bool isUnit = false)
         {
             boss.Level = cLevel;
             boss.NormalAttack.Level = naLevel;
@@ -1477,8 +1477,9 @@ namespace Oshima.FunGame.OshimaServers.Service
             double exMP2 = 0.8;
             if (!enhanceHPMP)
             {
-                exHP2 = 0;
-                exMP2 = 0;
+                if (isUnit) exHP2 = -0.1;
+                else exHP2 = 0.5;
+                exMP2 = 0.2;
             }
             double exCR = 0.35;
             double exCRD = 0.9;
@@ -1494,16 +1495,16 @@ namespace Oshima.FunGame.OshimaServers.Service
                     "values",
                     new Dictionary<string, object>()
                     {
-                        { "exatk", 3.4 * cLevel },
-                        { "exdef", 3.4 * cLevel },
+                        { "exatk", isUnit ? 1.4 * cLevel : 3.4 * cLevel },
+                        { "exdef", isUnit ? 1.4 * cLevel : 3.4 * cLevel },
                         { "exhp2", exHP2 },
                         { "exmp2", exMP2 },
                         { "exhr", 0.15 * cLevel },
                         { "exmr", 0.1 * cLevel },
                         { "excr", exCR },
                         { "excrd", exCRD },
-                        { "excdr", 0.25 },
-                        { "exacc", 0.25 }
+                        { "excdr", isUnit ? 0.2 : 0.25 },
+                        { "exacc", isUnit ? 0.15 : 0.25 }
                     }
                 }
             });
@@ -1570,7 +1571,7 @@ namespace Oshima.FunGame.OshimaServers.Service
             return roundRewards;
         }
 
-        public static double CalculateRating(CharacterStatistics stats, Team? team = null)
+        public static double CalculateRating(CharacterStatistics stats, Team? team = null, CharacterStatistics[]? teammateStats = null)
         {
             // 基础得分
             double baseScore = (stats.Kills + stats.Assists) / (stats.Kills + stats.Assists + stats.Deaths + 0.01);
@@ -1586,6 +1587,17 @@ namespace Oshima.FunGame.OshimaServers.Service
 
             // 伤害贡献
             double logDamageContribution = Math.Log(1 + (stats.TotalDamage / (stats.TotalTakenDamage + 1.75)));
+            if (team != null && teammateStats != null)
+            {
+                // 考虑团队伤害排名，优先高伤害的
+                int damageRank = teammateStats.OrderByDescending(s => s.TotalDamage).ToList().IndexOf(stats) + 1;
+                if (damageRank > 1)
+                {
+                    double d = 1 - (0.1 * (damageRank - 1));
+                    if (d < 0.1) d = 0.1;
+                    logDamageContribution *= d;
+                }
+            }
 
             // 存活时间贡献
             double liveTimeContribution = Math.Log(1 + (stats.LiveTime / (stats.TotalTakenDamage + 0.01) * 100));
@@ -1594,6 +1606,7 @@ namespace Oshima.FunGame.OshimaServers.Service
             double teamContribution = 0;
             if (team != null)
             {
+                if (stats.Assists > team.Score) stats.Assists = team.Score;
                 teamContribution = (stats.Kills + stats.Assists) / (team.Score + 0.01);
                 if (team.IsWinner)
                 {
@@ -1618,11 +1631,16 @@ namespace Oshima.FunGame.OshimaServers.Service
             foreach (Character character in statistics.Keys)
             {
                 Team? team = null;
+                CharacterStatistics[]? teammateStats = null;
                 if (isTeam)
                 {
                     team = teams.Where(t => t.IsOnThisTeam(character)).FirstOrDefault();
+                    if (team != null)
+                    {
+                        teammateStats = [.. statistics.Where(kv => team.Members.Contains(kv.Key)).Select(kv => kv.Value)];
+                    }
                 }
-                statistics[character].Rating = CalculateRating(statistics[character], team);
+                statistics[character].Rating = CalculateRating(statistics[character], team, teammateStats);
             }
         }
 
@@ -1848,9 +1866,11 @@ namespace Oshima.FunGame.OshimaServers.Service
                         (min, max) = (range.Min, range.Max);
                     }
                     double price = Random.Shared.Next(min, max);
+                    int stock = Random.Shared.Next(1, 3);
                     if (item.ItemType == ItemType.MagicCard)
                     {
                         price *= 0.7;
+                        stock = 1;
                     }
                     else if (item.ItemType == ItemType.Consumable)
                     {
@@ -1859,13 +1879,14 @@ namespace Oshima.FunGame.OshimaServers.Service
                         min = 300 * (1 + (prev * prev - prev));
                         max = 300 * (1 + (current * current - current));
                         price = Random.Shared.Next(min, max);
+                        stock += 3;
                     }
                     if (price == 0)
                     {
                         price = (Random.Shared.NextDouble() + 0.1) * Random.Shared.Next(1000, 5000) * Random.Shared.Next((int)item.QualityType + 2, 6 + ((int)item.QualityType));
                     }
                     item.Price = (int)price;
-                    daily.AddItem(item, Random.Shared.Next(1, 3));
+                    daily.AddItem(item, stock);
                 }
                 store.Add("daily", daily);
                 return daily.ToString() + "\r\n温馨提示：使用【商店查看+序号】查看物品详细信息，使用【商店购买+序号】购买物品！每天 4:00 刷新每日商店。";
@@ -2100,9 +2121,8 @@ namespace Oshima.FunGame.OshimaServers.Service
 
         public static string GetEvents(ActivityState status = ActivityState.InProgress)
         {
-            EntityModuleConfig<Activity> activities = new("activities", "activities");
-            activities.LoadConfig();
-            IEnumerable<Activity> filteredActivities = activities.Values.Where(a => a.Status == status);
+            GetEventCenter();
+            IEnumerable<Activity> filteredActivities = Activities.Where(a => a.Status == status);
             if (!filteredActivities.Any())
             {
                 return $"当前没有任何{CommonSet.GetActivityStatus(status)}的活动，敬请期待。";
@@ -2114,9 +2134,8 @@ namespace Oshima.FunGame.OshimaServers.Service
 
         public static string GetEvent(long id)
         {
-            EntityModuleConfig<Activity> activities = new("activities", "activities");
-            activities.LoadConfig();
-            if (activities.Values.FirstOrDefault(a => a.Id == id) is Activity activity)
+            GetEventCenter();
+            if (Activities.FirstOrDefault(a => a.Id == id) is Activity activity)
             {
                 return $"{activity}";
             }
@@ -2189,27 +2208,25 @@ namespace Oshima.FunGame.OshimaServers.Service
             switch (diff)
             {
                 case 2:
-                    probabilities[ExploreResult.General] -= 0.05;
-                    probabilities[ExploreResult.Earned] -= 0.05;
+                    probabilities[ExploreResult.General] -= 0.1;
                     probabilities[ExploreResult.Fight] += 0.1;
                     break;
                 case 3:
-                    probabilities[ExploreResult.General] -= 0.1;
+                    probabilities[ExploreResult.General] -= 0.15;
                     probabilities[ExploreResult.Earned] -= 0.05;
-                    probabilities[ExploreResult.Nothing] -= 0.05;
-                    probabilities[ExploreResult.Fight] += 0.2;
+                    probabilities[ExploreResult.Nothing] += 0.05;
+                    probabilities[ExploreResult.Fight] += 0.15;
                     break;
                 case 4:
-                    probabilities[ExploreResult.General] -= 0.2;
-                    probabilities[ExploreResult.Earned] -= 0.1;
-                    probabilities[ExploreResult.Nothing] -= 0.05;
+                    probabilities[ExploreResult.General] -= 0.3;
+                    probabilities[ExploreResult.Earned] -= 0.05;
                     probabilities[ExploreResult.Fight] += 0.35;
                     break;
                 case 5:
-                    probabilities[ExploreResult.General] -= 0.3;
-                    probabilities[ExploreResult.Earned] -= 0.15;
+                    probabilities[ExploreResult.General] -= 0.35;
+                    probabilities[ExploreResult.Earned] -= 0.05;
                     probabilities[ExploreResult.Nothing] -= 0.05;
-                    probabilities[ExploreResult.Fight] += 0.5;
+                    probabilities[ExploreResult.Fight] += 0.45;
                     break;
                 default:
                     break;
@@ -2247,10 +2264,10 @@ namespace Oshima.FunGame.OshimaServers.Service
             // 筛选敌人
             List<Character> enemys = [];
             Character enemy;
+            bool isUnit = Random.Shared.Next(2) != 0;
             if (region.Characters.Count > 0 && region.Units.Count > 0)
             {
-                random = Random.Shared.Next(2);
-                if (random == 0)
+                if (!isUnit)
                 {
                     enemy = region.Characters.OrderBy(o => Random.Shared.Next()).First().Copy();
                     enemy.ExHPPercentage += 0.5;
@@ -2262,33 +2279,76 @@ namespace Oshima.FunGame.OshimaServers.Service
                     {
                         case 1:
                         case 2:
-                            enemy = region.Units.OrderBy(o => Random.Shared.Next()).First();
-                            enemys.Add(enemy.Copy());
+                            enemy = region.Units.OrderBy(o => Random.Shared.Next()).First().Copy();
+                            enemys.Add(enemy);
                             break;
                         case 3:
                         case 4:
-                            enemy = region.Units.OrderBy(o => Random.Shared.Next()).First();
-                            enemys.Add(enemy.Copy());
-                            enemy = region.Units.OrderBy(o => Random.Shared.Next()).First();
-                            enemys.Add(enemy.Copy());
+                            enemy = region.Units.OrderBy(o => Random.Shared.Next()).First().Copy();
+                            enemys.Add(enemy);
+                            enemy = region.Units.OrderBy(o => Random.Shared.Next()).First().Copy();
+                            enemy.FirstName = enemys.Any(e => e.Name == enemy.Name) ? "2" : "";
+                            enemys.Add(enemy);
                             break;
                         case 5:
                         default:
-                            enemy = region.Units.OrderBy(o => Random.Shared.Next()).First();
-                            enemys.Add(enemy.Copy());
-                            enemy = region.Units.OrderBy(o => Random.Shared.Next()).First();
-                            enemys.Add(enemy.Copy());
-                            enemy = region.Units.OrderBy(o => Random.Shared.Next()).First();
-                            enemys.Add(enemy.Copy());
+                            enemy = region.Units.OrderBy(o => Random.Shared.Next()).First().Copy();
+                            enemys.Add(enemy);
+                            enemy = region.Units.OrderBy(o => Random.Shared.Next()).First().Copy();
+                            enemy.FirstName = enemys.Any(e => e.Name == enemy.Name) ? "α" : "";
+                            enemys.Add(enemy);
+                            enemy = region.Units.OrderBy(o => Random.Shared.Next()).First().Copy();
+                            enemy.FirstName = enemys.Any(e => e.Name == enemy.Name) ? "β" : "";
+                            enemys.Add(enemy);
                             break;
                     }
                 }
             }
             else
             {
-                enemy = new RegionCharacter(long.Parse(Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 8)), GenerateRandomChineseUserName());
-                enemys.Add(enemy);
+                if (!isUnit)
+                {
+                    enemy = new RegionCharacter(long.Parse(Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 8)), GenerateRandomChineseUserName());
+                    enemys.Add(enemy);
+                }
+                else
+                {
+                    switch (diff)
+                    {
+                        case 1:
+                        case 2:
+                            enemy = new RegionUnit(long.Parse(Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 8)), GenerateRandomChineseUserName());
+                            enemys.Add(enemy);
+                            break;
+                        case 3:
+                        case 4:
+                            enemy = new RegionUnit(long.Parse(Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 8)), GenerateRandomChineseUserName());
+                            enemys.Add(enemy);
+                            enemy = new RegionUnit(long.Parse(Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 8)), GenerateRandomChineseUserName());
+                            enemys.Add(enemy);
+                            break;
+                        case 5:
+                        default:
+                            enemy = new RegionUnit(long.Parse(Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 8)), GenerateRandomChineseUserName());
+                            enemys.Add(enemy);
+                            enemy = new RegionUnit(long.Parse(Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 8)), GenerateRandomChineseUserName());
+                            enemys.Add(enemy);
+                            enemy = new RegionUnit(long.Parse(Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 8)), GenerateRandomChineseUserName());
+                            enemys.Add(enemy);
+                            break;
+                    }
+                }
             }
+
+            // 初始化掉落装备的概率
+            Dictionary<QualityType, double> pE = new()
+            {
+                { QualityType.Blue, 0.4 },
+                { QualityType.Purple, 0.27 + (0.01 * (characterCount - 1)) },
+                { QualityType.Orange, 0.2 + (0.01 * (characterCount - 1)) },
+                { QualityType.Red, 0.1 + (0.0075 * (characterCount - 1)) },
+                { QualityType.Gold, 0.03 + (0.0075 * (characterCount - 1)) }
+            };
 
             // 生成奖励
             string award = "";
@@ -2338,7 +2398,7 @@ namespace Oshima.FunGame.OshimaServers.Service
                     break;
                 case ExploreResult.Fight:
                     // 小队信息
-                    Character[] squad = [.. user.Inventory.Characters.Where((c, index) => characterIds.Contains(index + 1)).Select(c => CharacterBuilder.Build(c, false, true, user.Inventory, FunGameConstant.AllItems, FunGameConstant.AllSkills, false))];
+                    Character[] squad = [.. user.Inventory.Characters.Where((c, index) => characterIds.Contains(index + 1)).Select(c => CharacterBuilder.Build(c, true, true, user.Inventory, FunGameConstant.AllItems, FunGameConstant.AllSkills, false))];
                     if (squad.All(c => c.HP <= 0))
                     {
                         model.Result = ExploreResult.Nothing;
@@ -2365,7 +2425,7 @@ namespace Oshima.FunGame.OshimaServers.Service
                         int naLevel = mLevel;
                         foreach (Character enemy_loop in enemys)
                         {
-                            EnhanceBoss(enemy_loop, weapons, armors, shoes, accessory, consumables, cLevel, sLevel, mLevel, naLevel, false, false);
+                            EnhanceBoss(enemy_loop, weapons, armors, shoes, accessory, consumables, cLevel, sLevel, mLevel, naLevel, false, false, isUnit);
                         }
                         // 开始战斗
                         Team team1 = new($"{user.Username}的探索小队", squad);
@@ -2407,7 +2467,16 @@ namespace Oshima.FunGame.OshimaServers.Service
                                 $"{materials} {General.GameplayEquilibriumConstant.InGameMaterial}，" + $"以及 {count} 个{item.Name}";
                             if (Random.Shared.NextDouble() > 0.6)
                             {
-                                Item? itemDrop = region.Items.OrderBy(o => Random.Shared.Next()).FirstOrDefault();
+                                QualityType qualityType = QualityType.Blue;
+                                foreach (QualityType type in pE.Keys.OrderByDescending(q => (int)q))
+                                {
+                                    if (Random.Shared.NextDouble() <= pE[type])
+                                    {
+                                        qualityType = type;
+                                        break;
+                                    }
+                                }
+                                Item? itemDrop = region.Items.Where(i => qualityType == QualityType.Blue ? (int)i.QualityType <= (int)qualityType : (int)i.QualityType == (int)qualityType).FirstOrDefault();
                                 if (itemDrop != null)
                                 {
                                     string itemquality = ItemSet.GetQualityTypeName(itemDrop.QualityType);
@@ -2420,16 +2489,34 @@ namespace Oshima.FunGame.OshimaServers.Service
                         }
                         else
                         {
-                            Item item = FunGameConstant.ExploreItems[region][Random.Shared.Next(FunGameConstant.ExploreItems[region].Count)];
-                            model.Awards[item.Name] = characterCount;
-                            award = $"{characterCount} 个{item.Name}";
-                            exploreString = $"{exploreString}\r\n{string.Join("\r\n", msgs)}\r\n探索小队未能战胜{enemy.Name}，但是获得了补偿：{award}！";
+                            exploreString = $"{exploreString}\r\n{string.Join("\r\n", msgs)}\r\n探索小队未能战胜{enemy.Name}，";
+                            IEnumerable<Character> deadEnemys = enemys.Where(c => c.HP <= 0);
+                            if (!deadEnemys.Any())
+                            {
+                                exploreString += "探索宣告失败！（什么也没有获得）";
+                            }
+                            else
+                            {
+                                Item item = FunGameConstant.ExploreItems[region][Random.Shared.Next(FunGameConstant.ExploreItems[region].Count)];
+                                model.Awards[item.Name] = deadEnemys.Count();
+                                award = $"{deadEnemys.Count()} 个{item.Name}";
+                                exploreString += $"但是获得了补偿：{award}！";
+                            }
                         }
                         model.AfterFightHPs = [.. squad.Select(c => c.HP)];
                     }
                     break;
                 case ExploreResult.Earned:
-                    Item? itemEarned = region.Items.OrderBy(o => Random.Shared.Next()).FirstOrDefault();
+                    QualityType quality = QualityType.Blue;
+                    foreach (QualityType type in pE.Keys.OrderByDescending(q => (int)q))
+                    {
+                        if (Random.Shared.NextDouble() <= pE[type])
+                        {
+                            quality = type;
+                            break;
+                        }
+                    }
+                    Item? itemEarned = region.Items.OrderBy(i => quality == QualityType.Blue ? (int)i.QualityType <= (int)quality : (int)i.QualityType == (int)quality).FirstOrDefault();
                     if (itemEarned is null)
                     {
                         model.Result = ExploreResult.Nothing;
@@ -2520,13 +2607,13 @@ namespace Oshima.FunGame.OshimaServers.Service
             return result;
         }
 
-        public static bool SettleExploreAll(List<ExploreModel> list, User user)
+        public static bool SettleExploreAll(List<ExploreModel> list, User user, bool skip = false)
         {
             bool settle = false;
             List<Guid> remove = [];
             foreach (ExploreModel model in list)
             {
-                if (model.StartTime.HasValue && (DateTime.Now - model.StartTime.Value).TotalMinutes > FunGameConstant.ExploreTime + 2)
+                if (skip || (model.StartTime.HasValue && (DateTime.Now - model.StartTime.Value).TotalMinutes > FunGameConstant.ExploreTime + 2))
                 {
                     if (SettleExplore(model.Guid, list, user, out string msg))
                     {

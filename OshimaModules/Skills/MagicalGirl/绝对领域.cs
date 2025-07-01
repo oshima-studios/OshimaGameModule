@@ -58,6 +58,16 @@ namespace Oshima.FunGame.OshimaModules.Skills
             return 0;
         }
 
+        public override bool BeforeApplyTrueDamage(Character character, Character enemy, double damage, bool isNormalAttack, DamageResult damageResult)
+        {
+            if (enemy == Skill.Character && (damageResult == DamageResult.Normal || damageResult == DamageResult.Critical))
+            {
+                WriteLine($"[ {enemy} ] 发动了绝对领域，巧妙的化解了此伤害！");
+                return true;
+            }
+            return false;
+        }
+
         public override void OnSkillCasting(Character caster, List<Character> targets)
         {
             释放时的能量值 = caster.EP;
