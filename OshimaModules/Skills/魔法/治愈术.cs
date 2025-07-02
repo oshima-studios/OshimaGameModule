@@ -8,7 +8,7 @@ namespace Oshima.FunGame.OshimaModules.Skills
     {
         public override long Id => (long)MagicID.治愈术;
         public override string Name => "治愈术";
-        public override string Description => Effects.Count > 0 ? Effects.First().Description : "";
+        public override string Description => string.Join("", Effects.Select(e => e.Description));
         public override double MPCost => Level > 0 ? 80 + (85 * (Level - 1)) : 80;
         public override double CD => Level > 0 ? 80 - (1 * (Level - 1)) : 80;
         public override double CastTime => Level > 0 ? 5 + (0.25 * (Level - 1)) : 5;
