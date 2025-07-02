@@ -16,7 +16,7 @@ namespace Oshima.FunGame.OshimaModules.Skills
 
         public 火之矢(Character? character = null) : base(SkillType.Magic, character)
         {
-            Effects.Add(new 基于核心属性的伤害(this, 80, 65, 0.45, 0.35));
+            Effects.Add(new 基于核心属性的伤害(this, 45, 65, 0.45, 0.35));
         }
     }
 }

@@ -12,8 +12,8 @@ namespace Oshima.FunGame.OshimaModules.Skills
         public override string DispelDescription => Effects.FirstOrDefault(e => e is 弱驱散特效)?.DispelDescription ?? "";
         public override double MPCost => Level > 0 ? 110 + (95 * (Level - 1)) : 110;
         public override double CD => Level > 0 ? 110 - (2 * (Level - 1)) : 110;
-        public override double CastTime => 12;
-        public override double HardnessTime { get; set; } = 2;
+        public override double CastTime => 7;
+        public override double HardnessTime { get; set; } = 7;
         public override bool CanSelectSelf => true;
         public override bool CanSelectEnemy => false;
         public override bool CanSelectTeammate => true;
@@ -22,7 +22,7 @@ namespace Oshima.FunGame.OshimaModules.Skills
         public 圣灵术(Character? character = null) : base(SkillType.Magic, character)
         {
             SelectTargetPredicates.Add(c => c.HP >= 0 && c.HP < c.MaxHP);
-            Effects.Add(new 弱驱散特效(this));
+            Effects.Add(new 强驱散特效(this));
             Effects.Add(new 纯数值回复生命(this, 380, 270, true));
         }
 

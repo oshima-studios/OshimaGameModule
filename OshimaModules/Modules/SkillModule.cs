@@ -73,6 +73,7 @@ namespace Oshima.FunGame.OshimaModules
                     (long)MagicID.根源屏障 => new 根源屏障(),
                     (long)MagicID.灾难冲击波 => new 灾难冲击波(),
                     (long)MagicID.银色荆棘 => new 银色荆棘(),
+                    (long)MagicID.回复术改 => new 回复术改(),
                     (long)SkillID.疾风步 => new 疾风步(),
                     (long)SuperSkillID.力量爆发 => new 力量爆发(),
                     (long)SuperSkillID.天赐之力 => new 天赐之力(),

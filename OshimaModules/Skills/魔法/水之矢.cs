@@ -16,7 +16,7 @@ namespace Oshima.FunGame.OshimaModules.Skills
 
         public 水之矢(Character? character = null) : base(SkillType.Magic, character)
         {
-            Effects.Add(new 基于核心属性的伤害(this, 85, 65, 0.35, 0.45));
+            Effects.Add(new 基于核心属性的伤害(this, 65, 45, 0.35, 0.45));
         }
     }
 }

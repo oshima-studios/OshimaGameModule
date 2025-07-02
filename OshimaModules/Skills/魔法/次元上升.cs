@@ -17,7 +17,7 @@ namespace Oshima.FunGame.OshimaModules.Skills
 
         public 次元上升(Character? character = null) : base(SkillType.Magic, character)
         {
-            Effects.Add(new 基于攻击力的伤害_带基础伤害(this, 40, 40, 0.3, 0.25));
+            Effects.Add(new 基于攻击力的伤害_带基础伤害(this, 35, 25, 0.3, 0.25));
             Effects.Add(new 造成眩晕(this, true, 10, 0));
         }
     }
