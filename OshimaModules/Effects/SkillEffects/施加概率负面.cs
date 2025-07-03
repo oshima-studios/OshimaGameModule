@@ -14,7 +14,7 @@ namespace Oshima.FunGame.OshimaModules.Effects.SkillEffects
         public override DispelledType DispelledType => _dispelledType;
 
         private double ActualProbability => Level > 0 ? _probability + _probabilityLevelGrowth * (Level - 1) : _probability;
-        private string 持续时间 => _durative && _duration > 0 ? 实际持续时间 + $" {GameplayEquilibriumConstant.InGameTime}" : (!_durative && _durationTurn > 0 ? 实际持续时间 + " 回合" : $"0 {GameplayEquilibriumConstant.InGameTime}");
+        private string 持续时间 => _durative && _duration > 0 ? $"{实际持续时间:0.##}" + $" {GameplayEquilibriumConstant.InGameTime}" : (!_durative && _durationTurn > 0 ? 实际持续时间 + " 回合" : $"0 {GameplayEquilibriumConstant.InGameTime}");
         private double 实际持续时间 => _durative && _duration > 0 ? _duration + _levelGrowth * (Level - 1) : (!_durative && _durationTurn > 0 ? _durationTurn + _levelGrowth * (Level - 1) : 0);
         private readonly EffectType _effectType;
         private readonly DispelledType _dispelledType = DispelledType.Weak;
