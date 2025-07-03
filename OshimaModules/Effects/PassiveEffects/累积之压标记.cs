@@ -1,11 +1,12 @@
 ﻿using Milimoe.FunGame.Core.Entity;
 using Milimoe.FunGame.Core.Library.Constant;
+using Oshima.FunGame.OshimaModules.Effects.OpenEffects;
 
 namespace Oshima.FunGame.OshimaModules.Effects.PassiveEffects
 {
     public class 累积之压标记 : Effect
     {
-        public override long Id => 4102;
+        public override long Id => (long)PassiveEffectID.累积之压标记;
         public override string Name => "累积之压标记";
         public override string Description => $"此角色持有累积之压标记。来自：[ {Source} ]";
         public override EffectType EffectType => EffectType.Mark;

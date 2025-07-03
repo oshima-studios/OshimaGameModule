@@ -4,26 +4,30 @@ using Oshima.FunGame.OshimaModules.Effects.OpenEffects;
 
 namespace Oshima.FunGame.OshimaModules.Effects.PassiveEffects
 {
-    public class 物理免疫 : Effect
+    public class 完全行动不能 : Effect
     {
-        public override long Id => (long)PassiveEffectID.物理免疫;
-        public override string Name => "物理免疫";
-        public override string Description => $"此角色处于物理免疫状态，免疫物理伤害。来自：[ {Source} ] 的 [ {Skill.Name} ]";
-        public override EffectType EffectType => EffectType.PhysicalImmune;
-        public override DispelledType DispelledType => DispelledType.Weak;
-        public override bool IsDebuff => false;
+        public override long Id => (long)PassiveEffectID.完全行动不能;
+        public override string Name => _name;
+        public override string Description => $"此角色被{Name}了，不能行动。来自：[ {Source} ] 的 [ {Skill.Name} ]";
+        public override EffectType EffectType => _type;
+        public override DispelledType DispelledType => DispelledType.Strong;
+        public override bool IsDebuff => true;
         public override Character Source => _sourceCharacter;
         public override bool Durative => _durative;
         public override double Duration => _duration;
         public override int DurationTurn => _durationTurn;
 
+        private readonly string _name;
+        private readonly EffectType _type;
         private readonly Character _sourceCharacter;
         private readonly bool _durative;
         private readonly double _duration;
         private readonly int _durationTurn;
 
-        public 物理免疫(Skill skill, Character sourceCharacter, bool durative = false, double duration = 0, int durationTurn = 1) : base(skill)
+        public 完全行动不能(string name, EffectType type, Skill skill, Character sourceCharacter, bool durative = false, double duration = 0, int durationTurn = 1) : base(skill)
         {
+            _name = name;
+            _type = type;
             GamingQueue = skill.GamingQueue;
             _sourceCharacter = sourceCharacter;
             _durative = durative;
@@ -41,12 +45,13 @@ namespace Oshima.FunGame.OshimaModules.Effects.PassiveEffects
             {
                 RemainDurationTurn = DurationTurn;
             }
-            AddImmuneTypesToCharacter(character, [ImmuneType.Physical]);
+            AddEffectStatesToCharacter(character, [CharacterState.NotActionable]);
+            InterruptCasting(character, Source);
         }
 
         public override void OnEffectLost(Character character)
         {
-            RemoveImmuneTypesFromCharacter(character);
+            RemoveEffectStatesFromCharacter(character);
         }
     }
 }

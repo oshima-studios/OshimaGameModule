@@ -1,11 +1,12 @@
 ﻿using Milimoe.FunGame.Core.Entity;
 using Milimoe.FunGame.Core.Library.Constant;
+using Oshima.FunGame.OshimaModules.Effects.OpenEffects;
 
 namespace Oshima.FunGame.OshimaModules.Effects.PassiveEffects
 {
     public class 虚弱 : Effect
     {
-        public override long Id => 4108;
+        public override long Id => (long)PassiveEffectID.虚弱;
         public override string Name => "虚弱";
         public override string Description => $"此角色处于虚弱状态，伤害降低 {_damageReductionPercent * 100:0.##}%，" +
             $"物理护甲降低 {_DEFReductionPercent * 100:0.##}%，魔法抗性降低 {_MDFReductionPercent * 100:0.##}%，治疗效果降低 {_healingReductionPercent * 100:0.##}%。来自：[ {Source} ] 的 [ {Skill.Name} ]";

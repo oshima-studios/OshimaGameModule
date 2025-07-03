@@ -1,11 +1,12 @@
 ﻿using Milimoe.FunGame.Core.Entity;
 using Milimoe.FunGame.Core.Library.Constant;
+using Oshima.FunGame.OshimaModules.Effects.OpenEffects;
 
 namespace Oshima.FunGame.OshimaModules.Effects.PassiveEffects
 {
     public class 气绝 : Effect
     {
-        public override long Id => 4109;
+        public override long Id => (long)PassiveEffectID.气绝;
         public override string Name => "气绝";
         public override string Description => $"此角色处于气绝状态，行动受限并且每{GameplayEquilibriumConstant.InGameTime}流失 {(_isPercentage ? $"{_durationDamagePercent * 100:0.##}% [ {Damage:0.##} ]" : Damage.ToString("0.##"))} 点当前生命值，此生命流失效果不会导致角色死亡。来自：[ {Source} ] 的 [ {Skill.Name} ]";
         public override EffectType EffectType => EffectType.Bleed;

@@ -1,12 +1,13 @@
 ﻿using Milimoe.FunGame.Core.Entity;
 using Milimoe.FunGame.Core.Interface.Entity;
 using Milimoe.FunGame.Core.Library.Constant;
+using Oshima.FunGame.OshimaModules.Effects.OpenEffects;
 
 namespace Oshima.FunGame.OshimaModules.Effects.PassiveEffects
 {
     public class 魔法免疫 : Effect
     {
-        public override long Id => 4111;
+        public override long Id => (long)PassiveEffectID.魔法免疫;
         public override string Name => "魔法免疫";
         public override string Description => $"此角色处于魔法免疫状态，无法选中其作为魔法技能的目标（自释放魔法技能除外），并且免疫魔法伤害。来自：[ {Source} ] 的 [ {Skill.Name} ]";
         public override EffectType EffectType => EffectType.MagicalImmune;

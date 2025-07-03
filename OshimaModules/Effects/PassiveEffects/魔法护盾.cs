@@ -1,11 +1,12 @@
 ﻿using Milimoe.FunGame.Core.Entity;
 using Milimoe.FunGame.Core.Library.Constant;
+using Oshima.FunGame.OshimaModules.Effects.OpenEffects;
 
 namespace Oshima.FunGame.OshimaModules.Effects.PassiveEffects
 {
     public class 魔法护盾 : Effect
     {
-        public override long Id => 4107;
+        public override long Id => (long)PassiveEffectID.魔法护盾;
         public override string Name => "魔法护盾";
         public override string Description => $"此角色拥有魔法护盾{CurrentShield}。来自：[ {Source} ] 的 [ {Skill.Name} ]";
         public override EffectType EffectType => EffectType.Shield;

@@ -1,11 +1,12 @@
 ﻿using Milimoe.FunGame.Core.Entity;
 using Milimoe.FunGame.Core.Library.Constant;
+using Oshima.FunGame.OshimaModules.Effects.OpenEffects;
 
 namespace Oshima.FunGame.OshimaModules.Effects.PassiveEffects
 {
     public class 封技 : Effect
     {
-        public override long Id => 4103;
+        public override long Id => (long)PassiveEffectID.封技;
         public override string Name => "封技";
         public override string Description => $"此角色被封技了，不能使用技能（魔法、战技和爆发技）。来自：[ {Source} ] 的 [ {Skill.Name} ]";
         public override EffectType EffectType => EffectType.Silence;

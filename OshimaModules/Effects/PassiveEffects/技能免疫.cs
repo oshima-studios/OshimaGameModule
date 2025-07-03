@@ -1,12 +1,13 @@
 ﻿using Milimoe.FunGame.Core.Entity;
 using Milimoe.FunGame.Core.Interface.Entity;
 using Milimoe.FunGame.Core.Library.Constant;
+using Oshima.FunGame.OshimaModules.Effects.OpenEffects;
 
 namespace Oshima.FunGame.OshimaModules.Effects.PassiveEffects
 {
     public class 技能免疫 : Effect
     {
-        public override long Id => 4110;
+        public override long Id => (long)PassiveEffectID.技能免疫;
         public override string Name => "技能免疫";
         public override string Description => $"此角色处于技能免疫状态，无法选中其作为技能目标（自释放技能除外），并免疫来自技能的伤害。来自：[ {Source} ] 的 [ {Skill.Name} ]";
         public override EffectType EffectType => EffectType.SkilledImmune;

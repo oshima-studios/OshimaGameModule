@@ -4,12 +4,12 @@ using Oshima.FunGame.OshimaModules.Effects.OpenEffects;
 
 namespace Oshima.FunGame.OshimaModules.Effects.PassiveEffects
 {
-    public class 混乱 : Effect
+    public class 愤怒 : Effect
     {
-        public override long Id => (long)PassiveEffectID.混乱;
-        public override string Name => "混乱";
-        public override string Description => $"此角色处于混乱状态，行动受限且失控，行动回合中无法自主行动而是随机行动，在进行攻击指令时，可能会选取友方角色为目标。来自：[ {Source} ] 的 [ {Skill.Name} ]";
-        public override EffectType EffectType => EffectType.Confusion;
+        public override long Id => (long)PassiveEffectID.愤怒;
+        public override string Name => "愤怒";
+        public override string Description => $"此角色处于愤怒状态，行动受限且失控，行动回合中无法自主行动，仅能对 [ {_targetCharacter} ] 发起普通攻击。来自：[ {Source} ] 的 [ {Skill.Name} ]";
+        public override EffectType EffectType => EffectType.Taunt;
         public override DispelledType DispelledType => DispelledType.Strong;
         public override bool IsDebuff => true;
         public override Character Source => _sourceCharacter;
@@ -18,14 +18,16 @@ namespace Oshima.FunGame.OshimaModules.Effects.PassiveEffects
         public override int DurationTurn => _durationTurn;
 
         private readonly Character _sourceCharacter;
+        private readonly Character _targetCharacter;
         private readonly bool _durative;
         private readonly double _duration;
         private readonly int _durationTurn;
 
-        public 混乱(Skill skill, Character sourceCharacter, bool durative = false, double duration = 0, int durationTurn = 1) : base(skill)
+        public 愤怒(Skill skill, Character sourceCharacter, Character targetCharacter, bool durative = false, double duration = 0, int durationTurn = 1) : base(skill)
         {
             GamingQueue = skill.GamingQueue;
             _sourceCharacter = sourceCharacter;
+            _targetCharacter = targetCharacter;
             _durative = durative;
             _duration = duration;
             _durationTurn = durationTurn;
@@ -33,20 +35,41 @@ namespace Oshima.FunGame.OshimaModules.Effects.PassiveEffects
 
         public override void AlterSelectListBeforeAction(Character character, List<Character> enemys, List<Character> teammates, List<Skill> skills, Dictionary<Character, int> continuousKilling, Dictionary<Character, int> earnedMoney)
         {
-            // 为了确保角色能够混乱行动，这里需要将角色设置为可行动
+            // 为了确保角色能够自动化行动，这里需要将角色设置为可行动
             if (character.CharacterState == CharacterState.ActionRestricted)
             {
                 GamingQueue?.SetCharactersToAIControl(true, false, character);
                 character.CharacterState = CharacterState.Actionable;
             }
-            enemys.AddRange(teammates);
-            teammates.AddRange(enemys);
+            enemys.Clear();
+            teammates.Clear();
+            if (_targetCharacter.HP > 0)
+            {
+                enemys.Add(_targetCharacter);
+            }
         }
 
         public override CharacterActionType AlterActionTypeBeforeAction(Character character, CharacterState state, ref bool canUseItem, ref bool canCastSkill, ref double pUseItem, ref double pCastSkill, ref double pNormalAttack, ref bool forceAction)
         {
             forceAction = true;
-            return Milimoe.FunGame.Core.Model.GamingQueue.GetActionType(pUseItem, pCastSkill, pNormalAttack);
+            if (_targetCharacter.HP > 0)
+            {
+                return CharacterActionType.NormalAttack;
+            }
+            // 如果目标已死亡，则放弃本回合行动，并在回合结束后自动移除愤怒状态
+            RemainDuration = 0;
+            RemainDurationTurn = 0;
+            return CharacterActionType.EndTurn;
+        }
+
+        public override void AfterDeathCalculation(Character death, Character? killer, Dictionary<Character, int> continuousKilling, Dictionary<Character, int> earnedMoney)
+        {
+            if (death == _targetCharacter)
+            {
+                // 如果目标死亡，则在下次时间流逝时自动移除愤怒状态
+                RemainDuration = 0;
+                RemainDurationTurn = 0;
+            }
         }
 
         public override void OnTurnEnd(Character character)
@@ -66,7 +89,7 @@ namespace Oshima.FunGame.OshimaModules.Effects.PassiveEffects
             }
             GamingQueue?.SetCharactersToAIControl(true, false, character);
             AddEffectStatesToCharacter(character, [CharacterState.ActionRestricted]);
-            AddEffectTypeToCharacter(character, [EffectType.Confusion]);
+            AddEffectTypeToCharacter(character, [EffectType.Taunt]);
             InterruptCasting(character, Source);
         }
 

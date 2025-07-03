@@ -1,11 +1,12 @@
 ﻿using Milimoe.FunGame.Core.Entity;
 using Milimoe.FunGame.Core.Library.Constant;
+using Oshima.FunGame.OshimaModules.Effects.OpenEffects;
 
 namespace Oshima.FunGame.OshimaModules.Effects.PassiveEffects
 {
     public class 持续性强驱散 : Effect
     {
-        public override long Id => 4105;
+        public override long Id => (long)PassiveEffectID.持续性强驱散;
         public override string Name => "持续性强驱散";
         public override string Description => $"此角色正在被持续性强驱散。来自：[ {Source} ] 的 [ {Skill.Name} ]";
         public override EffectType EffectType => EffectType.StrongDispelling;
