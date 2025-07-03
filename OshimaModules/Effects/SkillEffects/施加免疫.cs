@@ -10,11 +10,12 @@ namespace Oshima.FunGame.OshimaModules.Effects.SkillEffects
         public override long Id => Skill.Id;
         public override string Name => Skill.Name;
         public override string Description => $"对{Skill.TargetDescription()}施加{CharacterSet.GetImmuneTypeName(ImmuneType)}，持续 {持续时间}。";
-        public override DispelledType DispelledType => DispelledType.Strong;
+        public override DispelledType DispelledType => _dispelledType;
 
         private ImmuneType ImmuneType { get; set; } = ImmuneType.None;
         private string 持续时间 => _durative && _duration > 0 ? 实际持续时间 + $" {GameplayEquilibriumConstant.InGameTime}" : (!_durative && _durationTurn > 0 ? 实际持续时间 + " 回合" : $"0 {GameplayEquilibriumConstant.InGameTime}");
         private double 实际持续时间 => _durative && _duration > 0 ? _duration + _levelGrowth * (Level - 1) : (!_durative && _durationTurn > 0 ? _durationTurn + _levelGrowth * (Level - 1) : 0);
+        private DispelledType _dispelledType = DispelledType.Weak;
         private readonly bool _durative;
         private readonly double _duration;
         private readonly int _durationTurn;
@@ -28,6 +29,12 @@ namespace Oshima.FunGame.OshimaModules.Effects.SkillEffects
             _duration = duration;
             _durationTurn = durationTurn;
             _levelGrowth = levelGrowth;
+            _dispelledType = type switch
+            {
+                ImmuneType.All => DispelledType.Strong,
+                ImmuneType.Special => DispelledType.Special,
+                _ => DispelledType.Weak
+            };
         }
 
         public override void OnSkillCasted(Character caster, List<Character> targets, Dictionary<string, object> others)
@@ -42,6 +49,7 @@ namespace Oshima.FunGame.OshimaModules.Effects.SkillEffects
                         {
                             EffectType = EffectType.PhysicalImmune;
                             物理免疫 e = new(Skill, caster, _durative, _duration + _levelGrowth * (Level - 1), Convert.ToInt32(_durationTurn + _levelGrowth * (Level - 1)));
+                            _dispelledType = DispelledType.Weak;
                             target.Effects.Add(e);
                             e.OnEffectGained(target);
                             break;
@@ -50,6 +58,7 @@ namespace Oshima.FunGame.OshimaModules.Effects.SkillEffects
                         {
                             EffectType = EffectType.MagicalImmune;
                             魔法免疫 e = new(Skill, caster, _durative, _duration + _levelGrowth * (Level - 1), Convert.ToInt32(_durationTurn + _levelGrowth * (Level - 1)));
+                            _dispelledType = DispelledType.Weak;
                             target.Effects.Add(e);
                             e.OnEffectGained(target);
                             break;
@@ -58,6 +67,7 @@ namespace Oshima.FunGame.OshimaModules.Effects.SkillEffects
                         {
                             EffectType = EffectType.SkilledImmune;
                             技能免疫 e = new(Skill, caster, _durative, _duration + _levelGrowth * (Level - 1), Convert.ToInt32(_durationTurn + _levelGrowth * (Level - 1)));
+                            _dispelledType = DispelledType.Weak;
                             target.Effects.Add(e);
                             e.OnEffectGained(target);
                             break;
@@ -66,6 +76,7 @@ namespace Oshima.FunGame.OshimaModules.Effects.SkillEffects
                         {
                             EffectType = EffectType.AllImmune;
                             完全免疫 e = new(Skill, caster, _durative, _duration + _levelGrowth * (Level - 1), Convert.ToInt32(_durationTurn + _levelGrowth * (Level - 1)));
+                            _dispelledType = DispelledType.Strong;
                             target.Effects.Add(e);
                             e.OnEffectGained(target);
                             break;

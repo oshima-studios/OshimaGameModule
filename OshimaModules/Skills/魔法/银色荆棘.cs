@@ -32,7 +32,7 @@ namespace Oshima.FunGame.OshimaModules.Skills
 
         public 银色荆棘(Character? character = null) : base(SkillType.Magic, character)
         {
-            Effects.Add(new 银色荆棘特效(this, false, 0, 2, 0, 0.6, 0.04));
+            Effects.Add(new 银色荆棘特效(this, false, 0, 2, 0, 0.24, 0.08));
         }
     }
 
@@ -41,7 +41,7 @@ namespace Oshima.FunGame.OshimaModules.Skills
         public override long Id => Skill.Id;
         public override string Name => Skill.Name;
         public override string Description => $"对{Skill.TargetDescription()}造成 {Damage:0.##} 点{CharacterSet.GetDamageTypeName(DamageType.Magical, MagicType)}。" +
-            $"随后 {ActualConfusionProbability * 100:0.##}% 概率使目标进入混乱状态，持续 {持续时间}。混乱：进入行动受限状态，失控并随机行动，且在进行攻击指令时，可能会选取友方角色为目标。";
+            $"随后 {ActualConfusionProbability * 100:0.##}% 概率对目标施加混乱状态，持续 {持续时间}。混乱：进入行动受限状态，失控并随机行动，且在进行攻击指令时，可能会选取友方角色为目标。";
         public override DispelledType DispelledType => DispelledType.Strong;
         public override EffectType EffectType => EffectType.Confusion;
 
