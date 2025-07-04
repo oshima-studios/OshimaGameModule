@@ -22,7 +22,7 @@ namespace Oshima.FunGame.OshimaModules.Regions
             Crops.Add(new(180302, "深渊火钻", "锻造物品的材料。", "火山深处开采的珍稀矿石，只有被矿工灵魂烙印认可者才能安全触碰。"));
             NPCs.Add("\"铁颚\"巴拉克");
             NPCs.Add("苔丝夫人");
-            Areas.Add("鱿熔血池​​");
+            Areas.Add("鱿熔血池");
             Areas.Add("活体锻炉");
             ContinuousQuestList.Add("元素裂隙的熵增警告", new("使用抗魔探针扫描永燃坩埚第47层矿道，绘制元素裂缝的扩张轨迹，评估其引发位面坍缩的风险等级。"));
             ContinuousQuestList.Add("坩埚熔岩的生命观测", new("在永燃坩埚的火山灰层建立实验室，监测活体金属苔藓与岩浆鱿鱼的共生进化过程。"));

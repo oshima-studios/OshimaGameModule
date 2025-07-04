@@ -22,7 +22,7 @@ namespace Oshima.FunGame.OshimaModules.Regions
             Crops.Add(new(180502, "活体魔力血", "锻造物品的材料。", "具有自我修复能力的液态魔力，接触会导致身体不可预知的异变。"));
             NPCs.Add("\"噬罪者\"");
             NPCs.Add("7号改造体");
-            Areas.Add("​​忏悔教堂​​");
+            Areas.Add("忏悔教堂");
             Areas.Add("造物车间");
             ContinuousQuestList.Add("机械坟场的改造危机", new("潜入齿轮坟场被活体建筑同化的造物车间，研究其机械与生物融合的改造机制，寻找控制方法。"));
             ContinuousQuestList.Add("齿轮活血的污染控制", new("在齿轮坟场建立液态魔力隔离区，防止活体魔力血的生物污染扩散至外部环境。"));

@@ -17,7 +17,7 @@ namespace Oshima.FunGame.OshimaModules.Skills
 
         public 岩石之息(Character? character = null) : base(SkillType.Magic, character)
         {
-            Effects.Add(new 基于属性的伤害(this, PrimaryAttribute.STR, 40, 20, 0.35, 0.2));
+            Effects.Add(new 基于属性的伤害(this, PrimaryAttribute.STR, 30, 10, 0.30, 0.2));
         }
     }
 }

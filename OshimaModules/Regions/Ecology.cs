@@ -49,7 +49,7 @@ namespace Oshima.FunGame.OshimaModules.Regions
             Crops.Add(new(180901, "菌类样本", "锻造物品的材料。", "共生母体上生长的奇异菌类，能释放麻痹毒素，具有高度研究价值。"));
             NPCs.Add("伊芙琳");
             NPCs.Add("溃烂猎人");
-            Areas.Add("母体神经丛​​");
+            Areas.Add("母体神经丛");
             Areas.Add("诱捕菌林");
             ContinuousQuestList.Add("腐萤沼渊的共生调查", new("深入腐萤沼渊，研究共生母体的生态系统，记录菌类模仿动物叫声的频率和模式。"));
             ContinuousQuestList.Add("腐沼菌群的声波分析", new("在腐萤沼渊建立声纹实验室，解析共生母体菌类发出的动物模拟叫声，建立声波防御系统。"));
@@ -77,8 +77,8 @@ namespace Oshima.FunGame.OshimaModules.Regions
             Crops.Add(new(181001, "影玫瑰", "锻造物品的材料。", "永夜侧绽放的奇异植物，散发幽光，只在绝对黑暗中盛开。", QualityType.White, [(r => r.Weather == "永夜")]));
             Crops.Add(new(181002, "星锚晶石", "锻造物品的材料。", "引雷柱上脱落的晶体碎片，蕴含空间束缚能量，能暂时固定空间结构。", QualityType.White, [(r => r.Weather == "永昼")]));
             NPCs.Add("守夜人卡尔");
-            NPCs.Add("星锚祭司​​");
-            Areas.Add("永昼庭园​​");
+            NPCs.Add("星锚祭司");
+            Areas.Add("永昼庭园");
             Areas.Add("永夜墓园");
             Areas.Add("星锚之地");
             Areas.Add("中央之岛");

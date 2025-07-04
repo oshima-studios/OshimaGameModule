@@ -25,11 +25,12 @@ namespace Oshima.FunGame.OshimaModules.Skills
     {
         public override long Id => Skill.Id;
         public override string Name => Skill.Name;
-        public override string Description => $"敏捷提高 20%，然后将目前的力量补充到与敏捷持平，持续 {Duration:0.##} {GameplayEquilibriumConstant.InGameTime}。";
+        public override string Description => $"敏捷提高 20% [ {敏捷提升:0.##} ] 点，然后将目前的力量补充到与敏捷持平，持续 {Duration:0.##} {GameplayEquilibriumConstant.InGameTime}。";
         public override bool Durative => true;
         public override double Duration => 30;
         public override DispelledType DispelledType => DispelledType.CannotBeDispelled;
 
+        private double 敏捷提升 => 0.2 * Skill.Character?.BaseAGI ?? 0;
         private double 本次提升的敏捷 = 0;
         private double 本次提升的力量 = 0;
 
@@ -41,10 +42,14 @@ namespace Oshima.FunGame.OshimaModules.Skills
             double pastMaxMP = character.MaxMP;
             本次提升的敏捷 = character.BaseAGI * 0.2;
             character.ExAGI += 本次提升的敏捷;
-            本次提升的力量 = character.AGI - character.STR;
-            character.ExSTR += 本次提升的力量;
+            本次提升的力量 = 0;
+            if (character.STR < character.AGI)
+            {
+                本次提升的力量 = character.AGI - character.STR;
+                character.ExSTR += 本次提升的力量;
+            }
             character.Recovery(pastHP, pastMP, pastMaxHP, pastMaxMP);
-            WriteLine($"[ {character} ] 敏捷提升了 {本次提升的敏捷:0.##}，力量提升了 {本次提升的力量:0.##}！");
+            WriteLine($"[ {character} ] 敏捷提升了 {本次提升的敏捷:0.##} 点，力量提升了 {本次提升的力量:0.##} 点！");
         }
 
         public override void OnEffectLost(Character character)

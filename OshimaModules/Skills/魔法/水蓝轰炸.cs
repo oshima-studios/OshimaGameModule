@@ -17,7 +17,7 @@ namespace Oshima.FunGame.OshimaModules.Skills
 
         public 水蓝轰炸(Character? character = null) : base(SkillType.Magic, character)
         {
-            Effects.Add(new 基于核心属性的伤害(this, 30, 25, 0.15, 0.2));
+            Effects.Add(new 基于核心属性的伤害(this, 15, 35, 0.15, 0.2));
         }
     }
 }

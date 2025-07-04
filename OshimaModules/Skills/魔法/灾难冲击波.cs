@@ -34,7 +34,7 @@ namespace Oshima.FunGame.OshimaModules.Skills
 
         public 灾难冲击波(Character? character = null) : base(SkillType.Magic, character)
         {
-            Effects.Add(new 基于攻击力的伤害_带基础伤害(this, 120, 35, 0.25, 0.04));
+            Effects.Add(new 基于攻击力的伤害_带基础伤害(this, 50, 15, 0.1, 0.04));
             Effects.Add(new 灾难冲击波特效(this, false, 0, 2, 0, 0.03, 0.02));
         }
     }

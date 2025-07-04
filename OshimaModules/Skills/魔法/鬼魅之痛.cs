@@ -32,7 +32,7 @@ namespace Oshima.FunGame.OshimaModules.Skills
 
         public 鬼魅之痛(Character? character = null) : base(SkillType.Magic, character)
         {
-            Effects.Add(new 纯数值伤害(this, 55, 70, DamageType.Magical));
+            Effects.Add(new 纯数值伤害(this, 60, 40, DamageType.Magical));
             Effects.Add(new 施加概率负面(this, EffectType.Stun, true, 6, 0, 0.7, 0.24, 0.08));
         }
     }

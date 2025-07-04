@@ -2190,6 +2190,54 @@ namespace Oshima.FunGame.WebAPI.Services
                     return result;
                 }
 
+                if (e.Detail.StartsWith("上锁") || e.Detail.StartsWith("锁定"))
+                {
+                    string detail = e.Detail.Replace("上锁", "").Replace("锁定", "").Trim();
+                    string msg = "";
+                    string[] strings = detail.Split(' ', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
+                    List<int> indexs = [];
+                    foreach (string s in strings)
+                    {
+                        if (int.TryParse(s, out int c))
+                        {
+                            indexs.Add(c);
+                        }
+                    }
+                    if (indexs.Count > 0)
+                    {
+                        msg = Controller.LockItem(uid, true, [.. indexs]);
+                        if (msg.Trim() != "")
+                        {
+                            await SendAsync(e, "上锁", msg);
+                        }
+                    }
+                    return result;
+                }
+                
+                if (e.Detail.StartsWith("解锁"))
+                {
+                    string detail = e.Detail.Replace("解锁", "").Trim();
+                    string msg = "";
+                    string[] strings = detail.Split(' ', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
+                    List<int> indexs = [];
+                    foreach (string s in strings)
+                    {
+                        if (int.TryParse(s, out int c))
+                        {
+                            indexs.Add(c);
+                        }
+                    }
+                    if (indexs.Count > 0)
+                    {
+                        msg = Controller.LockItem(uid, true, [.. indexs]);
+                        if (msg.Trim() != "")
+                        {
+                            await SendAsync(e, "解锁", msg);
+                        }
+                    }
+                    return result;
+                }
+
                 if (uid == GeneralSettings.Master && e.Detail.StartsWith("重载FunGame", StringComparison.CurrentCultureIgnoreCase))
                 {
                     string msg = Controller.Relaod(uid);

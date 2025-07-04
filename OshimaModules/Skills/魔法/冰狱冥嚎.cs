@@ -17,7 +17,7 @@ namespace Oshima.FunGame.OshimaModules.Skills
 
         public 冰狱冥嚎(Character? character = null) : base(SkillType.Magic, character)
         {
-            Effects.Add(new 基于属性的伤害(this, PrimaryAttribute.INT, 40, 45, 0.2, 0.2));
+            Effects.Add(new 基于属性的伤害(this, PrimaryAttribute.INT, 30, 35, 0.2, 0.2));
         }
     }
 }

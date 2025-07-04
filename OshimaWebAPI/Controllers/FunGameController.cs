@@ -995,13 +995,13 @@ namespace Oshima.FunGame.WebAPI.Controllers
                         {
                             itemsEquipableIndex = string.Join("，", itemsEquipable.Take(10).Select(i => items.IndexOf(i) + 1)) + "，...";
                         }
-                        IEnumerable<Item> itemsSellable = objs.Where(i => i.IsSellable);
+                        IEnumerable<Item> itemsSellable = objs.Where(i => i.IsSellable && !i.IsLock);
                         string itemsSellableIndex = string.Join("，", itemsSellable.Select(i => items.IndexOf(i) + 1));
                         if (itemsSellable.Count() > 10)
                         {
                             itemsSellableIndex = string.Join("，", itemsSellable.Take(10).Select(i => items.IndexOf(i) + 1)) + "，...";
                         }
-                        IEnumerable<Item> itemsTradable = objs.Where(i => i.IsTradable);
+                        IEnumerable<Item> itemsTradable = objs.Where(i => i.IsTradable && !i.IsLock);
                         string itemsTradableIndex = string.Join("，", itemsTradable.Select(i => items.IndexOf(i) + 1));
                         if (itemsTradable.Count() > 10)
                         {
@@ -1012,7 +1012,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
                         if (itemsSellableIndex != "") str += $"可出售序号：{itemsSellableIndex}\r\n";
                         if (itemsTradableIndex != "") str += $"可交易序号：{itemsTradableIndex}\r\n";
                         str += $"拥有数量：{objs.Count}（" + (first.IsEquipment ? $"可装备数量：{itemsEquipable.Count()}，" : "") +
-                            (FunGameConstant.ItemCanUsed.Contains(first.ItemType) ? $"可使用数量：{objs.Count(i => i.RemainUseTimes > 0)}，" : "") +
+                            (FunGameConstant.ItemCanUsed.Contains(first.ItemType) ? $"可使用数量：{objs.Count(i => i.RemainUseTimes > 0 && !i.IsLock)}，" : "") +
                             $"可出售数量：{itemsSellable.Count()}，可交易数量：{itemsTradable.Count()}）";
                         list.Add(str);
                     }
@@ -1101,13 +1101,13 @@ namespace Oshima.FunGame.WebAPI.Controllers
                         {
                             itemsEquipableIndex = string.Join("，", itemsEquipable.Take(10).Select(i => items.IndexOf(i) + 1)) + "，...";
                         }
-                        IEnumerable<Item> itemsSellable = objs.Where(i => i.IsSellable);
+                        IEnumerable<Item> itemsSellable = objs.Where(i => i.IsSellable && !i.IsLock);
                         string itemsSellableIndex = string.Join("，", itemsSellable.Select(i => items.IndexOf(i) + 1));
                         if (itemsSellable.Count() > 10)
                         {
                             itemsSellableIndex = string.Join("，", itemsSellable.Take(10).Select(i => items.IndexOf(i) + 1)) + "，...";
                         }
-                        IEnumerable<Item> itemsTradable = objs.Where(i => i.IsTradable);
+                        IEnumerable<Item> itemsTradable = objs.Where(i => i.IsTradable && !i.IsLock);
                         string itemsTradableIndex = string.Join("，", itemsTradable.Select(i => items.IndexOf(i) + 1));
                         if (itemsTradable.Count() > 10)
                         {
@@ -1118,7 +1118,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
                         if (itemsSellableIndex != "") str += $"可出售序号：{itemsSellableIndex}\r\n";
                         if (itemsTradableIndex != "") str += $"可交易序号：{itemsTradableIndex}\r\n";
                         str += $"拥有数量：{objs.Count}（" + (first.IsEquipment ? $"可装备数量：{itemsEquipable.Count()}，" : "") +
-                            (FunGameConstant.ItemCanUsed.Contains(first.ItemType) ? $"可使用数量：{objs.Count(i => i.RemainUseTimes > 0)}，" : "") +
+                            (FunGameConstant.ItemCanUsed.Contains(first.ItemType) ? $"可使用数量：{objs.Count(i => i.RemainUseTimes > 0 && !i.IsLock)}，" : "") +
                             $"可出售数量：{itemsSellable.Count()}，可交易数量：{itemsTradable.Count()}）";
                         list.Add(str);
                     }
@@ -2056,6 +2056,11 @@ namespace Oshima.FunGame.WebAPI.Controllers
                         item = user.Inventory.Items.ToList()[itemIndex - 1];
                         if (FunGameConstant.ItemCanUsed.Contains(item.ItemType))
                         {
+                            if (item.IsLock)
+                            {
+                                return $"此物品已上锁，请先解锁：{itemIndex}. {item.Name}";
+                            }
+
                             if (item.ItemType == ItemType.MagicCard)
                             {
                                 return "此物品为魔法卡，请使用【使用魔法卡】指令！";
@@ -2127,7 +2132,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
                 {
                     User user = FunGameService.GetUser(pc);
 
-                    IEnumerable<Item> items = user.Inventory.Items.Where(i => i.Name == name && i.Character is null && i.ItemType != ItemType.MagicCard);
+                    IEnumerable<Item> items = user.Inventory.Items.Where(i => i.Name == name && i.Character is null && i.ItemType != ItemType.MagicCard && !i.IsLock);
                     if (!items.Any())
                     {
                         return $"库存中不存在名称为【{name}】的物品！如果是魔法卡，请用【使用魔法卡】指令。";
@@ -2202,6 +2207,11 @@ namespace Oshima.FunGame.WebAPI.Controllers
                         item = user.Inventory.Items.ToList()[itemIndex - 1];
                         if (item.ItemType == ItemType.MagicCard)
                         {
+                            if (item.IsLock)
+                            {
+                                return $"此物品已上锁，请先解锁：{itemIndex}. {item.Name}";
+                            }
+
                             if (item.RemainUseTimes <= 0)
                             {
                                 return "此物品剩余使用次数为0，无法使用！";
@@ -2651,7 +2661,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
                     int successCount = 0;
                     double totalGained = 0;
                     Dictionary<int, Item> dict = user.Inventory.Items.Select((item, index) => new { item, index })
-                        .Where(x => ids.Contains(x.index) && x.item.Character is null)
+                        .Where(x => ids.Contains(x.index) && x.item.Character is null && !x.item.IsLock)
                         .ToDictionary(x => x.index, x => x.item);
 
                     foreach (int id in dict.Keys)
@@ -2716,7 +2726,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
                 {
                     User user = FunGameService.GetUser(pc);
 
-                    IEnumerable<Item> items = user.Inventory.Items.Where(i => i.Name == name && i.Character is null);
+                    IEnumerable<Item> items = user.Inventory.Items.Where(i => i.Name == name && i.Character is null && !i.IsLock);
                     if (!items.Any())
                     {
                         return $"库存中不存在名称为【{name}】的物品！";
@@ -2794,7 +2804,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
                     User user = FunGameService.GetUser(pc);
 
                     string qualityName = ItemSet.GetQualityTypeName((QualityType)qType);
-                    IEnumerable<Item> items = user.Inventory.Items.Where(i => (int)i.QualityType == qType && i.Character is null);
+                    IEnumerable<Item> items = user.Inventory.Items.Where(i => (int)i.QualityType == qType && i.Character is null && !i.IsLock);
                     if (!items.Any())
                     {
                         return $"库存中{qualityName}物品数量为零！";
@@ -2866,7 +2876,11 @@ namespace Oshima.FunGame.WebAPI.Controllers
                         if (itemIndex > 0 && itemIndex <= user.Inventory.Items.Count)
                         {
                             item = user.Inventory.Items.ToList()[itemIndex - 1];
-                            if (item.ItemType == ItemType.MagicCard && item.RemainUseTimes > 0)
+                            if (item.IsLock)
+                            {
+                                return $"此物品已上锁，请先解锁：{itemIndex}. {item.Name}";
+                            }
+                            else if (item.ItemType == ItemType.MagicCard && item.RemainUseTimes > 0)
                             {
                                 mfks.Add(item);
                             }
@@ -5366,7 +5380,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
                     {
                         exploreTimes -= reduce;
 
-                        msg = $"开始探索【{region.Name}】，探索时间预计 {FunGameConstant.ExploreTime} 分钟（系统会自动结算，届时会有提示）。" +
+                        msg = $"开始探索【{region.Name}】，探索时间预计 {FunGameConstant.ExploreTime} 分钟（系统会自动结算，届时会有提示）。注意：探索期间的角色状态已被锁定，在此期间修改角色属性不会影响战斗结果。" +
                             $"探索成员：[ {FunGameService.GetCharacterGroupInfoByInventorySequence(user.Inventory.Characters, characterIds, " ] / [ ")} ]";
                         ExploreModel model = await FunGameService.GenerateExploreModel(region, characterIds, user);
                         exploreId = model.Guid;
@@ -5634,7 +5648,70 @@ namespace Oshima.FunGame.WebAPI.Controllers
                 return noSaved;
             }
         }
-        
+
+        [HttpPost("lockitem")]
+        public string LockItem([FromQuery] long? uid = null, [FromQuery] bool unlock = false, [FromBody] int[]? seq = null)
+        {
+            try
+            {
+                long userid = uid ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
+                int[] items = seq ?? [];
+
+                PluginConfig pc = new("saved", userid.ToString());
+                pc.LoadConfig();
+
+                if (pc.Count > 0)
+                {
+                    User user = FunGameService.GetUser(pc);
+                    string msg = "";
+                    List<int> failedItems = [];
+                    foreach (int itemIndex in items)
+                    {
+                        if (itemIndex > 0 && itemIndex <= user.Inventory.Items.Count)
+                        {
+                            Item item = user.Inventory.Items.ToList()[itemIndex - 1];
+                            if (msg != "") msg += "\r\n";
+                            if (unlock)
+                            {
+                                item.IsLock = false;
+                                msg += $"物品解锁成功：{itemIndex}. {item.Name}";
+                            }
+                            else
+                            {
+                                item.IsLock = true;
+                                msg += $"物品上锁成功：{itemIndex}. {item.Name}";
+                            }
+                        }
+                        else
+                        {
+                            failedItems.Add(itemIndex);
+                        }
+                    }
+
+                    if (failedItems.Count > 0)
+                    {
+                        if (msg != "") msg += "\r\n";
+                        msg += "没有找到与这个序号相对应的物品：" + string.Join("，", failedItems);
+                    }
+
+                    user.LastTime = DateTime.Now;
+                    pc.Add("user", user);
+                    pc.SaveConfig();
+
+                    return msg;
+                }
+                else
+                {
+                    return noSaved;
+                }
+            }
+            catch (Exception e)
+            {
+                Logger.LogError(e, "Error: ");
+                return busy;
+            }
+        }
+
         [HttpPost("template")]
         public string Template([FromQuery] long? uid = null)
         {

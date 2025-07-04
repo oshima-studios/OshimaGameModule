@@ -32,7 +32,7 @@ namespace Oshima.FunGame.OshimaModules.Skills
 
         public 死亡咆哮(Character? character = null) : base(SkillType.Magic, character)
         {
-            Effects.Add(new 纯数值伤害(this, 65, 75, DamageType.Magical));
+            Effects.Add(new 纯数值伤害(this, 55, 25, DamageType.Magical));
             Effects.Add(new 施加概率负面(this, EffectType.Cripple, true, 3, 0, 1, 0.24, 0.08));
         }
     }

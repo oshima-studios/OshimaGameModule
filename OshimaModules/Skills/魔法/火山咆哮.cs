@@ -17,7 +17,7 @@ namespace Oshima.FunGame.OshimaModules.Skills
 
         public 火山咆哮(Character? character = null) : base(SkillType.Magic, character)
         {
-            Effects.Add(new 基于核心属性的伤害(this, 25, 30, 0.2, 0.15));
+            Effects.Add(new 基于核心属性的伤害(this, 35, 15, 0.2, 0.15));
         }
     }
 }

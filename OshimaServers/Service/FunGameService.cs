@@ -651,36 +651,36 @@ namespace Oshima.FunGame.OshimaServers.Service
             switch (r)
             {
                 case 1:
-                    if ((int)type > (int)QualityType.Orange) type = QualityType.Orange;
-                    Item[] 武器 = [.. FunGameConstant.Equipment.Where(i => i.Id.ToString().StartsWith("11") && i.QualityType == type)];
+                    Item[] 武器 = [.. FunGameConstant.Equipment.Where(i => i.ItemType == ItemType.Weapon && i.QualityType == type)];
                     Item a = 武器[Random.Shared.Next(武器.Length)].Copy();
+                    if (a.QualityType >= QualityType.Orange) a.IsLock = true;
                     SetSellAndTradeTime(a);
                     user.Inventory.Items.Add(a);
                     msg += ItemSet.GetQualityTypeName(a.QualityType) + ItemSet.GetItemTypeName(a.ItemType) + "【" + a.Name + "】！\r\n" + a.Description;
                     break;
 
                 case 2:
-                    if ((int)type > (int)QualityType.Green) type = QualityType.Green;
-                    Item[] 防具 = [.. FunGameConstant.Equipment.Where(i => i.Id.ToString().StartsWith("12") && i.QualityType == type)];
+                    Item[] 防具 = [.. FunGameConstant.Equipment.Where(i => i.ItemType == ItemType.Armor && i.QualityType == type)];
                     Item b = 防具[Random.Shared.Next(防具.Length)].Copy();
+                    if (b.QualityType >= QualityType.Orange) b.IsLock = true;
                     SetSellAndTradeTime(b);
                     user.Inventory.Items.Add(b);
                     msg += ItemSet.GetQualityTypeName(b.QualityType) + ItemSet.GetItemTypeName(b.ItemType) + "【" + b.Name + "】！\r\n" + b.Description;
                     break;
 
                 case 3:
-                    if ((int)type > (int)QualityType.Green) type = QualityType.Green;
-                    Item[] 鞋子 = [.. FunGameConstant.Equipment.Where(i => i.Id.ToString().StartsWith("13") && i.QualityType == type)];
+                    Item[] 鞋子 = [.. FunGameConstant.Equipment.Where(i => i.ItemType == ItemType.Shoes && i.QualityType == type)];
                     Item c = 鞋子[Random.Shared.Next(鞋子.Length)].Copy();
+                    if (c.QualityType >= QualityType.Orange) c.IsLock = true;
                     SetSellAndTradeTime(c);
                     user.Inventory.Items.Add(c);
                     msg += ItemSet.GetQualityTypeName(c.QualityType) + ItemSet.GetItemTypeName(c.ItemType) + "【" + c.Name + "】！\r\n" + c.Description;
                     break;
 
                 case 4:
-                    if ((int)type > (int)QualityType.Purple) type = QualityType.Purple;
-                    Item[] 饰品 = [.. FunGameConstant.Equipment.Where(i => i.Id.ToString().StartsWith("14") && i.QualityType == type)];
+                    Item[] 饰品 = [.. FunGameConstant.Equipment.Where(i => i.ItemType == ItemType.Accessory && i.QualityType == type)];
                     Item d = 饰品[Random.Shared.Next(饰品.Length)].Copy();
+                    if (d.QualityType >= QualityType.Orange) d.IsLock = true;
                     SetSellAndTradeTime(d);
                     user.Inventory.Items.Add(d);
                     msg += ItemSet.GetQualityTypeName(d.QualityType) + ItemSet.GetItemTypeName(d.ItemType) + "【" + d.Name + "】！\r\n" + d.Description;
@@ -702,8 +702,8 @@ namespace Oshima.FunGame.OshimaServers.Service
                     break;
 
                 case 6:
-                    if ((int)type > (int)QualityType.Orange) type = QualityType.Orange;
                     Item mfk = GenerateMagicCard(type);
+                    if (mfk.QualityType >= QualityType.Orange) mfk.IsLock = true;
                     SetSellAndTradeTime(mfk);
                     user.Inventory.Items.Add(mfk);
                     msg += ItemSet.GetQualityTypeName(mfk.QualityType) + ItemSet.GetItemTypeName(mfk.ItemType) + "【" + mfk.Name + "】！\r\n" + mfk.Description;
@@ -711,17 +711,22 @@ namespace Oshima.FunGame.OshimaServers.Service
 
                 case 7:
                     Item 物品 = FunGameConstant.DrawCardItems[Random.Shared.Next(FunGameConstant.DrawCardItems.Count)].Copy();
+                    if (物品.QualityType >= QualityType.Orange) 物品.IsLock = true;
                     SetSellAndTradeTime(物品);
                     user.Inventory.Items.Add(物品);
                     msg += ItemSet.GetQualityTypeName(物品.QualityType) + ItemSet.GetItemTypeName(物品.ItemType) + "【" + 物品.Name + "】！\r\n" + 物品.Description;
+                    // 连接到任务系统
+                    AddExploreItemCache(user.Id, 物品.Name);
+                    // 连接到活动系统
+                    ActivitiesItemCache.Add(物品.Name);
                     break;
 
                 case 0:
                 default:
-                    if ((int)type > (int)QualityType.Orange) type = QualityType.Orange;
                     Item? mfkb = GenerateMagicCardPack(3, type);
                     if (mfkb != null)
                     {
+                        if (mfkb.QualityType >= QualityType.Orange) mfkb.IsLock = true;
                         SetSellAndTradeTime(mfkb);
                         user.Inventory.Items.Add(mfkb);
                         msg += ItemSet.GetQualityTypeName(mfkb.QualityType) + ItemSet.GetItemTypeName(mfkb.ItemType) + "【" + mfkb.Name + "】！\r\n" + mfkb.Description;
@@ -767,44 +772,44 @@ namespace Oshima.FunGame.OshimaServers.Service
             switch (r)
             {
                 case 1:
-                    if ((int)type > (int)QualityType.Orange) type = QualityType.Orange;
                     Item[] 武器 = [.. FunGameConstant.Equipment.Where(i => i.Id.ToString().StartsWith("11") && i.QualityType == type)];
                     Item a = 武器[Random.Shared.Next(武器.Length)].Copy();
+                    if (a.QualityType >= QualityType.Orange) a.IsLock = true;
                     SetSellAndTradeTime(a);
                     user.Inventory.Items.Add(a);
                     msg += ItemSet.GetQualityTypeName(a.QualityType) + ItemSet.GetItemTypeName(a.ItemType) + "【" + a.Name + "】！\r\n" + a.Description;
                     break;
 
                 case 2:
-                    if ((int)type > (int)QualityType.Green) type = QualityType.Green;
                     Item[] 防具 = [.. FunGameConstant.Equipment.Where(i => i.Id.ToString().StartsWith("12") && i.QualityType == type)];
                     Item b = 防具[Random.Shared.Next(防具.Length)].Copy();
+                    if (b.QualityType >= QualityType.Orange) b.IsLock = true;
                     SetSellAndTradeTime(b);
                     user.Inventory.Items.Add(b);
                     msg += ItemSet.GetQualityTypeName(b.QualityType) + ItemSet.GetItemTypeName(b.ItemType) + "【" + b.Name + "】！\r\n" + b.Description;
                     break;
 
                 case 3:
-                    if ((int)type > (int)QualityType.Green) type = QualityType.Green;
                     Item[] 鞋子 = [.. FunGameConstant.Equipment.Where(i => i.Id.ToString().StartsWith("13") && i.QualityType == type)];
                     Item c = 鞋子[Random.Shared.Next(鞋子.Length)].Copy();
+                    if (c.QualityType >= QualityType.Orange) c.IsLock = true;
                     SetSellAndTradeTime(c);
                     user.Inventory.Items.Add(c);
                     msg += ItemSet.GetQualityTypeName(c.QualityType) + ItemSet.GetItemTypeName(c.ItemType) + "【" + c.Name + "】！\r\n" + c.Description;
                     break;
 
                 case 4:
-                    if ((int)type > (int)QualityType.Purple) type = QualityType.Purple;
                     Item[] 饰品 = [.. FunGameConstant.Equipment.Where(i => i.Id.ToString().StartsWith("14") && i.QualityType == type)];
                     Item d = 饰品[Random.Shared.Next(饰品.Length)].Copy();
+                    if (d.QualityType >= QualityType.Orange) d.IsLock = true;
                     SetSellAndTradeTime(d);
                     user.Inventory.Items.Add(d);
                     msg += ItemSet.GetQualityTypeName(d.QualityType) + ItemSet.GetItemTypeName(d.ItemType) + "【" + d.Name + "】！\r\n" + d.Description;
                     break;
 
                 case 5:
-                    if ((int)type > (int)QualityType.Orange) type = QualityType.Orange;
                     Item mfk = GenerateMagicCard(type);
+                    if (mfk.QualityType >= QualityType.Orange) mfk.IsLock = true;
                     SetSellAndTradeTime(mfk);
                     user.Inventory.Items.Add(mfk);
                     msg += ItemSet.GetQualityTypeName(mfk.QualityType) + ItemSet.GetItemTypeName(mfk.ItemType) + "【" + mfk.Name + "】！\r\n" + mfk.Description;
@@ -812,10 +817,10 @@ namespace Oshima.FunGame.OshimaServers.Service
 
                 case 0:
                 default:
-                    if ((int)type > (int)QualityType.Orange) type = QualityType.Orange;
                     Item? mfkb = GenerateMagicCardPack(3, type);
                     if (mfkb != null)
                     {
+                        if (mfkb.QualityType >= QualityType.Orange) mfkb.IsLock = true;
                         SetSellAndTradeTime(mfkb);
                         user.Inventory.Items.Add(mfkb);
                         msg += ItemSet.GetQualityTypeName(mfkb.QualityType) + ItemSet.GetItemTypeName(mfkb.ItemType) + "【" + mfkb.Name + "】！\r\n" + mfkb.Description;
@@ -1116,6 +1121,10 @@ namespace Oshima.FunGame.OshimaServers.Service
                         msgs.Add($"{item.Name} 的剩余使用次数为 0，无法使用！");
                         result = false;
                     }
+                    if (!result)
+                    {
+                        continue;
+                    }
                     bool tempResult = item.UseItem(user, args);
                     if (item.EntityState == EntityState.Deleted)
                     {
@@ -1165,6 +1174,7 @@ namespace Oshima.FunGame.OshimaServers.Service
                     for (int i = 0; i< cardBox.Count; i++)
                     {
                         Item newItem = GenerateMagicCard(item.QualityType);
+                        if (newItem.QualityType >= QualityType.Orange) newItem.IsLock = true;
                         SetSellAndTradeTime(newItem);
                         newItem.User = user;
                         user.Inventory.Items.Add(newItem);
@@ -1196,6 +1206,7 @@ namespace Oshima.FunGame.OshimaServers.Service
                             for (int i = 0; i < box.Gifts[name]; i++)
                             {
                                 Item newItem = currentItem.Copy();
+                                if (newItem.QualityType >= QualityType.Orange) newItem.IsLock = true;
                                 SetSellAndTradeTime(newItem);
                                 newItem.User = user;
                                 user.Inventory.Items.Add(newItem);
@@ -1656,15 +1667,44 @@ namespace Oshima.FunGame.OshimaServers.Service
                     QuestType type = (QuestType)Random.Shared.Next(3);
                     long id = quests.Count > 0 ? quests.Values.Max(q => q.Id) + 1 : 1;
 
+                    // 定义概率
+                    Dictionary<QualityType, double> pE = new()
+                    {
+                        { QualityType.Blue, 0.5 },
+                        { QualityType.Purple, 0.37 },
+                        { QualityType.Orange, 0.1 },
+                        { QualityType.Red, 0.03 },
+                    };
+
                     // 生成任务奖励物品
+                    QualityType qualityType = QualityType.Blue;
+                    foreach (QualityType qt in pE.Keys.OrderByDescending(q => (int)q))
+                    {
+                        if (Random.Shared.NextDouble() <= pE[qt])
+                        {
+                            qualityType = qt;
+                            break;
+                        }
+                    }
+
                     HashSet<Item> items = [];
                     Dictionary<string, int> itemsCount = [];
-                    int index = Random.Shared.Next(FunGameConstant.DrawCardItems.Count);
-                    Item item = FunGameConstant.DrawCardItems[index];
+                    Item? item = FunGameConstant.DrawCardItems.Where(i => qualityType == QualityType.Blue ? (int)i.QualityType <= (int)qualityType : (int)i.QualityType == (int)qualityType).OrderBy(o => Random.Shared.Next()).FirstOrDefault();
+                    item ??= FunGameConstant.DrawCardItems.OrderBy(o => Random.Shared.Next()).First();
                     items.Add(item);
                     itemsCount[item.Name] = 1;
-                    index = Random.Shared.Next(FunGameConstant.DrawCardItems.Count);
-                    Item item2 = FunGameConstant.DrawCardItems[index];
+
+                    foreach (QualityType qt in pE.Keys.OrderByDescending(q => (int)q))
+                    {
+                        if (Random.Shared.NextDouble() <= pE[qt])
+                        {
+                            qualityType = qt;
+                            break;
+                        }
+                    }
+
+                    Item? item2 = FunGameConstant.DrawCardItems.Where(i => qualityType == QualityType.Blue ? (int)i.QualityType <= (int)qualityType : (int)i.QualityType == (int)qualityType).OrderBy(o => Random.Shared.Next()).FirstOrDefault();
+                    item2 ??= FunGameConstant.DrawCardItems.OrderBy(o => Random.Shared.Next()).First();
                     items.Add(item2);
                     if (!itemsCount.TryAdd(item2.Name, 1))
                     {
@@ -1689,8 +1729,8 @@ namespace Oshima.FunGame.OshimaServers.Service
                             NeedyExploreItemName = exploration.Item,
                             QuestType = QuestType.Continuous,
                             EstimatedMinutes = minutes,
-                            CreditsAward = minutes * 20,
-                            MaterialsAward = minutes / 8 * 1,
+                            CreditsAward = minutes * 40,
+                            MaterialsAward = minutes / 4,
                             Awards = items,
                             AwardsCount = itemsCount
                         };
@@ -1708,8 +1748,8 @@ namespace Oshima.FunGame.OshimaServers.Service
                             RegionId = region.Id,
                             NeedyExploreItemName = exploration.Item,
                             QuestType = QuestType.Immediate,
-                            CreditsAward = difficulty * 80,
-                            MaterialsAward = difficulty / 2 * 1,
+                            CreditsAward = difficulty * 160,
+                            MaterialsAward = difficulty,
                             Awards = items,
                             AwardsCount = itemsCount
                         };
@@ -1729,8 +1769,8 @@ namespace Oshima.FunGame.OshimaServers.Service
                             QuestType = QuestType.Progressive,
                             Progress = 0,
                             MaxProgress = maxProgress,
-                            CreditsAward = maxProgress * 80,
-                            MaterialsAward = maxProgress / 2 * 1,
+                            CreditsAward = maxProgress * 160,
+                            MaterialsAward = maxProgress,
                             Awards = items,
                             AwardsCount = itemsCount,
                             Status = QuestState.InProgress
@@ -1814,6 +1854,7 @@ namespace Oshima.FunGame.OshimaServers.Service
                             {
                                 Item newItem = item.Copy();
                                 newItem.User = user;
+                                if (newItem.QualityType >= QualityType.Orange) newItem.IsLock = true;
                                 SetSellAndTradeTime(newItem);
                                 user.Inventory.Items.Add(newItem);
                                 // 连接到任务系统
@@ -1947,6 +1988,7 @@ namespace Oshima.FunGame.OshimaServers.Service
                 for (int i = 0; i < count; i++)
                 {
                     Item newItem = item.Copy(true);
+                    if (newItem.QualityType >= QualityType.Orange) newItem.IsLock = true;
                     SetSellAndTradeTime(newItem);
                     if (goods.GetPrice(General.GameplayEquilibriumConstant.InGameCurrency, out double price) && price > 0)
                     {
@@ -1954,6 +1996,10 @@ namespace Oshima.FunGame.OshimaServers.Service
                     }
                     newItem.User = user;
                     user.Inventory.Items.Add(newItem);
+                    // 连接到任务系统
+                    AddExploreItemCache(user.Id, item.Name);
+                    // 连接到活动系统
+                    ActivitiesItemCache.Add(item.Name);
                 }
             }
 
@@ -2345,11 +2391,10 @@ namespace Oshima.FunGame.OshimaServers.Service
             // 初始化掉落装备的概率
             Dictionary<QualityType, double> pE = new()
             {
-                { QualityType.Blue, 0.4 },
-                { QualityType.Purple, 0.27 + (0.01 * (characterCount - 1)) },
-                { QualityType.Orange, 0.2 + (0.01 * (characterCount - 1)) },
-                { QualityType.Red, 0.1 + (0.0075 * (characterCount - 1)) },
-                { QualityType.Gold, 0.03 + (0.0075 * (characterCount - 1)) }
+                { QualityType.Blue, 0.5 },
+                { QualityType.Purple, 0.37 + (0.01 * (characterCount - 1)) },
+                { QualityType.Orange, 0.1 + (0.01 * (characterCount - 1)) },
+                { QualityType.Red, 0.03 + (0.0075 * (characterCount - 1)) },
             };
 
             // 生成奖励
@@ -2400,7 +2445,7 @@ namespace Oshima.FunGame.OshimaServers.Service
                     break;
                 case ExploreResult.Fight:
                     // 小队信息
-                    Character[] squad = [.. user.Inventory.Characters.Where((c, index) => characterIds.Contains(index + 1)).Select(c => CharacterBuilder.Build(c, true, true, user.Inventory, FunGameConstant.AllItems, FunGameConstant.AllSkills, false))];
+                    Character[] squad = [.. user.Inventory.Characters.Where((c, index) => characterIds.Contains(index + 1)).Select(c => CharacterBuilder.Build(c, true, true, null, FunGameConstant.AllItems, FunGameConstant.AllSkills, false))];
                     if (squad.All(c => c.HP <= 0))
                     {
                         model.Result = ExploreResult.Nothing;
@@ -2478,7 +2523,7 @@ namespace Oshima.FunGame.OshimaServers.Service
                                         break;
                                     }
                                 }
-                                Item? itemDrop = region.Items.Where(i => qualityType == QualityType.Blue ? (int)i.QualityType <= (int)qualityType : (int)i.QualityType == (int)qualityType).FirstOrDefault();
+                                Item? itemDrop = region.Items.Where(i => qualityType == QualityType.Blue ? (int)i.QualityType <= (int)qualityType : (int)i.QualityType == (int)qualityType).OrderBy(o => Random.Shared.Next()).FirstOrDefault();
                                 if (itemDrop != null)
                                 {
                                     string itemquality = ItemSet.GetQualityTypeName(itemDrop.QualityType);
@@ -2518,7 +2563,7 @@ namespace Oshima.FunGame.OshimaServers.Service
                             break;
                         }
                     }
-                    Item? itemEarned = region.Items.OrderBy(i => quality == QualityType.Blue ? (int)i.QualityType <= (int)quality : (int)i.QualityType == (int)quality).FirstOrDefault();
+                    Item? itemEarned = region.Items.Where(i => quality == QualityType.Blue ? (int)i.QualityType <= (int)quality : (int)i.QualityType == (int)quality).OrderBy(o => Random.Shared.Next()).FirstOrDefault();
                     if (itemEarned is null)
                     {
                         model.Result = ExploreResult.Nothing;
@@ -2584,6 +2629,7 @@ namespace Oshima.FunGame.OshimaServers.Service
                         {
                             Item newItem = item.Copy();
                             newItem.User = user;
+                            if (newItem.QualityType >= QualityType.Orange) newItem.IsLock = true;
                             SetSellAndTradeTime(newItem);
                             user.Inventory.Items.Add(newItem);
                             // 连接到任务系统

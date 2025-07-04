@@ -17,7 +17,7 @@ namespace Oshima.FunGame.OshimaModules.Skills
 
         public 苍白地狱(Character? character = null) : base(SkillType.Magic, character)
         {
-            Effects.Add(new 基于属性的伤害(this, PrimaryAttribute.INT, 40, 25, 0.25, 0.25));
+            Effects.Add(new 基于属性的伤害(this, PrimaryAttribute.INT, 30, 25, 0.25, 0.2));
         }
     }
 }

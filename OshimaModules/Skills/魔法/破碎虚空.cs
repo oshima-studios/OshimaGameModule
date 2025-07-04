@@ -17,7 +17,7 @@ namespace Oshima.FunGame.OshimaModules.Skills
 
         public 破碎虚空(Character? character = null) : base(SkillType.Magic, character)
         {
-            Effects.Add(new 基于攻击力的伤害_无基础伤害(this, 0.65, 0.12));
+            Effects.Add(new 基于攻击力的伤害_无基础伤害(this, 0.60, 0.1));
         }
     }
 }

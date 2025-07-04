@@ -32,7 +32,7 @@ namespace Oshima.FunGame.OshimaModules.Skills
 
         public 钻石星尘(Character? character = null) : base(SkillType.Magic, character)
         {
-            Effects.Add(new 纯数值伤害(this, 45, 55, DamageType.Magical));
+            Effects.Add(new 纯数值伤害(this, 65, 25, DamageType.Magical));
             Effects.Add(new 施加概率负面(this, EffectType.Freeze, false, 0, 2, 0, 0.24, 0.08));
             Effects.Add(new 施加概率负面(this, EffectType.Vulnerable, false, 0, 3, 0, 0.24, 0.08, DamageType.Magical, 0.3));
         }

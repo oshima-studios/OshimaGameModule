@@ -32,7 +32,7 @@ namespace Oshima.FunGame.OshimaModules.Skills
 
         public 等离子之波(Character? character = null) : base(SkillType.Magic, character)
         {
-            Effects.Add(new 纯数值伤害(this, 65, 55, DamageType.Magical));
+            Effects.Add(new 纯数值伤害(this, 60, 20, DamageType.Magical));
             Effects.Add(new 施加概率负面(this, EffectType.Silence, false, 0, 2, 0, 0.24, 0.08));
         }
     }

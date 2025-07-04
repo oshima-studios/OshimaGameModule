@@ -23,7 +23,7 @@ namespace Oshima.FunGame.OshimaModules.Regions
             Crops.Add(new(181203, "矿脉神经纤维", "锻造物品的材料。", "连接神经宝石的活体纤维，触碰导致剧烈痛苦和神经感染。"));
             NPCs.Add("泰坦刻录员");
             NPCs.Add("矿痛共生体");
-            Areas.Add("神经矿脉​​");
+            Areas.Add("神经矿脉");
             Areas.Add("雷霆王座");
             Areas.Add("裁决矩阵");
             ContinuousQuestList.Add("泰坦遗迹的符文解读", new("攀登泰坦遗迹，记录裁决尖碑在月圆之夜投射的泰坦符文，破译其蕴含的宇宙法则。"));

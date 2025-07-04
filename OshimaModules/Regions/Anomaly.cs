@@ -137,7 +137,7 @@ namespace Oshima.FunGame.OshimaModules.Regions
             NPCs.Add("认知矫正师");
             NPCs.Add("洛伦佐");
             Areas.Add("梦境交易所");
-            Areas.Add("​​幻疡医院");
+            Areas.Add("幻疡医院");
             ContinuousQuestList.Add("谵妄梦境的思维隔离", new("在谵妄海市建立认知过滤系统，阻断思维寄生虫对市民意识的寄生感染路径。"));
             ImmediateQuestList.Add("谵妄认知病毒爆发", new("谵妄海市的思维寄生虫释放II型认知病毒，感染市民产生现实扭曲能力，必须一小时内建立精神隔离区。"));
             ProgressiveQuestList.Add("梦境碎片毒性分析", new("在谵妄海市分析 {0} 份不同的梦境碎片（需全程佩戴认知过滤器）。", item: "梦境碎片"));

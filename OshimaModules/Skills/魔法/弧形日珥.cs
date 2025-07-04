@@ -17,7 +17,7 @@ namespace Oshima.FunGame.OshimaModules.Skills
 
         public 弧形日珥(Character? character = null) : base(SkillType.Magic, character)
         {
-            Effects.Add(new 基于属性的伤害(this, PrimaryAttribute.AGI, 55, 35, 0.2, 0.15));
+            Effects.Add(new 基于属性的伤害(this, PrimaryAttribute.AGI, 45, 25, 0.2, 0.12));
         }
     }
 }

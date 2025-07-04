@@ -823,13 +823,13 @@ namespace Oshima.FunGame.OshimaServers.Service
                         IEnumerable<Item> canBuys = store.Where(i => i.Price <= character.User.Inventory.Credits);
 
                         // 然后看能买的东西里，是否品质符合
-                        Item[] weapons = [.. canBuys.Where(i => i.Id.ToString().StartsWith("11") &&
+                        Item[] weapons = [.. canBuys.Where(i => i.ItemType == ItemType.Weapon &&
                             (onlyLarger ? (int)i.QualityType > Convert.ToInt32(character.EquipSlot.Weapon?.QualityType) : (int)i.QualityType >= Convert.ToInt32(character.EquipSlot.Weapon?.QualityType)))];
-                        Item[] armors = [.. canBuys.Where(i => i.Id.ToString().StartsWith("12") &&
+                        Item[] armors = [.. canBuys.Where(i => i.ItemType == ItemType.Armor &&
                             (onlyLarger ? (int)i.QualityType > Convert.ToInt32(character.EquipSlot.Armor?.QualityType) : (int)i.QualityType >= Convert.ToInt32(character.EquipSlot.Armor?.QualityType)))];
-                        Item[] shoes = [.. canBuys.Where(i => i.Id.ToString().StartsWith("13") &&
+                        Item[] shoes = [.. canBuys.Where(i => i.ItemType == ItemType.Shoes &&
                             (onlyLarger ? (int)i.QualityType > Convert.ToInt32(character.EquipSlot.Shoes?.QualityType) : (int)i.QualityType >= Convert.ToInt32(character.EquipSlot.Shoes?.QualityType)))];
-                        Item[] accessories = [.. canBuys.Where(i => i.Id.ToString().StartsWith("14") &&
+                        Item[] accessories = [.. canBuys.Where(i => i.ItemType == ItemType.Accessory &&
                             (onlyLarger ? (int)i.QualityType > Math.Min(Convert.ToInt32(character.EquipSlot.Accessory1?.QualityType), Convert.ToInt32(character.EquipSlot.Accessory2?.QualityType))
                             : (int)i.QualityType >= Math.Min(Convert.ToInt32(character.EquipSlot.Accessory1?.QualityType), Convert.ToInt32(character.EquipSlot.Accessory2?.QualityType))))];
 
@@ -1002,10 +1002,10 @@ namespace Oshima.FunGame.OshimaServers.Service
 
         public static void DropItems(GamingQueue queue, int mQuality, int wQuality, int aQuality, int sQuality, int acQuality, bool addLevel = true)
         {
-            Item[] weapons = [.. FunGameConstant.Equipment.Where(i => i.Id.ToString().StartsWith("11") && (int)i.QualityType == wQuality)];
-            Item[] armors = [.. FunGameConstant.Equipment.Where(i => i.Id.ToString().StartsWith("12") && (int)i.QualityType == aQuality)];
-            Item[] shoes = [.. FunGameConstant.Equipment.Where(i => i.Id.ToString().StartsWith("13") && (int)i.QualityType == sQuality)];
-            Item[] accessories = [.. FunGameConstant.Equipment.Where(i => i.Id.ToString().StartsWith("14") && (int)i.QualityType == acQuality)];
+            Item[] weapons = [.. FunGameConstant.Equipment.Where(i => i.ItemType == ItemType.Weapon && (int)i.QualityType == wQuality)];
+            Item[] armors = [.. FunGameConstant.Equipment.Where(i => i.ItemType == ItemType.Armor && (int)i.QualityType == aQuality)];
+            Item[] shoes = [.. FunGameConstant.Equipment.Where(i => i.ItemType == ItemType.Shoes && (int)i.QualityType == sQuality)];
+            Item[] accessories = [.. FunGameConstant.Equipment.Where(i => i.ItemType == ItemType.Accessory && (int)i.QualityType == acQuality)];
             Item[] consumables = [.. FunGameConstant.AllItems.Where(i => i.ItemType == ItemType.Consumable && i.IsInGameItem)];
             foreach (Character character in queue.AllCharacters)
             {
