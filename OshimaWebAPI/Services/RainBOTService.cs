@@ -1235,23 +1235,56 @@ namespace Oshima.FunGame.WebAPI.Services
                     return result;
                 }
 
-                if (e.Detail.StartsWith("使用", StringComparison.CurrentCultureIgnoreCase))
+                if (e.Detail.StartsWith("使用") || e.Detail.StartsWith("批量使用"))
                 {
-                    string detail = e.Detail.Replace("使用", "").Trim();
-                    if (detail.StartsWith("魔法卡"))
+                    if (e.Detail.StartsWith("批量使用"))
                     {
-                        string pattern = @"\s*魔法卡\s*(?<itemId>\d+)(?:\s*(?:角色\s*)?(?<characterId>\d+))?\s*";
+                        string detail = e.Detail.Replace("批量使用", "").Trim();
+                        char[] chars = [',', ' ', '，', '；', ';'];
+                        string pattern = @"\s*(?:角色\s*(?<characterId>\d+))?\s*(?<itemIds>[\d\s,，;；]+)";
+                        Match match = Regex.Match(detail, pattern);
+                        if (match.Success)
+                        {
+                            string itemIdsString = match.Groups["itemIds"].Value;
+                            string characterId = match.Groups["characterId"].Value;
+                            int[] characterIds = characterId != "" ? [int.Parse(characterId)] : [1];
+                            int[] itemIds = itemIdsString.Split(chars, StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries).Select(int.Parse).ToArray();
+                            if (itemIds.Length > 0)
+                            {
+                                string msg = Controller.UseItem4(uid, (itemIds, characterIds));
+                                if (msg != "")
+                                {
+                                    await SendAsync(e, "批量使用", msg);
+                                }
+                            }
+                        }
+                    }
+                    else if (e.Detail.StartsWith("使用魔法卡"))
+                    {
+                        string detail = e.Detail.Replace("使用", "").Trim();
+                        string pattern = @"\s*魔法卡\s*(?<itemId>\d+)(?:\s+(?:(?:角色\s*(?<characterId>\d+))|(?<packageId>\d+)))?";
                         Match match = Regex.Match(detail, pattern);
                         if (match.Success)
                         {
                             string itemId = match.Groups["itemId"].Value;
                             string characterId = match.Groups["characterId"].Value;
-                            bool isCharacter = detail.Contains("角色");
-                            if (int.TryParse(itemId, out int id) && int.TryParse(characterId, out int id2))
+                            bool isCharacter = match.Groups["characterId"].Success;
+                            string packageId = match.Groups["packageId"].Value;
+                            if (int.TryParse(itemId, out int id) && id > 0)
                             {
-                                if (id > 0 && id2 > 0)
+                                int targetId = 0;
+                                if (isCharacter && int.TryParse(characterId, out int charId) && charId > 0)
                                 {
-                                    string msg = Controller.UseItem3(uid, id, id2, isCharacter);
+                                    targetId = charId;
+                                }
+                                else if (!isCharacter && int.TryParse(packageId, out int pkgId) && pkgId > 0)
+                                {
+                                    targetId = pkgId;
+                                    isCharacter = false;
+                                }
+                                if (targetId > 0)
+                                {
+                                    string msg = Controller.UseItem3(uid, id, targetId, isCharacter);
                                     if (msg != "")
                                     {
                                         await SendAsync(e, "使用魔法卡", msg);
@@ -1262,71 +1295,33 @@ namespace Oshima.FunGame.WebAPI.Services
                     }
                     else
                     {
-                        char[] chars = [',', ' '];
-                        string pattern = @"\s*(?<itemName>[^\d]+)\s*(?<count>\d+)\s*(?:角色\s*(?<characterIds>[\d\s]*))?";
+                        string detail = e.Detail.Replace("使用", "").Trim();
+                        char[] chars = [',', ' ', '，', '；', ';'];
+                        string pattern = @"^\s*(?:(?<itemId>\d+)|(?<itemPart>[^\d\s].*?))\s*(?:(?<countPart>\d+)(?:\s+角色\s*(?<characterIds>[\d\s,，;；]*))?)?$";
                         Match match = Regex.Match(detail, pattern);
                         if (match.Success)
                         {
-                            string itemName = match.Groups["itemName"].Value.Trim();
-                            if (int.TryParse(match.Groups["count"].Value, out int count))
+                            string itemId = match.Groups["itemId"].Value;
+                            string itemPart = match.Groups["itemPart"].Value.Trim();
+                            string countStr = match.Groups["countPart"].Value;
+                            string characterIdsString = match.Groups["characterIds"].Value;
+                            int[] characterIds = characterIdsString != "" ? [.. characterIdsString.Split(chars, StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries).Select(int.Parse)] : [1];
+                            int count = string.IsNullOrEmpty(countStr) ? 1 : int.Parse(countStr);
+
+                            if (!string.IsNullOrEmpty(itemId) && int.TryParse(itemId, out int id))
                             {
-                                string characterIdsString = match.Groups["characterIds"].Value;
-                                int[] characterIds = characterIdsString != "" ? [.. characterIdsString.Split(chars, StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries).Select(int.Parse)] : [1];
-                                string msg = Controller.UseItem2(uid, itemName, count, characterIds);
-                                if (msg != "")
+                                string msg = Controller.UseItem(uid, id, count, characterIds);
+                                if (!string.IsNullOrEmpty(msg))
                                 {
                                     await SendAsync(e, "使用", msg);
                                 }
                             }
-                        }
-                        else
-                        {
-                            pattern = @"\s*(?<itemId>\d+)\s*(?:角色\s*(?<characterIds>[\d\s]*))?";
-                            match = Regex.Match(detail, pattern);
-                            if (match.Success)
+                            else if(!string.IsNullOrEmpty(itemPart))
                             {
-                                if (int.TryParse(match.Groups["itemId"].Value, out int itemId))
+                                string msg = Controller.UseItem2(uid, itemPart, count, characterIds);
+                                if (msg != "")
                                 {
-                                    string characterIdsString = match.Groups["characterIds"].Value;
-                                    int[] characterIds = characterIdsString != "" ? [.. characterIdsString.Split(chars, StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries).Select(int.Parse)] : [1];
-                                    string msg = Controller.UseItem(uid, itemId, characterIds);
-                                    if (msg != "")
-                                    {
-                                        await SendAsync(e, "使用", msg);
-                                    }
-                                }
-                            }
-                            else
-                            {
-                                pattern = @"\s*(?<itemName>[^\d]+)\s*(?<count>\d+)\s*";
-                                match = Regex.Match(detail, pattern);
-                                if (match.Success)
-                                {
-                                    string itemName = match.Groups["itemName"].Value.Trim();
-                                    if (int.TryParse(match.Groups["count"].Value, out int count))
-                                    {
-                                        string msg = Controller.UseItem2(uid, itemName, count);
-                                        if (msg != "")
-                                        {
-                                            await SendAsync(e, "使用", msg);
-                                        }
-                                    }
-                                }
-                                else
-                                {
-                                    pattern = @"\s*(?<itemId>\d+)\s*";
-                                    match = Regex.Match(detail, pattern);
-                                    if (match.Success)
-                                    {
-                                        if (int.TryParse(match.Groups["itemId"].Value, out int itemId))
-                                        {
-                                            string msg = Controller.UseItem(uid, itemId);
-                                            if (msg != "")
-                                            {
-                                                await SendAsync(e, "使用", msg);
-                                            }
-                                        }
-                                    }
+                                    await SendAsync(e, "使用", msg);
                                 }
                             }
                         }
@@ -2100,7 +2095,7 @@ namespace Oshima.FunGame.WebAPI.Services
                 {
                     string detail = e.Detail.Replace("探索", "").Replace("前往", "").Trim();
                     string msg = "";
-                    Guid eid = Guid.Empty;
+                    string eid = "";
                     string[] strings = detail.Split(' ', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
                     List<int> cindexs = [];
                     foreach (string s in strings)
@@ -2205,7 +2200,7 @@ namespace Oshima.FunGame.WebAPI.Services
                     }
                     if (indexs.Count > 0)
                     {
-                        msg = Controller.LockItem(uid, true, [.. indexs]);
+                        msg = Controller.LockItem(uid, false, [.. indexs]);
                         if (msg.Trim() != "")
                         {
                             await SendAsync(e, "上锁", msg);
@@ -2233,6 +2228,159 @@ namespace Oshima.FunGame.WebAPI.Services
                         if (msg.Trim() != "")
                         {
                             await SendAsync(e, "解锁", msg);
+                        }
+                    }
+                    return result;
+                }
+
+                if (e.Detail.StartsWith(value: "创建报价"))
+                {
+                    string detail = e.Detail.Replace("创建报价", "").Trim();
+                    string msg = "";
+                    if (long.TryParse(detail, out long target))
+                    {
+                        msg = Controller.MakeOffer(uid, target);
+                        if (msg.Trim() != "")
+                        {
+                            await SendAsync(e, "创建报价", msg);
+                        }
+                    }
+                    return result;
+                }
+                
+                if (e.Detail.StartsWith(value: "我的报价"))
+                {
+                    string detail = e.Detail.Replace("我的报价", "").Trim();
+                    string msg = "";
+                    if (int.TryParse(detail, out int page))
+                    {
+                        msg = Controller.GetOffer(uid, null, page);
+                        if (msg.Trim() != "")
+                        {
+                            await SendAsync(e, "我的报价", msg);
+                        }
+                    }
+                    return result;
+                }
+                
+                if (e.Detail.StartsWith(value: "查报价"))
+                {
+                    string detail = e.Detail.Replace("查报价", "").Trim();
+                    string msg = "";
+                    if (long.TryParse(detail, out long id))
+                    {
+                        msg = Controller.GetOffer(uid, id);
+                        if (msg.Trim() != "")
+                        {
+                            await SendAsync(e, "查报价", msg);
+                        }
+                    }
+                    return result;
+                }
+                
+                if (e.Detail.StartsWith(value: "发送报价"))
+                {
+                    string detail = e.Detail.Replace("发送报价", "").Trim();
+                    string msg = "";
+                    if (long.TryParse(detail, out long id))
+                    {
+                        msg = Controller.SendOffer(uid, id);
+                        if (msg.Trim() != "")
+                        {
+                            await SendAsync(e, "发送报价", msg);
+                        }
+                    }
+                    return result;
+                }
+                
+                if (e.Detail.StartsWith(value: "取消报价"))
+                {
+                    string detail = e.Detail.Replace("取消报价", "").Trim();
+                    string msg = "";
+                    if (long.TryParse(detail, out long id))
+                    {
+                        msg = Controller.CancelOffer(uid, id);
+                        if (msg.Trim() != "")
+                        {
+                            await SendAsync(e, "取消报价", msg);
+                        }
+                    }
+                    return result;
+                }
+                
+                if (e.Detail.StartsWith(value: "接受报价"))
+                {
+                    string detail = e.Detail.Replace("接受报价", "").Trim();
+                    string msg = "";
+                    if (long.TryParse(detail, out long id))
+                    {
+                        msg = Controller.RespondOffer(uid, id, true);
+                        if (msg.Trim() != "")
+                        {
+                            await SendAsync(e, "接受报价", msg);
+                        }
+                    }
+                    return result;
+                }
+                
+                if (e.Detail.StartsWith(value: "拒绝报价"))
+                {
+                    string detail = e.Detail.Replace("拒绝报价", "").Trim();
+                    string msg = "";
+                    if (long.TryParse(detail, out long id))
+                    {
+                        msg = Controller.RespondOffer(uid, id, false);
+                        if (msg.Trim() != "")
+                        {
+                            await SendAsync(e, "拒绝报价", msg);
+                        }
+                    }
+                    return result;
+                }
+                
+                if (e.Detail.StartsWith(value: "报价添加物品"))
+                {
+                    string detail = e.Detail.Replace("报价添加物品", "").Trim();
+                    string msg = "";
+                    string[] strings = detail.Split(' ', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
+                    List<int> indexs = [];
+                    foreach (string s in strings)
+                    {
+                        if (int.TryParse(s, out int c))
+                        {
+                            indexs.Add(c);
+                        }
+                    }
+                    if (long.TryParse(detail, out long id))
+                    {
+                        msg = Controller.AddItemsToOffer(uid, id, false, [.. indexs]);
+                        if (msg.Trim() != "")
+                        {
+                            await SendAsync(e, "报价添加物品", msg);
+                        }
+                    }
+                    return result;
+                }
+                
+                if (e.Detail.StartsWith(value: "报价添加对方物品"))
+                {
+                    string detail = e.Detail.Replace("报价添加对方物品", "").Trim();
+                    string msg = "";
+                    string[] strings = detail.Split(' ', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
+                    List<int> indexs = [];
+                    foreach (string s in strings)
+                    {
+                        if (int.TryParse(s, out int c))
+                        {
+                            indexs.Add(c);
+                        }
+                    }
+                    if (long.TryParse(detail, out long id))
+                    {
+                        msg = Controller.AddItemsToOffer(uid, id, true, [.. indexs]);
+                        if (msg.Trim() != "")
+                        {
+                            await SendAsync(e, "报价添加对方物品", msg);
                         }
                     }
                     return result;

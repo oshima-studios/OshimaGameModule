@@ -191,5 +191,31 @@ namespace Oshima.FunGame.WebAPI.Controllers
 
             return Ok("");
         }
+
+        [Authorize(AuthenticationSchemes = "CustomBearer")]
+        [HttpPost("thirdpartytest")]
+        public async Task<IActionResult> ThirdPartyTest(string msg, string openID)
+        {
+            if (msg.Trim() == "") return Ok("");
+
+            ThirdPartyMessage message = new()
+            {
+                IsGroup = false,
+                AuthorOpenId = openID,
+                OpenId = openID,
+                Detail = msg,
+                Id = openID,
+                Timestamp = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")
+            };
+
+            bool result = await FungameService.Handler(message);
+
+            if (!result || message.IsCompleted)
+            {
+                return Ok(message.Result);
+            }
+
+            return Ok("");
+        }
     }
 }

@@ -36,7 +36,7 @@ namespace Oshima.FunGame.OshimaModules.Items
             return "此物品没有主动技能，无法被使用！";
         }
 
-        public static bool OnItemUsed(User user, Item item, Dictionary<string, object> args)
+        public static bool OnItemUsed(User user, Item item, int times, Dictionary<string, object> args)
         {
             string msg = "";
             bool result = false;
@@ -56,16 +56,12 @@ namespace Oshima.FunGame.OshimaModules.Items
                 }
             }
             args["msg"] = msg;
-            key = args.Keys.FirstOrDefault(s => s.Equals("useCount", StringComparison.CurrentCultureIgnoreCase)) ?? "";
-            if (key != "" && args.TryGetValue(key, out value) && value is int count && targets.Length > 0)
+            string truemsg = $"对角色 [ {targets[0]} ] 使用 {times} 个 [ {item.Name} ] 成功！";
+            if (item is EXPBook expBook)
             {
-                string truemsg = $"对角色 [ {targets[0]} ] 使用 {count} 个 [ {item.Name} ] 成功！";
-                if (item is EXPBook expBook)
-                {
-                    truemsg += $"获得了 {expBook.EXP * count} 点经验值！";
-                }
-                args["truemsg"] = truemsg;
+                truemsg += $"获得了 {expBook.EXP * times} 点经验值！";
             }
+            args["truemsg"] = truemsg;
             return result;
         }
     }
@@ -84,9 +80,9 @@ namespace Oshima.FunGame.OshimaModules.Items
             经验书.Init(this, EXP, remainUseTimes);
         }
 
-        protected override bool OnItemUsed(User user, Dictionary<string, object> args)
+        protected override bool OnItemUsed(User user, int times, Dictionary<string, object> args)
         {
-            return 经验书.OnItemUsed(user, this, args);
+            return 经验书.OnItemUsed(user, this, times, args);
         }
     }
 
@@ -104,9 +100,9 @@ namespace Oshima.FunGame.OshimaModules.Items
             经验书.Init(this, EXP, remainUseTimes);
         }
 
-        protected override bool OnItemUsed(User user, Dictionary<string, object> args)
+        protected override bool OnItemUsed(User user, int times, Dictionary<string, object> args)
         {
-            return 经验书.OnItemUsed(user, this, args);
+            return 经验书.OnItemUsed(user, this, times, args);
         }
     }
 
@@ -124,9 +120,9 @@ namespace Oshima.FunGame.OshimaModules.Items
             经验书.Init(this, EXP, remainUseTimes);
         }
 
-        protected override bool OnItemUsed(User user, Dictionary<string, object> args)
+        protected override bool OnItemUsed(User user, int times, Dictionary<string, object> args)
         {
-            return 经验书.OnItemUsed(user, this, args);
+            return 经验书.OnItemUsed(user, this, times, args);
         }
     }
 

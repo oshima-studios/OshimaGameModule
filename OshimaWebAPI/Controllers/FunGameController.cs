@@ -2033,13 +2033,22 @@ namespace Oshima.FunGame.WebAPI.Controllers
             }
         }
 
+        /// <summary>
+        /// 通过物品序号使用，指定使用次数和目标角色
+        /// </summary>
+        /// <param name="uid"></param>
+        /// <param name="id"></param>
+        /// <param name="times"></param>
+        /// <param name="characters"></param>
+        /// <returns></returns>
         [HttpPost("useitem")]
-        public string UseItem([FromQuery] long? uid = null, [FromQuery] int? id = null, [FromBody] int[]? characters = null)
+        public string UseItem([FromQuery] long? uid = null, [FromQuery] int? id = null, [FromQuery] int? times = null, [FromBody] int[]? characters = null)
         {
             try
             {
                 long userid = uid ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
                 int itemIndex = id ?? 0;
+                int useTimes = times ?? 1;
                 List<int> charactersIndex = characters?.ToList() ?? [];
 
                 PluginConfig pc = new("saved", userid.ToString());
@@ -2065,10 +2074,15 @@ namespace Oshima.FunGame.WebAPI.Controllers
                             {
                                 return "此物品为魔法卡，请使用【使用魔法卡】指令！";
                             }
-                            
+
                             if (item.RemainUseTimes <= 0)
                             {
                                 return "此物品剩余使用次数为0，无法使用！";
+                            }
+                            
+                            if (useTimes > item.RemainUseTimes)
+                            {
+                                return $"此物品剩余使用次数为 {item.RemainUseTimes} 次，但你想使用 {useTimes} 次，使用失败！";
                             }
 
                             List<Character> targets = [];
@@ -2081,7 +2095,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
                                 }
                             }
 
-                            if (FunGameService.UseItem(item, user, targets, out string msg))
+                            if (FunGameService.UseItem(item, useTimes, user, targets, out string msg))
                             {
                                 user.LastTime = DateTime.Now;
                                 pc.Add("user", user);
@@ -2111,6 +2125,14 @@ namespace Oshima.FunGame.WebAPI.Controllers
             }
         }
 
+        /// <summary>
+        /// 通过物品名称使用，指定使用数量和目标角色，使用次数为1次
+        /// </summary>
+        /// <param name="uid"></param>
+        /// <param name="name"></param>
+        /// <param name="count"></param>
+        /// <param name="characters"></param>
+        /// <returns></returns>
         [HttpPost("useitem2")]
         public string UseItem2([FromQuery] long? uid = null, [FromQuery] string? name = null, [FromQuery] int? count = null, [FromBody] int[]? characters = null)
         {
@@ -2184,6 +2206,14 @@ namespace Oshima.FunGame.WebAPI.Controllers
             }
         }
 
+        /// <summary>
+        /// 使用魔法卡
+        /// </summary>
+        /// <param name="uid"></param>
+        /// <param name="id"></param>
+        /// <param name="id2"></param>
+        /// <param name="c"></param>
+        /// <returns></returns>
         [HttpPost("useitem3")]
         public string UseItem3([FromQuery] long? uid = null, [FromQuery] int? id = null, [FromQuery] int? id2 = null, [FromQuery] bool? c = null)
         {
@@ -2280,6 +2310,141 @@ namespace Oshima.FunGame.WebAPI.Controllers
                     {
                         return $"没有找到与目标序号相对应的物品！";
                     }
+                }
+                else
+                {
+                    return noSaved;
+                }
+            }
+            catch (Exception e)
+            {
+                Logger.LogError(e, "Error: ");
+                return busy;
+            }
+        }
+
+        /// <summary>
+        /// 通过物品序号批量使用物品，指定目标角色，使用次数为1次
+        /// </summary>
+        /// <param name="uid"></param>
+        /// <param name="idsAndCids"></param>
+        /// <returns></returns>
+        [HttpPost("useitem4")]
+        public string UseItem4([FromQuery] long uid, [FromBody] (int[], int[]) idsAndCids)
+        {
+            try
+            {
+                int[] itemsIndex = idsAndCids.Item1;
+                int[] charactersIndex = idsAndCids.Item2;
+
+                PluginConfig pc = new("saved", uid.ToString());
+                pc.LoadConfig();
+
+                if (pc.Count > 0)
+                {
+                    User user = FunGameService.GetUser(pc);
+
+                    List<Character> characters = [];
+                    List<int> failedCharacters = [];
+
+                    foreach (int characterIndex in charactersIndex)
+                    {
+                        if (characterIndex > 0 && characterIndex <= user.Inventory.Characters.Count)
+                        {
+                            Character? character = user.Inventory.Characters.ToList()[characterIndex - 1];
+                            characters.Add(character);
+                        }
+                        else
+                        {
+                            failedCharacters.Add(characterIndex);
+                        }
+                    }
+
+                    if (failedCharacters.Count > 0)
+                    {
+                        return $"没有找到与这些序号相对应的角色：{string.Join("，", failedCharacters)}。";
+                    }
+
+                    bool result = true;
+                    Dictionary<int, string> itemsMsg = [];
+
+                    foreach (int itemIndex in itemsIndex)
+                    {
+                        if (!result)
+                        {
+                            break;
+                        }
+
+                        bool subResult = true;
+                        Item? item = null;
+                        if (itemIndex > 0 && itemIndex <= user.Inventory.Items.Count)
+                        {
+                            itemsMsg[itemIndex] = "";
+                            item = user.Inventory.Items.ToList()[itemIndex - 1];
+                            if (FunGameConstant.ItemCanUsed.Contains(item.ItemType))
+                            {
+                                if (item.IsLock)
+                                {
+                                    subResult = false;
+                                    itemsMsg[itemIndex] += $"此物品已上锁，请先解锁：{itemIndex}. {item.Name}\r\n";
+                                }
+
+                                if (item.ItemType == ItemType.MagicCard)
+                                {
+                                    subResult = false;
+                                    itemsMsg[itemIndex] += "此物品为魔法卡，请使用【使用魔法卡】指令！\r\n";
+                                }
+
+                                if (item.RemainUseTimes <= 0)
+                                {
+                                    subResult = false;
+                                    itemsMsg[itemIndex] += "此物品剩余使用次数为0，无法使用！\r\n";
+                                }
+
+                                if (subResult)
+                                {
+                                    subResult = FunGameService.UseItem(item, 1, user, characters, out string useMsg);
+                                    itemsMsg[itemIndex] += useMsg;
+                                }
+
+                                if (!subResult)
+                                {
+                                    result = false;
+                                }
+                            }
+                            else
+                            {
+                                itemsMsg[itemIndex] += $"这个物品无法使用！\r\n";
+                            }
+                        }
+                        else
+                        {
+                            itemsMsg[itemIndex] += $"没有找到与这个序号相对应的物品。\r\n";
+                        }
+                    }
+
+                    StringBuilder builder = new();
+                    foreach (int itemIndex in itemsMsg.Keys)
+                    {
+                        builder.AppendLine($"物品序号：{itemIndex}");
+                        builder.AppendLine($"使用结果：{string.Join("", itemsMsg[itemIndex])}");
+                    }
+
+                    string msg = builder.ToString().Trim();
+                    if (msg != "")
+                    {
+                        msg = $"使用 {itemsIndex.Length} 件物品完毕：\r\n{msg}";
+                    }
+                    else result = false;
+
+                    if (result)
+                    {
+                        user.LastTime = DateTime.Now;
+                        pc.Add("user", user);
+                        pc.SaveConfig();
+                    }
+
+                    return msg;
                 }
                 else
                 {
@@ -4400,12 +4565,12 @@ namespace Oshima.FunGame.WebAPI.Controllers
                 Club? club = emc.Get("club");
                 if (club != null)
                 {
-                    StringBuilder builer = new();
+                    StringBuilder builder = new();
                     int count;
                     switch (showType)
                     {
                         case 1:
-                            builer.AppendLine($"☆--- 社团 [ {club.Name} ] 管理员列表 ---☆");
+                            builder.AppendLine($"☆--- 社团 [ {club.Name} ] 管理员列表 ---☆");
                             count = 1;
                             List<long> admins = [];
                             if (club.Master != null && club.Master.Id != 0)
@@ -4423,24 +4588,24 @@ namespace Oshima.FunGame.WebAPI.Controllers
                                 {
                                     if (FunGameConstant.UserIdAndUsername.TryGetValue(uid2, out User? user2) && user2 != null)
                                     {
-                                        builer.AppendLine($"{count}.");
-                                        builer.AppendLine($"UID：{user2.Id}");
-                                        builer.AppendLine($"玩家昵称：{user2.Username}");
-                                        builer.AppendLine($"加入时间：{club.MemberJoinTime[user2.Id].ToString(General.GeneralDateTimeFormatChinese)}");
+                                        builder.AppendLine($"{count}.");
+                                        builder.AppendLine($"UID：{user2.Id}");
+                                        builder.AppendLine($"玩家昵称：{user2.Username}");
+                                        builder.AppendLine($"加入时间：{club.MemberJoinTime[user2.Id].ToString(General.GeneralDateTimeFormatChinese)}");
                                     }
                                     count++;
                                 }
-                                builer.AppendLine($"页数：{showPage} / {maxPage}");
+                                builder.AppendLine($"页数：{showPage} / {maxPage}");
                             }
                             else
                             {
-                                builer.Append($"没有这么多页！当前总页数为 {maxPage}，但你请求的是第 {showPage} 页。");
+                                builder.Append($"没有这么多页！当前总页数为 {maxPage}，但你请求的是第 {showPage} 页。");
                             }
                             break;
                         case 2:
                             if (club.Master?.Id == user.Id || club.Admins.ContainsKey(user.Id))
                             {
-                                builer.AppendLine($"☆--- 社团 [ {club.Name} ] 申请人列表 ---☆");
+                                builder.AppendLine($"☆--- 社团 [ {club.Name} ] 申请人列表 ---☆");
                                 count = 1;
                                 maxPage = (int)Math.Ceiling((double)club.Applicants.Count / FunGameConstant.ItemsPerPage2);
                                 if (maxPage < 1) maxPage = 1;
@@ -4451,28 +4616,28 @@ namespace Oshima.FunGame.WebAPI.Controllers
                                     {
                                         if (FunGameConstant.UserIdAndUsername.TryGetValue(uid2, out User? user2) && user2 != null)
                                         {
-                                            builer.AppendLine($"{count}.");
-                                            builer.AppendLine($"UID：{user2.Id}");
-                                            builer.AppendLine($"玩家昵称：{user2.Username}");
-                                            builer.AppendLine($"申请时间：{club.ApplicationTime[user2.Id].ToString(General.GeneralDateTimeFormatChinese)}");
+                                            builder.AppendLine($"{count}.");
+                                            builder.AppendLine($"UID：{user2.Id}");
+                                            builder.AppendLine($"玩家昵称：{user2.Username}");
+                                            builder.AppendLine($"申请时间：{club.ApplicationTime[user2.Id].ToString(General.GeneralDateTimeFormatChinese)}");
                                         }
                                         count++;
                                     }
-                                    builer.AppendLine($"页数：{showPage} / {maxPage}");
+                                    builder.AppendLine($"页数：{showPage} / {maxPage}");
                                 }
                                 else
                                 {
-                                    builer.Append($"没有这么多页！当前总页数为 {maxPage}，但你请求的是第 {showPage} 页。");
+                                    builder.Append($"没有这么多页！当前总页数为 {maxPage}，但你请求的是第 {showPage} 页。");
                                 }
                             }
                             else
                             {
-                                builer.Append("你没有权限查看这个列表！");
+                                builder.Append("你没有权限查看这个列表！");
                             }
                             break;
                         case 0:
                         default:
-                            builer.AppendLine($"☆--- 社团 [ {club.Name} ] 成员列表 ---☆");
+                            builder.AppendLine($"☆--- 社团 [ {club.Name} ] 成员列表 ---☆");
                             count = 1;
                             maxPage = (int)Math.Ceiling((double)club.Members.Count / FunGameConstant.ItemsPerPage2);
                             if (maxPage < 1) maxPage = 1;
@@ -4483,9 +4648,9 @@ namespace Oshima.FunGame.WebAPI.Controllers
                                 {
                                     if (FunGameConstant.UserIdAndUsername.TryGetValue(uid2, out User? user2) && user2 != null)
                                     {
-                                        builer.AppendLine($"{count}.");
-                                        builer.AppendLine($"UID：{user2.Id}");
-                                        builer.AppendLine($"玩家昵称：{user2.Username}");
+                                        builder.AppendLine($"{count}.");
+                                        builder.AppendLine($"UID：{user2.Id}");
+                                        builder.AppendLine($"玩家昵称：{user2.Username}");
                                         string userType = "社员";
                                         if (club.Master?.Id == user2.Id)
                                         {
@@ -4495,21 +4660,21 @@ namespace Oshima.FunGame.WebAPI.Controllers
                                         {
                                             userType = "管理员";
                                         }
-                                        builer.AppendLine($"社团身份：{userType}");
-                                        builer.AppendLine($"加入时间：{club.MemberJoinTime[user2.Id].ToString(General.GeneralDateTimeFormatChinese)}");
+                                        builder.AppendLine($"社团身份：{userType}");
+                                        builder.AppendLine($"加入时间：{club.MemberJoinTime[user2.Id].ToString(General.GeneralDateTimeFormatChinese)}");
                                     }
                                     count++;
                                 }
-                                builer.AppendLine($"页数：{showPage} / {maxPage}");
+                                builder.AppendLine($"页数：{showPage} / {maxPage}");
                             }
                             else
                             {
-                                builer.Append($"没有这么多页！当前总页数为 {maxPage}，但你请求的是第 {showPage} 页。");
+                                builder.Append($"没有这么多页！当前总页数为 {maxPage}，但你请求的是第 {showPage} 页。");
                             }
                             break;
                     }
 
-                    msg = builer.ToString().Trim();
+                    msg = builder.ToString().Trim();
                 }
                 else
                 {
@@ -5261,9 +5426,9 @@ namespace Oshima.FunGame.WebAPI.Controllers
         }
 
         [HttpPost("exploreregion")]
-        public async Task<(string, Guid)> ExploreRegion([FromQuery] long? uid = null, [FromQuery] long? id = null, [FromBody] long[]? cids = null)
+        public async Task<(string, string)> ExploreRegion([FromQuery] long? uid = null, [FromQuery] long? id = null, [FromBody] long[]? cids = null)
         {
-            Guid exploreId = Guid.Empty;
+            string exploreId = "";
             await _semaphore.WaitAsync();
             try
             {
@@ -5336,27 +5501,20 @@ namespace Oshima.FunGame.WebAPI.Controllers
                     }
 
                     // 检查角色是否正在探索
-                    List<ExploreModel> list = pc.Get<List<ExploreModel>>("exploring") ?? [];
-                    if (list.Count > 0)
+                    PluginConfig pc2 = new("exploring", userid.ToString());
+                    pc2.LoadConfig();
+                    if (pc2.Count > 0)
                     {
-                        string msg2 = "";
-                        List<Guid> remove = [];
-                        foreach (ExploreModel model in list)
+                        // 可能要结算先前的超时探索
+                        if (FunGameService.SettleExploreAll(pc2, user))
                         {
-                            // 可能要结算先前的超时探索
-                            if (model.StartTime.HasValue && (DateTime.Now - model.StartTime.Value).TotalMinutes > FunGameConstant.ExploreTime + 2)
-                            {
-                                if (FunGameService.SettleExplore(model.Guid, list, user, out string notice))
-                                {
-                                    if (notice != "")
-                                    {
-                                        if (msg2 != "") msg2 += "\r\n";
-                                        msg2 += $"你上次未完成的探索已被自动结算：{notice}";
-                                    }
-                                    remove.Add(model.Guid);
-                                }
-                            }
-
+                            pc2.SaveConfig();
+                        }
+                        string msg2 = "";
+                        foreach (string guid in pc2.Keys)
+                        {
+                            ExploreModel? model = pc2.Get<ExploreModel>(guid);
+                            if (model is null) continue;
                             IEnumerable<long> exploring = model.CharacterIds.Intersect(characterIds);
                             if (exploring.Any())
                             {
@@ -5364,10 +5522,6 @@ namespace Oshima.FunGame.WebAPI.Controllers
                                 msg2 += $"你暂时无法使用以下角色进行探索：[ {FunGameService.GetCharacterGroupInfoByInventorySequence(user.Inventory.Characters, exploring, " ] / [ ")} ]，" +
                                     $"因为这些角色已经参与了另一场探索：\r\n{model.GetExploreInfo(user.Inventory.Characters, FunGameConstant.Regions)}";
                             }
-                        }
-                        foreach (Guid guid in remove)
-                        {
-                            list.RemoveAll(m => m.Guid == guid);
                         }
                         if (msg2 != "")
                         {
@@ -5382,9 +5536,14 @@ namespace Oshima.FunGame.WebAPI.Controllers
 
                         msg = $"开始探索【{region.Name}】，探索时间预计 {FunGameConstant.ExploreTime} 分钟（系统会自动结算，届时会有提示）。注意：探索期间的角色状态已被锁定，在此期间修改角色属性不会影响战斗结果。" +
                             $"探索成员：[ {FunGameService.GetCharacterGroupInfoByInventorySequence(user.Inventory.Characters, characterIds, " ] / [ ")} ]";
-                        ExploreModel model = await FunGameService.GenerateExploreModel(region, characterIds, user);
-                        exploreId = model.Guid;
-                        list.Add(model);
+                        ExploreModel model = new()
+                        {
+                            RegionId = region.Id,
+                            CharacterIds = characterIds,
+                            StartTime = DateTime.Now
+                        };
+                        exploreId = model.Guid.ToString();
+                        TaskUtility.NewTask(async () => await FunGameService.GenerateExploreModel(model, region, characterIds, user));
 
                         if (msg != "") msg += "\r\n";
                         msg += $"本次消耗探索许可 {reduce} 个，你的剩余探索许可：{exploreTimes} 个。需要注意：探索难度星级一比一兑换探索许可，并且参与探索的角色，都需要消耗相同数量的探索许可。";
@@ -5393,7 +5552,6 @@ namespace Oshima.FunGame.WebAPI.Controllers
                     user.LastTime = DateTime.Now;
                     pc.Add("user", user);
                     pc.Add("exploreTimes", exploreTimes);
-                    pc.Add("exploring", list);
                     pc.SaveConfig();
 
                     return (msg, exploreId);
@@ -5438,12 +5596,15 @@ namespace Oshima.FunGame.WebAPI.Controllers
                     exploreTimes = FunGameConstant.MaxExploreTimes;
                 }
 
-                List<ExploreModel> list = pc.Get<List<ExploreModel>>("exploring") ?? [];
-                if (list.Count > 0)
+                PluginConfig pc2 = new("exploring", userid.ToString());
+                pc2.LoadConfig();
+                if (pc2.Count > 0)
                 {
                     string msg2 = "";
-                    foreach (ExploreModel model in list)
+                    foreach (string guid in pc2.Keys)
                     {
+                        ExploreModel? model = pc2.Get<ExploreModel>(guid);
+                        if (model is null) continue;
                         if (msg2 != "") msg2 += "\r\n";
                         msg2 += model.GetExploreInfo(user.Inventory.Characters, FunGameConstant.Regions);
                     }
@@ -5486,12 +5647,13 @@ namespace Oshima.FunGame.WebAPI.Controllers
             {
                 User user = FunGameService.GetUser(pc);
 
-                List<ExploreModel> list = pc.Get<List<ExploreModel>>("exploring") ?? [];
-                if (list.Count > 0)
+                PluginConfig pc2 = new("exploring", userid.ToString());
+                pc2.LoadConfig();
+                if (pc2.Count > 0)
                 {
-                    if (FunGameService.SettleExploreAll(list, user, skip ?? false))
+                    if (FunGameService.SettleExploreAll(pc2, user, skip ?? false))
                     {
-                        pc.Add("exploring", list);
+                        pc2.SaveConfig();
                         msg = $"已完成探索结算。";
                     }
                     else
@@ -5517,7 +5679,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
         }
         
         [HttpPost("exploresettle")]
-        public string SettleExplore(Guid exploreId, [FromQuery] long? uid = null)
+        public string SettleExplore(string exploreId, [FromQuery] long? uid = null)
         {
             long userid = uid ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
 
@@ -5529,14 +5691,15 @@ namespace Oshima.FunGame.WebAPI.Controllers
             {
                 User user = FunGameService.GetUser(pc);
 
-                List<ExploreModel> list = pc.Get<List<ExploreModel>>("exploring") ?? [];
-                if (list.Count > 0)
+                PluginConfig pc2 = new("exploring", userid.ToString());
+                pc2.LoadConfig();
+                if (pc2.Count > 0)
                 {
-                    if (FunGameService.SettleExplore(exploreId, list, user, out msg))
+                    if (FunGameService.SettleExplore(exploreId, pc2, user, out msg))
                     {
-                        list.RemoveAll(m => m.Guid == exploreId);
+                        pc2.Remove(exploreId);
+                        pc2.SaveConfig();
                     }
-                    pc.Add("exploring", list);
                 }
 
                 user.LastTime = DateTime.Now;
@@ -5712,28 +5875,337 @@ namespace Oshima.FunGame.WebAPI.Controllers
             }
         }
 
+        [HttpPost("makeoffer")]
+        public string MakeOffer([FromQuery] long? uid = null, [FromQuery] long? offeree = null)
+        {
+            long userid = uid ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
+
+            try
+            {
+                PluginConfig pc = new("saved", userid.ToString());
+                pc.LoadConfig();
+
+                string msg = "";
+                if (pc.Count > 0)
+                {
+                    User user = FunGameService.GetUser(pc);
+
+                    if (FunGameConstant.UserIdAndUsername.TryGetValue(offeree ?? -1, out User? user2) && user2 != null)
+                    {
+                        long offerId = FunGameService.MakeOffer(user, user2);
+                        msg = $"创建报价成功，报价编号：{offerId}，目标玩家：{user2.Id}. {user2.Username}";
+                    }
+                    else
+                    {
+                        return $"目标玩家不存在。";
+                    }
+
+                    user.LastTime = DateTime.Now;
+                    pc.Add("user", user);
+                    pc.SaveConfig();
+
+                    return msg;
+                }
+                else
+                {
+                    return noSaved;
+                }
+            }
+            catch (Exception e)
+            {
+                Logger.LogError(e, "Error: ");
+                return busy;
+            }
+        }
+        
+        [HttpPost("additemstooffer")]
+        public string AddItemsToOffer([FromQuery] long? uid = null, [FromQuery] long? offer = null, [FromQuery] bool isOfferee = true, [FromBody] int[]? itemIds = null)
+        {
+            long userid = uid ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
+            long offerId = offer ?? -1;
+            int[] itemsIndex = itemIds ?? [];
+
+            try
+            {
+                PluginConfig pc = new("saved", userid.ToString());
+                pc.LoadConfig();
+
+                string msg = "";
+                if (pc.Count > 0)
+                {
+                    User user = FunGameService.GetUser(pc);
+
+                    if (offerId > 0)
+                    {
+                        msg = FunGameService.AddItemsToOffer(pc, user, offerId, isOfferee, itemsIndex);
+                    }
+                    else
+                    {
+                        msg = "没有找到对应的报价。";
+                    }
+
+                    return msg;
+                }
+                else
+                {
+                    return noSaved;
+                }
+            }
+            catch (Exception e)
+            {
+                Logger.LogError(e, "Error: ");
+                return busy;
+            }
+        }
+
+        [HttpPost("sendoffer")]
+        public string SendOffer([FromQuery] long? uid = null, [FromQuery] long? offerId = null)
+        {
+            long userid = uid ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
+
+            try
+            {
+                PluginConfig pc = new("saved", userid.ToString());
+                pc.LoadConfig();
+
+                string msg = "";
+                if (pc.Count > 0)
+                {
+                    User user = FunGameService.GetUser(pc);
+
+                    msg = FunGameService.SendOffer(user, offerId ?? -1);
+
+                    user.LastTime = DateTime.Now;
+                    pc.Add("user", user);
+                    pc.SaveConfig();
+
+                    return msg;
+                }
+                else
+                {
+                    return noSaved;
+                }
+            }
+            catch (Exception e)
+            {
+                Logger.LogError(e, "Error: ");
+                return busy;
+            }
+        }
+
+        [HttpPost("respondoffer")]
+        public string RespondOffer([FromQuery] long? uid = null, [FromQuery] long? offer = null, [FromQuery] bool accept = false)
+        {
+            long userid = uid ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
+            long offerId = offer ?? -1;
+
+            try
+            {
+                PluginConfig pc = new("saved", userid.ToString());
+                pc.LoadConfig();
+
+                string msg = "";
+                if (pc.Count > 0)
+                {
+                    User user = FunGameService.GetUser(pc);
+
+                    if (offerId > 0)
+                    {
+                        FunGameService.RespondOffer(pc, user, offerId, accept ? OfferActionType.OffereeAccept : OfferActionType.OffereeReject);
+                    }
+                    else
+                    {
+                        msg = "没有找到对应的报价。";
+                    }
+
+                    return msg;
+                }
+                else
+                {
+                    return noSaved;
+                }
+            }
+            catch (Exception e)
+            {
+                Logger.LogError(e, "Error: ");
+                return busy;
+            }
+        }
+        
+        [HttpPost("getoffer")]
+        public string GetOffer([FromQuery] long? uid = null, [FromQuery] long? offerId = null, [FromQuery] int? page = null)
+        {
+            long userid = uid ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
+            int showPage = page ?? 1;
+            if (showPage <= 0) showPage = 1;
+
+            try
+            {
+                PluginConfig pc = new("saved", userid.ToString());
+                pc.LoadConfig();
+
+                string msg = "";
+                if (pc.Count > 0)
+                {
+                    User user = FunGameService.GetUser(pc);
+
+                    List<Offer> offers = FunGameService.GetOffer(user, out msg, offerId ?? -1);
+
+                    if (msg != "")
+                    {
+                        return msg;
+                    }
+
+                    int maxPage = (int)Math.Ceiling((double)offers.Count);
+                    if (maxPage < 1) maxPage = 1;
+                    if (showPage <= maxPage)
+                    {
+                        IEnumerable<Offer> showOffers = FunGameService.GetPage(offers, showPage, 1);
+                        if (showOffers.Any())
+                        {
+                            StringBuilder builder = new();
+
+                            foreach (Offer offer in showOffers)
+                            {
+                                User? user1 = null, user2 = null;
+                                if (FunGameConstant.UserIdAndUsername.TryGetValue(offer.Offeror, out User? offeror) && offeror != null)
+                                {
+                                    user1 = offeror;
+                                }
+                                if (FunGameConstant.UserIdAndUsername.TryGetValue(offer.Offeror, out User? offeree) && offeree != null)
+                                {
+                                    user2 = offeree;
+                                }
+
+                                if (user1 is null || user2 is null) continue;
+
+                                builder.AppendLine($"☆--- 报价编号：{offer.Id} ---☆");
+                                builder.AppendLine($"发起方：{user1}");
+                                builder.AppendLine($"接收方：{user2}");
+                                builder.AppendLine($"状态：{CommonSet.GetOfferStatus(offer.Status)}");
+
+                                List<string> user1Item = [];
+                                List<string> user2Item = [];
+                                foreach (Item item in user1.Inventory.Items)
+                                {
+                                    if (offer.OfferorItems.Contains(item.Guid))
+                                    {
+                                        user1Item.Add($"[{ItemSet.GetQualityTypeName(item.QualityType)}]" + ItemSet.GetItemTypeName(item.ItemType) + "：" + item.Name);
+                                    }
+                                }
+                                foreach (Item item in user2.Inventory.Items)
+                                {
+                                    if (offer.OffereeItems.Contains(item.Guid))
+                                    {
+                                        user2Item.Add($"[{ItemSet.GetQualityTypeName(item.QualityType)}]" + ItemSet.GetItemTypeName(item.ItemType) + "：" + item.Name);
+                                    }
+                                }
+
+                                if (user1Item.Count > 0)
+                                {
+                                    builder.AppendLine($"=== 发起方物品 ===");
+                                    builder.AppendLine(string.Join("\r\n", user1Item));
+                                }
+
+                                if (user2Item.Count > 0)
+                                {
+                                    builder.AppendLine($"=== 接收方物品 ===");
+                                    builder.AppendLine(string.Join("\r\n", user2Item));
+                                }
+                            }
+
+                            builder.AppendLine($"页数：{showPage} / {maxPage}");
+                            msg = builder.ToString().Trim();
+                        }
+                    }
+                    else
+                    {
+                        return $"没有这么多页！当前总页数为 {maxPage}，但你请求的是第 {showPage} 页。";
+                    }
+
+                    user.LastTime = DateTime.Now;
+                    pc.Add("user", user);
+                    pc.SaveConfig();
+
+                    return msg;
+                }
+                else
+                {
+                    return noSaved;
+                }
+            }
+            catch (Exception e)
+            {
+                Logger.LogError(e, "Error: ");
+                return busy;
+            }
+        }
+
+        [HttpPost("canceloffer")]
+        public string CancelOffer([FromQuery] long? uid = null, [FromQuery] long? offerId = null)
+        {
+            long userid = uid ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
+
+            try
+            {
+                PluginConfig pc = new("saved", userid.ToString());
+                pc.LoadConfig();
+
+                string msg = "";
+                if (pc.Count > 0)
+                {
+                    User user = FunGameService.GetUser(pc);
+
+                    msg = FunGameService.CancelOffer(user, offerId ?? -1);
+
+                    user.LastTime = DateTime.Now;
+                    pc.Add("user", user);
+                    pc.SaveConfig();
+
+                    return msg;
+                }
+                else
+                {
+                    return noSaved;
+                }
+            }
+            catch (Exception e)
+            {
+                Logger.LogError(e, "Error: ");
+                return busy;
+            }
+        }
+
         [HttpPost("template")]
         public string Template([FromQuery] long? uid = null)
         {
             long userid = uid ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
 
-            PluginConfig pc = new("saved", userid.ToString());
-            pc.LoadConfig();
-
-            string msg = "";
-            if (pc.Count > 0)
+            try
             {
-                User user = FunGameService.GetUser(pc);
+                PluginConfig pc = new("saved", userid.ToString());
+                pc.LoadConfig();
 
-                user.LastTime = DateTime.Now;
-                pc.Add("user", user);
-                pc.SaveConfig();
+                string msg = "";
+                if (pc.Count > 0)
+                {
+                    User user = FunGameService.GetUser(pc);
 
-                return msg;
+                    user.LastTime = DateTime.Now;
+                    pc.Add("user", user);
+                    pc.SaveConfig();
+
+                    return msg;
+                }
+                else
+                {
+                    return noSaved;
+                }
             }
-            else
+            catch (Exception e)
             {
-                return noSaved;
+                Logger.LogError(e, "Error: ");
+                return busy;
             }
         }
 

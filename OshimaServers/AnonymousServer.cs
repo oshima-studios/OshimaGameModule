@@ -153,14 +153,12 @@ namespace Oshima.FunGame.OshimaServers
                                 updateQuest = true;
                             }
                             // 探索结算
-                            List<ExploreModel> list = pc.Get<List<ExploreModel>>("exploring") ?? [];
-                            if (list.Count > 0)
+                            PluginConfig pc2 = new("exploring", user.Id.ToString());
+                            pc2.LoadConfig();
+                            if (pc2.Count > 0 && FunGameService.SettleExploreAll(pc2, user))
                             {
-                                updateExplore = FunGameService.SettleExploreAll(list, user);
-                                if (updateExplore)
-                                {
-                                    pc.Add("exploring", list);
-                                }
+                                pc2.SaveConfig();
+                                updateExplore = true;
                             }
                             if (updateQuest || updateExplore)
                             {

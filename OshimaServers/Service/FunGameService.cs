@@ -11,6 +11,7 @@ using Oshima.FunGame.OshimaModules.Regions;
 using Oshima.FunGame.OshimaModules.Skills;
 using Oshima.FunGame.OshimaModules.Units;
 using Oshima.FunGame.OshimaServers.Model;
+using ProjectRedbud.FunGame.SQLQueryExtension;
 
 namespace Oshima.FunGame.OshimaServers.Service
 {
@@ -1076,14 +1077,14 @@ namespace Oshima.FunGame.OshimaServers.Service
             }
         }
 
-        public static bool UseItem(Item item, User user, IEnumerable<Character> targets, out string msg)
+        public static bool UseItem(Item item, int times, User user, IEnumerable<Character> targets, out string msg)
         {
             msg = "";
             Dictionary<string, object> args = new()
             {
                 { "targets", targets.ToArray() }
             };
-            bool result = item.UseItem(user, args);
+            bool result = item.UseItem(user, times, args);
             if (item.EntityState == EntityState.Deleted)
             {
                 user.Inventory.Items.Remove(item);
@@ -1125,7 +1126,7 @@ namespace Oshima.FunGame.OshimaServers.Service
                     {
                         continue;
                     }
-                    bool tempResult = item.UseItem(user, args);
+                    bool tempResult = item.UseItem(user, 1, args);
                     if (item.EntityState == EntityState.Deleted)
                     {
                         user.Inventory.Items.Remove(item);
@@ -2232,15 +2233,9 @@ namespace Oshima.FunGame.OshimaServers.Service
             return $"{(characters.Count > 0 ? string.Join(separator, characters.Keys.Select(c => $"#{characters[c]}. {c.ToStringWithLevelWithOutUser()}")) : "空")}";
         }
 
-        public static async Task<ExploreModel> GenerateExploreModel(OshimaRegion region, long[] characterIds, User user)
+        public static async Task GenerateExploreModel(ExploreModel model, OshimaRegion region, long[] characterIds, User user)
         {
             int characterCount = characterIds.Length;
-            ExploreModel model = new()
-            {
-                RegionId = region.Id,
-                CharacterIds = characterIds,
-                StartTime = DateTime.Now
-            };
             int diff = region.Difficulty switch
             {
                 RarityType.OneStar => 1,
@@ -2586,14 +2581,18 @@ namespace Oshima.FunGame.OshimaServers.Service
             }
 
             model.String = string.Format(exploreString, award, enemy.Name, npc, item1, area1, item2, area2);
-            return model;
+
+            PluginConfig pc = new("exploring", user.Id.ToString());
+            pc.LoadConfig();
+            pc.Add(model.Guid.ToString(), model);
+            pc.SaveConfig();
         }
 
-        public static bool SettleExplore(Guid exploreId, List<ExploreModel> list, User user, out string msg)
+        public static bool SettleExplore(string exploreId, PluginConfig pc, User user, out string msg)
         {
             bool result = false;
             msg = "";
-            ExploreModel? model = list.FirstOrDefault(m => m.Guid == exploreId);
+            ExploreModel? model = pc.Get<ExploreModel>(exploreId);
             if (model != null)
             {
                 result = true;
@@ -2655,27 +2654,415 @@ namespace Oshima.FunGame.OshimaServers.Service
             return result;
         }
 
-        public static bool SettleExploreAll(List<ExploreModel> list, User user, bool skip = false)
+        public static bool SettleExploreAll(PluginConfig pc, User user, bool skip = false)
         {
             bool settle = false;
-            List<Guid> remove = [];
-            foreach (ExploreModel model in list)
+            List<string> remove = [];
+            foreach (string guid in pc.Keys)
             {
+                ExploreModel? model = pc.Get<ExploreModel>(guid);
+                if (model is null) continue;
                 if (skip || (model.StartTime.HasValue && (DateTime.Now - model.StartTime.Value).TotalMinutes > FunGameConstant.ExploreTime + 2))
                 {
-                    if (SettleExplore(model.Guid, list, user, out string msg))
+                    if (SettleExplore(guid, pc, user, out string msg))
                     {
                         settle = true;
                         AddNotice(user.Id, $"你上次未完成的探索已被自动结算：{msg}");
-                        remove.Add(model.Guid);
+                        remove.Add(guid);
                     }
                 }
             }
-            foreach (Guid guid in remove)
+            foreach (string guid in remove)
             {
-                list.RemoveAll(m => m.Guid == guid);
+                pc.Remove(guid);
             }
             return settle;
+        }
+
+        public static long MakeOffer(User user, User offeree)
+        {
+            using SQLHelper? sql = Factory.OpenFactory.GetSQLHelper();
+            if (sql != null)
+            {
+                sql.AddOffer(user.Id, offeree.Id);
+                if (sql.Success)
+                {
+                    long offerId = sql.LastInsertId;
+                    Offer? offer = sql.GetOffer(offerId);
+                    if (offer != null)
+                    {
+                        return offerId;
+                    }
+                }
+            }
+            return -1;
+        }
+        
+        public static string AddItemsToOffer(PluginConfig pc, User user, long offerId, bool isOfferee, int[] itemIds)
+        {
+            using SQLHelper? sql = Factory.OpenFactory.GetSQLHelper();
+            if (sql != null)
+            {
+                bool result = true;
+                string msg = "";
+                Offer? offer = sql.GetOffer(offerId);
+                if (offer != null && offer.Offeror == user.Id)
+                {
+                    try
+                    {
+                        sql.NewTransaction();
+
+                        User addUser = user;
+                        if (isOfferee)
+                        {
+                            PluginConfig pc2 = new("saved", offer.Offeror.ToString());
+
+                            if (pc2.Count > 0)
+                            {
+                                addUser = GetUser(pc2);
+                            }
+                            else
+                            {
+                                msg = "目标玩家不存在，请稍后再试。";
+                            }
+                        }
+
+                        List<int> failedItems = [];
+                        foreach (int itemIndex in itemIds)
+                        {
+                            if (itemIndex > 0 && itemIndex <= user.Inventory.Items.Count)
+                            {
+                                Item item = user.Inventory.Items.ToList()[itemIndex - 1];
+
+                                if (!item.IsTradable)
+                                {
+                                    result = false;
+                                    if (msg != "") msg += "\r\n";
+                                    msg += $"物品 {itemIndex}. {item.Name}：此物品无法交易{(item.NextTradableTime != DateTime.MinValue ? $"，此物品将在 {item.NextTradableTime.ToString(General.GeneralDateTimeFormatChinese)} 后可交易" : "")}。";
+                                    break;
+                                }
+
+                                sql.AddOfferItem(offerId, addUser.Id, item.Guid);
+                                if (msg != "") msg += "\r\n";
+                                if (sql.Success)
+                                {
+                                    msg += $"物品添加成功：{itemIndex}. {item.Name}";
+                                }
+                                else
+                                {
+                                    result = false;
+                                    msg += $"物品添加失败：{itemIndex}. {item.Name}";
+                                    break;
+                                }
+                            }
+                            else
+                            {
+                                failedItems.Add(itemIndex);
+                            }
+                        }
+
+                        if (failedItems.Count > 0)
+                        {
+                            if (msg != "") msg += "\r\n";
+                            msg += "没有找到与这个序号相对应的物品：" + string.Join("，", failedItems);
+                        }
+
+                        if (result)
+                        {
+                            offer = sql.GetOffer(offerId);
+                            if (offer != null)
+                            {
+                                sql.Commit();
+                            }
+                        }
+                        else
+                        {
+                            sql.Rollback();
+                        }
+                    }
+                    catch
+                    {
+                        sql.Rollback();
+                        msg = "修改报价时发生错误，请稍后再试。";
+                        throw;
+                    }
+                }
+                else
+                {
+                    msg = "报价不存在或您无权修改。";
+                }
+
+                return msg;
+            }
+            return "服务器繁忙，请稍后再试。";
+        }
+
+        public static string SendOffer(User user, long offerId)
+        {
+            using SQLHelper? sql = Factory.OpenFactory.GetSQLHelper();
+            if (sql != null)
+            {
+                string msg = "";
+                Offer? offer = sql.GetOffer(offerId);
+                if (offer != null && offer.Offeror == user.Id)
+                {
+                    try
+                    {
+                        if (offer.Status != OfferState.Created)
+                        {
+                            msg = "此报价已被处理。";
+                            return msg;
+                        }
+
+                        bool result = true;
+                        sql.NewTransaction();
+                        sql.UpdateOfferStatus(offerId, OfferState.Sent);
+
+                        if (result)
+                        {
+                            offer = sql.GetOffer(offerId);
+                            if (offer != null)
+                            {
+                                sql.Commit();
+                                AddNotice(offer.Offeree, $"你收到了一个报价！请通过【我的报价】查询报价记录。");
+                                return $"报价编号 {offerId} 已发送。";
+                            }
+                        }
+                        else
+                        {
+                            sql.Rollback();
+                        }
+                    }
+                    catch
+                    {
+                        sql.Rollback();
+                        msg = "修改报价时发生错误，请稍后再试。";
+                        throw;
+                    }
+                }
+                else
+                {
+                    msg = "报价不存在或您无权修改。";
+                }
+                
+                return msg;
+            }
+            return "服务器繁忙，请稍后再试。";
+        }
+
+        public static List<Offer> GetOffer(User user, out string msg, long offerId = -1)
+        {
+            msg = "";
+            List<Offer> offers = [];
+            using SQLHelper? sql = Factory.OpenFactory.GetSQLHelper();
+            if (sql != null)
+            {
+                if (offerId > 0)
+                {
+                    Offer? offer = sql.GetOffer(offerId);
+                    if (offer != null) offers.Add(offer);
+                    else msg = $"报价编号 {offerId} 不存在。";
+                }
+                else
+                {
+                    offers = sql.GetOffersByOfferor(user.Id);
+                    offers = [.. offers, ..sql.GetOffersByOfferee(user.Id)];
+                }
+            }
+            return offers;
+        }
+
+        public static string RespondOffer(PluginConfig pc, User user, long offerId, OfferActionType action)
+        {
+            using SQLHelper? sql = Factory.OpenFactory.GetSQLHelper();
+            if (sql != null)
+            {
+                string msg = "";
+                Offer? offer = sql.GetOffer(offerId);
+                if (offer != null && offer.Offeree == user.Id)
+                {
+                    bool canProceed = false;
+                    bool isNegotiating = false;
+
+                    try
+                    {
+                        sql.NewTransaction();
+
+                        // 根据 action 处理状态
+                        switch (action)
+                        {
+                            case OfferActionType.OffereeAccept:
+                                if (offer.Status == OfferState.Sent || offer.Status == OfferState.Negotiating || offer.Status == OfferState.NegotiationAccepted)
+                                {
+                                    if (offer.Status == OfferState.Negotiating)
+                                    {
+                                        isNegotiating = true;
+                                    }
+                                    sql.UpdateOfferStatus(offerId, OfferState.Completed);
+                                    sql.UpdateOfferFinishTime(offerId, DateTime.Now);
+                                    canProceed = true;
+                                }
+                                else msg = "当前状态不允许接受。";
+                                break;
+
+                            case OfferActionType.OffereeReject:
+                                if (offer.Status == OfferState.Sent || offer.Status == OfferState.Negotiating || offer.Status == OfferState.NegotiationAccepted)
+                                {
+                                    sql.UpdateOfferStatus(offerId, OfferState.Rejected);
+                                    sql.UpdateOfferFinishTime(offerId, DateTime.Now);
+                                    canProceed = true;
+                                }
+                                else msg = "当前状态不允许拒绝。";
+                                break;
+
+                            default:
+                                msg = "无效的操作类型。";
+                                break;
+                        }
+
+                        if (canProceed)
+                        {
+                            offer = sql.GetOffer(offerId, isNegotiating);
+                            if (offer != null)
+                            {
+                                if (offer.Status == OfferState.Completed)
+                                {
+                                    PluginConfig pc2 = new("saved", offer.Offeror.ToString());
+
+                                    if (pc2.Count > 0)
+                                    {
+                                        User user2 = GetUser(pc2);
+
+                                        foreach (Guid itemGuid in offer.OffereeItems)
+                                        {
+                                            if (user.Inventory.Items.FirstOrDefault(i => i.Guid == itemGuid) is Item item)
+                                            {
+                                                user.Inventory.Items.Remove(item);
+
+                                                Item newItem = item.Copy();
+                                                newItem.User = user2;
+                                                newItem.IsSellable = false;
+                                                newItem.IsTradable = false;
+                                                newItem.NextSellableTime = DateTimeUtility.GetTradableTime();
+                                                newItem.NextTradableTime = DateTimeUtility.GetTradableTime();
+                                                user2.Inventory.Items.Add(newItem);
+                                            }
+                                        }
+                                        foreach (Guid itemGuid in offer.OfferorItems)
+                                        {
+                                            if (user2.Inventory.Items.FirstOrDefault(i => i.Guid == itemGuid) is Item item)
+                                            {
+                                                user2.Inventory.Items.Remove(item);
+
+                                                Item newItem = item.Copy();
+                                                newItem.User = user;
+                                                newItem.IsSellable = false;
+                                                newItem.IsTradable = false;
+                                                newItem.NextSellableTime = DateTimeUtility.GetTradableTime();
+                                                newItem.NextTradableTime = DateTimeUtility.GetTradableTime();
+                                                user.Inventory.Items.Add(newItem);
+                                            }
+                                        }
+                                        user.LastTime = DateTime.Now;
+                                        pc.Add("user", user);
+                                        pc.SaveConfig();
+
+                                        user2.LastTime = DateTime.Now;
+                                        pc2.Add("user", user2);
+                                        pc2.SaveConfig();
+
+                                        AddNotice(offer.Offeror, $"报价编号 {offerId} 已交易完成，请通过【我的报价】查询报价记录。");
+
+                                        msg = "";
+                                    }
+                                    else
+                                    {
+                                        msg = "目标玩家不存在，请稍后再试。";
+                                    }
+                                }
+                                else if (offer.Status == OfferState.Rejected)
+                                {
+                                    AddNotice(offer.Offeror, $"报价编号 {offerId} 已被拒绝，请通过【我的报价】查询报价记录。");
+                                }
+                                sql.Commit();
+                            }
+                        }
+
+                        if (msg != "")
+                        {
+                            sql.Rollback();
+                        }
+                        else
+                        {
+                            return $"报价编号 {offerId} 已交易完成，请通过【我的报价】查询报价记录。";
+                        }
+                    }
+                    catch
+                    {
+                        sql.Rollback();
+                        msg = "回应报价时发生错误，请稍后再试。";
+                        throw;
+                    }
+                }
+                else
+                {
+                    msg = "报价不存在或您无权回应。";
+                }
+                return msg;
+            }
+            return "服务器繁忙，请稍后再试。";
+        }
+
+        public static string CancelOffer(User user, long offerId)
+        {
+            using SQLHelper? sql = Factory.OpenFactory.GetSQLHelper();
+            if (sql != null)
+            {
+                string msg = "";
+                Offer? offer = sql.GetOffer(offerId);
+                if (offer != null && offer.Offeror == user.Id)
+                {
+                    try
+                    {
+                        if (offer.Status != OfferState.Created || offer.Status != OfferState.Sent)
+                        {
+                            msg = "此报价已被处理。";
+                            return msg;
+                        }
+
+                        bool result = true;
+                        sql.NewTransaction();
+                        sql.UpdateOfferStatus(offerId, OfferState.Cancelled);
+
+                        if (result)
+                        {
+                            offer = sql.GetOffer(offerId);
+                            if (offer != null)
+                            {
+                                sql.Commit();
+                                return $"报价编号 {offerId} 已取消。";
+                            }
+                        }
+                        else
+                        {
+                            sql.Rollback();
+                        }
+                    }
+                    catch
+                    {
+                        sql.Rollback();
+                        msg = "修改报价时发生错误，请稍后再试。";
+                        throw;
+                    }
+                }
+                else
+                {
+                    msg = "报价不存在或您无权修改。";
+                }
+
+                return msg;
+            }
+            return "服务器繁忙，请稍后再试。";
         }
     }
 }
