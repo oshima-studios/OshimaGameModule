@@ -676,17 +676,23 @@ namespace Oshima.FunGame.OshimaServers.Service
 
             if (is10)
             {
+                int count = 0;
                 for (int i = 1; i <= 10; i++)
                 {
                     double dice = Random.Shared.NextDouble();
                     if (dice > 0.8)
                     {
-                        msgs.Add(GetDrawCardResult(reduce, reduceUnit, user, is10, i));
+                        count++;
+                        msgs.Add(GetDrawCardResult(reduce, reduceUnit, user, is10, count));
                     }
                 }
-                if (msgs.Count == 1)
+                if (msgs.Count <= 1)
                 {
                     msgs[0] = $"消耗 {reduce} {reduceUnit}，你什么也没抽中……";
+                }
+                else
+                {
+                    msgs.Insert(0, $"消耗 {reduce} {reduceUnit}，恭喜你抽到了：");
                 }
             }
             else
@@ -704,7 +710,7 @@ namespace Oshima.FunGame.OshimaServers.Service
 
             if (items != null && items.Any())
             {
-                msgs.Insert(0, $"你的库存中拥有 {items.Count()} 张{reduceUnit}，本次抽卡优先使用一张代替金币抽卡！");
+                msgs.Insert(0, $"本次抽卡使用{reduceUnit}代替金币抽卡！你的库存剩余 {items.Count()} 张{reduceUnit}。");
             }
 
             return msgs;
@@ -2837,6 +2843,14 @@ namespace Oshima.FunGame.OshimaServers.Service
                                     break;
                                 }
                                 
+                                if (item.Character != null)
+                                {
+                                    result = false;
+                                    if (msg != "") msg += "\r\n";
+                                    msg += $"物品 {itemIndex}. {item.Name}：此物品已被 {item.Character} 装备中，无法进行交易。";
+                                    break;
+                                }
+                                
                                 if (!item.IsTradable)
                                 {
                                     result = false;
@@ -3145,7 +3159,7 @@ namespace Oshima.FunGame.OshimaServers.Service
                                             {
                                                 user.Inventory.Items.Remove(item);
 
-                                                Item newItem = item.Copy();
+                                                Item newItem = item.Copy(copyGuid: true);
                                                 newItem.User = user2;
                                                 newItem.IsSellable = false;
                                                 newItem.IsTradable = false;
@@ -3160,7 +3174,7 @@ namespace Oshima.FunGame.OshimaServers.Service
                                             {
                                                 user2.Inventory.Items.Remove(item);
 
-                                                Item newItem = item.Copy();
+                                                Item newItem = item.Copy(copyGuid: true);
                                                 newItem.User = user;
                                                 newItem.IsSellable = false;
                                                 newItem.IsTradable = false;

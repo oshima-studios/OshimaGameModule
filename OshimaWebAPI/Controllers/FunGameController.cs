@@ -5958,10 +5958,10 @@ namespace Oshima.FunGame.WebAPI.Controllers
         }
         
         [HttpGet("getoffer")]
-        public string GetOffer([FromQuery] long? uid = null, [FromQuery] long? offerId = null, [FromQuery] int? page = null)
+        public string GetOffer([FromQuery] long? uid = null, [FromQuery] long? offerId = null, [FromQuery] int page = 1)
         {
             long userid = uid ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
-            int showPage = page ?? 1;
+            int showPage = page;
             if (showPage <= 0) showPage = 1;
 
             try
@@ -6010,11 +6010,21 @@ namespace Oshima.FunGame.WebAPI.Controllers
                                 builder.AppendLine($"发起方：{user1}");
                                 builder.AppendLine($"接收方：{user2}");
                                 builder.AppendLine($"状态：{CommonSet.GetOfferStatus(offer.Status)}");
+                                builder.AppendLine($"创建时间：{offer.CreateTime.ToString(General.GeneralDateTimeFormatChinese)}");
+                                if (offer.FinishTime.HasValue) builder.AppendLine($"完成时间：{offer.FinishTime.Value.ToString(General.GeneralDateTimeFormatChinese)}");
 
                                 if (sql != null)
                                 {
-                                    offer.OfferorItems = [.. SQLService.GetOfferItemsByOfferIdAndUserId(sql, offer.Id, user1)];
-                                    offer.OffereeItems = [.. SQLService.GetOfferItemsByOfferIdAndUserId(sql, offer.Id, user2)];
+                                    if (offer.Status == OfferState.Completed)
+                                    {
+                                        offer.OffereeItems = [.. SQLService.GetOfferItemsByOfferIdAndUserId(sql, offer.Id, user1)];
+                                        offer.OfferorItems = [.. SQLService.GetOfferItemsByOfferIdAndUserId(sql, offer.Id, user2)];
+                                    }
+                                    else
+                                    {
+                                        offer.OfferorItems = [.. SQLService.GetOfferItemsByOfferIdAndUserId(sql, offer.Id, user1)];
+                                        offer.OffereeItems = [.. SQLService.GetOfferItemsByOfferIdAndUserId(sql, offer.Id, user2)];
+                                    }
                                 }
 
                                 List<string> user1Item = [];

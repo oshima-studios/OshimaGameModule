@@ -2255,10 +2255,14 @@ namespace Oshima.FunGame.WebAPI.Services
                     if (int.TryParse(detail, out int page))
                     {
                         msg = Controller.GetOffer(uid, null, page);
-                        if (msg.Trim() != "")
-                        {
-                            await SendAsync(e, "我的报价", msg);
-                        }
+                    }
+                    else
+                    {
+                        msg = Controller.GetOffer(uid);
+                    }
+                    if (msg.Trim() != "")
+                    {
+                        await SendAsync(e, "我的报价", msg);
                     }
                     return result;
                 }
