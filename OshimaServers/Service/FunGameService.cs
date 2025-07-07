@@ -63,7 +63,7 @@ namespace Oshima.FunGame.OshimaServers.Service
             FunGameConstant.Items.AddRange(exItems.Values.Where(i => (int)i.ItemType > 4));
             FunGameConstant.Items.AddRange([new 小经验书(), new 中经验书(), new 大经验书(), new 升华之印(), new 流光之印(), new 永恒之印(), new 技能卷轴(), new 智慧之果(), new 奥术符文(), new 混沌之核(),
                 new 小回复药(), new 中回复药(), new 大回复药(), new 魔力填充剂1(), new 魔力填充剂2(), new 魔力填充剂3(), new 能量饮料1(), new 能量饮料2(), new 能量饮料3(), new 年夜饭(), new 蛇年大吉(), new 新春快乐(), new 毕业礼包(),
-                new 复苏药1(), new 复苏药2(), new 复苏药3(), new 全回复药(), new 魔法卡礼包()
+                new 复苏药1(), new 复苏药2(), new 复苏药3(), new 全回复药(), new 魔法卡礼包(), new 奖券(), new 十连奖券()
             ]);
 
             FunGameConstant.AllItems.AddRange(FunGameConstant.Equipment);
@@ -628,10 +628,91 @@ namespace Oshima.FunGame.OshimaServers.Service
             return [.. list.Skip((showPage - 1) * pageSize).Take(pageSize)];
         }
 
-        public static string GetDrawCardResult(int reduce, User user, bool isMulti = false, int multiCount = 1, bool useCurrency = true)
+        public static List<string> DrawCards(User user, bool is10 = false, bool useCurrency = true)
+        {
+            List<string> msgs = [];
+            int reduce;
+            string reduceUnit;
+            IEnumerable<Item>? items = null;
+            if (useCurrency)
+            {
+                if (is10)
+                {
+                    items = user.Inventory.Items.Where(i => i is 十连奖券);
+                }
+                else
+                {
+                    items = user.Inventory.Items.Where(i => i is 奖券);
+                }
+                if (items.Any())
+                {
+                    reduceUnit = items.First().Name;
+                    reduce = 1;
+                    user.Inventory.Items.Remove(items.First());
+                }
+                else
+                {
+                    reduceUnit = General.GameplayEquilibriumConstant.InGameCurrency;
+                    reduce = is10 ? FunGameConstant.DrawCardReduce * 10 : FunGameConstant.DrawCardReduce;
+                    if (user.Inventory.Credits < reduce)
+                    {
+                        msgs.Add($"你的{reduceUnit}不足 {reduce} 呢，无法抽卡！");
+                        return msgs;
+                    }
+                    user.Inventory.Credits -= reduce;
+                }
+            }
+            else
+            {
+                reduceUnit = General.GameplayEquilibriumConstant.InGameMaterial;
+                reduce = is10 ? FunGameConstant.DrawCardReduce_Material * 10 : FunGameConstant.DrawCardReduce_Material;
+                if (user.Inventory.Materials < reduce)
+                {
+                    msgs.Add($"你的{reduceUnit}不足 {reduce} 呢，无法抽卡！");
+                    return msgs;
+                }
+                user.Inventory.Materials -= reduce;
+            }
+
+            if (is10)
+            {
+                for (int i = 1; i <= 10; i++)
+                {
+                    double dice = Random.Shared.NextDouble();
+                    if (dice > 0.8)
+                    {
+                        msgs.Add(GetDrawCardResult(reduce, reduceUnit, user, is10, i));
+                    }
+                }
+                if (msgs.Count == 1)
+                {
+                    msgs[0] = $"消耗 {reduce} {reduceUnit}，你什么也没抽中……";
+                }
+            }
+            else
+            {
+                double dice = Random.Shared.NextDouble();
+                if (dice > 0.8)
+                {
+                    msgs.Add(GetDrawCardResult(reduce, reduceUnit, user));
+                }
+                else
+                {
+                    msgs.Add($"消耗 {reduce} {reduceUnit}，你什么也没抽中……");
+                }
+            }
+
+            if (items != null && items.Any())
+            {
+                msgs.Insert(0, $"你的库存中拥有 {items.Count()} 张{reduceUnit}，本次抽卡优先使用一张代替金币抽卡！");
+            }
+
+            return msgs;
+        }
+
+        public static string GetDrawCardResult(int reduce, string reduceUnit, User user, bool isMulti = false, int multiCount = 1)
         {
             string msg = "";
-            string reduceUnit = useCurrency ? General.GameplayEquilibriumConstant.InGameCurrency : General.GameplayEquilibriumConstant.InGameMaterial;
             if (!isMulti)
             {
                 msg = $"消耗 {reduce} {reduceUnit}，恭喜你抽到了：";
@@ -2688,7 +2769,7 @@ namespace Oshima.FunGame.OshimaServers.Service
                 if (sql.Success)
                 {
                     long offerId = sql.LastInsertId;
-                    Offer? offer = sql.GetOffer(offerId);
+                    Offer? offer = SQLService.GetOffer(sql, offerId);
                     if (offer != null)
                     {
                         return offerId;
@@ -2698,42 +2779,64 @@ namespace Oshima.FunGame.OshimaServers.Service
             return -1;
         }
         
-        public static string AddItemsToOffer(PluginConfig pc, User user, long offerId, bool isOfferee, int[] itemIds)
+        public static string AddOfferItems(User user, long offerId, bool isOpposite, int[] itemIds)
         {
             using SQLHelper? sql = Factory.OpenFactory.GetSQLHelper();
             if (sql != null)
             {
                 bool result = true;
                 string msg = "";
-                Offer? offer = sql.GetOffer(offerId);
+                Offer? offer = SQLService.GetOffer(sql, offerId);
                 if (offer != null && offer.Offeror == user.Id)
                 {
                     try
                     {
-                        sql.NewTransaction();
-
-                        User addUser = user;
-                        if (isOfferee)
+                        if (offer.Status != OfferState.Created)
                         {
-                            PluginConfig pc2 = new("saved", offer.Offeror.ToString());
-
-                            if (pc2.Count > 0)
-                            {
-                                addUser = GetUser(pc2);
-                            }
-                            else
-                            {
-                                msg = "目标玩家不存在，请稍后再试。";
-                            }
+                            msg = "当前状态不允许修改报价内容。";
+                            return msg;
                         }
 
+                        User user2;
+                        PluginConfig pc2 = new("saved", offer.Offeree.ToString());
+                        pc2.LoadConfig();
+
+                        if (pc2.Count > 0)
+                        {
+                            user2 = GetUser(pc2);
+                        }
+                        else
+                        {
+                            return "无法找到报价的接收方，请稍后再试。";
+                        }
+                        User addUser = isOpposite ? user2: user;
+                        offer.OfferorItems = [.. SQLService.GetOfferItemsByOfferIdAndUserId(sql, offerId, user)];
+                        offer.OffereeItems = [.. SQLService.GetOfferItemsByOfferIdAndUserId(sql, offerId, user2)];
+
+                        sql.NewTransaction();
                         List<int> failedItems = [];
                         foreach (int itemIndex in itemIds)
                         {
-                            if (itemIndex > 0 && itemIndex <= user.Inventory.Items.Count)
+                            if (itemIndex > 0 && itemIndex <= addUser.Inventory.Items.Count)
                             {
-                                Item item = user.Inventory.Items.ToList()[itemIndex - 1];
+                                Item item = addUser.Inventory.Items.ToList()[itemIndex - 1];
 
+                                if (addUser.Id == offer.Offeror && offer.OfferorItems.Contains(item.Guid) || addUser.Id == offer.Offeree && offer.OffereeItems.Contains(item.Guid))
+                                {
+                                    result = false;
+                                    if (msg != "") msg += "\r\n";
+                                    msg += $"物品 {itemIndex}. {item.Name}：此物品已在报价中，无需重复添加。";
+                                    continue;
+                                }
+
+                                if (item.IsLock)
+                                {
+                                    result = false;
+                                    if (msg != "") msg += "\r\n";
+                                    msg += $"物品 {itemIndex}. {item.Name}：此物品已锁定，无法进行交易。";
+                                    break;
+                                }
+                                
                                 if (!item.IsTradable)
                                 {
                                     result = false;
@@ -2769,7 +2872,7 @@ namespace Oshima.FunGame.OshimaServers.Service
 
                         if (result)
                         {
-                            offer = sql.GetOffer(offerId);
+                            offer = SQLService.GetOffer(sql, offerId);
                             if (offer != null)
                             {
                                 sql.Commit();
@@ -2789,7 +2892,7 @@ namespace Oshima.FunGame.OshimaServers.Service
                 }
                 else
                 {
-                    msg = "报价不存在或您无权修改。";
+                    msg = "报价不存在或你不是该报价的发起方。";
                 }
 
                 return msg;
@@ -2803,7 +2906,7 @@ namespace Oshima.FunGame.OshimaServers.Service
             if (sql != null)
             {
                 string msg = "";
-                Offer? offer = sql.GetOffer(offerId);
+                Offer? offer = SQLService.GetOffer(sql, offerId);
                 if (offer != null && offer.Offeror == user.Id)
                 {
                     try
@@ -2820,11 +2923,11 @@ namespace Oshima.FunGame.OshimaServers.Service
 
                         if (result)
                         {
-                            offer = sql.GetOffer(offerId);
+                            offer = SQLService.GetOffer(sql, offerId);
                             if (offer != null)
                             {
                                 sql.Commit();
-                                AddNotice(offer.Offeree, $"你收到了一个报价！请通过【我的报价】查询报价记录。");
+                                AddNotice(offer.Offeree, $"你收到了一个报价！请通过【查报价{offerId}】查询报价记录。");
                                 return $"报价编号 {offerId} 已发送。";
                             }
                         }
@@ -2842,7 +2945,7 @@ namespace Oshima.FunGame.OshimaServers.Service
                 }
                 else
                 {
-                    msg = "报价不存在或您无权修改。";
+                    msg = "报价不存在或你不是该报价的发起方。";
                 }
                 
                 return msg;
@@ -2859,17 +2962,121 @@ namespace Oshima.FunGame.OshimaServers.Service
             {
                 if (offerId > 0)
                 {
-                    Offer? offer = sql.GetOffer(offerId);
-                    if (offer != null) offers.Add(offer);
+                    Offer? offer = SQLService.GetOffer(sql, offerId);
+                    if (offer != null)
+                    {
+                        if (offer.Offeror == user.Id || offer.Offeree == user.Id)
+                        {
+                            offers.Add(offer);
+                        }
+                        else
+                        {
+                            msg = $"你无权查看报价编号 {offerId}。";
+                        }
+                    }
                     else msg = $"报价编号 {offerId} 不存在。";
                 }
                 else
                 {
                     offers = sql.GetOffersByOfferor(user.Id);
                     offers = [.. offers, ..sql.GetOffersByOfferee(user.Id)];
+                    offers = [.. offers.DistinctBy(o => o.Id)];
                 }
             }
             return offers;
+        }
+
+        public static string RemoveOfferItems(User user, long offerId, bool isOpposite, int[] itemIds)
+        {
+            using SQLHelper? sql = Factory.OpenFactory.GetSQLHelper();
+            if (sql != null)
+            {
+                bool result = true;
+                string msg = "";
+                Offer? offer = SQLService.GetOffer(sql, offerId);
+                if (offer != null && offer.Offeror == user.Id)
+                {
+                    try
+                    {
+                        if (offer.Status != OfferState.Created)
+                        {
+                            msg = "当前状态不允许修改报价内容。";
+                            return msg;
+                        }
+
+                        User removeUser;
+                        List<Guid> guids = [];
+
+                        if (isOpposite)
+                        {
+                            PluginConfig pc2 = new("saved", offer.Offeree.ToString());
+                            pc2.LoadConfig();
+
+                            if (pc2.Count > 0)
+                            {
+                                removeUser = GetUser(pc2);
+                            }
+                            else
+                            {
+                                return "无法找到报价的接收方，请稍后再试。";
+                            }
+                        }
+                        else
+                        {
+                            removeUser = user;
+                        }
+
+                        guids = [.. SQLService.GetOfferItemsByOfferIdAndUserId(sql, offerId, removeUser)];
+
+                        sql.NewTransaction();
+                        List<int> failedItems = [];
+                        foreach (int itemIndex in itemIds)
+                        {
+                            if (itemIndex > 0 && itemIndex <= guids.Count)
+                            {
+                                Guid itemGuid = guids[itemIndex - 1];
+                                SQLService.DeleteOfferItemsByOfferIdAndItemGuid(sql, offerId, itemGuid);
+                            }
+                            else
+                            {
+                                failedItems.Add(itemIndex);
+                            }
+                        }
+
+                        if (failedItems.Count > 0)
+                        {
+                            if (msg != "") msg += "\r\n";
+                            msg += $"在报价的{(isOpposite ? "接收方" : "发起方")}物品列表中没有找到与这个序号相对应的物品：{string.Join("，", failedItems)}";
+                        }
+
+                        if (result)
+                        {
+                            offer = SQLService.GetOffer(sql, offerId);
+                            if (offer != null)
+                            {
+                                sql.Commit();
+                            }
+                        }
+                        else
+                        {
+                            sql.Rollback();
+                        }
+                    }
+                    catch
+                    {
+                        sql.Rollback();
+                        msg = "修改报价时发生错误，请稍后再试。";
+                        throw;
+                    }
+                }
+                else
+                {
+                    msg = "报价不存在或你不是该报价的发起方。";
+                }
+
+                return msg;
+            }
+            return "服务器繁忙，请稍后再试。";
         }
 
         public static string RespondOffer(PluginConfig pc, User user, long offerId, OfferActionType action)
@@ -2878,11 +3085,10 @@ namespace Oshima.FunGame.OshimaServers.Service
             if (sql != null)
             {
                 string msg = "";
-                Offer? offer = sql.GetOffer(offerId);
+                Offer? offer = SQLService.GetOffer(sql, offerId);
                 if (offer != null && offer.Offeree == user.Id)
                 {
                     bool canProceed = false;
-                    bool isNegotiating = false;
 
                     try
                     {
@@ -2894,10 +3100,6 @@ namespace Oshima.FunGame.OshimaServers.Service
                             case OfferActionType.OffereeAccept:
                                 if (offer.Status == OfferState.Sent || offer.Status == OfferState.Negotiating || offer.Status == OfferState.NegotiationAccepted)
                                 {
-                                    if (offer.Status == OfferState.Negotiating)
-                                    {
-                                        isNegotiating = true;
-                                    }
                                     sql.UpdateOfferStatus(offerId, OfferState.Completed);
                                     sql.UpdateOfferFinishTime(offerId, DateTime.Now);
                                     canProceed = true;
@@ -2922,16 +3124,20 @@ namespace Oshima.FunGame.OshimaServers.Service
 
                         if (canProceed)
                         {
-                            offer = sql.GetOffer(offerId, isNegotiating);
+                            offer = SQLService.GetOffer(sql, offerId);
                             if (offer != null)
                             {
                                 if (offer.Status == OfferState.Completed)
                                 {
                                     PluginConfig pc2 = new("saved", offer.Offeror.ToString());
+                                    pc2.LoadConfig();
 
                                     if (pc2.Count > 0)
                                     {
                                         User user2 = GetUser(pc2);
+
+                                        offer.OffereeItems = [.. SQLService.GetOfferItemsByOfferIdAndUserId(sql, offerId, user)];
+                                        offer.OfferorItems = [.. SQLService.GetOfferItemsByOfferIdAndUserId(sql, offerId, user2)];
 
                                         foreach (Guid itemGuid in offer.OffereeItems)
                                         {
@@ -2971,7 +3177,7 @@ namespace Oshima.FunGame.OshimaServers.Service
                                         pc2.Add("user", user2);
                                         pc2.SaveConfig();
 
-                                        AddNotice(offer.Offeror, $"报价编号 {offerId} 已交易完成，请通过【我的报价】查询报价记录。");
+                                        AddNotice(offer.Offeror, $"报价编号 {offerId} 已交易完成，请通过【查报价{offerId}】查询报价记录。");
 
                                         msg = "";
                                     }
@@ -2982,7 +3188,7 @@ namespace Oshima.FunGame.OshimaServers.Service
                                 }
                                 else if (offer.Status == OfferState.Rejected)
                                 {
-                                    AddNotice(offer.Offeror, $"报价编号 {offerId} 已被拒绝，请通过【我的报价】查询报价记录。");
+                                    AddNotice(offer.Offeror, $"报价编号 {offerId} 已被拒绝，请通过【查报价{offerId}】查询报价记录。");
                                 }
                                 sql.Commit();
                             }
@@ -2994,7 +3200,7 @@ namespace Oshima.FunGame.OshimaServers.Service
                         }
                         else
                         {
-                            return $"报价编号 {offerId} 已交易完成，请通过【我的报价】查询报价记录。";
+                            return $"报价编号 {offerId} 已交易完成，请通过【查报价{offerId}】查询报价记录。";
                         }
                     }
                     catch
@@ -3006,7 +3212,7 @@ namespace Oshima.FunGame.OshimaServers.Service
                 }
                 else
                 {
-                    msg = "报价不存在或您无权回应。";
+                    msg = "报价不存在或你不是该报价的接收方。";
                 }
                 return msg;
             }
@@ -3019,12 +3225,12 @@ namespace Oshima.FunGame.OshimaServers.Service
             if (sql != null)
             {
                 string msg = "";
-                Offer? offer = sql.GetOffer(offerId);
+                Offer? offer = SQLService.GetOffer(sql, offerId);
                 if (offer != null && offer.Offeror == user.Id)
                 {
                     try
                     {
-                        if (offer.Status != OfferState.Created || offer.Status != OfferState.Sent)
+                        if (offer.Status != OfferState.Created && offer.Status != OfferState.Sent)
                         {
                             msg = "此报价已被处理。";
                             return msg;
@@ -3036,7 +3242,7 @@ namespace Oshima.FunGame.OshimaServers.Service
 
                         if (result)
                         {
-                            offer = sql.GetOffer(offerId);
+                            offer = SQLService.GetOffer(sql, offerId);
                             if (offer != null)
                             {
                                 sql.Commit();
@@ -3057,7 +3263,7 @@ namespace Oshima.FunGame.OshimaServers.Service
                 }
                 else
                 {
-                    msg = "报价不存在或您无权修改。";
+                    msg = "报价不存在或你不是该报价的发起方。";
                 }
 
                 return msg;

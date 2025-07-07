@@ -71,23 +71,23 @@ namespace Oshima.FunGame.WebAPI.Controllers
                             string time = date.ToString("HH:mm:ss", CultureInfo.InvariantCulture);
 
                             string msg = "服务器最后启动时间：" + $"{month}. {day}, {date.Year} {time}";
-                            return NetworkUtility.JsonSerialize(msg);
+                            return msg;
                         }
                     }
                 }
                 catch (Exception e)
                 {
                     Statics.RunningPlugin.Controller.Error(e);
-                    return NetworkUtility.JsonSerialize("无法调用此接口。原因：\r\n" + e.GetErrorInfo());
+                    return "无法调用此接口。原因：\r\n" + e.GetErrorInfo();
                 }
             }
-            return NetworkUtility.JsonSerialize("无法调用此接口。原因：与 SQL 服务器通信失败。");
+            return "无法调用此接口。原因：与 SQL 服务器通信失败。";
         }
 
         [HttpGet("gettask")]
         public string GetTaskScheduler(string name)
         {
-            return NetworkUtility.JsonSerialize(TaskScheduler.Shared.GetRunTimeInfo(name));
+            return TaskScheduler.Shared.GetRunTimeInfo(name);
         }
 
         [HttpGet("sendtest")]
@@ -100,17 +100,17 @@ namespace Oshima.FunGame.WebAPI.Controllers
                     MailSender? sender = Statics.RunningPlugin.Controller.MailSender;
                     if (sender != null && sender.Send(new(sender, "Test Mail", "Hello!", to)) == Milimoe.FunGame.Core.Library.Constant.MailSendResult.Success)
                     {
-                        return NetworkUtility.JsonSerialize("发送成功。");
+                        return "发送成功。";
                     }
-                    return NetworkUtility.JsonSerialize("发送失败。");
+                    return "发送失败。";
                 }
                 catch (Exception e)
                 {
                     Statics.RunningPlugin.Controller.Error(e);
-                    return NetworkUtility.JsonSerialize("无法调用此接口。原因：\r\n" + e.GetErrorInfo());
+                    return "无法调用此接口。原因：\r\n" + e.GetErrorInfo();
                 }
             }
-            return NetworkUtility.JsonSerialize("无法调用此接口。");
+            return "无法调用此接口。";
         }
     }
 }

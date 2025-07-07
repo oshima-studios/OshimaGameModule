@@ -686,10 +686,10 @@ namespace Oshima.FunGame.WebAPI.Services
 
                 if (e.Detail == "抽卡")
                 {
-                    string msg = Controller.DrawCard(uid);
-                    if (msg != "")
+                    List<string> msgs = Controller.DrawCard(uid);
+                    if (msgs.Count > 0)
                     {
-                        await SendAsync(e, "抽卡", "\r\n" + msg);
+                        await SendAsync(e, "抽卡", "\r\n" + string.Join("\r\n", msgs));
                     }
                     return result;
                 }
@@ -706,10 +706,10 @@ namespace Oshima.FunGame.WebAPI.Services
 
                 if (e.Detail == "材料抽卡")
                 {
-                    string msg = Controller.DrawCard_Material(uid);
-                    if (msg != "")
+                    List<string> msgs = Controller.DrawCard_Material(uid);
+                    if (msgs.Count > 0)
                     {
-                        await SendAsync(e, "材料抽卡", "\r\n" + msg);
+                        await SendAsync(e, "材料抽卡", "\r\n" + string.Join("\r\n", msgs));
                     }
                     return result;
                 }
@@ -2351,13 +2351,17 @@ namespace Oshima.FunGame.WebAPI.Services
                             indexs.Add(c);
                         }
                     }
-                    if (long.TryParse(detail, out long id))
+                    if (indexs.Count > 1)
                     {
-                        msg = Controller.AddItemsToOffer(uid, id, false, [.. indexs]);
+                        msg = Controller.AddOfferItems(uid, indexs[0], false, [.. indexs[1..]]);
                         if (msg.Trim() != "")
                         {
                             await SendAsync(e, "报价添加物品", msg);
                         }
+                    }
+                    else
+                    {
+                        msg = "格式不正确，请先输入报价序号再输入物品序号，使用空格隔开。";
                     }
                     return result;
                 }
@@ -2375,13 +2379,73 @@ namespace Oshima.FunGame.WebAPI.Services
                             indexs.Add(c);
                         }
                     }
-                    if (long.TryParse(detail, out long id))
+                    if (indexs.Count > 1)
                     {
-                        msg = Controller.AddItemsToOffer(uid, id, true, [.. indexs]);
+                        msg = Controller.AddOfferItems(uid, indexs[0], true, [.. indexs[1..]]);
                         if (msg.Trim() != "")
                         {
                             await SendAsync(e, "报价添加对方物品", msg);
                         }
+                    }
+                    else
+                    {
+                        msg = "格式不正确，请先输入报价序号再输入物品序号，使用空格隔开。";
+                    }
+                    return result;
+                }
+                
+                if (e.Detail.StartsWith(value: "报价移除物品"))
+                {
+                    string detail = e.Detail.Replace("报价移除物品", "").Trim();
+                    string msg = "";
+                    string[] strings = detail.Split(' ', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
+                    List<int> indexs = [];
+                    foreach (string s in strings)
+                    {
+                        if (int.TryParse(s, out int c))
+                        {
+                            indexs.Add(c);
+                        }
+                    }
+                    if (indexs.Count > 1)
+                    {
+                        msg = Controller.RemoveOfferItems(uid, indexs[0], false, [.. indexs[1..]]);
+                        if (msg.Trim() != "")
+                        {
+                            await SendAsync(e, "报价移除物品", msg);
+                        }
+                    }
+                    else
+                    {
+                        msg = "格式不正确，请先输入报价序号再输入物品序号，使用空格隔开。";
+                    }
+                    return result;
+                }
+                
+                if (e.Detail.StartsWith(value: "报价移除对方物品"))
+                {
+                    string detail = e.Detail.Replace("报价移除对方物品", "").Trim();
+                    string msg = "";
+                    string[] strings = detail.Split(' ', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
+                    List<int> indexs = [];
+                    foreach (string s in strings)
+                    {
+                        if (int.TryParse(s, out int c))
+                        {
+                            indexs.Add(c);
+                        }
+                    }
+                    if (indexs.Count > 1)
+                    {
+                        msg = Controller.RemoveOfferItems(uid, indexs[0], true, [.. indexs[1..]]);
+                        if (msg.Trim() != "")
+                        {
+                            await SendAsync(e, "报价移除对方物品", msg);
+                        }
+                    }
+                    else
+                    {
+                        msg = "格式不正确，请先输入报价序号再输入物品序号，使用空格隔开。";
                     }
                     return result;
                 }

@@ -1,6 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
-using Milimoe.FunGame.Core.Api.Utility;
 using Oshima.Core.Configs;
 using Oshima.FunGame.WebAPI.Models;
 using Oshima.FunGame.WebAPI.Services;
@@ -55,7 +54,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
                 6 => "dx" + (Random.Shared.Next(2) + 1) + ".png",
                 _ => ""
             };
-            return NetworkUtility.JsonSerialize(img);
+            return img;
         }
     }
 }

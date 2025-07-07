@@ -26,8 +26,6 @@ namespace Oshima.FunGame.WebAPI.Controllers
         private ILogger<FunGameController> Logger { get; set; } = logger;
 
         private readonly SemaphoreSlim _semaphore = new(1, 1);
-        private const int drawCardReduce = 1000;
-        private const int drawCardReduce_Material = 5;
         private const string noSaved = "你还没有创建存档！请发送【创建存档】创建。";
         private const string refused = "暂时无法使用此指令。";
         private const string busy = "服务器繁忙，请稍后再试。";
@@ -495,7 +493,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
                 catch (Exception e)
                 {
                     sqlHelper.Rollback();
-                    Logger.LogError(e, "Error: ");
+                    Logger.LogError(e, "Error: {e.Message}", e.Message);
                 }
                 return "无法处理注册，创建存档失败！";
             }
@@ -1229,7 +1227,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
         }
 
         [HttpPost("drawcard")]
-        public string DrawCard([FromQuery] long? uid = null)
+        public List<string> DrawCard([FromQuery] long? uid = null)
         {
             long userid = uid ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
 
@@ -1240,34 +1238,16 @@ namespace Oshima.FunGame.WebAPI.Controllers
             {
                 User user = FunGameService.GetUser(pc);
 
-                int reduce = drawCardReduce;
-                if (user.Inventory.Credits >= reduce)
-                {
-                    user.Inventory.Credits -= reduce;
-                }
-                else
-                {
-                    return $"你的{General.GameplayEquilibriumConstant.InGameCurrency}不足 {reduce} 呢，无法抽卡！";
-                }
+                List<string> result = FunGameService.DrawCards(user, false, true);
 
-                double dice = Random.Shared.NextDouble();
-                if (dice > 0.8)
-                {
-                    string msg = FunGameService.GetDrawCardResult(reduce, user);
-                    user.LastTime = DateTime.Now;
-                    pc.Add("user", user);
-                    pc.SaveConfig();
-                    return msg;
-                }
-                else
-                {
-                    pc.SaveConfig();
-                    return $"消耗 {reduce} {General.GameplayEquilibriumConstant.InGameCurrency}，你什么也没抽中……";
-                }
+                user.LastTime = DateTime.Now;
+                pc.Add("user", user);
+                pc.SaveConfig();
+                return result;
             }
             else
             {
-                return noSaved;
+                return [noSaved];
             }
         }
 
@@ -1283,31 +1263,8 @@ namespace Oshima.FunGame.WebAPI.Controllers
             {
                 User user = FunGameService.GetUser(pc);
 
-                int reduce = drawCardReduce * 10;
-                if (user.Inventory.Credits >= reduce)
-                {
-                    user.Inventory.Credits -= reduce;
-                }
-                else
-                {
-                    return [$"你的{General.GameplayEquilibriumConstant.InGameCurrency}不足 {reduce} 呢，无法十连抽卡！"];
-                }
+                List<string> result = FunGameService.DrawCards(user, true, true);
 
-                List<string> result = [$"消耗 {reduce} {General.GameplayEquilibriumConstant.InGameCurrency}，恭喜你抽到了："];
-                int count = 0;
-                for (int i = 0; i < 10; i++)
-                {
-                    double dice = Random.Shared.NextDouble();
-                    if (dice > 0.8)
-                    {
-                        count++;
-                        result.Add(FunGameService.GetDrawCardResult(reduce, user, true, count));
-                    }
-                }
-                if (result.Count == 1)
-                {
-                    result[0] = $"消耗 {reduce} {General.GameplayEquilibriumConstant.InGameCurrency}，你什么也没抽中……";
-                }
                 user.LastTime = DateTime.Now;
                 pc.Add("user", user);
                 pc.SaveConfig();
@@ -1320,7 +1277,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
         }
 
         [HttpPost("drawcardm")]
-        public string DrawCard_Material([FromQuery] long? uid = null)
+        public List<string> DrawCard_Material([FromQuery] long? uid = null)
         {
             long userid = uid ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
 
@@ -1331,34 +1288,16 @@ namespace Oshima.FunGame.WebAPI.Controllers
             {
                 User user = FunGameService.GetUser(pc);
 
-                int reduce = drawCardReduce_Material;
-                if (user.Inventory.Materials >= reduce)
-                {
-                    user.Inventory.Materials -= reduce;
-                }
-                else
-                {
-                    return $"你的{General.GameplayEquilibriumConstant.InGameMaterial}不足 {reduce} 呢，无法抽卡！";
-                }
+                List<string> result = FunGameService.DrawCards(user, false, false);
 
-                double dice = Random.Shared.NextDouble();
-                if (dice > 0.8)
-                {
-                    string msg = FunGameService.GetDrawCardResult(reduce, user, useCurrency: false);
-                    user.LastTime = DateTime.Now;
-                    pc.Add("user", user);
-                    pc.SaveConfig();
-                    return msg;
-                }
-                else
-                {
-                    pc.SaveConfig();
-                    return $"消耗 {reduce} {General.GameplayEquilibriumConstant.InGameMaterial}，你什么也没抽中……";
-                }
+                user.LastTime = DateTime.Now;
+                pc.Add("user", user);
+                pc.SaveConfig();
+                return result;
             }
             else
             {
-                return noSaved;
+                return [noSaved];
             }
         }
 
@@ -1374,31 +1313,8 @@ namespace Oshima.FunGame.WebAPI.Controllers
             {
                 User user = FunGameService.GetUser(pc);
 
-                int reduce = drawCardReduce_Material * 10;
-                if (user.Inventory.Materials >= reduce)
-                {
-                    user.Inventory.Materials -= reduce;
-                }
-                else
-                {
-                    return [$"你的{General.GameplayEquilibriumConstant.InGameMaterial}不足 {reduce} 呢，无法十连抽卡！"];
-                }
+                List<string> result = FunGameService.DrawCards(user, true, false);
 
-                List<string> result = [$"消耗 {reduce} {General.GameplayEquilibriumConstant.InGameMaterial}，恭喜你抽到了："];
-                int count = 0;
-                for (int i = 0; i < 10; i++)
-                {
-                    double dice = Random.Shared.NextDouble();
-                    if (dice > 0.8)
-                    {
-                        count++;
-                        result.Add(FunGameService.GetDrawCardResult(reduce, user, true, count, useCurrency: false));
-                    }
-                }
-                if (result.Count == 1)
-                {
-                    result[0] = $"消耗 {reduce} {General.GameplayEquilibriumConstant.InGameMaterial}，你什么也没抽中……";
-                }
                 user.LastTime = DateTime.Now;
                 pc.Add("user", user);
                 pc.SaveConfig();
@@ -1494,7 +1410,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
             }
             catch (Exception e)
             {
-                Logger.LogError(e, "Error: ");
+                Logger.LogError(e, "Error: {e.Message}", e.Message);
                 return busy;
             }
         }
@@ -1538,7 +1454,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
             }
             catch (Exception e)
             {
-                Logger.LogError(e, "Error: ");
+                Logger.LogError(e, "Error: {e.Message}", e.Message);
                 return busy;
             }
         }
@@ -1582,7 +1498,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
             }
             catch (Exception e)
             {
-                Logger.LogError(e, "Error: ");
+                Logger.LogError(e, "Error: {e.Message}", e.Message);
                 return busy;
             }
         }
@@ -1619,7 +1535,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
             }
             catch (Exception e)
             {
-                Logger.LogError(e, "Error: ");
+                Logger.LogError(e, "Error: {e.Message}", e.Message);
                 return busy;
             }
         }
@@ -1731,7 +1647,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
             }
             catch (Exception e)
             {
-                Logger.LogError(e, "Error: ");
+                Logger.LogError(e, "Error: {e.Message}", e.Message);
                 return busy;
             }
         }
@@ -1798,7 +1714,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
             }
             catch (Exception e)
             {
-                Logger.LogError(e, "Error: ");
+                Logger.LogError(e, "Error: {e.Message}", e.Message);
                 return busy;
             }
         }
@@ -1846,7 +1762,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
             }
             catch (Exception e)
             {
-                Logger.LogError(e, "Error: ");
+                Logger.LogError(e, "Error: {e.Message}", e.Message);
                 return busy;
             }
         }
@@ -1905,7 +1821,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
             }
             catch (Exception e)
             {
-                Logger.LogError(e, "Error: ");
+                Logger.LogError(e, "Error: {e.Message}", e.Message);
                 return [busy];
             }
         }
@@ -1928,7 +1844,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
             }
             catch (Exception e)
             {
-                Logger.LogError(e, "Error: ");
+                Logger.LogError(e, "Error: {e.Message}", e.Message);
                 return [busy];
             }
         }
@@ -2005,7 +1921,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
             }
             catch (Exception e)
             {
-                Logger.LogError(e, "Error: ");
+                Logger.LogError(e, "Error: {e.Message}", e.Message);
                 return [busy];
             }
         }
@@ -2028,7 +1944,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
             }
             catch (Exception e)
             {
-                Logger.LogError(e, "Error: ");
+                Logger.LogError(e, "Error: {e.Message}", e.Message);
                 return [busy];
             }
         }
@@ -2120,7 +2036,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
             }
             catch (Exception e)
             {
-                Logger.LogError(e, "Error: ");
+                Logger.LogError(e, "Error: {e.Message}", e.Message);
                 return busy;
             }
         }
@@ -2201,7 +2117,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
             }
             catch (Exception e)
             {
-                Logger.LogError(e, "Error: ");
+                Logger.LogError(e, "Error: {e.Message}", e.Message);
                 return busy;
             }
         }
@@ -2318,7 +2234,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
             }
             catch (Exception e)
             {
-                Logger.LogError(e, "Error: ");
+                Logger.LogError(e, "Error: {e.Message}", e.Message);
                 return busy;
             }
         }
@@ -2453,7 +2369,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
             }
             catch (Exception e)
             {
-                Logger.LogError(e, "Error: ");
+                Logger.LogError(e, "Error: {e.Message}", e.Message);
                 return busy;
             }
         }
@@ -2523,7 +2439,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
             }
             catch (Exception e)
             {
-                Logger.LogError(e, "Error: ");
+                Logger.LogError(e, "Error: {e.Message}", e.Message);
                 return busy;
             }
         }
@@ -2659,7 +2575,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
             }
             catch (Exception e)
             {
-                Logger.LogError(e, "Error: ");
+                Logger.LogError(e, "Error: {e.Message}", e.Message);
                 return busy;
             }
         }
@@ -2866,7 +2782,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
             }
             catch (Exception e)
             {
-                Logger.LogError(e, "Error: ");
+                Logger.LogError(e, "Error: {e.Message}", e.Message);
                 return busy;
             }
         }
@@ -2943,7 +2859,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
             }
             catch (Exception e)
             {
-                Logger.LogError(e, "Error: ");
+                Logger.LogError(e, "Error: {e.Message}", e.Message);
                 return busy;
             }
         }
@@ -3014,7 +2930,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
             }
             catch (Exception e)
             {
-                Logger.LogError(e, "Error: ");
+                Logger.LogError(e, "Error: {e.Message}", e.Message);
                 return busy;
             }
         }
@@ -3092,7 +3008,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
             }
             catch (Exception e)
             {
-                Logger.LogError(e, "Error: ");
+                Logger.LogError(e, "Error: {e.Message}", e.Message);
                 return busy;
             }
         }
@@ -3135,7 +3051,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
             }
             catch (Exception e)
             {
-                Logger.LogError(e, "Error: ");
+                Logger.LogError(e, "Error: {e.Message}", e.Message);
                 return busy;
             }
         }
@@ -3183,7 +3099,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
             }
             catch (Exception e)
             {
-                Logger.LogError(e, "Error: ");
+                Logger.LogError(e, "Error: {e.Message}", e.Message);
                 return busy;
             }
         }
@@ -3260,7 +3176,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
             }
             catch (Exception e)
             {
-                Logger.LogError(e, "Error: ");
+                Logger.LogError(e, "Error: {e.Message}", e.Message);
                 return busy;
             }
         }
@@ -3307,7 +3223,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
             }
             catch (Exception e)
             {
-                Logger.LogError(e, "Error: ");
+                Logger.LogError(e, "Error: {e.Message}", e.Message);
                 return busy;
             }
         }
@@ -3497,7 +3413,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
             }
             catch (Exception e)
             {
-                Logger.LogError(e, "Error: ");
+                Logger.LogError(e, "Error: {e.Message}", e.Message);
                 return busy;
             }
         }
@@ -3663,7 +3579,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
             }
             catch (Exception e)
             {
-                Logger.LogError(e, "Error: ");
+                Logger.LogError(e, "Error: {e.Message}", e.Message);
                 return busy;
             }
         }
@@ -3802,7 +3718,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
             }
             catch (Exception e)
             {
-                Logger.LogError(e, "Error: ");
+                Logger.LogError(e, "Error: {e.Message}", e.Message);
                 return busy;
             }
         }
@@ -3850,7 +3766,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
             }
             catch (Exception e)
             {
-                Logger.LogError(e, "Error: ");
+                Logger.LogError(e, "Error: {e.Message}", e.Message);
                 return busy;
             }
         }
@@ -3897,7 +3813,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
             }
             catch (Exception e)
             {
-                Logger.LogError(e, "Error: ");
+                Logger.LogError(e, "Error: {e.Message}", e.Message);
                 return busy;
             }
         }
@@ -3930,7 +3846,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
             }
             catch (Exception e)
             {
-                Logger.LogError(e, "Error: ");
+                Logger.LogError(e, "Error: {e.Message}", e.Message);
                 return busy;
             }
         }
@@ -3957,7 +3873,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
             }
             catch (Exception e)
             {
-                Logger.LogError(e, "Error: ");
+                Logger.LogError(e, "Error: {e.Message}", e.Message);
                 return busy;
             }
         }
@@ -5564,7 +5480,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
             catch (Exception e)
             {
                 _semaphore.Release();
-                Logger.LogError(e, "Error: ");
+                Logger.LogError(e, "Error: {e.Message}", e.Message);
                 return (busy, exploreId);
             }
         }
@@ -5870,7 +5786,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
             }
             catch (Exception e)
             {
-                Logger.LogError(e, "Error: ");
+                Logger.LogError(e, "Error: {e.Message}", e.Message);
                 return busy;
             }
         }
@@ -5889,6 +5805,11 @@ namespace Oshima.FunGame.WebAPI.Controllers
                 if (pc.Count > 0)
                 {
                     User user = FunGameService.GetUser(pc);
+
+                    if (user.Id == offeree)
+                    {
+                        return "报价的目标玩家不能是自己。";
+                    }
 
                     if (FunGameConstant.UserIdAndUsername.TryGetValue(offeree ?? -1, out User? user2) && user2 != null)
                     {
@@ -5913,13 +5834,13 @@ namespace Oshima.FunGame.WebAPI.Controllers
             }
             catch (Exception e)
             {
-                Logger.LogError(e, "Error: ");
+                Logger.LogError(e, "Error: {e.Message}", e.Message);
                 return busy;
             }
         }
         
-        [HttpPost("additemstooffer")]
-        public string AddItemsToOffer([FromQuery] long? uid = null, [FromQuery] long? offer = null, [FromQuery] bool isOfferee = true, [FromBody] int[]? itemIds = null)
+        [HttpPost("addofferitems")]
+        public string AddOfferItems([FromQuery] long? uid = null, [FromQuery] long? offer = null, [FromQuery] bool isOpposite = true, [FromBody] int[]? itemIds = null)
         {
             long userid = uid ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
             long offerId = offer ?? -1;
@@ -5937,12 +5858,16 @@ namespace Oshima.FunGame.WebAPI.Controllers
 
                     if (offerId > 0)
                     {
-                        msg = FunGameService.AddItemsToOffer(pc, user, offerId, isOfferee, itemsIndex);
+                        msg = FunGameService.AddOfferItems(user, offerId, isOpposite, itemsIndex);
                     }
                     else
                     {
                         msg = "没有找到对应的报价。";
                     }
+
+                    user.LastTime = DateTime.Now;
+                    pc.Add("user", user);
+                    pc.SaveConfig();
 
                     return msg;
                 }
@@ -5953,7 +5878,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
             }
             catch (Exception e)
             {
-                Logger.LogError(e, "Error: ");
+                Logger.LogError(e, "Error: {e.Message}", e.Message);
                 return busy;
             }
         }
@@ -5988,7 +5913,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
             }
             catch (Exception e)
             {
-                Logger.LogError(e, "Error: ");
+                Logger.LogError(e, "Error: {e.Message}", e.Message);
                 return busy;
             }
         }
@@ -6011,7 +5936,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
 
                     if (offerId > 0)
                     {
-                        FunGameService.RespondOffer(pc, user, offerId, accept ? OfferActionType.OffereeAccept : OfferActionType.OffereeReject);
+                        msg = FunGameService.RespondOffer(pc, user, offerId, accept ? OfferActionType.OffereeAccept : OfferActionType.OffereeReject);
                     }
                     else
                     {
@@ -6027,12 +5952,12 @@ namespace Oshima.FunGame.WebAPI.Controllers
             }
             catch (Exception e)
             {
-                Logger.LogError(e, "Error: ");
+                Logger.LogError(e, "Error: {e.Message}", e.Message);
                 return busy;
             }
         }
         
-        [HttpPost("getoffer")]
+        [HttpGet("getoffer")]
         public string GetOffer([FromQuery] long? uid = null, [FromQuery] long? offerId = null, [FromQuery] int? page = null)
         {
             long userid = uid ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
@@ -6056,6 +5981,8 @@ namespace Oshima.FunGame.WebAPI.Controllers
                         return msg;
                     }
 
+                    using SQLHelper? sql = Factory.OpenFactory.GetSQLHelper();
+
                     int maxPage = (int)Math.Ceiling((double)offers.Count);
                     if (maxPage < 1) maxPage = 1;
                     if (showPage <= maxPage)
@@ -6072,7 +5999,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
                                 {
                                     user1 = offeror;
                                 }
-                                if (FunGameConstant.UserIdAndUsername.TryGetValue(offer.Offeror, out User? offeree) && offeree != null)
+                                if (FunGameConstant.UserIdAndUsername.TryGetValue(offer.Offeree, out User? offeree) && offeree != null)
                                 {
                                     user2 = offeree;
                                 }
@@ -6084,21 +6011,25 @@ namespace Oshima.FunGame.WebAPI.Controllers
                                 builder.AppendLine($"接收方：{user2}");
                                 builder.AppendLine($"状态：{CommonSet.GetOfferStatus(offer.Status)}");
 
+                                if (sql != null)
+                                {
+                                    offer.OfferorItems = [.. SQLService.GetOfferItemsByOfferIdAndUserId(sql, offer.Id, user1)];
+                                    offer.OffereeItems = [.. SQLService.GetOfferItemsByOfferIdAndUserId(sql, offer.Id, user2)];
+                                }
+
                                 List<string> user1Item = [];
                                 List<string> user2Item = [];
-                                foreach (Item item in user1.Inventory.Items)
+                                int count = 0;
+                                foreach (Item item in user1.Inventory.Items.Where(i => offer.OfferorItems.Contains(i.Guid)))
                                 {
-                                    if (offer.OfferorItems.Contains(item.Guid))
-                                    {
-                                        user1Item.Add($"[{ItemSet.GetQualityTypeName(item.QualityType)}]" + ItemSet.GetItemTypeName(item.ItemType) + "：" + item.Name);
-                                    }
+                                    count++;
+                                    user1Item.Add($"{count}. [{ItemSet.GetQualityTypeName(item.QualityType)}]" + ItemSet.GetItemTypeName(item.ItemType) + "：" + item.Name);
                                 }
-                                foreach (Item item in user2.Inventory.Items)
+                                count = 0;
+                                foreach (Item item in user2.Inventory.Items.Where(i => offer.OffereeItems.Contains(i.Guid)))
                                 {
-                                    if (offer.OffereeItems.Contains(item.Guid))
-                                    {
-                                        user2Item.Add($"[{ItemSet.GetQualityTypeName(item.QualityType)}]" + ItemSet.GetItemTypeName(item.ItemType) + "：" + item.Name);
-                                    }
+                                    count++;
+                                    user2Item.Add($"{count}. [{ItemSet.GetQualityTypeName(item.QualityType)}]" + ItemSet.GetItemTypeName(item.ItemType) + "：" + item.Name);
                                 }
 
                                 if (user1Item.Count > 0)
@@ -6136,7 +6067,51 @@ namespace Oshima.FunGame.WebAPI.Controllers
             }
             catch (Exception e)
             {
-                Logger.LogError(e, "Error: ");
+                Logger.LogError(e, "Error: {e.Message}", e.Message);
+                return busy;
+            }
+        }
+
+        [HttpPost("removeofferitems")]
+        public string RemoveOfferItems([FromQuery] long? uid = null, [FromQuery] long? offer = null, [FromQuery] bool isOpposite = true, [FromBody] int[]? itemIds = null)
+        {
+            long userid = uid ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
+            long offerId = offer ?? -1;
+            int[] itemsIndex = itemIds ?? [];
+
+            try
+            {
+                PluginConfig pc = new("saved", userid.ToString());
+                pc.LoadConfig();
+
+                string msg = "";
+                if (pc.Count > 0)
+                {
+                    User user = FunGameService.GetUser(pc);
+
+                    if (offerId > 0)
+                    {
+                        msg = FunGameService.RemoveOfferItems(user, offerId, isOpposite, itemsIndex);
+                    }
+                    else
+                    {
+                        msg = "没有找到对应的报价。";
+                    }
+
+                    user.LastTime = DateTime.Now;
+                    pc.Add("user", user);
+                    pc.SaveConfig();
+
+                    return msg;
+                }
+                else
+                {
+                    return noSaved;
+                }
+            }
+            catch (Exception e)
+            {
+                Logger.LogError(e, "Error: {e.Message}", e.Message);
                 return busy;
             }
         }
@@ -6171,7 +6146,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
             }
             catch (Exception e)
             {
-                Logger.LogError(e, "Error: ");
+                Logger.LogError(e, "Error: {e.Message}", e.Message);
                 return busy;
             }
         }
@@ -6204,7 +6179,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
             }
             catch (Exception e)
             {
-                Logger.LogError(e, "Error: ");
+                Logger.LogError(e, "Error: {e.Message}", e.Message);
                 return busy;
             }
         }

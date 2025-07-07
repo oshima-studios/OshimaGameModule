@@ -14,6 +14,8 @@ namespace Oshima.FunGame.OshimaServers.Service
         public const int ItemsPerPage2 = 10;
         public const int ExploreTime = 2;
         public const int MaxExploreTimes = 60;
+        public const int DrawCardReduce = 1000;
+        public const int DrawCardReduce_Material = 5;
         public static List<Character> Characters { get; } = [];
         public static List<Skill> Skills { get; } = [];
         public static List<Skill> PassiveSkills { get; } = [];
