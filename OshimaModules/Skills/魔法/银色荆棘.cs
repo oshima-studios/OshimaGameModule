@@ -32,7 +32,7 @@ namespace Oshima.FunGame.OshimaModules.Skills
 
         public 银色荆棘(Character? character = null) : base(SkillType.Magic, character)
         {
-            Effects.Add(new 银色荆棘特效(this, false, 0, 2, 0, 0.24, 0.08));
+            Effects.Add(new 银色荆棘特效(this, false, 0, 2, 0, 0.45, 0.05));
         }
     }
 

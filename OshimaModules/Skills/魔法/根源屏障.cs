@@ -40,10 +40,12 @@ namespace Oshima.FunGame.OshimaModules.Skills
             {
                 return Level switch
                 {
+                    3 => 2,
+                    4 => 2,
                     5 => 2,
-                    6 => 2,
-                    7 => 2,
-                    8 => 2,
+                    6 => 3,
+                    7 => 3,
+                    8 => 3,
                     _ => 1
                 };
             }

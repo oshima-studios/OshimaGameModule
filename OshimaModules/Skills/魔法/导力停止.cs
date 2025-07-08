@@ -19,7 +19,7 @@ namespace Oshima.FunGame.OshimaModules.Skills
         public 导力停止(Character? character = null) : base(SkillType.Magic, character)
         {
             Effects.Add(new 纯数值伤害(this, 45, 20, DamageType.Magical));
-            Effects.Add(new 施加概率负面(this, EffectType.Silence, true, 8, 0, 1.2, 0.24, 0.08));
+            Effects.Add(new 施加概率负面(this, EffectType.Silence, true, 8, 0, 1.2, 0.45, 0.05));
         }
     }
 }
