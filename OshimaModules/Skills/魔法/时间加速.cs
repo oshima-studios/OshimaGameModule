@@ -9,10 +9,10 @@ namespace Oshima.FunGame.OshimaModules.Skills
         public override long Id => (long)MagicID.时间加速;
         public override string Name => "时间加速";
         public override string Description => Effects.Count > 0 ? Effects.First().Description : "";
-        public override double MPCost => Level > 0 ? 95 + (105 * (Level - 1)) : 95;
+        public override double MPCost => Level > 0 ? 70 + (80 * (Level - 1)) : 70;
         public override double CD => Level > 0 ? 65 - (1 * (Level - 1)) : 65;
         public override double CastTime => Level > 0 ? 2 + (1.5 * (Level - 1)) : 2;
-        public override double HardnessTime { get; set; } = 6;
+        public override double HardnessTime { get; set; } = 4;
         public override bool CanSelectSelf => true;
         public override bool CanSelectEnemy => false;
         public override bool CanSelectTeammate => true;

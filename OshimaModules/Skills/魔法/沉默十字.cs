@@ -27,24 +27,8 @@ namespace Oshima.FunGame.OshimaModules.Skills
             }
         }
         public override double CD => Level > 0 ? 85 - (3 * (Level - 1)) : 85;
-        public override double CastTime
-        {
-            get
-            {
-                return Level switch
-                {
-                    8 => 8,
-                    7 => 8,
-                    6 => 9,
-                    5 => 10,
-                    4 => 11,
-                    3 => 12,
-                    2 => 13,
-                    _ => 14
-                };
-            }
-        }
-        public override double HardnessTime { get; set; } = 10;
+        public override double CastTime => Level > 0 ? 10 - (0.5 * (Level - 1)) : 10;
+        public override double HardnessTime { get; set; } = 6;
         public override int CanSelectTargetCount
         {
             get

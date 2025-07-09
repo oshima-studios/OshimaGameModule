@@ -4,27 +4,42 @@ using Oshima.FunGame.OshimaModules.Effects.OpenEffects;
 
 namespace Oshima.FunGame.OshimaModules.Skills
 {
-    public class 结晶防护 : Skill
+    public class 结晶防护复 : Skill
     {
-        public override long Id => (long)MagicID.结晶防护;
-        public override string Name => "结晶防护";
+        public override long Id => (long)MagicID.结晶防护复;
+        public override string Name => "结晶防护·复";
         public override string Description => Effects.Count > 0 ? Effects.First().Description : "";
-        public override double MPCost => Level > 0 ? 75 + (80 * (Level - 1)) : 75;
-        public override double CD => Level > 0 ? 70 - (1 * (Level - 1)) : 70;
-        public override double CastTime => Level > 0 ? 3 + (1.5 * (Level - 1)) : 3;
-        public override double HardnessTime { get; set; } = 3;
+        public override double MPCost => Level > 0 ? 90 + (95 * (Level - 1)) : 90;
+        public override double CD => Level > 0 ? 80 - (0.5 * (Level - 1)) : 75;
+        public override double CastTime => Level > 0 ? 4 + (1.5 * (Level - 1)) : 4;
+        public override double HardnessTime { get; set; } = 5;
         public override bool CanSelectSelf => true;
         public override bool CanSelectEnemy => false;
         public override bool CanSelectTeammate => true;
-        public override int CanSelectTargetCount => 1;
-
-        public 结晶防护(Character? character = null) : base(SkillType.Magic, character)
+        public override int CanSelectTargetCount
         {
-            Effects.Add(new 结晶防护特效(this, false, 0, 4));
+            get
+            {
+                return Level switch
+                {
+                    3 => 3,
+                    4 => 3,
+                    5 => 3,
+                    6 => 4,
+                    7 => 4,
+                    8 => 4,
+                    _ => 2
+                };
+            }
+        }
+
+        public 结晶防护复(Character? character = null) : base(SkillType.Magic, character)
+        {
+            Effects.Add(new 结晶防护复特效(this, false, 0, 3));
         }
     }
 
-    public class 结晶防护特效 : Effect
+    public class 结晶防护复特效 : Effect
     {
         public override long Id => Skill.Id;
         public override string Name => Skill.Name;
@@ -40,10 +55,10 @@ namespace Oshima.FunGame.OshimaModules.Skills
         private readonly int _durationTurn;
         private readonly double _levelGrowth;
 
-        private double ExDEF => Level > 0 ? 0.2 + 0.2 * (Level - 1) : 0.2;
-        private double ExMDF => Level > 0 ? 0.03 + 0.03 * (Level - 1) : 0.03;
+        private double ExDEF => Level > 0 ? 0.15 + 0.15 * (Level - 1) : 0.15;
+        private double ExMDF => Level > 0 ? 0.02 + 0.02 * (Level - 1) : 0.02;
 
-        public 结晶防护特效(Skill skill, bool durative = false, double duration = 0, int durationTurn = 1, double levelGrowth = 0) : base(skill)
+        public 结晶防护复特效(Skill skill, bool durative = false, double duration = 0, int durationTurn = 1, double levelGrowth = 0) : base(skill)
         {
             GamingQueue = skill.GamingQueue;
             _durative = durative;

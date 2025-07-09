@@ -4,31 +4,46 @@ using Oshima.FunGame.OshimaModules.Effects.OpenEffects;
 
 namespace Oshima.FunGame.OshimaModules.Skills
 {
-    public class 结晶防护 : Skill
+    public class 神圣祝福复 : Skill
     {
-        public override long Id => (long)MagicID.结晶防护;
-        public override string Name => "结晶防护";
+        public override long Id => (long)MagicID.神圣祝福复;
+        public override string Name => "神圣祝福·复";
         public override string Description => Effects.Count > 0 ? Effects.First().Description : "";
-        public override double MPCost => Level > 0 ? 75 + (80 * (Level - 1)) : 75;
-        public override double CD => Level > 0 ? 70 - (1 * (Level - 1)) : 70;
-        public override double CastTime => Level > 0 ? 3 + (1.5 * (Level - 1)) : 3;
-        public override double HardnessTime { get; set; } = 3;
+        public override double MPCost => Level > 0 ? 110 + (110 * (Level - 1)) : 110;
+        public override double CD => Level > 0 ? 100 - (1.5 * (Level - 1)) : 100;
+        public override double CastTime => Level > 0 ? 6 + (1 * (Level - 1)) : 5;
+        public override double HardnessTime { get; set; } = 7;
         public override bool CanSelectSelf => true;
         public override bool CanSelectEnemy => false;
         public override bool CanSelectTeammate => true;
-        public override int CanSelectTargetCount => 1;
-
-        public 结晶防护(Character? character = null) : base(SkillType.Magic, character)
+        public override int CanSelectTargetCount
         {
-            Effects.Add(new 结晶防护特效(this, false, 0, 4));
+            get
+            {
+                return Level switch
+                {
+                    3 => 3,
+                    4 => 3,
+                    5 => 3,
+                    6 => 4,
+                    7 => 4,
+                    8 => 4,
+                    _ => 2
+                };
+            }
+        }
+
+        public 神圣祝福复(Character? character = null) : base(SkillType.Magic, character)
+        {
+            Effects.Add(new 神圣祝福复特效(this, false, 0, 3));
         }
     }
 
-    public class 结晶防护特效 : Effect
+    public class 神圣祝福复特效 : Effect
     {
         public override long Id => Skill.Id;
         public override string Name => Skill.Name;
-        public override string Description => $"提升目标{(Skill.CanSelectTargetCount > 1 ? $"至多 {Skill.CanSelectTargetCount} 个" : "")}友方角色 {ExDEF * 100:0.##}% 物理护甲和 {ExMDF * 100:0.##}% 魔法抗性，持续 {持续时间}。";
+        public override string Description => $"提升目标{(Skill.CanSelectTargetCount > 1 ? $"至多 {Skill.CanSelectTargetCount} 个" : "")}友方角色 {ExATK * 100:0.##}% 攻击力、{ExDEF * 100:0.##}% 物理护甲和 {ExMDF * 100:0.##}% 魔法抗性，持续 {持续时间}。";
         public override EffectType EffectType => EffectType.DefenseBoost;
         public override DispelledType DispelledType => DispelledType.Weak;
 
@@ -40,10 +55,11 @@ namespace Oshima.FunGame.OshimaModules.Skills
         private readonly int _durationTurn;
         private readonly double _levelGrowth;
 
-        private double ExDEF => Level > 0 ? 0.2 + 0.2 * (Level - 1) : 0.2;
-        private double ExMDF => Level > 0 ? 0.03 + 0.03 * (Level - 1) : 0.03;
+        private double ExATK => Level > 0 ? 0.04 + 0.035 * (Level - 1) : 0.04;
+        private double ExDEF => Level > 0 ? 0.12 + 0.15 * (Level - 1) : 0.12;
+        private double ExMDF => Level > 0 ? 0.008 + 0.012 * (Level - 1) : 0.008;
 
-        public 结晶防护特效(Skill skill, bool durative = false, double duration = 0, int durationTurn = 1, double levelGrowth = 0) : base(skill)
+        public 神圣祝福复特效(Skill skill, bool durative = false, double duration = 0, int durationTurn = 1, double levelGrowth = 0) : base(skill)
         {
             GamingQueue = skill.GamingQueue;
             _durative = durative;
@@ -56,10 +72,10 @@ namespace Oshima.FunGame.OshimaModules.Skills
         {
             foreach (Character target in targets)
             {
-                WriteLine($"[ {target} ] 的物理护甲提升了 {ExDEF * 100:0.##}%，魔法抗性提升了 {ExMDF * 100:0.##}%！持续时间：{持续时间}！");
-                ExDEF2 e = new(Skill, new()
+                WriteLine($"[ {target} ] 的攻击力提升了 {ExATK * 100:0.##}%，物理护甲提升了 {ExDEF * 100:0.##}%，魔法抗性提升了 {ExMDF * 100:0.##}%！持续时间：{持续时间}！");
+                ExATK2 e = new(Skill, new()
                 {
-                    { "exdef", ExDEF }
+                    { "exatk", ExATK }
                 }, caster);
                 target.Effects.Add(e);
                 if (_durative && _duration > 0)
@@ -74,13 +90,12 @@ namespace Oshima.FunGame.OshimaModules.Skills
                     e.DurationTurn = (int)实际持续时间;
                     e.RemainDurationTurn = (int)实际持续时间;
                 }
-                e.EffectType = EffectType.DefenseBoost;
+                e.EffectType = EffectType.DamageBoost;
                 e.Source = caster;
                 e.OnEffectGained(target);
-                ExMDF e2 = new(Skill, new()
+                ExDEF2 e2 = new(Skill, new()
                 {
-                    { "mdftype", 0 },
-                    { "mdfvalue", ExMDF }
+                    { "exdef", ExDEF }
                 }, caster);
                 target.Effects.Add(e2);
                 if (_durative && _duration > 0)
@@ -98,7 +113,28 @@ namespace Oshima.FunGame.OshimaModules.Skills
                 e2.EffectType = EffectType.DefenseBoost;
                 e2.Source = caster;
                 e2.OnEffectGained(target);
-                GamingQueue?.LastRound.ApplyEffects.TryAdd(target, [EffectType.DefenseBoost]);
+                ExMDF e3 = new(Skill, new()
+                {
+                    { "mdftype", 0 },
+                    { "mdfvalue", ExMDF }
+                }, caster);
+                target.Effects.Add(e3);
+                if (_durative && _duration > 0)
+                {
+                    e3.Durative = true;
+                    e3.Duration = 实际持续时间;
+                    e3.RemainDuration = 实际持续时间;
+                }
+                else if (!_durative && _durationTurn > 0)
+                {
+                    e3.Durative = false;
+                    e3.DurationTurn = (int)实际持续时间;
+                    e3.RemainDurationTurn = (int)实际持续时间;
+                }
+                e3.EffectType = EffectType.DefenseBoost;
+                e3.Source = caster;
+                e3.OnEffectGained(target);
+                GamingQueue?.LastRound.ApplyEffects.TryAdd(target, [EffectType.DamageBoost, EffectType.DefenseBoost]);
             }
         }
     }

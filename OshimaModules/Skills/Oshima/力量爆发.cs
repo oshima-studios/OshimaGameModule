@@ -25,7 +25,7 @@ namespace Oshima.FunGame.OshimaModules.Skills
     {
         public override long Id => Skill.Id;
         public override string Name => "力量爆发";
-        public override string Description => $"获得 135% 力量 [ {攻击力加成:0.##} ] 的攻击力加成，但每次攻击都会损失 9% 当前生命值 [ {当前生命值:0.##} ]，持续 {Duration:0.##} {GameplayEquilibriumConstant.InGameTime}。";
+        public override string Description => $"获得 135% 力量 [ {攻击力加成:0.##} ] 的攻击力加成，但每次普通攻击命中时都会损失自身 9% 当前生命值 [ {当前生命值:0.##} ]，持续 {Duration:0.##} {GameplayEquilibriumConstant.InGameTime}。";
         public override bool Durative => true;
         public override double Duration => 10 + 1 * (Level - 1);
         public override DispelledType DispelledType => DispelledType.CannotBeDispelled;
@@ -49,7 +49,7 @@ namespace Oshima.FunGame.OshimaModules.Skills
 
         public override void AfterDamageCalculation(Character character, Character enemy, double damage, double actualDamage, bool isNormalAttack, DamageType damageType, MagicType magicType, DamageResult damageResult)
         {
-            if (character == Skill.Character && isNormalAttack)
+            if (character == Skill.Character && isNormalAttack && (damageResult == DamageResult.Normal || damageResult == DamageResult.Critical))
             {
                 double 生命值减少 = 当前生命值;
                 character.HP -= 生命值减少;

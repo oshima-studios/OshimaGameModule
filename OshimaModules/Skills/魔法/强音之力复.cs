@@ -4,27 +4,42 @@ using Oshima.FunGame.OshimaModules.Effects.OpenEffects;
 
 namespace Oshima.FunGame.OshimaModules.Skills
 {
-    public class 强音之力 : Skill
+    public class 强音之力复 : Skill
     {
-        public override long Id => (long)MagicID.强音之力;
-        public override string Name => "强音之力";
+        public override long Id => (long)MagicID.强音之力复;
+        public override string Name => "强音之力·复";
         public override string Description => Effects.Count > 0 ? Effects.First().Description : "";
-        public override double MPCost => Level > 0 ? 65 + (70 * (Level - 1)) : 65;
-        public override double CD => Level > 0 ? 65 - (1 * (Level - 1)) : 65;
+        public override double MPCost => Level > 0 ? 85 + (85 * (Level - 1)) : 85;
+        public override double CD => Level > 0 ? 65 - (0.5 * (Level - 1)) : 65;
         public override double CastTime => Level > 0 ? 6 + (0.5 * (Level - 1)) : 6;
-        public override double HardnessTime { get; set; } = 3;
+        public override double HardnessTime { get; set; } = 6;
         public override bool CanSelectSelf => true;
         public override bool CanSelectEnemy => false;
         public override bool CanSelectTeammate => true;
-        public override int CanSelectTargetCount => 1;
-
-        public 强音之力(Character? character = null) : base(SkillType.Magic, character)
+        public override int CanSelectTargetCount
         {
-            Effects.Add(new 强音之力特效(this, false, 0, 4));
+            get
+            {
+                return Level switch
+                {
+                    3 => 3,
+                    4 => 3,
+                    5 => 3,
+                    6 => 4,
+                    7 => 4,
+                    8 => 4,
+                    _ => 2
+                };
+            }
+        }
+
+        public 强音之力复(Character? character = null) : base(SkillType.Magic, character)
+        {
+            Effects.Add(new 强音之力复特效(this, false, 0, 3));
         }
     }
 
-    public class 强音之力特效 : Effect
+    public class 强音之力复特效 : Effect
     {
         public override long Id => Skill.Id;
         public override string Name => Skill.Name;
@@ -40,9 +55,9 @@ namespace Oshima.FunGame.OshimaModules.Skills
         private readonly int _durationTurn;
         private readonly double _levelGrowth;
 
-        private double ExATK => Level > 0 ? 0.06 + 0.06 * (Level - 1) : 0.06;
+        private double ExATK => Level > 0 ? 0.045 + 0.045 * (Level - 1) : 0.045;
 
-        public 强音之力特效(Skill skill, bool durative = false, double duration = 0, int durationTurn = 1, double levelGrowth = 0) : base(skill)
+        public 强音之力复特效(Skill skill, bool durative = false, double duration = 0, int durationTurn = 1, double levelGrowth = 0) : base(skill)
         {
             GamingQueue = skill.GamingQueue;
             _durative = durative;

@@ -9,10 +9,10 @@ namespace Oshima.FunGame.OshimaModules.Skills
         public override long Id => (long)MagicID.神圣祝福;
         public override string Name => "神圣祝福";
         public override string Description => Effects.Count > 0 ? Effects.First().Description : "";
-        public override double MPCost => Level > 0 ? 105 + (105 * (Level - 1)) : 105;
-        public override double CD => Level > 0 ? 95 - (1.5 * (Level - 1)) : 95;
+        public override double MPCost => Level > 0 ? 95 + (100 * (Level - 1)) : 95;
+        public override double CD => Level > 0 ? 90 - (1.5 * (Level - 1)) : 90;
         public override double CastTime => Level > 0 ? 5 + (1 * (Level - 1)) : 5;
-        public override double HardnessTime { get; set; } = 6;
+        public override double HardnessTime { get; set; } = 3;
         public override bool CanSelectSelf => true;
         public override bool CanSelectEnemy => false;
         public override bool CanSelectTeammate => true;
