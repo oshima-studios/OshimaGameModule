@@ -6699,7 +6699,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
         }
 
         [HttpPost("marketsellitem")]
-        public string MarketSellItem([FromQuery] long? uid = null, [FromBody] int itemIndex = -1, [FromBody] double price = 0)
+        public string MarketSellItem([FromQuery] long? uid = null, [FromQuery] int itemIndex = -1, [FromQuery] double price = 0)
         {
             try
             {
