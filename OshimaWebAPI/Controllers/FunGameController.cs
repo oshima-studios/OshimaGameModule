@@ -15,6 +15,7 @@ using Oshima.FunGame.OshimaModules.Items;
 using Oshima.FunGame.OshimaModules.Regions;
 using Oshima.FunGame.OshimaServers.Model;
 using Oshima.FunGame.OshimaServers.Service;
+using ProjectRedbud.FunGame.SQLQueryExtension;
 
 namespace Oshima.FunGame.WebAPI.Controllers
 {
@@ -493,7 +494,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
                 catch (Exception e)
                 {
                     sqlHelper.Rollback();
-                    Logger.LogError(e, "Error: {e.Message}", e.Message);
+                    Logger.LogError(e, "Error: {e}", e);
                 }
                 return "无法处理注册，创建存档失败！";
             }
@@ -619,32 +620,118 @@ namespace Oshima.FunGame.WebAPI.Controllers
             {
                 User user = FunGameService.GetUser(pc);
 
+                string msg = "";
                 int reduce = 200;
                 if (user.Inventory.Credits >= reduce)
                 {
                     user.Inventory.Credits -= reduce;
+
+                    string name = "";
+                    do
+                    {
+                        name = FunGameService.GenerateRandomChineseUserName();
+                    } while (FunGameConstant.UserIdAndUsername.Any(kv => kv.Value.Username == name));
+
+                    user.Username = name;
+                    user.NickName = user.Username;
+                    if (user.Inventory.Characters.FirstOrDefault(c => c.Id == FunGameConstant.CustomCharacterId) is Character character)
+                    {
+                        character.Name = user.Username;
+                        character.NickName = user.NickName;
+                    }
+                    if (user.Inventory.Name.EndsWith("的库存"))
+                    {
+                        user.Inventory.Name = user.Username + "的库存";
+                    }
+                    FunGameConstant.UserIdAndUsername[user.Id] = user;
+
+                    msg = $"消耗 {reduce} {General.GameplayEquilibriumConstant.InGameCurrency}，你的新昵称是【{user.Username}】";
                 }
                 else
                 {
-                    return $"你的{General.GameplayEquilibriumConstant.InGameCurrency}不足 {reduce} 呢，无法改名！";
+                    msg = $"你的{General.GameplayEquilibriumConstant.InGameCurrency}不足 {reduce} 呢，无法改名！";
                 }
 
-                user.Username = FunGameService.GenerateRandomChineseUserName();
-                user.NickName = user.Username;
-                if (user.Inventory.Characters.FirstOrDefault(c => c.Id == FunGameConstant.CustomCharacterId) is Character character)
-                {
-                    character.Name = user.Username;
-                    character.NickName = user.NickName;
-                }
-                if (user.Inventory.Name.EndsWith("的库存"))
-                {
-                    user.Inventory.Name = user.Username + "的库存";
-                }
-                FunGameConstant.UserIdAndUsername[user.Id] = user;
                 user.LastTime = DateTime.Now;
                 pc.Add("user", user);
                 pc.SaveConfig();
-                return $"消耗 {reduce} {General.GameplayEquilibriumConstant.InGameCurrency}，你的新昵称是【{user.Username}】";
+                return msg;
+            }
+            else
+            {
+                return noSaved;
+            }
+        }
+
+        [HttpPost("renamecustom")]
+        public string ReName_Custom([FromQuery] long? uid = null, [FromQuery] string name = "")
+        {
+            long userid = uid ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
+
+            PluginConfig pc = new("saved", userid.ToString());
+            pc.LoadConfig();
+
+            if (pc.Count > 0)
+            {
+                User user = FunGameService.GetUser(pc);
+
+                if (name.Length == 0 || name.Length > 12)
+                {
+                    return $"昵称【{name}】需要在 1～12 个字符之间。";
+                }
+
+                if (FunGameConstant.UserIdAndUsername.Any(kv => kv.Value.Username == name))
+                {
+                    return $"昵称【{name}】已被使用，请更换其他昵称！";
+                }
+
+                using SQLHelper? sql = Factory.OpenFactory.GetSQLHelper();
+                List<Guid> itemTrading = [];
+                if (sql != null)
+                {
+                    try
+                    {
+                        itemTrading = SQLService.GetUserItemGuids(sql, userid);
+                    }
+                    catch (Exception e)
+                    {
+                        Logger.LogError(e, "Error: {e}", e);
+                        return busy;
+                    }
+                }
+                if (user.Inventory.Items.FirstOrDefault(i => i is 改名卡 && !i.IsLock && !itemTrading.Contains(i.Guid)) is 改名卡 gmk)
+                {
+                    gmk.IsLock = true;
+
+                    PluginConfig renameExamine = new("examines", "rename");
+                    renameExamine.LoadConfig();
+                    List<string> strings = renameExamine.Get<List<string>>(user.Id.ToString()) ?? [];
+                    if (strings.Count > 0)
+                    {
+                        return $"你已经提交过改名申请，请使用【查询改名】指令查看进度，请耐心等待审核结果！";
+                    }
+                    else
+                    {
+                        renameExamine.Add(user.Id.ToString(), new List<string> { name, gmk.Guid.ToString() });
+                        renameExamine.SaveConfig();
+                    }
+
+                    user.LastTime = DateTime.Now;
+                    pc.Add("user", user);
+                    pc.SaveConfig();
+
+                    TaskUtility.NewTask(() =>
+                    {
+                        User[] operators = [.. FunGameConstant.UserIdAndUsername.Values.Where(u => u.IsAdmin || u.IsOperator)];
+                        foreach (User op in operators)
+                        {
+                            FunGameService.AddNotice(op.Id, $"有待处理的改名申请，请使用【改名审核】指令查看列表！");
+                        }
+                    });
+
+                    return $"提交自定义改名申请成功！新昵称是【{name}】，将在审核通过后更新。已锁定你的一张改名卡，审核结束前，无法再次提交改名申请，或交易、出售、分解改名卡。";
+                }
+                return $"你没有改名卡，无法自定义改名！请检查库存中至少存在一张未上锁、且未处于交易、市场出售状态的改名卡。";
             }
             else
             {
@@ -975,6 +1062,12 @@ namespace Oshima.FunGame.WebAPI.Controllers
                     List<string> keys = [.. FunGameService.GetPage(itemCategory.Keys, showPage, FunGameConstant.ItemsPerPage1)];
                     int itemCount = 0;
                     list.Add("======= 物品 =======");
+                    using SQLHelper? sql = Factory.OpenFactory.GetSQLHelper();
+                    List<Guid> itemTrading = [];
+                    if (sql != null)
+                    {
+                        itemTrading = SQLService.GetUserItemGuids(sql, userid);
+                    }
                     foreach (string key in keys)
                     {
                         itemCount++;
@@ -993,13 +1086,13 @@ namespace Oshima.FunGame.WebAPI.Controllers
                         {
                             itemsEquipableIndex = string.Join("，", itemsEquipable.Take(10).Select(i => items.IndexOf(i) + 1)) + "，...";
                         }
-                        IEnumerable<Item> itemsSellable = objs.Where(i => i.IsSellable && !i.IsLock);
+                        IEnumerable<Item> itemsSellable = objs.Where(i => i.IsSellable && !i.IsLock && !itemTrading.Contains(i.Guid));
                         string itemsSellableIndex = string.Join("，", itemsSellable.Select(i => items.IndexOf(i) + 1));
                         if (itemsSellable.Count() > 10)
                         {
                             itemsSellableIndex = string.Join("，", itemsSellable.Take(10).Select(i => items.IndexOf(i) + 1)) + "，...";
                         }
-                        IEnumerable<Item> itemsTradable = objs.Where(i => i.IsTradable && !i.IsLock);
+                        IEnumerable<Item> itemsTradable = objs.Where(i => i.IsTradable && !i.IsLock && !itemTrading.Contains(i.Guid));
                         string itemsTradableIndex = string.Join("，", itemsTradable.Select(i => items.IndexOf(i) + 1));
                         if (itemsTradable.Count() > 10)
                         {
@@ -1010,7 +1103,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
                         if (itemsSellableIndex != "") str += $"可出售序号：{itemsSellableIndex}\r\n";
                         if (itemsTradableIndex != "") str += $"可交易序号：{itemsTradableIndex}\r\n";
                         str += $"拥有数量：{objs.Count}（" + (first.IsEquipment ? $"可装备数量：{itemsEquipable.Count()}，" : "") +
-                            (FunGameConstant.ItemCanUsed.Contains(first.ItemType) ? $"可使用数量：{objs.Count(i => i.RemainUseTimes > 0 && !i.IsLock)}，" : "") +
+                            (FunGameConstant.ItemCanUsed.Contains(first.ItemType) ? $"可使用数量：{objs.Count(i => i.RemainUseTimes > 0 && !i.IsLock && !itemTrading.Contains(i.Guid))}，" : "") +
                             $"可出售数量：{itemsSellable.Count()}，可交易数量：{itemsTradable.Count()}）";
                         list.Add(str);
                     }
@@ -1081,6 +1174,12 @@ namespace Oshima.FunGame.WebAPI.Controllers
                     List<string> keys = [.. FunGameService.GetPage(itemCategory.Keys, showPage, FunGameConstant.ItemsPerPage1)];
                     int itemCount = 0;
                     list.Add($"======= {ItemSet.GetItemTypeName((ItemType)itemtype)} =======");
+                    using SQLHelper? sql = Factory.OpenFactory.GetSQLHelper();
+                    List<Guid> itemTrading = [];
+                    if (sql != null)
+                    {
+                        itemTrading = SQLService.GetUserItemGuids(sql, userid);
+                    }
                     foreach (string key in keys)
                     {
                         itemCount++;
@@ -1099,13 +1198,13 @@ namespace Oshima.FunGame.WebAPI.Controllers
                         {
                             itemsEquipableIndex = string.Join("，", itemsEquipable.Take(10).Select(i => items.IndexOf(i) + 1)) + "，...";
                         }
-                        IEnumerable<Item> itemsSellable = objs.Where(i => i.IsSellable && !i.IsLock);
+                        IEnumerable<Item> itemsSellable = objs.Where(i => i.IsSellable && !i.IsLock && !itemTrading.Contains(i.Guid));
                         string itemsSellableIndex = string.Join("，", itemsSellable.Select(i => items.IndexOf(i) + 1));
                         if (itemsSellable.Count() > 10)
                         {
                             itemsSellableIndex = string.Join("，", itemsSellable.Take(10).Select(i => items.IndexOf(i) + 1)) + "，...";
                         }
-                        IEnumerable<Item> itemsTradable = objs.Where(i => i.IsTradable && !i.IsLock);
+                        IEnumerable<Item> itemsTradable = objs.Where(i => i.IsTradable && !i.IsLock && !itemTrading.Contains(i.Guid));
                         string itemsTradableIndex = string.Join("，", itemsTradable.Select(i => items.IndexOf(i) + 1));
                         if (itemsTradable.Count() > 10)
                         {
@@ -1116,7 +1215,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
                         if (itemsSellableIndex != "") str += $"可出售序号：{itemsSellableIndex}\r\n";
                         if (itemsTradableIndex != "") str += $"可交易序号：{itemsTradableIndex}\r\n";
                         str += $"拥有数量：{objs.Count}（" + (first.IsEquipment ? $"可装备数量：{itemsEquipable.Count()}，" : "") +
-                            (FunGameConstant.ItemCanUsed.Contains(first.ItemType) ? $"可使用数量：{objs.Count(i => i.RemainUseTimes > 0 && !i.IsLock)}，" : "") +
+                            (FunGameConstant.ItemCanUsed.Contains(first.ItemType) ? $"可使用数量：{objs.Count(i => i.RemainUseTimes > 0 && !i.IsLock && !itemTrading.Contains(i.Guid))}，" : "") +
                             $"可出售数量：{itemsSellable.Count()}，可交易数量：{itemsTradable.Count()}）";
                         list.Add(str);
                     }
@@ -1410,7 +1509,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
             }
             catch (Exception e)
             {
-                Logger.LogError(e, "Error: {e.Message}", e.Message);
+                Logger.LogError(e, "Error: {e}", e);
                 return busy;
             }
         }
@@ -1454,7 +1553,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
             }
             catch (Exception e)
             {
-                Logger.LogError(e, "Error: {e.Message}", e.Message);
+                Logger.LogError(e, "Error: {e}", e);
                 return busy;
             }
         }
@@ -1498,7 +1597,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
             }
             catch (Exception e)
             {
-                Logger.LogError(e, "Error: {e.Message}", e.Message);
+                Logger.LogError(e, "Error: {e}", e);
                 return busy;
             }
         }
@@ -1535,7 +1634,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
             }
             catch (Exception e)
             {
-                Logger.LogError(e, "Error: {e.Message}", e.Message);
+                Logger.LogError(e, "Error: {e}", e);
                 return busy;
             }
         }
@@ -1647,7 +1746,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
             }
             catch (Exception e)
             {
-                Logger.LogError(e, "Error: {e.Message}", e.Message);
+                Logger.LogError(e, "Error: {e}", e);
                 return busy;
             }
         }
@@ -1683,11 +1782,25 @@ namespace Oshima.FunGame.WebAPI.Controllers
                         item = user.Inventory.Items.ToList()[itemIndex - 1];
                         if ((int)item.ItemType < (int)ItemType.MagicCardPack || (int)item.ItemType > (int)ItemType.Accessory)
                         {
-                            return $"这个物品无法被装备！";
+                            return $"这个物品 {itemIndex}. {item.Name} 无法被装备！";
                         }
                         else if (item.Character != null)
                         {
-                            return $"这个物品无法被装备！[ {item.Character.ToStringWithLevelWithOutUser()} ] 已装备此物品。";
+                            return $"这个物品 {itemIndex}. {item.Name} 无法被装备！[ {item.Character.ToStringWithLevelWithOutUser()} ] 已装备此物品。";
+                        }
+
+                        using SQLHelper? sql = Factory.OpenFactory.GetSQLHelper();
+                        try
+                        {
+                            if (sql != null && SQLService.IsItemInOffers(sql, item.Guid))
+                            {
+                                return $"这个物品 {itemIndex}. {item.Name} 无法被装备！因为它正在进行交易，请检查交易报价！";
+                            }
+                        }
+                        catch (Exception e)
+                        {
+                            Logger.LogError(e, "Error: {e}", e);
+                            return busy;
                         }
                     }
                     else
@@ -1714,7 +1827,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
             }
             catch (Exception e)
             {
-                Logger.LogError(e, "Error: {e.Message}", e.Message);
+                Logger.LogError(e, "Error: {e}", e);
                 return busy;
             }
         }
@@ -1762,7 +1875,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
             }
             catch (Exception e)
             {
-                Logger.LogError(e, "Error: {e.Message}", e.Message);
+                Logger.LogError(e, "Error: {e}", e);
                 return busy;
             }
         }
@@ -1821,7 +1934,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
             }
             catch (Exception e)
             {
-                Logger.LogError(e, "Error: {e.Message}", e.Message);
+                Logger.LogError(e, "Error: {e}", e);
                 return [busy];
             }
         }
@@ -1844,7 +1957,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
             }
             catch (Exception e)
             {
-                Logger.LogError(e, "Error: {e.Message}", e.Message);
+                Logger.LogError(e, "Error: {e}", e);
                 return [busy];
             }
         }
@@ -1906,7 +2019,8 @@ namespace Oshima.FunGame.WebAPI.Controllers
                 {
                     Character[] squad1 = [.. user1.Inventory.Characters.Where(c => user1.Inventory.Squad.Contains(c.Id)).Select(c => c)];
                     Character[] squad2 = [.. user2.Inventory.Characters.Where(c => user2.Inventory.Squad.Contains(c.Id)).Select(c => c)];
-                    foreach (Character character in squad1.Union(squad2))
+                    Character[] squad = [.. squad1, .. squad2];
+                    foreach (Character character in squad)
                     {
                         character.Recovery(EP: 200);
                     }
@@ -1921,7 +2035,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
             }
             catch (Exception e)
             {
-                Logger.LogError(e, "Error: {e.Message}", e.Message);
+                Logger.LogError(e, "Error: {e}", e);
                 return [busy];
             }
         }
@@ -1944,7 +2058,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
             }
             catch (Exception e)
             {
-                Logger.LogError(e, "Error: {e.Message}", e.Message);
+                Logger.LogError(e, "Error: {e}", e);
                 return [busy];
             }
         }
@@ -1988,17 +2102,31 @@ namespace Oshima.FunGame.WebAPI.Controllers
 
                             if (item.ItemType == ItemType.MagicCard)
                             {
-                                return "此物品为魔法卡，请使用【使用魔法卡】指令！";
+                                return $"此物品 {itemIndex}. {item.Name} 为魔法卡，请使用【使用魔法卡】指令！";
                             }
 
                             if (item.RemainUseTimes <= 0)
                             {
-                                return "此物品剩余使用次数为0，无法使用！";
+                                return $"此物品 {itemIndex}. {item.Name} 剩余使用次数为0，无法使用！";
                             }
-                            
+
                             if (useTimes > item.RemainUseTimes)
                             {
-                                return $"此物品剩余使用次数为 {item.RemainUseTimes} 次，但你想使用 {useTimes} 次，使用失败！";
+                                return $"此物品 {itemIndex}. {item.Name} 剩余使用次数为 {item.RemainUseTimes} 次，但你想使用 {useTimes} 次，使用失败！";
+                            }
+
+                            using SQLHelper? sql = Factory.OpenFactory.GetSQLHelper();
+                            try
+                            {
+                                if (sql != null && SQLService.IsItemInOffers(sql, item.Guid))
+                                {
+                                    return $"这个物品 {itemIndex}. {item.Name} 无法使用！因为它正在进行交易，请检查交易报价！";
+                                }
+                            }
+                            catch (Exception e)
+                            {
+                                Logger.LogError(e, "Error: {e}", e);
+                                return busy;
                             }
 
                             List<Character> targets = [];
@@ -2021,7 +2149,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
                         }
                         else
                         {
-                            return $"这个物品无法使用！";
+                            return $"这个物品 {itemIndex}. {item.Name} 无法使用！";
                         }
                     }
                     else
@@ -2036,7 +2164,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
             }
             catch (Exception e)
             {
-                Logger.LogError(e, "Error: {e.Message}", e.Message);
+                Logger.LogError(e, "Error: {e}", e);
                 return busy;
             }
         }
@@ -2070,10 +2198,16 @@ namespace Oshima.FunGame.WebAPI.Controllers
                 {
                     User user = FunGameService.GetUser(pc);
 
-                    IEnumerable<Item> items = user.Inventory.Items.Where(i => i.Name == name && i.Character is null && i.ItemType != ItemType.MagicCard && !i.IsLock);
+                    using SQLHelper? sql = Factory.OpenFactory.GetSQLHelper();
+                    List<Guid> itemTrading = [];
+                    if (sql != null)
+                    {
+                        itemTrading = SQLService.GetUserItemGuids(sql, userid);
+                    }
+                    IEnumerable<Item> items = user.Inventory.Items.Where(i => i.Name == name && i.Character is null && i.ItemType != ItemType.MagicCard && !i.IsLock && !itemTrading.Contains(i.Guid));
                     if (!items.Any())
                     {
-                        return $"库存中不存在名称为【{name}】的物品！如果是魔法卡，请用【使用魔法卡】指令。";
+                        return $"库存中不存在名称为【{name}】，且未上锁、未在进行交易的物品！如果是魔法卡，请用【使用魔法卡】指令。";
                     }
 
                     if (items.Count() >= useCount)
@@ -2097,13 +2231,14 @@ namespace Oshima.FunGame.WebAPI.Controllers
                         }
 
                         // 一个失败全部失败
-                        if (FunGameService.UseItems(items, user, targets, msgs))
+                        bool result = FunGameService.UseItems(items, user, targets, msgs);
+                        if (result)
                         {
                             user.LastTime = DateTime.Now;
                             pc.Add("user", user);
                             pc.SaveConfig();
                         }
-                        return $"成功使用 {useCount} 件物品！\r\n" + string.Join("\r\n", msgs.Count > 30 ? msgs.Take(30) : msgs);
+                        return $"使用 {useCount} 件物品{(result ? "成功" : "失败")}！\r\n" + string.Join("\r\n", msgs.Count > 30 ? msgs.Take(30) : msgs);
                     }
                     else
                     {
@@ -2117,7 +2252,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
             }
             catch (Exception e)
             {
-                Logger.LogError(e, "Error: {e.Message}", e.Message);
+                Logger.LogError(e, "Error: {e}", e);
                 return busy;
             }
         }
@@ -2160,7 +2295,21 @@ namespace Oshima.FunGame.WebAPI.Controllers
 
                             if (item.RemainUseTimes <= 0)
                             {
-                                return "此物品剩余使用次数为0，无法使用！";
+                                return $"此物品 {itemIndex}. {item.Name} 剩余使用次数为0，无法使用！";
+                            }
+
+                            using SQLHelper? sql = Factory.OpenFactory.GetSQLHelper();
+                            try
+                            {
+                                if (sql != null && SQLService.IsItemInOffers(sql, item.Guid))
+                                {
+                                    return $"这个物品 {itemIndex}. {item.Name} 无法使用！因为它正在进行交易，请检查交易报价！";
+                                }
+                            }
+                            catch (Exception e)
+                            {
+                                Logger.LogError(e, "Error: {e}", e);
+                                return busy;
                             }
 
                             string msg = "";
@@ -2203,7 +2352,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
                                     }
                                     else
                                     {
-                                        return $"与目标序号相对应的物品不是魔法卡包！";
+                                        return $"与目标序号相对应的物品 {itemIndex}. {item.Name} 不是魔法卡包！";
                                     }
                                 }
                                 else
@@ -2219,7 +2368,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
                         }
                         else
                         {
-                            return $"这个物品不是魔法卡！";
+                            return $"这个物品 {itemIndex}. {item.Name} 不是魔法卡！";
                         }
                     }
                     else
@@ -2234,7 +2383,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
             }
             catch (Exception e)
             {
-                Logger.LogError(e, "Error: {e.Message}", e.Message);
+                Logger.LogError(e, "Error: {e}", e);
                 return busy;
             }
         }
@@ -2284,6 +2433,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
                     bool result = true;
                     Dictionary<int, string> itemsMsg = [];
 
+                    using SQLHelper? sql = Factory.OpenFactory.GetSQLHelper();
                     foreach (int itemIndex in itemsIndex)
                     {
                         if (!result)
@@ -2308,13 +2458,26 @@ namespace Oshima.FunGame.WebAPI.Controllers
                                 if (item.ItemType == ItemType.MagicCard)
                                 {
                                     subResult = false;
-                                    itemsMsg[itemIndex] += "此物品为魔法卡，请使用【使用魔法卡】指令！\r\n";
+                                    itemsMsg[itemIndex] += $"此物品 {itemIndex}. {item.Name} 为魔法卡，请使用【使用魔法卡】指令！\r\n";
                                 }
 
                                 if (item.RemainUseTimes <= 0)
                                 {
                                     subResult = false;
-                                    itemsMsg[itemIndex] += "此物品剩余使用次数为0，无法使用！\r\n";
+                                    itemsMsg[itemIndex] += $"此物品 {itemIndex}. {item.Name} 剩余使用次数为0，无法使用！\r\n";
+                                }
+
+                                try
+                                {
+                                    if (sql != null && SQLService.IsItemInOffers(sql, item.Guid))
+                                    {
+                                        return $"这个物品 {itemIndex}. {item.Name} 无法使用！因为它正在进行交易，请检查交易报价！";
+                                    }
+                                }
+                                catch (Exception e)
+                                {
+                                    Logger.LogError(e, "Error: {e}", e);
+                                    return busy;
                                 }
 
                                 if (subResult)
@@ -2330,7 +2493,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
                             }
                             else
                             {
-                                itemsMsg[itemIndex] += $"这个物品无法使用！\r\n";
+                                itemsMsg[itemIndex] += $"这个物品 {itemIndex}. {item.Name} 无法使用！\r\n";
                             }
                         }
                         else
@@ -2369,7 +2532,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
             }
             catch (Exception e)
             {
-                Logger.LogError(e, "Error: {e.Message}", e.Message);
+                Logger.LogError(e, "Error: {e}", e);
                 return busy;
             }
         }
@@ -2439,7 +2602,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
             }
             catch (Exception e)
             {
-                Logger.LogError(e, "Error: {e.Message}", e.Message);
+                Logger.LogError(e, "Error: {e}", e);
                 return busy;
             }
         }
@@ -2575,7 +2738,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
             }
             catch (Exception e)
             {
-                Logger.LogError(e, "Error: {e.Message}", e.Message);
+                Logger.LogError(e, "Error: {e}", e);
                 return busy;
             }
         }
@@ -2741,9 +2904,15 @@ namespace Oshima.FunGame.WebAPI.Controllers
                     List<string> msgs = [];
                     int successCount = 0;
                     double totalGained = 0;
+                    using SQLHelper? sql = Factory.OpenFactory.GetSQLHelper();
+                    List<Guid> itemTrading = [];
+                    if (sql != null)
+                    {
+                        itemTrading = SQLService.GetUserItemGuids(sql, userid);
+                    }
                     Dictionary<int, Item> dict = user.Inventory.Items.Select((item, index) => new { item, index })
-                        .Where(x => ids.Contains(x.index) && x.item.Character is null && !x.item.IsLock)
-                        .ToDictionary(x => x.index, x => x.item);
+                        .Where(x => ids.Contains(x.index) && x.item.Character is null && !x.item.IsLock && !itemTrading.Contains(x.item.Guid))
+                        .ToDictionary(x => x.index + 1, x => x.item);
 
                     foreach (int id in dict.Keys)
                     {
@@ -2773,7 +2942,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
                         pc.Add("user", user);
                         pc.SaveConfig();
                     }
-                    return $"分解完毕！分解 {ids.Length} 件，成功 {successCount} 件，得到了 {totalGained} {General.GameplayEquilibriumConstant.InGameMaterial}！";
+                    return $"分解完毕！分解 {ids.Length} 件，库存允许分解 {dict.Count} 件，成功 {successCount} 件，得到了 {totalGained} {General.GameplayEquilibriumConstant.InGameMaterial}！";
                 }
                 else
                 {
@@ -2782,7 +2951,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
             }
             catch (Exception e)
             {
-                Logger.LogError(e, "Error: {e.Message}", e.Message);
+                Logger.LogError(e, "Error: {e}", e);
                 return busy;
             }
         }
@@ -2807,10 +2976,16 @@ namespace Oshima.FunGame.WebAPI.Controllers
                 {
                     User user = FunGameService.GetUser(pc);
 
-                    IEnumerable<Item> items = user.Inventory.Items.Where(i => i.Name == name && i.Character is null && !i.IsLock);
+                    using SQLHelper? sql = Factory.OpenFactory.GetSQLHelper();
+                    List<Guid> itemTrading = [];
+                    if (sql != null)
+                    {
+                        itemTrading = SQLService.GetUserItemGuids(sql, userid);
+                    }
+                    IEnumerable<Item> items = user.Inventory.Items.Where(i => i.Name == name && i.Character is null && !i.IsLock && !itemTrading.Contains(i.Guid));
                     if (!items.Any())
                     {
-                        return $"库存中不存在名称为【{name}】的物品！";
+                        return $"库存中不存在名称为【{name}】，且未上锁、未在进行交易的物品！";
                     }
 
                     if (items.Count() >= useCount)
@@ -2849,7 +3024,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
                     }
                     else
                     {
-                        return "此物品的可分解数量小于你想要分解的数量！";
+                        return $"此物品的可分解数量（{items.Count()} 件）小于你想要分解的数量！";
                     }
                 }
                 else
@@ -2859,7 +3034,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
             }
             catch (Exception e)
             {
-                Logger.LogError(e, "Error: {e.Message}", e.Message);
+                Logger.LogError(e, "Error: {e}", e);
                 return busy;
             }
         }
@@ -2884,8 +3059,14 @@ namespace Oshima.FunGame.WebAPI.Controllers
                 {
                     User user = FunGameService.GetUser(pc);
 
+                    using SQLHelper? sql = Factory.OpenFactory.GetSQLHelper();
+                    List<Guid> itemTrading = [];
+                    if (sql != null)
+                    {
+                        itemTrading = SQLService.GetUserItemGuids(sql, userid);
+                    }
                     string qualityName = ItemSet.GetQualityTypeName((QualityType)qType);
-                    IEnumerable<Item> items = user.Inventory.Items.Where(i => (int)i.QualityType == qType && i.Character is null && !i.IsLock);
+                    IEnumerable<Item> items = user.Inventory.Items.Where(i => (int)i.QualityType == qType && i.Character is null && !i.IsLock && !itemTrading.Contains(i.Guid));
                     if (!items.Any())
                     {
                         return $"库存中{qualityName}物品数量为零！";
@@ -2930,7 +3111,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
             }
             catch (Exception e)
             {
-                Logger.LogError(e, "Error: {e.Message}", e.Message);
+                Logger.LogError(e, "Error: {e}", e);
                 return busy;
             }
         }
@@ -3008,7 +3189,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
             }
             catch (Exception e)
             {
-                Logger.LogError(e, "Error: {e.Message}", e.Message);
+                Logger.LogError(e, "Error: {e}", e);
                 return busy;
             }
         }
@@ -3051,7 +3232,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
             }
             catch (Exception e)
             {
-                Logger.LogError(e, "Error: {e.Message}", e.Message);
+                Logger.LogError(e, "Error: {e}", e);
                 return busy;
             }
         }
@@ -3099,7 +3280,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
             }
             catch (Exception e)
             {
-                Logger.LogError(e, "Error: {e.Message}", e.Message);
+                Logger.LogError(e, "Error: {e}", e);
                 return busy;
             }
         }
@@ -3176,7 +3357,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
             }
             catch (Exception e)
             {
-                Logger.LogError(e, "Error: {e.Message}", e.Message);
+                Logger.LogError(e, "Error: {e}", e);
                 return busy;
             }
         }
@@ -3223,7 +3404,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
             }
             catch (Exception e)
             {
-                Logger.LogError(e, "Error: {e.Message}", e.Message);
+                Logger.LogError(e, "Error: {e}", e);
                 return busy;
             }
         }
@@ -3413,7 +3594,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
             }
             catch (Exception e)
             {
-                Logger.LogError(e, "Error: {e.Message}", e.Message);
+                Logger.LogError(e, "Error: {e}", e);
                 return busy;
             }
         }
@@ -3579,7 +3760,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
             }
             catch (Exception e)
             {
-                Logger.LogError(e, "Error: {e.Message}", e.Message);
+                Logger.LogError(e, "Error: {e}", e);
                 return busy;
             }
         }
@@ -3718,7 +3899,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
             }
             catch (Exception e)
             {
-                Logger.LogError(e, "Error: {e.Message}", e.Message);
+                Logger.LogError(e, "Error: {e}", e);
                 return busy;
             }
         }
@@ -3766,7 +3947,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
             }
             catch (Exception e)
             {
-                Logger.LogError(e, "Error: {e.Message}", e.Message);
+                Logger.LogError(e, "Error: {e}", e);
                 return busy;
             }
         }
@@ -3813,7 +3994,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
             }
             catch (Exception e)
             {
-                Logger.LogError(e, "Error: {e.Message}", e.Message);
+                Logger.LogError(e, "Error: {e}", e);
                 return busy;
             }
         }
@@ -3846,7 +4027,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
             }
             catch (Exception e)
             {
-                Logger.LogError(e, "Error: {e.Message}", e.Message);
+                Logger.LogError(e, "Error: {e}", e);
                 return busy;
             }
         }
@@ -3873,7 +4054,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
             }
             catch (Exception e)
             {
-                Logger.LogError(e, "Error: {e.Message}", e.Message);
+                Logger.LogError(e, "Error: {e}", e);
                 return busy;
             }
         }
@@ -5296,7 +5477,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
             }
             return regions;
         }
-        
+
         [HttpGet("getplayerregion")]
         public List<string> GetPlayerRegion([FromQuery] int? index = null, bool showDokyoDetail = true)
         {
@@ -5480,7 +5661,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
             catch (Exception e)
             {
                 _semaphore.Release();
-                Logger.LogError(e, "Error: {e.Message}", e.Message);
+                Logger.LogError(e, "Error: {e}", e);
                 return (busy, exploreId);
             }
         }
@@ -5549,7 +5730,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
                 return noSaved;
             }
         }
-        
+
         [HttpPost("exploresettleall")]
         public string SettleExploreAll([FromQuery] long? uid = null, [FromQuery] bool? skip = null)
         {
@@ -5593,7 +5774,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
                 return noSaved;
             }
         }
-        
+
         [HttpPost("exploresettle")]
         public string SettleExplore(string exploreId, [FromQuery] long? uid = null)
         {
@@ -5750,8 +5931,38 @@ namespace Oshima.FunGame.WebAPI.Controllers
                         {
                             Item item = user.Inventory.Items.ToList()[itemIndex - 1];
                             if (msg != "") msg += "\r\n";
+
+                            using SQLHelper? sql = Factory.OpenFactory.GetSQLHelper();
+                            try
+                            {
+                                if (sql != null && SQLService.IsItemInOffers(sql, item.Guid))
+                                {
+                                    msg += $"这个物品 {itemIndex}. {item.Name} 无法上锁/解锁。因为它正在进行交易，请检查交易报价！";
+                                    continue;
+                                }
+                            }
+                            catch (Exception e)
+                            {
+                                Logger.LogError(e, "Error: {e}", e);
+                                return busy;
+                            }
+
                             if (unlock)
                             {
+                                PluginConfig renameExamine = new("examines", "rename");
+                                renameExamine.LoadConfig();
+                                List<string> strings = renameExamine.Get<List<string>>(user.Id.ToString()) ?? [];
+                                if (strings.Count > 0)
+                                {
+                                    string guid = strings[1];
+                                    Item? gmk = user.Inventory.Items.FirstOrDefault(i => i.Guid.ToString() == guid);
+                                    if (gmk != null)
+                                    {
+                                        msg = $"此物品 {itemIndex}. {item.Name} 已被自定义改名系统锁定，无法自行解锁。";
+                                        continue;
+                                    }
+                                }
+
                                 item.IsLock = false;
                                 msg += $"物品解锁成功：{itemIndex}. {item.Name}";
                             }
@@ -5786,7 +5997,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
             }
             catch (Exception e)
             {
-                Logger.LogError(e, "Error: {e.Message}", e.Message);
+                Logger.LogError(e, "Error: {e}", e);
                 return busy;
             }
         }
@@ -5834,11 +6045,11 @@ namespace Oshima.FunGame.WebAPI.Controllers
             }
             catch (Exception e)
             {
-                Logger.LogError(e, "Error: {e.Message}", e.Message);
+                Logger.LogError(e, "Error: {e}", e);
                 return busy;
             }
         }
-        
+
         [HttpPost("addofferitems")]
         public string AddOfferItems([FromQuery] long? uid = null, [FromQuery] long? offer = null, [FromQuery] bool isOpposite = true, [FromBody] int[]? itemIds = null)
         {
@@ -5878,7 +6089,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
             }
             catch (Exception e)
             {
-                Logger.LogError(e, "Error: {e.Message}", e.Message);
+                Logger.LogError(e, "Error: {e}", e);
                 return busy;
             }
         }
@@ -5913,7 +6124,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
             }
             catch (Exception e)
             {
-                Logger.LogError(e, "Error: {e.Message}", e.Message);
+                Logger.LogError(e, "Error: {e}", e);
                 return busy;
             }
         }
@@ -5952,11 +6163,11 @@ namespace Oshima.FunGame.WebAPI.Controllers
             }
             catch (Exception e)
             {
-                Logger.LogError(e, "Error: {e.Message}", e.Message);
+                Logger.LogError(e, "Error: {e}", e);
                 return busy;
             }
         }
-        
+
         [HttpGet("getoffer")]
         public string GetOffer([FromQuery] long? uid = null, [FromQuery] long? offerId = null, [FromQuery] int page = 1)
         {
@@ -6017,26 +6228,28 @@ namespace Oshima.FunGame.WebAPI.Controllers
                                 {
                                     if (offer.Status == OfferState.Completed)
                                     {
-                                        offer.OffereeItems = [.. SQLService.GetOfferItemsByOfferIdAndUserId(sql, offer.Id, user1)];
-                                        offer.OfferorItems = [.. SQLService.GetOfferItemsByOfferIdAndUserId(sql, offer.Id, user2)];
+                                        offer.OffereeItems = [.. SQLService.GetOfferItemsByOfferIdAndUserId(sql, offer.Id, user1, user2.Id)];
+                                        offer.OfferorItems = [.. SQLService.GetOfferItemsByOfferIdAndUserId(sql, offer.Id, user2, user1.Id)];
                                     }
                                     else
                                     {
-                                        offer.OfferorItems = [.. SQLService.GetOfferItemsByOfferIdAndUserId(sql, offer.Id, user1)];
-                                        offer.OffereeItems = [.. SQLService.GetOfferItemsByOfferIdAndUserId(sql, offer.Id, user2)];
+                                        offer.OfferorItems = [.. SQLService.GetOfferItemsByOfferIdAndUserId(sql, offer.Id, user1, user2.Id)];
+                                        offer.OffereeItems = [.. SQLService.GetOfferItemsByOfferIdAndUserId(sql, offer.Id, user2, user1.Id)];
                                     }
                                 }
 
                                 List<string> user1Item = [];
                                 List<string> user2Item = [];
                                 int count = 0;
-                                foreach (Item item in user1.Inventory.Items.Where(i => offer.OfferorItems.Contains(i.Guid)))
+                                IEnumerable<Item> loop1 = offer.Status == OfferState.Completed ? user2.Inventory.Items.Where(i => offer.OfferorItems.Contains(i.Guid)) : user1.Inventory.Items.Where(i => offer.OfferorItems.Contains(i.Guid));
+                                IEnumerable<Item> loop2 = offer.Status == OfferState.Completed ? user1.Inventory.Items.Where(i => offer.OffereeItems.Contains(i.Guid)) : user2.Inventory.Items.Where(i => offer.OffereeItems.Contains(i.Guid));
+                                foreach (Item item in loop1)
                                 {
                                     count++;
                                     user1Item.Add($"{count}. [{ItemSet.GetQualityTypeName(item.QualityType)}]" + ItemSet.GetItemTypeName(item.ItemType) + "：" + item.Name);
                                 }
                                 count = 0;
-                                foreach (Item item in user2.Inventory.Items.Where(i => offer.OffereeItems.Contains(i.Guid)))
+                                foreach (Item item in loop2)
                                 {
                                     count++;
                                     user2Item.Add($"{count}. [{ItemSet.GetQualityTypeName(item.QualityType)}]" + ItemSet.GetItemTypeName(item.ItemType) + "：" + item.Name);
@@ -6077,7 +6290,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
             }
             catch (Exception e)
             {
-                Logger.LogError(e, "Error: {e.Message}", e.Message);
+                Logger.LogError(e, "Error: {e}", e);
                 return busy;
             }
         }
@@ -6121,7 +6334,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
             }
             catch (Exception e)
             {
-                Logger.LogError(e, "Error: {e.Message}", e.Message);
+                Logger.LogError(e, "Error: {e}", e);
                 return busy;
             }
         }
@@ -6156,7 +6369,429 @@ namespace Oshima.FunGame.WebAPI.Controllers
             }
             catch (Exception e)
             {
-                Logger.LogError(e, "Error: {e.Message}", e.Message);
+                Logger.LogError(e, "Error: {e}", e);
+                return busy;
+            }
+        }
+
+        [HttpPost("storesellitem")]
+        public string StoreSellItem([FromQuery] long? uid = null, [FromBody] int[]? items = null)
+        {
+            try
+            {
+                long userid = uid ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
+                int[] ids = items ?? [];
+
+                PluginConfig pc = new("saved", userid.ToString());
+                pc.LoadConfig();
+
+                if (pc.Count > 0)
+                {
+                    User user = FunGameService.GetUser(pc);
+
+                    List<string> msgs = [];
+                    int successCount = 0;
+                    double totalGained = 0;
+                    using SQLHelper? sql = Factory.OpenFactory.GetSQLHelper();
+                    List<Guid> itemTrading = [];
+                    if (sql != null)
+                    {
+                        itemTrading = SQLService.GetUserItemGuids(sql, userid);
+                    }
+                    Dictionary<int, Item> dict = user.Inventory.Items.Select((item, index) => new { item, index }).ToDictionary(x => x.index + 1, x => x.item);
+
+                    int[] itemIndexs = [.. dict.Keys.Where(ids.Contains)];
+                    foreach (int itemIndex in itemIndexs)
+                    {
+                        Item item = dict[itemIndex];
+
+                        if (item.Price <= 0)
+                        {
+                            msgs.Add($"物品 {itemIndex}. {item.Name}：此物品没有回收价，无法向商店出售。");
+                            continue;
+                        }
+
+                        if (item.IsLock)
+                        {
+                            msgs.Add($"物品 {itemIndex}. {item.Name}：此物品已上锁，无法出售。");
+                            continue;
+                        }
+
+                        if (item.Character != null)
+                        {
+                            msgs.Add($"物品 {itemIndex}. {item.Name}：此物品已被 {item.Character} 装备中，无法出售。");
+                            continue;
+                        }
+
+                        if (itemTrading.Contains(item.Guid))
+                        {
+                            msgs.Add($"物品 {itemIndex}. {item.Name}：此物品正在进行交易，无法出售，请检查交易报价。");
+                            continue;
+                        }
+
+                        if (!item.IsSellable)
+                        {
+                            msgs.Add($"物品 {itemIndex}. {item.Name}：此物品无法出售{(item.NextSellableTime != DateTime.MinValue ? $"，此物品将在 {item.NextSellableTime.ToString(General.GeneralDateTimeFormatChinese)} 后可出售" : "")}。");
+                            continue;
+                        }
+
+                        if (user.Inventory.Items.Remove(item))
+                        {
+                            double gained = item.Price;
+                            totalGained += gained;
+                            successCount++;
+                            msgs.Add($"物品 {itemIndex}. {item.Name} 出售成功，获得了 {gained} {General.GameplayEquilibriumConstant.InGameCurrency}。");
+                        }
+                    }
+
+                    if (successCount > 0)
+                    {
+                        user.Inventory.Credits += totalGained;
+                        user.LastTime = DateTime.Now;
+                        pc.Add("user", user);
+                        pc.SaveConfig();
+                    }
+                    return $"出售完毕！出售 {ids.Length} 件，成功 {successCount} 件！\r\n{string.Join("\r\n", msgs)}";
+                }
+                else
+                {
+                    return noSaved;
+                }
+            }
+            catch (Exception e)
+            {
+                Logger.LogError(e, "Error: {e}", e);
+                return busy;
+            }
+        }
+
+        [HttpGet("getrenameinfo")]
+        public string GetReNameInfo([FromQuery] long? uid = null)
+        {
+            long userid = uid ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
+
+            try
+            {
+                PluginConfig pc = new("saved", userid.ToString());
+                pc.LoadConfig();
+
+                string msg = "";
+                if (pc.Count > 0)
+                {
+                    User user = FunGameService.GetUser(pc);
+
+                    PluginConfig renameExamine = new("examines", "rename");
+                    renameExamine.LoadConfig();
+                    List<string> strings = renameExamine.Get<List<string>>(user.Id.ToString()) ?? [];
+                    if (strings.Count > 0)
+                    {
+                        string name = strings[0];
+                        msg = $"你提交的新昵称为【{name}】，正在审核中，请耐心等待。";
+                    }
+                    else
+                    {
+                        msg = $"你目前没有已提交的改名申请。";
+                    }
+
+                    user.LastTime = DateTime.Now;
+                    pc.Add("user", user);
+                    pc.SaveConfig();
+
+                    return msg;
+                }
+                else
+                {
+                    return noSaved;
+                }
+            }
+            catch (Exception e)
+            {
+                Logger.LogError(e, "Error: {e}", e);
+                return busy;
+            }
+        }
+
+        [HttpGet("getrenameexamines")]
+        public string GetReNameExamines([FromQuery] long? uid = null, [FromQuery] int showPage = 1)
+        {
+            long userid = uid ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
+
+            try
+            {
+                PluginConfig pc = new("saved", userid.ToString());
+                pc.LoadConfig();
+
+                string msg = "";
+                if (pc.Count > 0)
+                {
+                    User user = FunGameService.GetUser(pc);
+
+                    if (user.IsAdmin || user.IsOperator)
+                    {
+                        PluginConfig renameExamine = new("examines", "rename");
+                        renameExamine.LoadConfig();
+
+                        if (renameExamine.Count > 0)
+                        {
+                            StringBuilder builder = new();
+                            builder.AppendLine($"☆--- 自定义改名申请列表 ---☆");
+                            int count = 1;
+                            int maxPage = (int)Math.Ceiling((double)renameExamine.Count / FunGameConstant.ItemsPerPage2);
+                            if (maxPage < 1) maxPage = 1;
+                            if (showPage <= maxPage)
+                            {
+                                string[] userIds = [.. FunGameService.GetPage(renameExamine.Keys, showPage, FunGameConstant.ItemsPerPage2)];
+                                foreach (string uidStr2 in userIds)
+                                {
+                                    if (long.TryParse(uidStr2, out long uid2))
+                                    {
+                                        List<string> strings = renameExamine.Get<List<string>>(uid2.ToString()) ?? [];
+                                        if (strings.Count > 0 && FunGameConstant.UserIdAndUsername.TryGetValue(uid2, out User? user2) && user2 != null)
+                                        {
+                                            builder.AppendLine($"{count}.");
+                                            builder.AppendLine($"UID：{user2.Id}");
+                                            builder.AppendLine($"玩家昵称：{user2.Username}");
+                                            builder.AppendLine($"新昵称：{strings[0]}");
+                                            count++;
+                                        }
+                                    }
+                                }
+                                builder.AppendLine($"页数：{showPage} / {maxPage}");
+                            }
+                            else
+                            {
+                                builder.Append($"没有这么多页！当前总页数为 {maxPage}，但你请求的是第 {showPage} 页。");
+                            }
+                            msg = builder.ToString().Trim();
+                        }
+                        else
+                        {
+                            msg = "列表空无一人。";
+                        }
+                    }
+                    else
+                    {
+                        msg = "你没有权限查看这个列表。";
+                    }
+
+                    user.LastTime = DateTime.Now;
+                    pc.Add("user", user);
+                    pc.SaveConfig();
+
+                    return msg;
+                }
+                else
+                {
+                    return noSaved;
+                }
+            }
+            catch (Exception e)
+            {
+                Logger.LogError(e, "Error: {e}", e);
+                return busy;
+            }
+        }
+
+        [HttpPost("approverename")]
+        public string ApproveReName([FromQuery] long? uid = null, [FromQuery] long target = -1, [FromQuery] bool approve = true)
+        {
+            long userid = uid ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
+
+            try
+            {
+                PluginConfig pc = new("saved", userid.ToString());
+                pc.LoadConfig();
+
+                string msg = "";
+                if (pc.Count > 0)
+                {
+                    User user = FunGameService.GetUser(pc);
+
+                    if (user.IsAdmin || user.IsOperator)
+                    {
+                        PluginConfig renameExamine = new("examines", "rename");
+                        renameExamine.LoadConfig();
+                        List<string> strings = renameExamine.Get<List<string>>(target.ToString()) ?? [];
+                        if (strings.Count > 0)
+                        {
+                            PluginConfig pc2 = new("saved", target.ToString());
+                            pc2.LoadConfig();
+
+                            if (pc2.Count > 0)
+                            {
+                                string name = strings[0];
+                                User user2 = FunGameService.GetUser(pc2);
+                                // 移除改名卡
+                                Item? gmk = user2.Inventory.Items.FirstOrDefault(i => i.Guid.ToString() == strings[1]);
+                                if (gmk != null)
+                                {
+                                    if (approve)
+                                    {
+                                        user2.Username = name;
+                                        user2.NickName = name;
+                                        if (user2.Inventory.Characters.FirstOrDefault(c => c.Id == FunGameConstant.CustomCharacterId) is Character character)
+                                        {
+                                            character.Name = user2.Username;
+                                            character.NickName = user2.NickName;
+                                        }
+                                        if (user2.Inventory.Name.EndsWith("的库存"))
+                                        {
+                                            user2.Inventory.Name = user2.Username + "的库存";
+                                        }
+                                        user2.Inventory.Items.Remove(gmk);
+                                        user2.LastTime = DateTime.Now;
+                                        pc2.Add("user", user2);
+                                        pc2.SaveConfig();
+                                        FunGameConstant.UserIdAndUsername[user2.Id] = user2;
+                                        renameExamine.Remove(target.ToString());
+                                        msg = $"该用户的新昵称【{name}】已审核通过！";
+                                        FunGameService.AddNotice(user2.Id, $"改名系统通知：你先前提交的新昵称【{name}】审核通过，已更新你的昵称！已消耗 1 张改名卡。");
+                                    }
+                                    else
+                                    {
+                                        gmk.IsLock = false;
+                                        renameExamine.Remove(target.ToString());
+                                        msg = $"已拒绝该用户的新昵称【{name}】申请！";
+                                        FunGameService.AddNotice(user2.Id, $"改名系统通知：你先前提交的新昵称【{name}】审核不通过，请重新提交申请！");
+                                    }
+                                }
+                                else
+                                {
+                                    renameExamine.Remove(target.ToString());
+                                    msg = $"该用户用于申请自定义改名的改名卡已不存在，改名失败！";
+                                    FunGameService.AddNotice(user2.Id, $"改名系统通知：你先前提交的新昵称【{name}】因用于申请自定义改名的改名卡已不存在，改名失败！");
+                                }
+                            }
+                            else
+                            {
+                                renameExamine.Remove(target.ToString());
+                                msg = $"该用户不存在。";
+                            }
+                        }
+                        else
+                        {
+                            renameExamine.Remove(target.ToString());
+                            msg = $"该用户目前没有已提交的改名申请。";
+                        }
+                        renameExamine.SaveConfig();
+                    }
+                    else
+                    {
+                        msg = "你没有权限使用此指令。";
+                    }
+
+                    user.LastTime = DateTime.Now;
+                    pc.Add("user", user);
+                    pc.SaveConfig();
+
+                    return msg;
+                }
+                else
+                {
+                    return noSaved;
+                }
+            }
+            catch (Exception e)
+            {
+                Logger.LogError(e, "Error: {e}", e);
+                return busy;
+            }
+        }
+
+        [HttpPost("marketsellitem")]
+        public string MarketSellItem([FromQuery] long? uid = null, [FromBody] int itemIndex = -1, [FromBody] double price = 0)
+        {
+            try
+            {
+                long userid = uid ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
+
+                PluginConfig pc = new("saved", userid.ToString());
+                pc.LoadConfig();
+
+                if (pc.Count > 0)
+                {
+                    User user = FunGameService.GetUser(pc);
+
+                    List<string> msgs = [];
+                    using SQLHelper? sql = Factory.OpenFactory.GetSQLHelper();
+                    List<Guid> itemTrading = [];
+                    if (sql != null)
+                    {
+                        itemTrading = SQLService.GetUserItemGuids(sql, userid);
+                    }
+                    Dictionary<int, Item> dict = user.Inventory.Items.Select((item, index) => new { item, index }).ToDictionary(x => x.index + 1, x => x.item);
+
+                    Item? item = null;
+                    if (itemIndex > 0 && itemIndex <= user.Inventory.Items.Count)
+                    {
+                        item = user.Inventory.Items.ToList()[itemIndex - 1];
+
+                        if (price <= 0)
+                        {
+                            msgs.Add($"请输入一个大于 0 的售价。");
+                        }
+
+                        if (item.IsLock)
+                        {
+                            msgs.Add($"物品 {itemIndex}. {item.Name}：此物品已上锁，无法出售。");
+                        }
+
+                        if (item.Character != null)
+                        {
+                            msgs.Add($"物品 {itemIndex}. {item.Name}：此物品已被 {item.Character} 装备中，无法出售。");
+                        }
+
+                        if (itemTrading.Contains(item.Guid))
+                        {
+                            msgs.Add($"物品 {itemIndex}. {item.Name}：此物品正在进行交易，无法出售，请检查交易报价。");
+                        }
+
+                        if (!item.IsSellable)
+                        {
+                            msgs.Add($"物品 {itemIndex}. {item.Name}：此物品无法出售{(item.NextSellableTime != DateTime.MinValue ? $"，此物品将在 {item.NextSellableTime.ToString(General.GeneralDateTimeFormatChinese)} 后可出售" : "")}。");
+                        }
+
+                        if (msgs.Count > 0) item = null;
+                    }
+                    else
+                    {
+                        msgs.Add($"没有找到与这个序号相对应的物品！");
+                    }
+
+                    if (item != null && sql != null && user.Inventory.Items.Remove(item))
+                    {
+                        EntityModuleConfig<Item> emc = new("markets", user.Id.ToString());
+                        emc.LoadConfig();
+                        Item newItem = item.Copy(true);
+                        emc.Add(item.Guid.ToString(), newItem);
+                        sql.AddMarketItem(newItem.Guid, userid, price);
+                        long marketId = sql.LastInsertId;
+                        FunGameConstant.MarketItemIdAndItem[marketId] = newItem;
+                        if (sql.Success)
+                        {
+                            emc.SaveConfig();
+                            msgs.Add($"物品 {itemIndex}. {item.Name} 上架市场成功，售价：{price} {General.GameplayEquilibriumConstant.InGameCurrency}，市场编号：{marketId}。");
+                        }
+                    }
+
+                    if (msgs.Count == 0)
+                    {
+                        msgs.Add($"没有成功上架任何物品。请检查物品是否存在或是否满足上架条件。");
+                    }
+
+                    user.LastTime = DateTime.Now;
+                    pc.Add("user", user);
+                    pc.SaveConfig();
+                    return string.Join("\r\n", msgs);
+                }
+                else
+                {
+                    return noSaved;
+                }
+            }
+            catch (Exception e)
+            {
+                Logger.LogError(e, "Error: {e}", e);
                 return busy;
             }
         }
@@ -6189,7 +6824,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
             }
             catch (Exception e)
             {
-                Logger.LogError(e, "Error: {e.Message}", e.Message);
+                Logger.LogError(e, "Error: {e}", e);
                 return busy;
             }
         }

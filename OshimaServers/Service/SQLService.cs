@@ -54,10 +54,11 @@ namespace Oshima.FunGame.OshimaServers.Service
             return offers;
         }
 
-        public static List<Guid> GetOfferItemsByOfferIdAndUserId(SQLHelper helper, long offerId, User user)
+        public static List<Guid> GetOfferItemsByOfferIdAndUserId(SQLHelper helper, long offerId, User user, long userId = -1)
         {
+            if (userId == -1) userId = user.Id;
             List<Guid> itemGuids = [];
-            DataSet ds = helper.ExecuteDataSet(OfferItemsQuery.Select_OfferItemsByOfferIdAndUserId(helper, offerId, user.Id));
+            DataSet ds = helper.ExecuteDataSet(OfferItemsQuery.Select_OfferItemsByOfferIdAndUserId(helper, offerId, userId));
             if (user != null && helper.Success)
             {
                 foreach (DataRow dr in ds.Tables[0].Rows)
@@ -69,6 +70,29 @@ namespace Oshima.FunGame.OshimaServers.Service
                 }
             }
             return itemGuids;
+        }
+        
+        public static List<Guid> GetUserItemGuids(SQLHelper helper, long userId)
+        {
+            helper.Parameters["UserId"] = userId;
+            DataSet ds = helper.ExecuteDataSet($"select {OfferItemsQuery.TableName}.{OfferItemsQuery.Column_ItemGuid} from {OffersQuery.TableName}\r\n" + 
+                $"left join {OfferItemsQuery.TableName} on {OfferItemsQuery.TableName}.{OfferItemsQuery.Column_OfferId} = {OffersQuery.TableName}.{OffersQuery.Column_Id}\r\n" +
+                $"where {OfferItemsQuery.Column_UserId} = @UserId and {OffersQuery.Column_Status} not in ({(int)OfferState.Cancelled}, {(int)OfferState.Rejected}, {(int)OfferState.Completed})");
+            List<Guid> list = [];
+            if (helper.Success)
+            {
+                list = [.. ds.Tables[0].AsEnumerable().Select(dr => Guid.TryParse(dr.Field<string>(OfferItemsQuery.Column_ItemGuid), out Guid guid) ? guid : Guid.Empty)];
+            }
+            return list;
+        }
+        
+        public static bool IsItemInOffers(SQLHelper helper, Guid itemGuid)
+        {
+            helper.Parameters["ItemGuid"] = itemGuid.ToString();
+            helper.ExecuteDataSet($"select {OffersQuery.TableName}.{OffersQuery.Column_Id} from {OffersQuery.TableName}\r\n" + 
+                $"left join {OfferItemsQuery.TableName} on {OfferItemsQuery.TableName}.{OfferItemsQuery.Column_OfferId} = {OffersQuery.TableName}.{OffersQuery.Column_Id}\r\n" +
+                $"where {OfferItemsQuery.Column_ItemGuid} = @ItemGuid and {OffersQuery.Column_Status} not in ({(int)OfferState.Cancelled}, {(int)OfferState.Rejected}, {(int)OfferState.Completed})");
+            return helper.Success;
         }
 
         public static void AddOffer(SQLHelper helper, long offeror, long offeree, OfferState status = OfferState.Created, int negotiatedTimes = 0)
@@ -248,12 +272,12 @@ namespace Oshima.FunGame.OshimaServers.Service
             offer.Status = (OfferState)Convert.ToInt32(dr[OffersQuery.Column_Status]);
             offer.NegotiatedTimes = Convert.ToInt32(dr[OffersQuery.Column_NegotiatedTimes]);
 
-            if (dr[OffersQuery.Column_CreateTime] != DBNull.Value && DateTime.TryParseExact(dr[OffersQuery.Column_CreateTime].ToString(), General.GeneralDateTimeFormat, null, System.Globalization.DateTimeStyles.None, out DateTime dt))
+            if (dr[OffersQuery.Column_CreateTime] != DBNull.Value && DateTime.TryParse(dr[OffersQuery.Column_CreateTime].ToString(), out DateTime dt))
             {
                 offer.CreateTime = dt;
             }
 
-            if (dr[OffersQuery.Column_FinishTime] != DBNull.Value && DateTime.TryParseExact(dr[OffersQuery.Column_FinishTime].ToString(), General.GeneralDateTimeFormat, null, System.Globalization.DateTimeStyles.None, out dt))
+            if (dr[OffersQuery.Column_FinishTime] != DBNull.Value && DateTime.TryParse(dr[OffersQuery.Column_FinishTime].ToString(), out dt))
             {
                 offer.FinishTime = dt;
             }

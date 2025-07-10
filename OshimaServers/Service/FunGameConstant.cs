@@ -29,6 +29,7 @@ namespace Oshima.FunGame.OshimaServers.Service
         public static List<Item> AllItems { get; } = [];
         public static List<Skill> AllSkills { get; } = [];
         public static Dictionary<long, User> UserIdAndUsername { get; } = [];
+        public static Dictionary<long, Item> MarketItemIdAndItem { get; } = [];
         public static ItemType[] ItemCanUsed => [ItemType.Consumable, ItemType.MagicCard, ItemType.SpecialItem, ItemType.GiftBox, ItemType.Others];
         public static ItemType[] ItemCanNotDrawCard => [ItemType.Collectible, ItemType.QuestItem, ItemType.GiftBox, ItemType.Others];
 

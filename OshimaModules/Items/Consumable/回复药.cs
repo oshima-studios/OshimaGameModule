@@ -55,12 +55,23 @@ namespace Oshima.FunGame.OshimaModules.Items
                 }
             }
             args["msg"] = msg;
-            string truemsg = $"对角色 [ {targets[0]} ] 使用 {times} 个 [ {item.Name} ] 成功！";
-            if (item is HPRecovery expBook)
+            if (result)
             {
-                truemsg += $"回复了 {expBook.HP * times} 点生命值！";
+                key = args.Keys.FirstOrDefault(s => s.Equals("useCount", StringComparison.CurrentCultureIgnoreCase)) ?? "";
+                if (key != "" && args.TryGetValue(key, out value) && value is int count && targets.Length > 0)
+                {
+                    string truemsg = $"对角色 [ {targets[0]} ] 使用 {count} 个 [ {item.Name} ] 成功！";
+                    if (item is HPRecovery expBook)
+                    {
+                        truemsg += $"回复了 {expBook.HP * count} 点生命值！";
+                    }
+                    args["truemsg"] = truemsg;
+                }
             }
-            args["truemsg"] = truemsg;
+            else
+            {
+                args["truemsg"] = msg;
+            }
             return result;
         }
     }

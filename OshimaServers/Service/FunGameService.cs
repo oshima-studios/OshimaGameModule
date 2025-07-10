@@ -63,7 +63,7 @@ namespace Oshima.FunGame.OshimaServers.Service
             FunGameConstant.Items.AddRange(exItems.Values.Where(i => (int)i.ItemType > 4));
             FunGameConstant.Items.AddRange([new 小经验书(), new 中经验书(), new 大经验书(), new 升华之印(), new 流光之印(), new 永恒之印(), new 技能卷轴(), new 智慧之果(), new 奥术符文(), new 混沌之核(),
                 new 小回复药(), new 中回复药(), new 大回复药(), new 魔力填充剂1(), new 魔力填充剂2(), new 魔力填充剂3(), new 能量饮料1(), new 能量饮料2(), new 能量饮料3(), new 年夜饭(), new 蛇年大吉(), new 新春快乐(), new 毕业礼包(),
-                new 复苏药1(), new 复苏药2(), new 复苏药3(), new 全回复药(), new 魔法卡礼包(), new 奖券(), new 十连奖券()
+                new 复苏药1(), new 复苏药2(), new 复苏药3(), new 全回复药(), new 魔法卡礼包(), new 奖券(), new 十连奖券(), new 改名卡()
             ]);
 
             FunGameConstant.AllItems.AddRange(FunGameConstant.Equipment);
@@ -87,7 +87,7 @@ namespace Oshima.FunGame.OshimaServers.Service
                     region.Items.Add(item);
                 }
             }
-            
+
             foreach (OshimaRegion region in FunGameConstant.PlayerRegions)
             {
                 IEnumerable<Item> items;
@@ -727,7 +727,8 @@ namespace Oshima.FunGame.OshimaServers.Service
             int r = Random.Shared.Next(8);
             double q = Random.Shared.NextDouble() * 100;
             QualityType type = QualityType.White;
-            foreach (QualityType typeTemp in FunGameConstant.DrawCardProbabilities.Keys.OrderByDescending(o => (int)o))
+            QualityType[] types = [.. FunGameConstant.DrawCardProbabilities.Keys.OrderByDescending(o => (int)o)];
+            foreach (QualityType typeTemp in types)
             {
                 if (q <= FunGameConstant.DrawCardProbabilities[typeTemp])
                 {
@@ -848,7 +849,8 @@ namespace Oshima.FunGame.OshimaServers.Service
             // 生成随机数并确定品质
             double randomValue = Random.Shared.NextDouble() * 100;
             QualityType type = QualityType.White;
-            foreach (QualityType typeTemp in adjustedProbabilities.Keys.OrderByDescending(o => (int)o))
+            QualityType[] types = [.. adjustedProbabilities.Keys.OrderByDescending(o => (int)o)];
+            foreach (QualityType typeTemp in types)
             {
                 if (randomValue <= adjustedProbabilities[typeTemp])
                 {
@@ -1259,7 +1261,7 @@ namespace Oshima.FunGame.OshimaServers.Service
                 if (item is 魔法卡礼包 cardBox)
                 {
                     List<string> cards = [];
-                    for (int i = 0; i< cardBox.Count; i++)
+                    for (int i = 0; i < cardBox.Count; i++)
                     {
                         Item newItem = GenerateMagicCard(item.QualityType);
                         if (newItem.QualityType >= QualityType.Orange) newItem.IsLock = true;
@@ -1766,7 +1768,8 @@ namespace Oshima.FunGame.OshimaServers.Service
 
                     // 生成任务奖励物品
                     QualityType qualityType = QualityType.Blue;
-                    foreach (QualityType qt in pE.Keys.OrderByDescending(q => (int)q))
+                    QualityType[] types = [.. pE.Keys.OrderByDescending(q => (int)q)];
+                    foreach (QualityType qt in types)
                     {
                         if (Random.Shared.NextDouble() <= pE[qt])
                         {
@@ -1782,7 +1785,8 @@ namespace Oshima.FunGame.OshimaServers.Service
                     items.Add(item);
                     itemsCount[item.Name] = 1;
 
-                    foreach (QualityType qt in pE.Keys.OrderByDescending(q => (int)q))
+                    types = [.. pE.Keys.OrderByDescending(q => (int)q)];
+                    foreach (QualityType qt in types)
                     {
                         if (Random.Shared.NextDouble() <= pE[qt])
                         {
@@ -1898,7 +1902,8 @@ namespace Oshima.FunGame.OshimaServers.Service
             {
                 // 从缓存中获取收集的物品
                 List<string> willRemove = [];
-                foreach (string item in value.Distinct())
+                string[] itemsLoop = [.. value.Distinct()];
+                foreach (string item in itemsLoop)
                 {
                     IEnumerable<string> items = value.Where(str => str == item);
                     IEnumerable<Quest> progressiveQuests = quests.Values.Where(q => q.QuestType == QuestType.Progressive && q.Status == QuestState.InProgress);
@@ -1944,6 +1949,13 @@ namespace Oshima.FunGame.OshimaServers.Service
                                 newItem.User = user;
                                 if (newItem.QualityType >= QualityType.Orange) newItem.IsLock = true;
                                 SetSellAndTradeTime(newItem);
+                                int min = 0, max = 0;
+                                if (FunGameConstant.PriceRanges.TryGetValue(item.QualityType, out (int Min, int Max) range))
+                                {
+                                    (min, max) = (range.Min, range.Max);
+                                }
+                                double price = Random.Shared.Next(min, max) * 0.35;
+                                newItem.Price = price;
                                 user.Inventory.Items.Add(newItem);
                                 // 连接到任务系统
                                 AddExploreItemCache(user.Id, item.Name);
@@ -2132,7 +2144,8 @@ namespace Oshima.FunGame.OshimaServers.Service
 
         public static async Task UpdateRegionWeather()
         {
-            foreach (Region region in FunGameConstant.Regions.Union(FunGameConstant.PlayerRegions))
+            Region[] regions = [.. FunGameConstant.Regions.Union(FunGameConstant.PlayerRegions)];
+            foreach (Region region in regions)
             {
                 region.ChangeRandomWeather();
             }
@@ -2159,10 +2172,12 @@ namespace Oshima.FunGame.OshimaServers.Service
                 {
                     List<string> willRemove = [];
                     IEnumerable<Activity> activityList = Activities.Where(a => a.Status == ActivityState.InProgress);
-                    foreach (string item in ActivitiesCharacterCache.Distinct())
+                    IEnumerable<string> itemsLoop = ActivitiesCharacterCache.Distinct();
+                    foreach (string item in itemsLoop)
                     {
                         IEnumerable<string> items = ActivitiesCharacterCache.Where(str => str == item);
-                        foreach (Quest quest in activityList.SelectMany(a => a.Quests).Where(q => q.Status == QuestState.InProgress))
+                        IEnumerable<Quest> quests = activityList.SelectMany(a => a.Quests).Where(q => q.Status == QuestState.InProgress);
+                        foreach (Quest quest in quests)
                         {
                             if (quest.NeedyExploreCharacterName == item)
                             {
@@ -2183,10 +2198,12 @@ namespace Oshima.FunGame.OshimaServers.Service
                 {
                     List<string> willRemove = [];
                     IEnumerable<Activity> activityList = Activities.Where(a => a.Status == ActivityState.InProgress);
-                    foreach (string item in ActivitiesItemCache.Distinct())
+                    IEnumerable<string> itemsLoop = ActivitiesItemCache.Distinct();
+                    foreach (string item in itemsLoop)
                     {
                         IEnumerable<string> items = ActivitiesItemCache.Where(str => str == item);
-                        foreach (Quest quest in activityList.SelectMany(a => a.Quests).Where(q => q.Status == QuestState.InProgress))
+                        IEnumerable<Quest> quests = activityList.SelectMany(a => a.Quests).Where(q => q.Status == QuestState.InProgress);
+                        foreach (Quest quest in quests)
                         {
                             if (quest.NeedyExploreItemName == item)
                             {
@@ -2207,10 +2224,12 @@ namespace Oshima.FunGame.OshimaServers.Service
                 {
                     List<string> willRemove = [];
                     IEnumerable<Activity> activityList = Activities.Where(a => a.Status == ActivityState.InProgress);
-                    foreach (string item in ActivitiesEventCache.Distinct())
+                    IEnumerable<string> itemsLoop = ActivitiesEventCache.Distinct();
+                    foreach (string item in itemsLoop)
                     {
                         IEnumerable<string> items = ActivitiesEventCache.Where(str => str == item);
-                        foreach (Quest quest in activityList.SelectMany(a => a.Quests).Where(q => q.Status == QuestState.InProgress))
+                        IEnumerable<Quest> quests = activityList.SelectMany(a => a.Quests).Where(q => q.Status == QuestState.InProgress);
+                        foreach (Quest quest in quests)
                         {
                             if (quest.NeedyExploreEventName == item)
                             {
@@ -2322,6 +2341,7 @@ namespace Oshima.FunGame.OshimaServers.Service
 
         public static async Task GenerateExploreModel(ExploreModel model, OshimaRegion region, long[] characterIds, User user)
         {
+            QualityType[] types = [];
             int characterCount = characterIds.Length;
             int diff = region.Difficulty switch
             {
@@ -2597,7 +2617,8 @@ namespace Oshima.FunGame.OshimaServers.Service
                             if (Random.Shared.NextDouble() > 0.6)
                             {
                                 QualityType qualityType = QualityType.Blue;
-                                foreach (QualityType type in pE.Keys.OrderByDescending(q => (int)q))
+                                types = [.. pE.Keys.OrderByDescending(q => (int)q)];
+                                foreach (QualityType type in types)
                                 {
                                     if (Random.Shared.NextDouble() <= pE[type])
                                     {
@@ -2637,7 +2658,8 @@ namespace Oshima.FunGame.OshimaServers.Service
                     break;
                 case ExploreResult.Earned:
                     QualityType quality = QualityType.Blue;
-                    foreach (QualityType type in pE.Keys.OrderByDescending(q => (int)q))
+                    types = [.. pE.Keys.OrderByDescending(q => (int)q)];
+                    foreach (QualityType type in types)
                     {
                         if (Random.Shared.NextDouble() <= pE[type])
                         {
@@ -2717,6 +2739,13 @@ namespace Oshima.FunGame.OshimaServers.Service
                             newItem.User = user;
                             if (newItem.QualityType >= QualityType.Orange) newItem.IsLock = true;
                             SetSellAndTradeTime(newItem);
+                            int min = 0, max = 0;
+                            if (FunGameConstant.PriceRanges.TryGetValue(item.QualityType, out (int Min, int Max) range))
+                            {
+                                (min, max) = (range.Min, range.Max);
+                            }
+                            double price = Random.Shared.Next(min, max) * 0.35;
+                            newItem.Price = price;
                             user.Inventory.Items.Add(newItem);
                             // 连接到任务系统
                             AddExploreItemCache(user.Id, item.Name);
@@ -2784,7 +2813,7 @@ namespace Oshima.FunGame.OshimaServers.Service
             }
             return -1;
         }
-        
+
         public static string AddOfferItems(User user, long offerId, bool isOpposite, int[] itemIds)
         {
             using SQLHelper? sql = Factory.OpenFactory.GetSQLHelper();
@@ -2815,7 +2844,7 @@ namespace Oshima.FunGame.OshimaServers.Service
                         {
                             return "无法找到报价的接收方，请稍后再试。";
                         }
-                        User addUser = isOpposite ? user2: user;
+                        User addUser = isOpposite ? user2 : user;
                         offer.OfferorItems = [.. SQLService.GetOfferItemsByOfferIdAndUserId(sql, offerId, user)];
                         offer.OffereeItems = [.. SQLService.GetOfferItemsByOfferIdAndUserId(sql, offerId, user2)];
 
@@ -2835,6 +2864,14 @@ namespace Oshima.FunGame.OshimaServers.Service
                                     continue;
                                 }
 
+                                if (SQLService.IsItemInOffers(sql, item.Guid))
+                                {
+                                    result = false;
+                                    if (msg != "") msg += "\r\n";
+                                    msg += $"物品 {itemIndex}. {item.Name}：此物品已经在其它的交易报价中了，无法多次添加。";
+                                    break;
+                                }
+
                                 if (item.IsLock)
                                 {
                                     result = false;
@@ -2842,7 +2879,7 @@ namespace Oshima.FunGame.OshimaServers.Service
                                     msg += $"物品 {itemIndex}. {item.Name}：此物品已锁定，无法进行交易。";
                                     break;
                                 }
-                                
+
                                 if (item.Character != null)
                                 {
                                     result = false;
@@ -2850,7 +2887,7 @@ namespace Oshima.FunGame.OshimaServers.Service
                                     msg += $"物品 {itemIndex}. {item.Name}：此物品已被 {item.Character} 装备中，无法进行交易。";
                                     break;
                                 }
-                                
+
                                 if (!item.IsTradable)
                                 {
                                     result = false;
@@ -2961,7 +2998,7 @@ namespace Oshima.FunGame.OshimaServers.Service
                 {
                     msg = "报价不存在或你不是该报价的发起方。";
                 }
-                
+
                 return msg;
             }
             return "服务器繁忙，请稍后再试。";
@@ -2993,8 +3030,8 @@ namespace Oshima.FunGame.OshimaServers.Service
                 else
                 {
                     offers = sql.GetOffersByOfferor(user.Id);
-                    offers = [.. offers, ..sql.GetOffersByOfferee(user.Id)];
-                    offers = [.. offers.DistinctBy(o => o.Id)];
+                    offers = [.. offers, .. sql.GetOffersByOfferee(user.Id)];
+                    offers = [.. offers.DistinctBy(o => o.Id).OrderByDescending(o => o.Id)];
                 }
             }
             return offers;
@@ -3153,6 +3190,10 @@ namespace Oshima.FunGame.OshimaServers.Service
                                         offer.OffereeItems = [.. SQLService.GetOfferItemsByOfferIdAndUserId(sql, offerId, user)];
                                         offer.OfferorItems = [.. SQLService.GetOfferItemsByOfferIdAndUserId(sql, offerId, user2)];
 
+                                        PluginConfig itemsTradeRecord = new("trades", offerId.ToString());
+                                        List<Item> offerorItems = [];
+                                        List<Item> offereeItems = [];
+
                                         foreach (Guid itemGuid in offer.OffereeItems)
                                         {
                                             if (user.Inventory.Items.FirstOrDefault(i => i.Guid == itemGuid) is Item item)
@@ -3166,6 +3207,8 @@ namespace Oshima.FunGame.OshimaServers.Service
                                                 newItem.NextSellableTime = DateTimeUtility.GetTradableTime();
                                                 newItem.NextTradableTime = DateTimeUtility.GetTradableTime();
                                                 user2.Inventory.Items.Add(newItem);
+
+                                                offereeItems.Add(newItem);
                                             }
                                         }
                                         foreach (Guid itemGuid in offer.OfferorItems)
@@ -3181,8 +3224,15 @@ namespace Oshima.FunGame.OshimaServers.Service
                                                 newItem.NextSellableTime = DateTimeUtility.GetTradableTime();
                                                 newItem.NextTradableTime = DateTimeUtility.GetTradableTime();
                                                 user.Inventory.Items.Add(newItem);
+
+                                                offerorItems.Add(newItem);
                                             }
                                         }
+
+                                        itemsTradeRecord.Add("offeror", offerorItems);
+                                        itemsTradeRecord.Add("offeree", offereeItems);
+                                        itemsTradeRecord.SaveConfig();
+
                                         user.LastTime = DateTime.Now;
                                         pc.Add("user", user);
                                         pc.SaveConfig();

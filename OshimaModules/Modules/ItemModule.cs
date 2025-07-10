@@ -51,6 +51,7 @@ namespace Oshima.FunGame.OshimaModules
                     (long)SpecialItemID.混沌之核 => new 混沌之核(),
                     (long)SpecialItemID.奖券 => new 奖券(),
                     (long)SpecialItemID.十连奖券 => new 十连奖券(),
+                    (long)SpecialItemID.改名卡 => new 改名卡(),
                     (long)ConsumableID.小回复药 => new 小回复药(),
                     (long)ConsumableID.中回复药 => new 中回复药(),
                     (long)ConsumableID.大回复药 => new 大回复药(),

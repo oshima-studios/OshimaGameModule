@@ -626,6 +626,13 @@ namespace Oshima.FunGame.WebAPI.Services
 
                 if (e.Detail == "还原存档")
                 {
+                    e.UseNotice = false;
+                    await SendAsync(e, "还原存档", "\r\n请在该指令前添加【确认】二字，即使用【确认还原存档】指令。");
+                    return result;
+                }
+                
+                if (e.Detail == "确认还原存档")
+                {
                     string msg = Controller.RestoreSaved(uid);
                     if (msg != "")
                     {
@@ -639,14 +646,100 @@ namespace Oshima.FunGame.WebAPI.Services
                     string msg = Controller.NewCustomCharacter(uid);
                     if (msg != "")
                     {
-                        await SendAsync(e, "抽卡", "\r\n" + msg);
+                        await SendAsync(e, "生成自建角色", "\r\n" + msg);
                     }
                     return result;
                 }
 
                 if (e.Detail == "角色改名")
                 {
+                    e.UseNotice = false;
+                    await SendAsync(e, "改名", "\r\n为防止玩家手误更改自己的昵称，请在该指令前添加【确认】二字，即使用【确认角色改名】指令。");
+                    return result;
+                }
+                
+                if (e.Detail == "确认角色改名")
+                {
                     string msg = Controller.ReName(uid);
+                    if (msg != "")
+                    {
+                        await SendAsync(e, "改名", "\r\n" + msg);
+                    }
+                    return result;
+                }
+                
+                if (e.Detail == "查询改名")
+                {
+                    string msg = Controller.GetReNameInfo(uid);
+                    if (msg != "")
+                    {
+                        await SendAsync(e, "查询改名", "\r\n" + msg);
+                    }
+                    return result;
+                }
+
+                if (e.Detail.StartsWith("改名审核"))
+                {
+                    string detail = e.Detail.Replace("改名审核", "").Trim();
+                    string msg = "";
+                    if (int.TryParse(detail, out int page))
+                    {
+                        msg = Controller.GetReNameExamines(uid, page);
+                    }
+                    else
+                    {
+                        msg = Controller.GetReNameExamines(uid);
+                    }
+                    if (msg != "")
+                    {
+                        await SendAsync(e, "改名审核", msg);
+                    }
+                    return result;
+                }
+                
+                if (e.Detail.StartsWith("改名拒绝"))
+                {
+                    string detail = e.Detail.Replace("改名拒绝", "").Trim();
+                    string msg = "";
+                    if (long.TryParse(detail, out long target))
+                    {
+                        msg = Controller.ApproveReName(uid, target, false);
+                    }
+                    if (msg != "")
+                    {
+                        await SendAsync(e, "改名拒绝", msg);
+                    }
+                    return result;
+                }
+                
+                if (e.Detail.StartsWith("改名批准"))
+                {
+                    string detail = e.Detail.Replace("改名批准", "").Trim();
+                    string msg = "";
+                    if (long.TryParse(detail, out long target))
+                    {
+                        msg = Controller.ApproveReName(uid, target);
+                    }
+                    if (msg != "")
+                    {
+                        await SendAsync(e, "改名批准", msg);
+                    }
+                    return result;
+                }
+
+                if (e.Detail.StartsWith("自定义改名"))
+                {
+                    e.UseNotice = false;
+                    await SendAsync(e, "改名", "\r\n自定义改名说明：自定义改名需要库存中存在至少一张未上锁、且未处于交易、市场出售状态的改名卡，提交改名申请后需要等待审核。" +
+                        "在审核期间，改名卡将会被系统锁定，无法取消、重复提交申请，也不能解锁、分解、交易、出售该改名卡。如已知悉请在该指令前添加【确认】二字，即使用【确认自定义改名】指令。");
+                    return result;
+                }
+                
+                if (e.Detail.StartsWith("确认自定义改名"))
+                {
+                    e.UseNotice = false;
+                    string detail = e.Detail.Replace("自定义改名", "").Trim();
+                    string msg = Controller.ReName_Custom(uid, detail);
                     if (msg != "")
                     {
                         await SendAsync(e, "改名", "\r\n" + msg);
@@ -998,12 +1091,7 @@ namespace Oshima.FunGame.WebAPI.Services
                     if (int.TryParse(detail, out int index))
                     {
                         List<string> msgs = Controller.AcceptQuest(uid, index);
-                        int count = 1;
-                        foreach (string msg in msgs)
-                        {
-                            await SendAsync(e, "开始任务", msg, msgSeq: count++);
-                            await Task.Delay(2000);
-                        }
+                        await SendAsync(e, "开始任务", string.Join("\r\n", msgs));
                     }
                     return result;
                 }
@@ -2451,6 +2539,26 @@ namespace Oshima.FunGame.WebAPI.Services
                     {
                         msg = "格式不正确，请先输入报价序号再输入物品序号，使用空格隔开。";
                     }
+                    return result;
+                }
+
+                if (e.Detail.StartsWith("商店出售", StringComparison.CurrentCultureIgnoreCase))
+                {
+                    string detail = e.Detail.Replace("商店出售", "").Trim();
+                    List<int> ids = [];
+                    foreach (string str in detail.Split(' ', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries))
+                    {
+                        if (int.TryParse(str, out int id))
+                        {
+                            ids.Add(id);
+                        }
+                    }
+                    string msg = Controller.StoreSellItem(uid, [.. ids]);
+                    if (msg != "")
+                    {
+                        await SendAsync(e, "商店出售", msg);
+                    }
+
                     return result;
                 }
 
