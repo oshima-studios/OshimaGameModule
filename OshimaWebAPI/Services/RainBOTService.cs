@@ -738,7 +738,7 @@ namespace Oshima.FunGame.WebAPI.Services
                 if (e.Detail.StartsWith("确认自定义改名"))
                 {
                     e.UseNotice = false;
-                    string detail = e.Detail.Replace("自定义改名", "").Trim();
+                    string detail = e.Detail.Replace("确认自定义改名", "").Trim();
                     string msg = Controller.ReName_Custom(uid, detail);
                     if (msg != "")
                     {

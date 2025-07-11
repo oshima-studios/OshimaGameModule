@@ -6650,6 +6650,9 @@ namespace Oshima.FunGame.WebAPI.Controllers
                                     else
                                     {
                                         gmk.IsLock = false;
+                                        user2.LastTime = DateTime.Now;
+                                        pc2.Add("user", user2);
+                                        pc2.SaveConfig();
                                         renameExamine.Remove(target.ToString());
                                         msg = $"已拒绝该用户的新昵称【{name}】申请！";
                                         FunGameService.AddNotice(user2.Id, $"改名系统通知：你先前提交的新昵称【{name}】审核不通过，请重新提交申请！");
