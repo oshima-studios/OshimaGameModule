@@ -29,12 +29,54 @@ namespace Oshima.FunGame.WebAPI
 
         public override string Author => OshimaGameModuleConstant.Author;
 
+        private IServiceScopeFactory? _serviceScopeFactory = null;
+
         public override void ProcessInput(string input)
         {
-            if (input == "test")
+            // RainBOT 测试
+            using (IServiceScope? scope = _serviceScopeFactory?.CreateScope())
             {
-                //FunGameController controller = new(new Logger<FunGameController>(new LoggerFactory()));
-                //Controller.WriteLine(Controller.JSON.GetObject<string>(controller.ShowDailyStore(1)) ?? "test");
+                if (scope != null)
+                {
+                    // 从作用域中获取 IServiceProvider
+                    IServiceProvider serviceProvider = scope.ServiceProvider;
+
+                    try
+                    {
+                        if (input.Trim() != "")
+                        {
+                            // 获取 RainBOTService 实例
+                            RainBOTService bot = serviceProvider.GetRequiredService<RainBOTService>();
+                            Controller.WriteLine("成功获取 RainBOTService 实例！");
+                            ThirdPartyMessage message = new()
+                            {
+                                IsGroup = false,
+                                AuthorOpenId = "1",
+                                OpenId = "1",
+                                Detail = input,
+                                Id = "1",
+                                Timestamp = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")
+                            };
+
+                            bool result = bot.Handler(message).GetAwaiter().GetResult();
+
+                            if (!result || message.IsCompleted)
+                            {
+                                Controller.WriteLine(message.Result);
+                            }
+                        }
+
+                        if (input == "test")
+                        {
+                            //FunGameController funGameController = serviceProvider.GetRequiredService<FunGameController>();
+                            //Controller.WriteLine(Controller.JSON.GetObject<string>(funGameController.ShowDailyStore(1)) ?? "test");
+                        }
+                    }
+                    catch (Exception e)
+                    {
+                        Controller.Error(e);
+                    }
+                }
             }
 
             if (input == "testuser")
@@ -187,6 +229,15 @@ namespace Oshima.FunGame.WebAPI
                 builder.Services.Configure<BotConfig>(builder.Configuration.GetSection("Bot"));
             }
             WebAPIAuthenticator.WebAPICustomBearerTokenAuthenticator += CustomBearerTokenAuthenticator;
+        }
+
+        public override void OnWebAPIStarted(params object[] objs)
+        {
+            if (objs.Length > 0 && objs[0] is WebApplication app)
+            {
+                _serviceScopeFactory = app.Services.GetRequiredService<IServiceScopeFactory>();
+                Controller.WriteLine("获取到：IServiceScopeFactory");
+            }
         }
 
         private string CustomBearerTokenAuthenticator(string token)

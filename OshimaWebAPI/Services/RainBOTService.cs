@@ -496,7 +496,7 @@ namespace Oshima.FunGame.WebAPI.Services
                 if (e.Detail.StartsWith("生成"))
 				{
 					e.UseNotice = false;
-					string pattern = @"生成\s*(\d+)\s*个\s*([\s\S]+)(?:\s*给\s*(\d+))";
+                    string pattern = @"生成\s*(\d+)\s*个\s*([\s\S]+)(?:\s*给\s*(\d+))?";
                     Regex regex = new(pattern, RegexOptions.IgnoreCase);
                     Match match = regex.Match(e.Detail);
 
@@ -522,7 +522,7 @@ namespace Oshima.FunGame.WebAPI.Services
                         }
                         else
                         {
-                            await SendAsync(e, "熟圣之力", "数量不能为0，请重新输入。");
+                            await SendAsync(e, "熟圣之力", "数量不能为 0，请重新输入。");
                         }
                         return result;
                     }
@@ -1385,7 +1385,7 @@ namespace Oshima.FunGame.WebAPI.Services
                     {
                         string detail = e.Detail.Replace("使用", "").Trim();
                         char[] chars = [',', ' ', '，', '；', ';'];
-                        string pattern = @"^\s*(?:(?<itemId>\d+)|(?<itemPart>[^\d\s].*?))\s*(?:(?<countPart>\d+)(?:\s+角色\s*(?<characterIds>[\d\s,，;；]*))?)?$";
+                        string pattern = @"^\s*(?:(?<itemId>\d+)|(?<itemPart>[^\d\s].*?))(?:\s+(?<countPart>\d+))?(?:\s*角色\s*(?<characterIds>[\d\s,，;；]*))?$";
                         Match match = Regex.Match(detail, pattern);
                         if (match.Success)
                         {

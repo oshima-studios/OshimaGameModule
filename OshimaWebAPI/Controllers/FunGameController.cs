@@ -3271,7 +3271,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
                     user.LastTime = DateTime.Now;
                     pc.Add("user", user);
                     pc.SaveConfig();
-                    return $"角色 [{character}] 开始练级，请过一段时间后进行【练级结算】，时间越长奖励越丰盛！练级时间上限 1440 分钟（24小时），超时将不会再产生收益，请按时领取奖励！";
+                    return $"角色 [{character}] 开始练级，请过一段时间后进行【练级结算】，时间越长奖励越丰盛！练级时间上限 2880 分钟（48小时），超时将不会再产生收益，请按时领取奖励！练级结束时，角色将根据练级总分钟数获得生命回复和魔法回复。";
                 }
                 else
                 {
@@ -3318,8 +3318,8 @@ namespace Oshima.FunGame.WebAPI.Controllers
                         if (totalExperience > 0)
                         {
                             character.EXP += totalExperience;
-                            character.HP += character.HR * diff.TotalSeconds;
-                            character.MP += character.MR * diff.TotalSeconds;
+                            character.HP += character.HR * 60 * (int)diff.TotalMinutes;
+                            character.MP += character.MR * 60 * (int)diff.TotalMinutes;
                         }
 
                         for (int i = 0; i < smallBookCount; i++)

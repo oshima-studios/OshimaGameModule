@@ -1401,10 +1401,10 @@ namespace Oshima.FunGame.OshimaServers.Service
             int totalMinutes = (int)diff.TotalMinutes;
 
             // 每分钟经验
-            int experiencePerMinute = 1;
+            int experiencePerMinute = 2;
 
             // 最大练级时间
-            int dailyTrainingMinutes = 1440;
+            int dailyTrainingMinutes = 2880;
 
             // 计算总经验奖励
             totalExperience = Math.Min(totalMinutes, dailyTrainingMinutes) * experiencePerMinute;
@@ -1419,25 +1419,25 @@ namespace Oshima.FunGame.OshimaServers.Service
 
             if (trainingHours >= 8)
             {
-                smallBookCount = Math.Min(1, trainingHours);
+                smallBookCount = Math.Min(2, trainingHours);
             }
 
             if (trainingHours >= 16)
             {
-                mediumBookCount = Math.Min(1, (trainingHours - 16) / 1);
+                mediumBookCount = Math.Min(2, (trainingHours - 16) / 1);
             }
 
             if (trainingHours >= 24)
             {
-                largeBookCount = Math.Min(1, (trainingHours - 24) / 1);
+                largeBookCount = Math.Min(2, (trainingHours - 24) / 1);
             }
 
-            double TotalHR = Math.Min(character.MaxHP, character.HR * diff.TotalSeconds);
-            double TotalMR = Math.Min(character.MaxMP, character.MR * diff.TotalSeconds);
+            double TotalHR = Math.Min(character.MaxHP, character.HR * 60 * (int)diff.TotalMinutes);
+            double TotalMR = Math.Min(character.MaxMP, character.MR * 60 * (int)diff.TotalMinutes);
 
             return $"练级时长：{totalMinutes} 分钟，{(isPre ? "预计可" : "")}获得：{totalExperience} 点经验值，{smallBookCount} 本小经验书，{mediumBookCount} 本中经验书，{largeBookCount} 本大经验书。" +
                 $"回复角色 {TotalHR:0.##} 点生命值和 {TotalMR:0.##} 点魔法值。" +
-                $"{(isPre ? "练级时间上限 1440 分钟（24小时），超时将不会再产生收益，请按时领取奖励！" : "")}";
+                $"{(isPre ? "练级时间上限 2880 分钟（48小时），超时将不会再产生收益，请按时领取奖励！" : "")}";
         }
 
         public static string GetSkillLevelUpNeedy(int level)
