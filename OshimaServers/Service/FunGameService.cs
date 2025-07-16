@@ -150,19 +150,32 @@ namespace Oshima.FunGame.OshimaServers.Service
             item.Name = GenerateRandomChineseName();
             item.ItemType = ItemType.MagicCard;
             item.RemainUseTimes = 1;
-            if (qualityType != null) item.QualityType = qualityType.Value;
 
-            GenerateAndAddSkillToMagicCard(item, magicId, str, agi, intelligence);
+            GenerateAndAddSkillToMagicCard(item, qualityType, magicId, str, agi, intelligence);
 
             return item;
         }
 
-        public static void GenerateAndAddSkillToMagicCard(Item item, long magicId = 0, int str = 0, int agi = 0, int intelligence = 0)
+        public static void GenerateAndAddSkillToMagicCard(Item item, QualityType? qualityType = null, long magicId = 0, int str = 0, int agi = 0, int intelligence = 0)
         {
             int total = str + agi + intelligence;
             if (total == 0)
             {
-                total = Random.Shared.Next(1, 43);
+                if (qualityType != null)
+                {
+                    item.QualityType = qualityType.Value;
+                    total = item.QualityType switch
+                    {
+                        QualityType.Green => Random.Shared.Next(7, 13),
+                        QualityType.Blue => Random.Shared.Next(13, 19),
+                        QualityType.Purple => Random.Shared.Next(19, 25),
+                        QualityType.Orange => Random.Shared.Next(25, 31),
+                        QualityType.Red => Random.Shared.Next(31, 37),
+                        QualityType.Gold => Random.Shared.Next(37, 43),
+                        _ => Random.Shared.Next(1, 7)
+                    };
+                }
+                else total = Random.Shared.Next(1, 43);
 
                 // 随机决定将多少个属性赋给其中一个属性，确保至少一个不为零
                 int nonZeroAttributes = Random.Shared.Next(1, Math.Min(4, total + 1)); // 随机决定非零属性的数量，确保在 total = 1 时最多只有1个非零属性
