@@ -493,6 +493,68 @@ namespace Oshima.FunGame.WebAPI.Services
                     return result;
                 }
 
+                if (e.Detail.StartsWith("生成指定"))
+                {
+                    e.UseNotice = false;
+                    string pattern = @"生成指定(\w+)魔法卡\s*(\d+)\s*(?:(\d+)\s+(\d+)\s+(\d+)(?:\s+(\d+))?)?(?:\s+(\d+))?(?:\s*给\s*(\d+))?";
+                    Regex regex = new(pattern, RegexOptions.IgnoreCase);
+                    Match match = regex.Match(e.Detail);
+
+                    if (match.Success)
+                    {
+                        string quality = match.Groups[1].Value;
+                        long magicID = long.Parse(match.Groups[2].Value);
+                        int paramCount = match.Groups.Cast<Group>().Count(g => g.Success && g.Index > match.Groups[2].Index && g.Index < (match.Groups[8].Success ? match.Groups[8].Index : int.MaxValue));
+
+                        int str = 0, agi = 0, intelligence = 0, count = 1;
+                        long targetUserID = uid;
+
+                        // 检查参数数量的有效性
+                        if (paramCount != 0 && paramCount != 1 && paramCount != 3 && paramCount != 4)
+                        {
+                            await SendAsync(e, "熟圣之力", "参数数量错误！可选参数必须为 1个（count）、3个（str, agi, intelligence）或4个（str, agi, intelligence, count）。");
+                            return result;
+                        }
+
+                        if (paramCount == 1)
+                        {
+                            count = int.Parse(match.Groups[6].Success ? match.Groups[6].Value : match.Groups[7].Value);
+                        }
+                        else if (paramCount == 3 || paramCount == 4)
+                        {
+                            str = int.Parse(match.Groups[3].Value);
+                            agi = int.Parse(match.Groups[4].Value);
+                            intelligence = int.Parse(match.Groups[5].Value);
+                            if (paramCount == 4)
+                            {
+                                count = int.Parse(match.Groups[6].Value);
+                            }
+                        }
+
+                        if (count <= 0)
+                        {
+                            await SendAsync(e, "熟圣之力", "数量不能为 0 或负数，请重新输入。");
+                            return result;
+                        }
+
+                        if (match.Groups[8].Success)
+                        {
+                            targetUserID = long.Parse(match.Groups[8].Value);
+                        }
+
+                        string msg = Controller.CreateMagicCard(uid, targetUserID, quality, magicID, count, str, agi, intelligence);
+                        if (msg != "")
+                        {
+                            await SendAsync(e, "熟圣之力", msg);
+                        }
+                    }
+                    else
+                    {
+                        await SendAsync(e, "熟圣之力", "指令格式错误！正确格式：生成指定<品质>魔法卡 <MagicID> [str agi intelligence] [count]");
+                    }
+                    return result;
+                }
+
                 if (e.Detail.StartsWith("生成"))
 				{
 					e.UseNotice = false;
@@ -528,23 +590,23 @@ namespace Oshima.FunGame.WebAPI.Services
                     }
                 }
 
-                if (e.Detail == "生成魔法卡包")
+                if (e.Detail == "预览魔法卡包")
 				{
 					e.UseNotice = false;
 					string msg = Controller.GenerateMagicCardPack();
                     if (msg != "")
                     {
-                        await SendAsync(e, "生成魔法卡包", msg);
+                        await SendAsync(e, "预览魔法卡包", msg);
                     }
                     return result;
                 }
-                else if (e.Detail == "生成魔法卡")
+                else if (e.Detail == "预览魔法卡")
 				{
 					e.UseNotice = false;
 					string msg = Controller.GenerateMagicCard();
                     if (msg != "")
                     {
-                        await SendAsync(e, "生成魔法卡", msg);
+                        await SendAsync(e, "预览魔法卡", msg);
                     }
                     return result;
                 }
@@ -2227,6 +2289,16 @@ namespace Oshima.FunGame.WebAPI.Services
                     if (msg != "")
                     {
                         await SendAsync(e, "生命之泉", string.Join("\r\n", msg));
+                    }
+                    return result;
+                }
+
+                if (e.Detail == "酒馆" || e.Detail == "上酒")
+                {
+                    string msg = Controller.Pub(uid);
+                    if (msg != "")
+                    {
+                        await SendAsync(e, "酒馆", string.Join("\r\n", msg));
                     }
                     return result;
                 }

@@ -122,44 +122,110 @@ namespace Oshima.FunGame.OshimaServers.Service
             FunGameConstant.AllSkills.AddRange(FunGameConstant.SuperSkills);
         }
 
-        public static List<Item> GenerateMagicCards(int count, QualityType? qualityType = null)
+        public static List<Item> GenerateMagicCards(int count, QualityType? qualityType = null, long[]? magicIds = null, (int str, int agi, int intelligence)[]? values = null)
         {
             List<Item> items = [];
 
             for (int i = 0; i < count; i++)
             {
-                items.Add(GenerateMagicCard(qualityType));
+                long magicId = 0;
+                if (magicIds != null && magicIds.Length > i) magicId = magicIds[i];
+                (int str, int agi, int intelligence) = (0, 0, 0);
+                if (values != null && values.Length > i)
+                {
+                    str = values[i].str;
+                    agi = values[i].agi;
+                    intelligence = values[i].intelligence;
+                }
+                items.Add(GenerateMagicCard(qualityType, magicId, str, agi, intelligence));
             }
 
             return items;
         }
 
-        public static Item GenerateMagicCard(QualityType? qualityType = null)
+        public static Item GenerateMagicCard(QualityType? qualityType = null, long magicId = 0, int str = 0, int agi = 0, int intelligence = 0)
         {
             Item item = Factory.GetItem();
             item.Id = Convert.ToInt64("16" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 8));
             item.Name = GenerateRandomChineseName();
             item.ItemType = ItemType.MagicCard;
             item.RemainUseTimes = 1;
+            if (qualityType != null) item.QualityType = qualityType.Value;
 
-            int total;
-            if (qualityType != null)
-            {
-                total = qualityType switch
-                {
-                    QualityType.Green => Random.Shared.Next(7, 13),
-                    QualityType.Blue => Random.Shared.Next(13, 19),
-                    QualityType.Purple => Random.Shared.Next(19, 25),
-                    QualityType.Orange => Random.Shared.Next(25, 31),
-                    QualityType.Red => Random.Shared.Next(31, 37),
-                    QualityType.Gold => Random.Shared.Next(37, 43),
-                    _ => Random.Shared.Next(1, 7)
-                };
-                item.QualityType = (QualityType)qualityType;
-            }
-            else
+            GenerateAndAddSkillToMagicCard(item, magicId, str, agi, intelligence);
+
+            return item;
+        }
+
+        public static void GenerateAndAddSkillToMagicCard(Item item, long magicId = 0, int str = 0, int agi = 0, int intelligence = 0)
+        {
+            int total = str + agi + intelligence;
+            if (total == 0)
             {
                 total = Random.Shared.Next(1, 43);
+
+                // 随机决定将多少个属性赋给其中一个属性，确保至少一个不为零
+                int nonZeroAttributes = Random.Shared.Next(1, Math.Min(4, total + 1)); // 随机决定非零属性的数量，确保在 total = 1 时最多只有1个非零属性
+
+                // 根据非零属性数量分配属性点
+                if (nonZeroAttributes == 1)
+                {
+                    // 只有一个属性不为零
+                    int attribute = Random.Shared.Next(0, 3);
+                    if (attribute == 0) str = total;
+                    else if (attribute == 1) agi = total;
+                    else intelligence = total;
+                }
+                else if (nonZeroAttributes == 2 && total >= 2)
+                {
+                    // 两个属性不为零
+                    int first = Random.Shared.Next(1, total); // 第一个属性的值
+                    int second = total - first; // 第二个属性的值
+
+                    int attribute = Random.Shared.Next(0, 3);
+                    if (attribute == 0)
+                    {
+                        str = first;
+                    }
+                    else if (attribute == 1)
+                    {
+                        agi = first;
+                    }
+                    else
+                    {
+                        intelligence = first;
+                    }
+
+                    attribute = Random.Shared.Next(0, 3);
+                    while ((attribute == 0 && str > 0) || (attribute == 1 && agi > 0) || (attribute == 2 && intelligence > 0))
+                    {
+                        attribute = Random.Shared.Next(0, 3);
+                    }
+
+                    if (attribute == 0)
+                    {
+                        str = second;
+                    }
+                    else if (attribute == 1)
+                    {
+                        agi = second;
+                    }
+                    else
+                    {
+                        intelligence = second;
+                    }
+                }
+                else if (total >= 3)
+                {
+                    // 三个属性都不为零
+                    str = Random.Shared.Next(1, total - 1); // 第一个属性的值
+                    agi = Random.Shared.Next(1, total - str); // 第二个属性的值
+                    intelligence = total - str - agi; // 剩下的值给第三个属性
+                }
+            }
+
+            if (item.QualityType == QualityType.White)
+            {
                 if (total > 6 && total <= 12)
                 {
                     item.QualityType = QualityType.Green;
@@ -180,20 +246,18 @@ namespace Oshima.FunGame.OshimaServers.Service
                 {
                     item.QualityType = QualityType.Red;
                 }
-                else if (total > 36 && total <= 42)
+                else if (total > 36)
                 {
                     item.QualityType = QualityType.Gold;
                 }
             }
 
-            GenerateAndAddSkillToMagicCard(item, total);
-
-            return item;
-        }
-
-        public static void GenerateAndAddSkillToMagicCard(Item item, int total)
-        {
-            Skill magic = FunGameConstant.Magics[Random.Shared.Next(FunGameConstant.Magics.Count)].Copy();
+            Skill? magic = null;
+            if (magicId != 0)
+            {
+                magic = FunGameConstant.Magics.FirstOrDefault(m => m.Id == magicId);
+            }
+            magic ??= FunGameConstant.Magics[Random.Shared.Next(FunGameConstant.Magics.Count)].Copy();
             magic.Guid = item.Guid;
             magic.Level = (int)item.QualityType switch
             {
@@ -209,68 +273,6 @@ namespace Oshima.FunGame.OshimaServers.Service
                 item.Name += $" +{magic.Level - 1}";
             }
             item.Skills.Active = magic;
-
-            // 初始化属性值
-            int str = 0, agi = 0, intelligence = 0;
-
-            // 随机决定将多少个属性赋给其中一个属性，确保至少一个不为零
-            int nonZeroAttributes = Random.Shared.Next(1, Math.Min(4, total + 1)); // 随机决定非零属性的数量，确保在 total = 1 时最多只有1个非零属性
-
-            // 根据非零属性数量分配属性点
-            if (nonZeroAttributes == 1)
-            {
-                // 只有一个属性不为零
-                int attribute = Random.Shared.Next(0, 3);
-                if (attribute == 0) str = total;
-                else if (attribute == 1) agi = total;
-                else intelligence = total;
-            }
-            else if (nonZeroAttributes == 2 && total >= 2)
-            {
-                // 两个属性不为零
-                int first = Random.Shared.Next(1, total); // 第一个属性的值
-                int second = total - first; // 第二个属性的值
-
-                int attribute = Random.Shared.Next(0, 3);
-                if (attribute == 0)
-                {
-                    str = first;
-                }
-                else if (attribute == 1)
-                {
-                    agi = first;
-                }
-                else
-                {
-                    intelligence = first;
-                }
-
-                attribute = Random.Shared.Next(0, 3);
-                while ((attribute == 0 && str > 0) || (attribute == 1 && agi > 0) || (attribute == 2 && intelligence > 0))
-                {
-                    attribute = Random.Shared.Next(0, 3);
-                }
-
-                if (attribute == 0)
-                {
-                    str = second;
-                }
-                else if (attribute == 1)
-                {
-                    agi = second;
-                }
-                else
-                {
-                    intelligence = second;
-                }
-            }
-            else if (total >= 3)
-            {
-                // 三个属性都不为零
-                str = Random.Shared.Next(1, total - 1); // 第一个属性的值
-                agi = Random.Shared.Next(1, total - str); // 第二个属性的值
-                intelligence = total - str - agi; // 剩下的值给第三个属性
-            }
 
             Skill skill = Factory.OpenFactory.GetInstance<Skill>(item.Id, item.Name, []);
             GenerateAndAddEffectsToMagicCard(skill, str, agi, intelligence);
@@ -424,9 +426,9 @@ namespace Oshima.FunGame.OshimaServers.Service
             return null;
         }
 
-        public static Item? GenerateMagicCardPack(int magicCardCount, QualityType? qualityType = null)
+        public static Item? GenerateMagicCardPack(int magicCardCount, QualityType? qualityType = null, long[]? magicIds = null, (int str, int agi, int intelligence)[]? values = null)
         {
-            List<Item> magicCards = GenerateMagicCards(magicCardCount, qualityType);
+            List<Item> magicCards = GenerateMagicCards(magicCardCount, qualityType, magicIds, values);
             Item? magicCardPack = ConflateMagicCardPack(magicCards);
             return magicCardPack;
         }
@@ -1495,10 +1497,11 @@ namespace Oshima.FunGame.OshimaServers.Service
                 Item[] shoes = [.. FunGameConstant.Equipment.Where(i => i.Id.ToString().StartsWith("13") && (int)i.QualityType == 5)];
                 Item[] accessory = [.. FunGameConstant.Equipment.Where(i => i.Id.ToString().StartsWith("14") && (int)i.QualityType == 5)];
                 Item[] consumables = [.. FunGameConstant.AllItems.Where(i => i.ItemType == ItemType.Consumable && i.IsInGameItem)];
+                string[] regionsBossName = [.. FunGameConstant.Regions.SelectMany(r => r.Characters).Select(c => c.Name)];
                 for (int i = 0; i < genCount; i++)
                 {
                     int nowIndex = Bosses.Count > 0 ? Bosses.Keys.Max() + 1 : 1;
-                    string bossName = GenerateRandomChineseUserName();
+                    string bossName = regionsBossName[Random.Shared.Next(regionsBossName.Length)];
                     CustomCharacter boss = new(nowIndex, bossName, "", bossName);
                     int cutRate = Random.Shared.Next(3) switch
                     {
@@ -1580,8 +1583,8 @@ namespace Oshima.FunGame.OshimaServers.Service
             double exMP2 = 0.8;
             if (!enhanceHPMP)
             {
-                if (isUnit) exHP2 = -0.1;
-                else exHP2 = 0.5;
+                if (isUnit) exHP2 = 0.15;
+                else exHP2 = 0.01;
                 exMP2 = 0.2;
             }
             double exCR = 0.35;

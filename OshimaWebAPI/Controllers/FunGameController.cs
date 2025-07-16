@@ -2886,6 +2886,73 @@ namespace Oshima.FunGame.WebAPI.Controllers
             }
         }
 
+        [HttpPost("createmagiccard")]
+        public string CreateMagicCard([FromQuery] long? uid = null, [FromQuery] long? target = null, [FromQuery] string? quality = null, [FromQuery] long magicId = 0, [FromQuery] int count = 1, [FromQuery] int str = 0, [FromQuery] int agi = 0, [FromQuery] int intelligence = 0)
+        {
+            long userid = uid ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
+            if (count <= 0)
+            {
+                return "数量必须大于0！";
+            }
+            long targetid = target ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
+
+            PluginConfig pc = new("saved", userid.ToString());
+            pc.LoadConfig();
+
+            if (pc.Count > 0)
+            {
+                User user = FunGameService.GetUser(pc);
+
+                string msg = "";
+                if (user.IsAdmin || userid > 0)
+                {
+                    PluginConfig pc2 = new("saved", targetid.ToString());
+                    pc2.LoadConfig();
+                    if (pc2.Count > 0)
+                    {
+                        User user2 = FunGameService.GetUser(pc2);
+                        if (FunGameConstant.Magics.FirstOrDefault(m => m.Id == magicId) is Skill magic)
+                        {
+                            foreach (string type in ItemSet.QualityTypeNameArray)
+                            {
+                                if (type == quality)
+                                {
+                                    for (int i = 0; i < count; i++)
+                                    {
+                                        Item item = FunGameService.GenerateMagicCard(ItemSet.GetQualityTypeFromName(type), magic.Id, str, agi, intelligence);
+                                        item.User = user2;
+                                        user2.Inventory.Items.Add(item);
+                                    }
+                                    msg = $"已为 [ {user2} ] 生成 {count} 张 [ {magic.Name} ] 魔法卡{(str + agi + intelligence > 0 ? $"，指定属性：力量 +{str}，敏捷 +{agi}，智力 +{intelligence}" : "")}。";
+                                    break;
+                                }
+                            }
+                        }
+                        else
+                        {
+                            return $"游戏中不存在 ID 为 {magicId} 的魔法技能，生成失败！";
+                        }
+                        pc2.Add("user", user2);
+                        pc2.SaveConfig();
+                    }
+                    else
+                    {
+                        return $"目标 UID 不存在！";
+                    }
+                }
+                else
+                {
+                    return $"你没有权限使用此指令！";
+                }
+
+                return msg;
+            }
+            else
+            {
+                return noSaved;
+            }
+        }
+
         [HttpPost("decomposeitem")]
         public string DecomposeItem([FromQuery] long? uid = null, [FromBody] int[]? items = null)
         {
@@ -5860,6 +5927,64 @@ namespace Oshima.FunGame.WebAPI.Controllers
                     $"收费标准：\r\n300 {General.GameplayEquilibriumConstant.InGameCurrency} / 死亡角色\r\n" +
                     $"150 {General.GameplayEquilibriumConstant.InGameCurrency} / 50% 生命值以下的角色\r\n" +
                     $"50 {General.GameplayEquilibriumConstant.InGameCurrency} / 50% 生命值以上的角色";
+
+                return msg;
+            }
+            else
+            {
+                return noSaved;
+            }
+        }
+
+        [HttpPost("pub")]
+        public string Pub([FromQuery] long? uid = null)
+        {
+            long userid = uid ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
+
+            PluginConfig pc = new("saved", userid.ToString());
+            pc.LoadConfig();
+
+            string msg = "";
+            if (pc.Count > 0)
+            {
+                User user = FunGameService.GetUser(pc);
+
+                int zero = user.Inventory.Characters.Count(c => c.EP <= 0);
+                int less100 = user.Inventory.Characters.Count(c => c.EP < 100 && c.EP > 0);
+                int less200 = user.Inventory.Characters.Count(c => c.EP >= 100 && c.EP < 200);
+
+                double zeroNeed = 1 * zero;
+                double less100Need = 0.6 * less100;
+                double less200Need = 0.2 * less200;
+                double total = zeroNeed + less100Need + less200Need;
+
+                if (total == 0)
+                {
+                    msg = $"你暂时不需要酒馆的服务，欢迎下次光临。";
+                }
+                else if (user.Inventory.Materials >= total)
+                {
+                    user.Inventory.Materials -= total;
+                    foreach (Character character in user.Inventory.Characters)
+                    {
+                        character.EP = 200;
+                    }
+
+                    msg = $"欢迎来访酒馆，你的本次消费：{total} {General.GameplayEquilibriumConstant.InGameMaterial}。";
+
+                    user.LastTime = DateTime.Now;
+                    pc.Add("user", user);
+                    pc.SaveConfig();
+                }
+                else
+                {
+                    msg = $"你的 {General.GameplayEquilibriumConstant.InGameMaterial} 不足 {total} 呢！无法为你上酒！";
+                }
+
+                msg += $"（{zero} 个 0 点能量值的角色，{less100} 个 100 点能量值以下的角色，{less200} 个 200 点能量值以下的角色）\r\n" +
+                    $"收费标准：\r\n1 {General.GameplayEquilibriumConstant.InGameMaterial} / 0 点能量值的角色\r\n" +
+                    $"0.6 {General.GameplayEquilibriumConstant.InGameMaterial} / 100 点能量值以下的角色\r\n" +
+                    $"0.2 {General.GameplayEquilibriumConstant.InGameMaterial} / 200 点能量值以下的角色";
 
                 return msg;
             }
