@@ -5913,7 +5913,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
                         character.Recovery();
                     }
 
-                    msg = $"感谢使用生命之泉服务！你已消费：{total} {General.GameplayEquilibriumConstant.InGameCurrency}。";
+                    msg = $"感谢使用生命之泉服务！你已消费：{total:0.##} {General.GameplayEquilibriumConstant.InGameCurrency}。";
 
                     user.LastTime = DateTime.Now;
                     pc.Add("user", user);
@@ -5921,7 +5921,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
                 }
                 else
                 {
-                    msg = $"你的 {General.GameplayEquilibriumConstant.InGameCurrency} 不足 {total} 呢！无法饮用生命之泉！";
+                    msg = $"你的 {General.GameplayEquilibriumConstant.InGameCurrency} 不足 {total:0.##} 呢！无法饮用生命之泉！";
                 }
 
                 msg += $"（{dead} 个死亡角色，{halfdown} 个 50% 以下的角色，{halfup} 个 50% 以上的角色）\r\n" +
@@ -5971,7 +5971,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
                         character.EP = 200;
                     }
 
-                    msg = $"欢迎来访酒馆，你的本次消费：{total} {General.GameplayEquilibriumConstant.InGameMaterial}。";
+                    msg = $"欢迎来访酒馆，你的本次消费：{total:0.##} {General.GameplayEquilibriumConstant.InGameMaterial}。";
 
                     user.LastTime = DateTime.Now;
                     pc.Add("user", user);
@@ -5979,7 +5979,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
                 }
                 else
                 {
-                    msg = $"你的 {General.GameplayEquilibriumConstant.InGameMaterial} 不足 {total} 呢！无法为你上酒！";
+                    msg = $"你的 {General.GameplayEquilibriumConstant.InGameMaterial} 不足 {total:0.##} 呢！无法为你上酒！";
                 }
 
                 msg += $"（{zero} 个 0 点能量值的角色，{less100} 个 100 点能量值以下的角色，{less200} 个 200 点能量值以下的角色）\r\n" +

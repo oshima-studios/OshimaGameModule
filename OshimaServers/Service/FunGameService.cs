@@ -3401,7 +3401,17 @@ namespace Oshima.FunGame.OshimaServers.Service
             
             // 开始战斗
             Team team1 = new($"{user.Username}的小队", squad);
-            Team team2 = new($"{General.GameplayEquilibriumConstant.InGameCurrency}秘境", enemys);
+            string team2Name = type switch
+            {
+                InstanceType.Currency => General.GameplayEquilibriumConstant.InGameCurrency,
+                InstanceType.Material => General.GameplayEquilibriumConstant.InGameMaterial,
+                InstanceType.EXP => "经验值/经验书",
+                InstanceType.RegionItem => "地区锻造材料",
+                InstanceType.CharacterLevelBreak => "角色等阶突破材料",
+                InstanceType.SkillLevelUp => "技能等级升级材料",
+                _ => ""
+            } + "秘境";
+            Team team2 = new(team2Name, enemys);
             FunGameActionQueue actionQueue = new();
             List<string> msgs = await actionQueue.StartTeamGame([team1, team2], showAllRound: true);
             if (msgs.Count > 2)
