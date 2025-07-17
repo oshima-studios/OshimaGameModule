@@ -6944,7 +6944,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
                     User user = FunGameService.GetUser(pc);
                     int exploreTimes = 0;
 
-                    int[] supportedInstanceType = [(int)InstanceType.Currency, (int)InstanceType.Material, (int)InstanceType.EXP, (int)InstanceType.RegionItem];
+                    int[] supportedInstanceType = [(int)InstanceType.Currency, (int)InstanceType.Material, (int)InstanceType.EXP, (int)InstanceType.RegionItem, (int)InstanceType.CharacterLevelBreak, (int)InstanceType.SkillLevelUp];
                     if (!supportedInstanceType.Contains(type))
                     {
                         msg = $"秘境类型无效。";
