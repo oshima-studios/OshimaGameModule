@@ -7,6 +7,7 @@ using Milimoe.FunGame.Core.Api.Utility;
 using Milimoe.FunGame.Core.Entity;
 using Milimoe.FunGame.Core.Library.Constant;
 using Oshima.Core.Configs;
+using Oshima.Core.Constant;
 using Oshima.FunGame.OshimaServers.Service;
 using Oshima.FunGame.WebAPI.Constant;
 using Oshima.FunGame.WebAPI.Controllers;
@@ -30,7 +31,7 @@ namespace Oshima.FunGame.WebAPI.Services
             Statics.RunningPlugin?.Controller.WriteLine(title, Milimoe.FunGame.Core.Library.Constant.LogLevel.Debug);
             if (msg is ThirdPartyMessage third)
             {
-                third.Result = "\r\n" + content.Trim();
+                third.Result += "\r\n" + content.Trim();
                 third.IsCompleted = true;
                 return;
             }
@@ -168,7 +169,7 @@ namespace Oshima.FunGame.WebAPI.Services
 2、角色帮助
 3、物品帮助
 4、战斗帮助
-5、任务帮助
+5、玩法帮助
 6、社团帮助
 7、活动帮助
 8、商店帮助
@@ -195,10 +196,10 @@ namespace Oshima.FunGame.WebAPI.Services
                     int page = e.Detail.Length > 4 && int.TryParse(e.Detail[4..], out int p) ? p : 1;
                     await SendHelp(e, FunGameOrderList.BattleHelp, "战斗帮助", page);
                 }
-                else if (e.Detail.StartsWith("任务帮助"))
+                else if (e.Detail.StartsWith("玩法帮助"))
                 {
                     int page = e.Detail.Length > 4 && int.TryParse(e.Detail[4..], out int p) ? p : 1;
-                    await SendHelp(e, FunGameOrderList.QuestHelp, "任务帮助", page);
+                    await SendHelp(e, FunGameOrderList.PlayHelp, "玩法帮助", page);
                 }
                 else if (e.Detail.StartsWith("社团帮助"))
                 {
@@ -496,39 +497,34 @@ namespace Oshima.FunGame.WebAPI.Services
                 if (e.Detail.StartsWith("生成指定"))
                 {
                     e.UseNotice = false;
-                    string pattern = @"生成指定(\w+)魔法卡\s*(\d+)\s*(?:(\d+)\s+(\d+)\s+(\d+)(?:\s+(\d+))?)?(?:\s+(\d+))?(?:\s*给\s*(\d+))?";
+                    string pattern = @"生成指定(\w+)魔法卡\s*(\d+)(?:(?:\s*(\d+)\s+(\d+)\s+(\d+)(?:\s+(\d+))?)|(?:\s*(\d+)(?!\s*\d)))?(?:\s*给\s*(\d+))?";
                     Regex regex = new(pattern, RegexOptions.IgnoreCase);
                     Match match = regex.Match(e.Detail);
 
-                    if (match.Success)
+                    if (match.Success && ((match.Groups[3].Success && match.Groups[4].Success && match.Groups[5].Success) || match.Groups[7].Success))
                     {
                         string quality = match.Groups[1].Value;
                         long magicID = long.Parse(match.Groups[2].Value);
-                        int paramCount = match.Groups.Cast<Group>().Count(g => g.Success && g.Index > match.Groups[2].Index && g.Index < (match.Groups[8].Success ? match.Groups[8].Index : int.MaxValue));
-
                         int str = 0, agi = 0, intelligence = 0, count = 1;
                         long targetUserID = uid;
 
-                        // 检查参数数量的有效性
-                        if (paramCount != 0 && paramCount != 1 && paramCount != 3 && paramCount != 4)
-                        {
-                            await SendAsync(e, "熟圣之力", "参数数量错误！可选参数必须为 1个（count）、3个（str, agi, intelligence）或4个（str, agi, intelligence, count）。");
-                            return result;
-                        }
-
-                        if (paramCount == 1)
-                        {
-                            count = int.Parse(match.Groups[6].Success ? match.Groups[6].Value : match.Groups[7].Value);
-                        }
-                        else if (paramCount == 3 || paramCount == 4)
+                        // 检查是否匹配到 str agi intelligence 模式 (Group 3, 4, 5)
+                        if (match.Groups[3].Success && match.Groups[4].Success && match.Groups[5].Success)
                         {
                             str = int.Parse(match.Groups[3].Value);
                             agi = int.Parse(match.Groups[4].Value);
                             intelligence = int.Parse(match.Groups[5].Value);
-                            if (paramCount == 4)
+
+                            // 如果此模式下有 count (Group 6)
+                            if (match.Groups[6].Success)
                             {
                                 count = int.Parse(match.Groups[6].Value);
                             }
+                        }
+                        // 否则，检查是否匹配到单独的 count 模式 (Group 7)
+                        else if (match.Groups[7].Success)
+                        {
+                            count = int.Parse(match.Groups[7].Value);
                         }
 
                         if (count <= 0)
@@ -550,7 +546,8 @@ namespace Oshima.FunGame.WebAPI.Services
                     }
                     else
                     {
-                        await SendAsync(e, "熟圣之力", "指令格式错误！正确格式：生成指定<品质>魔法卡 <MagicID> [str agi intelligence] [count]");
+                        await SendAsync(e, "熟圣之力", "指令格式错误！请检查格式：\r\n1、生成指定<品质>魔法卡 <MagicID> [str agi intelligence] [count] [给 <TargetID>]\r\n" +
+                            "2、生成指定<品质>魔法卡 <MagicID> [count] [给 <TargetID>]\r\n注意：[str agi intelligence] 可选块的三个参数都必须完整提供。");
                     }
                     return result;
                 }
@@ -1578,7 +1575,7 @@ namespace Oshima.FunGame.WebAPI.Services
                         msgs = await Controller.FightCustom2(uid, detail.Trim(), true);
                     }
                     List<string> real = [];
-                    if (msgs.Count >= 2)
+                    if (msgs.Count > 2)
                     {
                         if (msgs.Count < 20)
                         {
@@ -1602,8 +1599,9 @@ namespace Oshima.FunGame.WebAPI.Services
                         }
                         else
                         {
-                            real.Add(msgs[^2]);
+                            real.Add(string.Join("\r\n", msgs[^8..^2]));
                         }
+                        real.Add(msgs[^2]);
                         real.Add(msgs[^1]);
                     }
                     else
@@ -2631,6 +2629,96 @@ namespace Oshima.FunGame.WebAPI.Services
                         await SendAsync(e, "商店出售", msg);
                     }
 
+                    return result;
+                }
+
+                if (e.Detail.StartsWith("挑战金币秘境"))
+                {
+                    string detail = e.Detail.Replace("挑战金币秘境", "").Trim();
+                    string msg = "";
+                    if (int.TryParse(detail, out int diff))
+                    {
+                        msg = await Controller.FightInstance(uid, (int)InstanceType.Currency, diff);
+                        if (msg.Trim() != "")
+                        {
+                            await SendAsync(e, "挑战金币秘境", msg);
+                        }
+                    }
+                    return result;
+                }
+                
+                if (e.Detail.StartsWith("挑战材料秘境"))
+                {
+                    string detail = e.Detail.Replace("挑战材料秘境", "").Trim();
+                    string msg = "";
+                    if (int.TryParse(detail, out int diff))
+                    {
+                        msg = await Controller.FightInstance(uid, (int)InstanceType.Material, diff);
+                        if (msg.Trim() != "")
+                        {
+                            await SendAsync(e, "挑战材料秘境", msg);
+                        }
+                    }
+                    return result;
+                }
+                
+                if (e.Detail.StartsWith("挑战经验秘境"))
+                {
+                    string detail = e.Detail.Replace("挑战经验秘境", "").Trim();
+                    string msg = "";
+                    if (int.TryParse(detail, out int diff))
+                    {
+                        msg = await Controller.FightInstance(uid, (int)InstanceType.EXP, diff);
+                        if (msg.Trim() != "")
+                        {
+                            await SendAsync(e, "挑战经验秘境", msg);
+                        }
+                    }
+                    return result;
+                }
+                
+                if (e.Detail.StartsWith("挑战地区秘境"))
+                {
+                    string detail = e.Detail.Replace("挑战地区秘境", "").Trim();
+                    string msg = "";
+                    if (int.TryParse(detail, out int diff))
+                    {
+                        msg = await Controller.FightInstance(uid, (int)InstanceType.RegionItem, diff);
+                        if (msg.Trim() != "")
+                        {
+                            await SendAsync(e, "挑战地区秘境", msg);
+                        }
+                    }
+                    return result;
+                }
+                
+                if (e.Detail.StartsWith("挑战突破秘境"))
+                {
+                    string detail = e.Detail.Replace("挑战突破秘境", "").Trim();
+                    string msg = "";
+                    if (int.TryParse(detail, out int diff))
+                    {
+                        msg = await Controller.FightInstance(uid, (int)InstanceType.CharacterLevelBreak, diff);
+                        if (msg.Trim() != "")
+                        {
+                            await SendAsync(e, "挑战突破秘境", msg);
+                        }
+                    }
+                    return result;
+                }
+                
+                if (e.Detail.StartsWith("挑战技能秘境"))
+                {
+                    string detail = e.Detail.Replace("挑战技能秘境", "").Trim();
+                    string msg = "";
+                    if (int.TryParse(detail, out int diff))
+                    {
+                        msg = await Controller.FightInstance(uid, (int)InstanceType.SkillLevelUp, diff);
+                        if (msg.Trim() != "")
+                        {
+                            await SendAsync(e, "挑战技能秘境", msg);
+                        }
+                    }
                     return result;
                 }
 

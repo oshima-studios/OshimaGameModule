@@ -24,6 +24,8 @@ namespace Oshima.FunGame.OshimaServers.Service
         public static List<Item> Equipment { get; } = [];
         public static List<Item> Items { get; } = [];
         public static List<Item> DrawCardItems { get; } = [];
+        public static List<Item> CharacterLevelBreakItems { get; } = [];
+        public static List<Item> SkillLevelUpItems { get; } = [];
         public static Dictionary<OshimaRegion, List<Item>> ExploreItems { get; } = [];
         public static List<Skill> ItemSkills { get; } = [];
         public static List<Item> AllItems { get; } = [];
@@ -303,6 +305,26 @@ namespace Oshima.FunGame.OshimaServers.Service
             new 铎京城()
         ];
 
+        private readonly static Dictionary<int, double> _precomputeTotalExperience = [];
+        public static Dictionary<int, double> PrecomputeTotalExperience
+        {
+            get
+            {
+                if (_precomputeTotalExperience.Count == 0)
+                {
+                    double sum = 0;
+                    _precomputeTotalExperience[0] = 0;
+                    for (int i = 2; i <= General.GameplayEquilibriumConstant.MaxLevel; i++)
+                    {
+                        sum += General.GameplayEquilibriumConstant.EXPUpperLimit[i - 1];
+                        _precomputeTotalExperience[i] = sum;
+                    }
+                    return _precomputeTotalExperience;
+                }
+                return _precomputeTotalExperience;
+            }
+        }
+
         public static Dictionary<ExploreResult, double> ExploreResultProbabilities { get; } = new()
         {
             { ExploreResult.General, 0.45 },
@@ -375,6 +397,8 @@ namespace Oshima.FunGame.OshimaServers.Service
             { QualityType.Red, (32200, 67000) },
             { QualityType.Gold, (67000, 130000) }
         };
+
+        public static string[] GreekAlphabet { get; } = ["α", "β", "γ", "δ", "ε", "ζ", "η", "θ", "ι", "κ", "λ", "μ", "ν", "ξ", "ο", "π", "ρ", "σ", "τ", "υ", "φ", "χ", "ψ", "ω"];
 
         public static string[] CommonSurnames { get; } = [
             "顾", "沈", "陆", "楚", "白", "苏", "叶", "萧", "莫", "司马", "欧阳",

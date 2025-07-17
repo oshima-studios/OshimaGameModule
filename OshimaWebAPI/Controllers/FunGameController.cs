@@ -10,6 +10,7 @@ using Milimoe.FunGame.Core.Library.Common.Event;
 using Milimoe.FunGame.Core.Library.Constant;
 using Milimoe.FunGame.Core.Library.SQLScript.Entity;
 using Oshima.Core.Configs;
+using Oshima.Core.Constant;
 using Oshima.FunGame.OshimaModules.Characters;
 using Oshima.FunGame.OshimaModules.Items;
 using Oshima.FunGame.OshimaModules.Regions;
@@ -1703,10 +1704,10 @@ namespace Oshima.FunGame.WebAPI.Controllers
                                 itemsCanUsedIndex = string.Join("，", itemsCanUsed.Select(kv => kv.Key));
                             }
 
-                            var itemsSellable = items.Where(kv => kv.Value.IsSellable);
+                            var itemsSellable = items.Where(kv => kv.Value.IsSellable && !kv.Value.IsLock);
                             string itemsSellableIndex = string.Join("，", itemsSellable.Select(kv => kv.Key));
 
-                            var itemsTradable = items.Where(kv => kv.Value.IsTradable);
+                            var itemsTradable = items.Where(kv => kv.Value.IsTradable && !kv.Value.IsLock);
                             string itemsTradableIndex = string.Join("，", itemsTradable.Select(kv => kv.Key));
 
                             str += $"物品序号：{itemsIndex}\r\n";
@@ -6808,9 +6809,12 @@ namespace Oshima.FunGame.WebAPI.Controllers
                         msg = "你没有权限使用此指令。";
                     }
 
-                    user.LastTime = DateTime.Now;
-                    pc.Add("user", user);
-                    pc.SaveConfig();
+                    if (user.Id != target)
+                    {
+                        user.LastTime = DateTime.Now;
+                        pc.Add("user", user);
+                        pc.SaveConfig();
+                    }
 
                     return msg;
                 }
@@ -6911,6 +6915,90 @@ namespace Oshima.FunGame.WebAPI.Controllers
                     pc.Add("user", user);
                     pc.SaveConfig();
                     return string.Join("\r\n", msgs);
+                }
+                else
+                {
+                    return noSaved;
+                }
+            }
+            catch (Exception e)
+            {
+                Logger.LogError(e, "Error: {e}", e);
+                return busy;
+            }
+        }
+
+        [HttpPost("fightinstance")]
+        public async Task<string> FightInstance([FromQuery] long? uid = null, [FromQuery] int type = 0, [FromQuery] int difficulty = 1)
+        {
+            long userid = uid ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
+
+            try
+            {
+                PluginConfig pc = new("saved", userid.ToString());
+                pc.LoadConfig();
+
+                string msg = "";
+                if (pc.Count > 0)
+                {
+                    User user = FunGameService.GetUser(pc);
+                    int exploreTimes = 0;
+
+                    int[] supportedInstanceType = [(int)InstanceType.Currency, (int)InstanceType.Material, (int)InstanceType.EXP, (int)InstanceType.RegionItem];
+                    if (!supportedInstanceType.Contains(type))
+                    {
+                        msg = $"秘境类型无效。";
+                    }
+                    else if (user.Inventory.Squad.Count == 0)
+                    {
+                        msg = $"你尚未设置小队，请先设置1-4名角色！";
+                    }
+                    else
+                    {
+                        Character[] squad = [.. user.Inventory.Characters.Where(c => user.Inventory.Squad.Contains(c.Id))];
+                        if (squad.All(c => c.HP < c.MaxHP * 0.1))
+                        {
+                            msg = $"小队角色均重伤未愈，当前生命值低于 10%，请先等待生命值自动回复或重组小队！\r\n" +
+                            $"当前小队角色如下：\r\n{FunGameService.GetSquadInfo(user.Inventory.Characters, user.Inventory.Squad)}";
+                        }
+                        else
+                        {
+                            // 检查探索许可
+                            int reduce = difficulty * squad.Length;
+                            if (pc.TryGetValue("exploreTimes", out object? value) && int.TryParse(value.ToString(), out exploreTimes))
+                            {
+                                if (exploreTimes <= 0)
+                                {
+                                    exploreTimes = 0;
+                                    msg = $"今日的探索许可已用完，无法再继续挑战秘境。";
+                                }
+                                else if (reduce > exploreTimes)
+                                {
+                                    msg = $"本次秘境挑战需要消耗 {reduce} 个探索许可，超过了你的剩余探索许可数量（{exploreTimes} 个），请减少小队的角色数量或更改难度系数。" +
+                                        $"\r\n需要注意：难度系数一比一兑换探索许可，并且参与挑战的角色，都需要消耗相同数量的探索许可。";
+                                }
+                            }
+                            else
+                            {
+                                exploreTimes = FunGameConstant.MaxExploreTimes;
+                            }
+
+                            if (msg == "")
+                            {
+                                exploreTimes -= reduce;
+                                msg = await FunGameService.FightInstance((InstanceType)type, difficulty, user, squad);
+                                if (msg != "") msg += "\r\n";
+                                msg += $"本次秘境挑战消耗探索许可 {reduce} 个，你的剩余探索许可：{exploreTimes} 个。";
+                            }
+                        }
+                    }
+
+                    user.LastTime = DateTime.Now;
+                    pc.Add("user", user);
+                    pc.Add("exploreTimes", exploreTimes);
+                    pc.SaveConfig();
+
+                    return msg;
                 }
                 else
                 {

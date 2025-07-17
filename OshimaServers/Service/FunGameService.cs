@@ -1,3 +1,4 @@
+using System.Reflection;
 using System.Text;
 using Milimoe.FunGame.Core.Api.Transmittal;
 using Milimoe.FunGame.Core.Api.Utility;
@@ -76,6 +77,8 @@ namespace Oshima.FunGame.OshimaServers.Service
             }
 
             FunGameConstant.DrawCardItems.AddRange(FunGameConstant.AllItems.Where(i => !FunGameConstant.ItemCanNotDrawCard.Contains(i.ItemType)));
+            FunGameConstant.CharacterLevelBreakItems.AddRange([new 升华之印(), new 流光之印(), new 永恒之印()]);
+            FunGameConstant.SkillLevelUpItems.AddRange([new 技能卷轴(), new 智慧之果(), new 奥术符文(), new 混沌之核()]);
 
             FunGameConstant.AllItems.AddRange(FunGameConstant.ExploreItems.Values.SelectMany(list => list));
 
@@ -1961,22 +1964,7 @@ namespace Oshima.FunGame.OshimaServers.Service
                         {
                             if (FunGameConstant.AllItems.FirstOrDefault(i => i.Name == item.Name) != null)
                             {
-                                Item newItem = item.Copy();
-                                newItem.User = user;
-                                if (newItem.QualityType >= QualityType.Orange) newItem.IsLock = true;
-                                SetSellAndTradeTime(newItem);
-                                int min = 0, max = 0;
-                                if (FunGameConstant.PriceRanges.TryGetValue(item.QualityType, out (int Min, int Max) range))
-                                {
-                                    (min, max) = (range.Min, range.Max);
-                                }
-                                double price = Random.Shared.Next(min, max) * 0.35;
-                                newItem.Price = price;
-                                user.Inventory.Items.Add(newItem);
-                                // 连接到任务系统
-                                AddExploreItemCache(user.Id, item.Name);
-                                // 连接到活动系统
-                                ActivitiesItemCache.Add(item.Name);
+                                AddItemToUserInventory(user, item);
                             }
                         }
                     }
@@ -2556,7 +2544,7 @@ namespace Oshima.FunGame.OshimaServers.Service
                     int exp = 0;
                     for (int i = 0; i < characterCount; i++)
                     {
-                        exp += Random.Shared.Next(100, 300) * diff;
+                        exp += Random.Shared.Next(300, 750) * diff;
                     }
                     model.Awards["exp"] = exp;
                     exploreString += $"额外获得了：{exp} 点经验值（探索队员们平分）！";
@@ -2595,7 +2583,8 @@ namespace Oshima.FunGame.OshimaServers.Service
                         // 开始战斗
                         Team team1 = new($"{user.Username}的探索小队", squad);
                         Team team2 = new($"{region.Name}", enemys);
-                        List<string> msgs = await FunGameActionQueue.NewAndStartTeamGame([team1, team2], showAllRound: true);
+                        FunGameActionQueue actionQueue = new();
+                        List<string> msgs = await actionQueue.StartTeamGame([team1, team2], showAllRound: true);
                         if (msgs.Count > 2)
                         {
                             msgs = msgs[^2..];
@@ -2608,11 +2597,15 @@ namespace Oshima.FunGame.OshimaServers.Service
                             {
                                 credits += Random.Shared.Next(400, 650) * diff;
                             }
+                            if (actionQueue.GamingQueue.EarnedMoney.Count > 0)
+                            {
+                                credits += actionQueue.GamingQueue.EarnedMoney.Where(kv => squad.Contains(kv.Key)).Sum(kv => kv.Value);
+                            }
                             model.CreditsAward = credits;
                             exp = 0;
                             for (int i = 0; i < characterCount; i++)
                             {
-                                exp += Random.Shared.Next(250, 520) * diff;
+                                exp += Random.Shared.Next(370, 860) * diff;
                             }
                             model.Awards["exp"] = exp;
                             int materials = 0;
@@ -2628,7 +2621,7 @@ namespace Oshima.FunGame.OshimaServers.Service
                                 count += Math.Max(1, Random.Shared.Next(1, 4) * diff / 2);
                             }
                             model.Awards[item.Name] = count;
-                            award = $"{credits} {General.GameplayEquilibriumConstant.InGameCurrency}，" + $"{exp} 点经验值（探索队员们平分），" +
+                            award = $"{credits} {General.GameplayEquilibriumConstant.InGameCurrency}（包含战斗中击杀奖励），" + $"{exp} 点经验值（探索队员们平分），" +
                                 $"{materials} {General.GameplayEquilibriumConstant.InGameMaterial}，" + $"以及 {count} 个{item.Name}";
                             if (Random.Shared.NextDouble() > 0.6)
                             {
@@ -2751,22 +2744,7 @@ namespace Oshima.FunGame.OshimaServers.Service
                     {
                         for (int i = 0; i < model.Awards[name]; i++)
                         {
-                            Item newItem = item.Copy();
-                            newItem.User = user;
-                            if (newItem.QualityType >= QualityType.Orange) newItem.IsLock = true;
-                            SetSellAndTradeTime(newItem);
-                            int min = 0, max = 0;
-                            if (FunGameConstant.PriceRanges.TryGetValue(item.QualityType, out (int Min, int Max) range))
-                            {
-                                (min, max) = (range.Min, range.Max);
-                            }
-                            double price = Random.Shared.Next(min, max) * 0.35;
-                            newItem.Price = price;
-                            user.Inventory.Items.Add(newItem);
-                            // 连接到任务系统
-                            AddExploreItemCache(user.Id, item.Name);
-                            // 连接到活动系统
-                            ActivitiesItemCache.Add(item.Name);
+                            AddItemToUserInventory(user, item);
                         }
                     }
                 }
@@ -3349,6 +3327,346 @@ namespace Oshima.FunGame.OshimaServers.Service
                 return msg;
             }
             return "服务器繁忙，请稍后再试。";
+        }
+
+        public static void AddItemToUserInventory(User user, Item item, bool hasLock = true, bool hasSellAndTradeTime = true, bool hasPrice = true, double price = 0, bool toExploreCache = true, bool toActivitiesCache = true)
+        {
+            Item newItem = item.Copy();
+            newItem.User = user;
+            if (hasLock && newItem.QualityType >= QualityType.Orange) newItem.IsLock = true;
+            if (hasSellAndTradeTime) SetSellAndTradeTime(newItem);
+            if (hasPrice)
+            {
+                if (price == 0)
+                {
+                    int min = 0, max = 0;
+                    if (FunGameConstant.PriceRanges.TryGetValue(item.QualityType, out (int Min, int Max) range))
+                    {
+                        (min, max) = (range.Min, range.Max);
+                    }
+                    price = Random.Shared.Next(min, max) * 0.35;
+                }
+                newItem.Price = price;
+            }
+            user.Inventory.Items.Add(newItem);
+            // 连接到任务系统
+            if (toExploreCache) AddExploreItemCache(user.Id, item.Name);
+            // 连接到活动系统
+            if (toActivitiesCache) ActivitiesItemCache.Add(item.Name);
+        }
+
+        public static async Task<string> FightInstance(InstanceType type, int difficulty, User user, Character[] squad)
+        {
+            if (difficulty <= 0) difficulty = 1;
+            else if (difficulty > 5) difficulty = 5;
+
+            StringBuilder builder = new();
+
+            // 生成敌人
+            int enemyCount = difficulty switch
+            {
+                1 => 2,
+                2 => 3,
+                3 => 4,
+                4 => 5,
+                _ => 6
+            };
+
+            List<Character> enemys = [];
+            for (int i = 0; i < enemyCount; i++)
+            {
+                Character? enemy = FunGameConstant.Regions.SelectMany(r => r.Units).OrderBy(o => Random.Shared.Next()).FirstOrDefault();
+                if (enemy != null)
+                {
+                    enemy = enemy.Copy();
+                    int dcount = enemys.Count(e => e.Name == enemy.Name);
+                    if (dcount > 0 && FunGameConstant.GreekAlphabet.Length > dcount) enemy.Name += FunGameConstant.GreekAlphabet[dcount - 1];
+                    enemys.Add(enemy);
+                }
+            }
+
+            Item[] weapons = [.. FunGameConstant.Equipment.Where(i => i.Id.ToString().StartsWith("11") && (int)i.QualityType == 5)];
+            Item[] armors = [.. FunGameConstant.Equipment.Where(i => i.Id.ToString().StartsWith("12") && (int)i.QualityType == 5)];
+            Item[] shoes = [.. FunGameConstant.Equipment.Where(i => i.Id.ToString().StartsWith("13") && (int)i.QualityType == 5)];
+            Item[] accessory = [.. FunGameConstant.Equipment.Where(i => i.Id.ToString().StartsWith("14") && (int)i.QualityType == 5)];
+            Item[] consumables = [.. FunGameConstant.AllItems.Where(i => i.ItemType == ItemType.Consumable && i.IsInGameItem)];
+            int cLevel = difficulty * 8;
+            int sLevel = difficulty;
+            int mLevel = difficulty + 1;
+            int naLevel = mLevel;
+            foreach (Character enemy_loop in enemys)
+            {
+                EnhanceBoss(enemy_loop, weapons, armors, shoes, accessory, consumables, cLevel, sLevel, mLevel, naLevel, false, false, true);
+            }
+            
+            // 开始战斗
+            Team team1 = new($"{user.Username}的小队", squad);
+            Team team2 = new($"{General.GameplayEquilibriumConstant.InGameCurrency}秘境", enemys);
+            FunGameActionQueue actionQueue = new();
+            List<string> msgs = await actionQueue.StartTeamGame([team1, team2], showAllRound: true);
+            if (msgs.Count > 2)
+            {
+                msgs = msgs[^2..];
+            }
+            int award = 0;
+            int characterCount = squad.Length;
+            builder.AppendLine($"☆--- {team2.Name}挑战 ---☆");
+            builder.AppendLine(string.Join("\r\n", msgs));
+            if (enemys.All(c => c.HP <= 0))
+            {
+                builder.Append($"探索小队战胜了敌人！获得了：");
+                switch (type)
+                {
+                    case InstanceType.Currency:
+                        for (int i = 0; i < characterCount; i++)
+                        {
+                            award += Random.Shared.Next(550, 1050) * difficulty;
+                        }
+                        user.Inventory.Credits += award;
+                        // 这个只是展示，实际上在战斗过程中已经加过了
+                        if (actionQueue.GamingQueue.EarnedMoney.Count > 0)
+                        {
+                            award += actionQueue.GamingQueue.EarnedMoney.Where(kv => squad.Contains(kv.Key)).Sum(kv => kv.Value);
+                        }
+                        builder.AppendLine($"{award} {General.GameplayEquilibriumConstant.InGameCurrency}（包含战斗中击杀奖励）！");
+                        break;
+                    case InstanceType.Material:
+                        for (int i = 0; i < characterCount; i++)
+                        {
+                            award += Random.Shared.Next(4, 9) * difficulty;
+                        }
+                        user.Inventory.Materials += award;
+                        builder.AppendLine($"{award} {General.GameplayEquilibriumConstant.InGameMaterial}！");
+                        break;
+                    case InstanceType.EXP:
+                        for (int i = 0; i < characterCount; i++)
+                        {
+                            award += Random.Shared.Next(570, 1260) * difficulty;
+                        }
+                        double overflowExp = 0;
+                        double avgExp = award / characterCount;
+                        int small = 0, medium = 0, large = 0;
+                        award = 0;
+                        foreach (Character character in squad)
+                        {
+                            double currentExp = FunGameConstant.PrecomputeTotalExperience[character.Level] + character.EXP;
+                            if (currentExp + avgExp > FunGameConstant.PrecomputeTotalExperience[General.GameplayEquilibriumConstant.MaxLevel])
+                            {
+                                overflowExp = Math.Min(FunGameConstant.PrecomputeTotalExperience[General.GameplayEquilibriumConstant.MaxLevel], currentExp) + avgExp - FunGameConstant.PrecomputeTotalExperience[General.GameplayEquilibriumConstant.MaxLevel];
+                                while (overflowExp > 0)
+                                {
+                                    if (overflowExp >= 1000)
+                                    {
+                                        large++;
+                                        overflowExp -= 1000;
+                                    }
+                                    else if (overflowExp >= 500)
+                                    {
+                                        medium++;
+                                        overflowExp -= 500;
+                                    }
+                                    else if (overflowExp >= 200)
+                                    {
+                                        small++;
+                                        overflowExp -= 200;
+                                    }
+                                    else
+                                    {
+                                        small++;
+                                        overflowExp = 0;
+                                    }
+                                }
+                            }
+                            else
+                            {
+                                character.EXP += avgExp;
+                                award += (int)avgExp;
+                            }
+                        }
+                        List<string> expBook = [];
+                        if (large > 0)
+                        {
+                            expBook.Add($"{large} 个大经验书");
+                            for (int i = 0; i < large; i++)
+                            {
+                                AddItemToUserInventory(user, new 大经验书());
+                            }
+                        }
+                        if (medium > 0)
+                        {
+                            expBook.Add($"{medium} 个中经验书");
+                            for (int i = 0; i < medium; i++)
+                            {
+                                AddItemToUserInventory(user, new 中经验书());
+                            }
+                        }
+                        if (small > 0)
+                        {
+                            expBook.Add($"{small} 个小经验书");
+                            for (int i = 0; i < small; i++)
+                            {
+                                AddItemToUserInventory(user, new 小经验书());
+                            }
+                        }
+                        builder.AppendLine($"{award} 点经验值（分配给经验未满的角色们）{(expBook.Count > 0 ? $"，附赠：{string.Join("、", expBook)}" : "")}！");
+                        break;
+                    case InstanceType.RegionItem:
+                        List<string> regionItems = [];
+                        for (int i = 0; i < characterCount; i++)
+                        {
+                            OshimaRegion region = FunGameConstant.Regions[Random.Shared.Next(FunGameConstant.Regions.Count)];
+                            Item item = FunGameConstant.ExploreItems[region][Random.Shared.Next(FunGameConstant.ExploreItems[region].Count)];
+                            award = Math.Max(2, Random.Shared.Next(2, 5) * difficulty / 2);
+                            regionItems.Add($"{award} 个 {item.Name}（来自{region.Name}）");
+                            AddItemToUserInventory(user, item);
+                        }
+                        builder.AppendLine($"{string.Join("、", regionItems)}！");
+                        break;
+                    case InstanceType.CharacterLevelBreak:
+                        List<string> characterLevelBreakItems = [];
+                        for (int i = 0; i < characterCount; i++)
+                        {
+                            Item item = FunGameConstant.CharacterLevelBreakItems[Random.Shared.Next(FunGameConstant.CharacterLevelBreakItems.Count)];
+                            award = Math.Max(1, Random.Shared.Next(1, 4) * difficulty / 2);
+                            characterLevelBreakItems.Add($"{award} 个 {item.Name}");
+                            AddItemToUserInventory(user, item);
+                        }
+                        builder.AppendLine($"{string.Join("、", characterLevelBreakItems)}！");
+                        break;
+                    case InstanceType.SkillLevelUp:
+                        List<string> skillLevelUpItems = [];
+                        for (int i = 0; i < characterCount; i++)
+                        {
+                            Item item = FunGameConstant.SkillLevelUpItems[Random.Shared.Next(FunGameConstant.SkillLevelUpItems.Count)];
+                            award = Math.Max(1, Random.Shared.Next(1, 4) * difficulty / 2);
+                            skillLevelUpItems.Add($"{award} 个 {item.Name}");
+                            AddItemToUserInventory(user, item);
+                        }
+                        builder.AppendLine($"{string.Join("、", skillLevelUpItems)}！");
+                        break;
+                    default:
+                        break;
+                }
+            }
+            else
+            {
+                builder.Append($"小队未能战胜敌人，");
+                IEnumerable<Character> deadEnemys = enemys.Where(c => c.HP <= 0);
+                if (!deadEnemys.Any())
+                {
+                    builder.AppendLine("无法获取秘境奖励！");
+                }
+                else
+                {
+                    builder.Append("但是获得了战斗失败补偿：");
+                    // 根据死亡敌人的数量生成补偿奖励
+                    int count = deadEnemys.Count();
+                    switch (type)
+                    {
+                        case InstanceType.Currency:
+                            award = 100 * difficulty * count;
+                            user.Inventory.Credits += award;
+                            // 这个只是展示，实际上在战斗过程中已经加过了
+                            if (actionQueue.GamingQueue.EarnedMoney.Count > 0)
+                            {
+                                award += actionQueue.GamingQueue.EarnedMoney.Where(kv => squad.Contains(kv.Key)).Sum(kv => kv.Value);
+                            }
+                            builder.AppendLine($"{award} {General.GameplayEquilibriumConstant.InGameCurrency}（包含战斗中击杀奖励）！");
+                            break;
+                        case InstanceType.Material:
+                            award = (int)(0.5 * difficulty * count);
+                            if (award <= 0) award = 1;
+                            user.Inventory.Materials += award;
+                            builder.AppendLine($"{award} {General.GameplayEquilibriumConstant.InGameMaterial}！");
+                            break;
+                        case InstanceType.EXP:
+                            award = 300 * difficulty * count;
+                            double overflowExp = 0;
+                            double avgExp = (award / characterCount);
+                            int small = 0, medium = 0, large = 0;
+                            award = 0;
+                            foreach (Character character in squad)
+                            {
+                                double currentExp = FunGameConstant.PrecomputeTotalExperience[character.Level] + character.EXP;
+                                if (currentExp + avgExp > FunGameConstant.PrecomputeTotalExperience[General.GameplayEquilibriumConstant.MaxLevel])
+                                {
+                                    overflowExp = Math.Min(FunGameConstant.PrecomputeTotalExperience[General.GameplayEquilibriumConstant.MaxLevel], currentExp) + avgExp - FunGameConstant.PrecomputeTotalExperience[General.GameplayEquilibriumConstant.MaxLevel];
+                                    while (overflowExp > 0)
+                                    {
+                                        if (overflowExp >= 1000)
+                                        {
+                                            large++;
+                                            overflowExp -= 1000;
+                                        }
+                                        else if (overflowExp >= 500)
+                                        {
+                                            medium++;
+                                            overflowExp -= 500;
+                                        }
+                                        else if (overflowExp >= 200)
+                                        {
+                                            small++;
+                                            overflowExp -= 200;
+                                        }
+                                        else
+                                        {
+                                            small++;
+                                            overflowExp = 0;
+                                        }
+                                    }
+                                }
+                                else
+                                {
+                                    character.EXP += avgExp;
+                                    award += (int)avgExp;
+                                }
+                            }
+                            List<string> expBook = [];
+                            if (large > 0)
+                            {
+                                expBook.Add($"{large} 个大经验书");
+                                for (int i = 0; i < large; i++)
+                                {
+                                    AddItemToUserInventory(user, new 大经验书());
+                                }
+                            }
+                            if (medium > 0)
+                            {
+                                expBook.Add($"{medium} 个中经验书");
+                                for (int i = 0; i < medium; i++)
+                                {
+                                    AddItemToUserInventory(user, new 中经验书());
+                                }
+                            }
+                            if (small > 0)
+                            {
+                                expBook.Add($"{small} 个小经验书");
+                                for (int i = 0; i < small; i++)
+                                {
+                                    AddItemToUserInventory(user, new 小经验书());
+                                }
+                            }
+                            builder.AppendLine($"{award} 点经验值（分配给经验未满的角色们）{(expBook.Count > 0 ? $"，附赠：{string.Join("、", expBook)}" : "")}！");
+                            break;
+                        case InstanceType.RegionItem:
+                            List<string> regionItems = [];
+                            for (int i = 0; i < count; i++)
+                            {
+                                OshimaRegion region = FunGameConstant.Regions[Random.Shared.Next(FunGameConstant.Regions.Count)];
+                                Item item = FunGameConstant.ExploreItems[region][Random.Shared.Next(FunGameConstant.ExploreItems[region].Count)];
+                                award = 1;
+                                regionItems.Add($"{award} 个 {item.Name}（来自{region.Name}）");
+                                AddItemToUserInventory(user, item);
+                            }
+                            builder.AppendLine($"{string.Join("、", regionItems)}！");
+                            break;
+                        default:
+                            break;
+                    }
+                }
+            }
+
+            return builder.ToString().Trim();
         }
     }
 }
