@@ -2636,7 +2636,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
                 }
 
                 return $"角色 [ {character} ] 目前突破进度：{character.LevelBreak + 1}/{General.GameplayEquilibriumConstant.LevelBreakList.Count}" +
-                    $"\r\n该角色下一个等级突破阶段在 {General.GameplayEquilibriumConstant.LevelBreakList.ToArray()[character.LevelBreak + 1]} 级，所需材料：\r\n" + FunGameService.GetLevelBreakNeedy(character.LevelBreak + 1, user);
+                    $"\r\n该角色下一个等级突破阶段在 {General.GameplayEquilibriumConstant.LevelBreakList.ToArray()[character.LevelBreak + 1]} 级（当前 {character.Level} 级），所需材料：\r\n" + FunGameService.GetLevelBreakNeedy(character.LevelBreak + 1, user);
             }
             else
             {
@@ -2689,7 +2689,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
                                 }
                                 else
                                 {
-                                    return $"你的{General.GameplayEquilibriumConstant.InGameMaterial}不足 {needCount} 呢，不满足突破条件！";
+                                    return $"你的{General.GameplayEquilibriumConstant.InGameMaterial}不足 {needCount} 呢，不满足突破条件！所需材料：\r\n{FunGameService.GetLevelBreakNeedy(character.LevelBreak + 1, user)}";
                                 }
                             }
                             else
@@ -2707,7 +2707,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
                                     }
                                     else
                                     {
-                                        return $"你的物品【{key}】数量不足 {needCount} 呢，不满足突破条件！";
+                                        return $"你的物品【{key}】数量不足 {needCount} 呢，不满足突破条件！所需材料：\r\n{FunGameService.GetLevelBreakNeedy(character.LevelBreak + 1, user)}";
                                     }
                                 }
                             }
@@ -2719,7 +2719,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
                     if (originalBreak == character.LevelBreak)
                     {
                         return $"突破失败！角色 [ {character} ] 目前突破进度：{character.LevelBreak + 1}/{General.GameplayEquilibriumConstant.LevelBreakList.Count}。" +
-                            $"\r\n该角色下一个等级突破阶段在 {General.GameplayEquilibriumConstant.LevelBreakList.ToArray()[character.LevelBreak + 1]} 级，所需材料：\r\n" + FunGameService.GetLevelBreakNeedy(character.LevelBreak + 1, user);
+                            $"\r\n该角色下一个等级突破阶段在 {General.GameplayEquilibriumConstant.LevelBreakList.ToArray()[character.LevelBreak + 1]} 级（当前 {character.Level} 级），所需材料：\r\n" + FunGameService.GetLevelBreakNeedy(character.LevelBreak + 1, user);
                     }
                     else
                     {
@@ -2729,7 +2729,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
                         return $"突破成功！角色 [ {character} ] 目前突破进度：{character.LevelBreak + 1}/{General.GameplayEquilibriumConstant.LevelBreakList.Count}。" +
                             $"{(character.LevelBreak + 1 == General.GameplayEquilibriumConstant.LevelBreakList.Count ?
                             "\r\n该角色已完成全部的突破阶段，恭喜！" :
-                            $"\r\n该角色下一个等级突破阶段在 {General.GameplayEquilibriumConstant.LevelBreakList.ToArray()[character.LevelBreak + 1]} 级，所需材料：\r\n" + FunGameService.GetLevelBreakNeedy(character.LevelBreak + 1, user))}";
+                            $"\r\n该角色下一个等级突破阶段在 {General.GameplayEquilibriumConstant.LevelBreakList.ToArray()[character.LevelBreak + 1]} 级（当前 {character.Level} 级），所需材料：\r\n" + FunGameService.GetLevelBreakNeedy(character.LevelBreak + 1, user))}";
                     }
                 }
                 else
@@ -3571,14 +3571,14 @@ namespace Oshima.FunGame.WebAPI.Controllers
                                     {
                                         if (character.Level < needCount)
                                         {
-                                            return $"角色 [ {character} ] 等级不足 {needCount} 级，无法{isStudy}此技能！";
+                                            return $"角色 [ {character} ] 等级不足 {needCount} 级（当前 {character.Level} 级），无法{isStudy}此技能！";
                                         }
                                     }
                                     else if (key == "角色突破进度")
                                     {
                                         if (character.LevelBreak + 1 < needCount)
                                         {
-                                            return $"角色 [ {character} ] 等级突破进度不足 {needCount} 等阶，无法{isStudy}此技能！";
+                                            return $"角色 [ {character} ] 等级突破进度不足 {needCount} 等阶（当前 {character.LevelBreak + 1} 等阶），无法{isStudy}此技能！";
                                         }
                                     }
                                     else if (key == General.GameplayEquilibriumConstant.InGameCurrency)
@@ -3589,7 +3589,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
                                         }
                                         else
                                         {
-                                            return $"你的{General.GameplayEquilibriumConstant.InGameCurrency}不足 {needCount} 呢，不满足{isStudy}条件！";
+                                            return $"你的{General.GameplayEquilibriumConstant.InGameCurrency}不足 {needCount} 呢，不满足{isStudy}条件！所需材料：\r\n{FunGameService.GetSkillLevelUpNeedy(skill.Level + 1, user, character)}";
                                         }
                                     }
                                     else if (key == General.GameplayEquilibriumConstant.InGameMaterial)
@@ -3600,7 +3600,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
                                         }
                                         else
                                         {
-                                            return $"你的{General.GameplayEquilibriumConstant.InGameMaterial}不足 {needCount} 呢，不满足{isStudy}条件！";
+                                            return $"你的{General.GameplayEquilibriumConstant.InGameMaterial}不足 {needCount} 呢，不满足{isStudy}条件！所需材料：\r\n{FunGameService.GetSkillLevelUpNeedy(skill.Level + 1, user, character)}";
                                         }
                                     }
                                     else
@@ -3618,7 +3618,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
                                             }
                                             else
                                             {
-                                                return $"你的物品【{key}】数量不足 {needCount} 呢，不满足{isStudy}条件！";
+                                                return $"你的物品【{key}】数量不足 {needCount} 呢，不满足{isStudy}条件！所需材料：\r\n{FunGameService.GetSkillLevelUpNeedy(skill.Level + 1, user, character)}";
                                             }
                                         }
                                     }
@@ -3744,14 +3744,14 @@ namespace Oshima.FunGame.WebAPI.Controllers
                             {
                                 if (character.Level < needCount)
                                 {
-                                    return $"角色 [ {character} ] 等级不足 {needCount} 级，无法升级此技能！";
+                                    return $"角色 [ {character} ] 等级不足 {needCount} 级（当前 {character.Level} 级），无法升级此技能！";
                                 }
                             }
                             else if (key == "角色突破进度")
                             {
                                 if (character.LevelBreak + 1 < needCount)
                                 {
-                                    return $"角色 [ {character} ] 等级突破进度不足 {needCount} 等阶，无法升级此技能！";
+                                    return $"角色 [ {character} ] 等级突破进度不足 {needCount} 等阶（当前 {character.LevelBreak + 1} 等阶），无法升级此技能！";
                                 }
                             }
                             else if (key == General.GameplayEquilibriumConstant.InGameCurrency)
@@ -3762,7 +3762,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
                                 }
                                 else
                                 {
-                                    return $"你的{General.GameplayEquilibriumConstant.InGameCurrency}不足 {needCount} 呢，不满足升级条件！";
+                                    return $"你的{General.GameplayEquilibriumConstant.InGameCurrency}不足 {needCount} 呢，不满足升级条件！所需材料：\r\n{FunGameService.GetSkillLevelUpNeedy(na.Level + 1, user, character)}";
                                 }
                             }
                             else if (key == General.GameplayEquilibriumConstant.InGameMaterial)
@@ -3773,7 +3773,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
                                 }
                                 else
                                 {
-                                    return $"你的{General.GameplayEquilibriumConstant.InGameMaterial}不足 {needCount} 呢，不满足升级条件！";
+                                    return $"你的{General.GameplayEquilibriumConstant.InGameMaterial}不足 {needCount} 呢，不满足升级条件！所需材料：\r\n{FunGameService.GetSkillLevelUpNeedy(na.Level + 1, user, character)}";
                                 }
                             }
                             else
@@ -3791,7 +3791,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
                                     }
                                     else
                                     {
-                                        return $"你的物品【{key}】数量不足 {needCount} 呢，不满足升级条件！";
+                                        return $"你的物品【{key}】数量不足 {needCount} 呢，不满足升级条件！所需材料：\r\n{FunGameService.GetSkillLevelUpNeedy(na.Level + 1, user, character)}";
                                     }
                                 }
                             }
@@ -5627,7 +5627,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
                     }
 
                     // 检查探索许可
-                    int exploreTimes = 0;
+                    int exploreTimes = FunGameConstant.MaxExploreTimes;
                     int reduce = 1;
                     if (regionid > 0 && regionid <= FunGameConstant.Regions.Count && FunGameConstant.Regions.FirstOrDefault(r => r.Id == regionid) is OshimaRegion region)
                     {
@@ -5652,10 +5652,6 @@ namespace Oshima.FunGame.WebAPI.Controllers
                                 msg = $"本次探索需要消耗 {reduce} 个探索许可，超过了你的剩余探索许可数量（{exploreTimes} 个），请减少选择的角色数量或更换探索地区。" +
                                     $"\r\n需要注意：探索难度星级一比一兑换探索许可，并且参与探索的角色，都需要消耗相同数量的探索许可。";
                             }
-                        }
-                        else
-                        {
-                            exploreTimes = FunGameConstant.MaxExploreTimes;
                         }
                     }
                     else

@@ -1370,7 +1370,7 @@ namespace Oshima.FunGame.OshimaServers.Service
                     }
                     strings.Add($"{key} * {value}（{count} / {value}）");
                 }
-                return string.Join("，", needy.Select(kv => kv.Key + " * " + kv.Value));
+                return string.Join("，", strings);
             }
             return "";
         }
@@ -1728,7 +1728,7 @@ namespace Oshima.FunGame.OshimaServers.Service
             }
 
             // 伤害贡献
-            double damageContribution = Math.Log(1 + stats.DamagePerSecond / 40);
+            double damageContribution = Math.Log(1 + Math.Min(2, (stats.TotalDamage / (stats.TotalTakenDamage + 1.75))));
             if (team != null && teammateStats != null)
             {
                 // 考虑团队伤害排名，优先高伤害的
@@ -1742,7 +1742,7 @@ namespace Oshima.FunGame.OshimaServers.Service
             }
 
             // 存活时间贡献
-            double liveTimeContribution = Math.Log(1 + stats.LiveTime / ((stats.TotalTakenDamage == 0 ? stats.TotalTakenDamage : 500) + stats.Deaths + 1) * 60);
+            double liveTimeContribution = Math.Log(1 + (stats.LiveTime / (stats.TotalTakenDamage + 0.01) * 100));
 
             // 团队模式参团率加成
             double teamContribution = 0;
@@ -1757,7 +1757,7 @@ namespace Oshima.FunGame.OshimaServers.Service
             }
 
             // 权重设置
-            double k = stats.Deaths > 0 ? 0.2 : 0.06; // 伤害贡献权重
+            double k = stats.Deaths > 0 ? 0.2 : 0.075; // 伤害贡献权重
             double l = stats.Deaths > 0 ? 0.2 : 0.05; // 存活时间权重
             double t = stats.Deaths > 0 ? 0.2 : 0.075; // 参团率权重
 
@@ -2010,10 +2010,11 @@ namespace Oshima.FunGame.OshimaServers.Service
 
         public static string CheckDailyStore(EntityModuleConfig<Store> stores, User user)
         {
-            if (stores.Count == 0)
+            Store? daily = stores.Get("daily");
+            if (daily is null)
             {
                 // 生成每日商店
-                Store daily = new($"{user.Username}的每日商店");
+                daily = new($"{user.Username}的每日商店");
                 for (int i = 0; i < 4; i++)
                 {
                     Item item;
@@ -2061,15 +2062,8 @@ namespace Oshima.FunGame.OshimaServers.Service
             }
             else
             {
-                if (stores.Count > 0 && stores.Where(kv => kv.Key == "daily").Select(kv => kv.Value).FirstOrDefault() is Store daily)
-                {
-                    SetLastStore(user, true, "", "");
-                    return daily.ToString();
-                }
-                else
-                {
-                    return "商品列表为空，请使用【每日商店】指令来获取商品列表！";
-                }
+                SetLastStore(user, true, "", "");
+                return daily.ToString();
             }
         }
 
@@ -2139,7 +2133,7 @@ namespace Oshima.FunGame.OshimaServers.Service
 
             foreach (Item item in goods.Items)
             {
-                if (item is 探索许可)
+                if (item.Name == nameof(探索许可))
                 {
                     int exploreTimes = FunGameConstant.MaxExploreTimes + count;
                     if (pc.TryGetValue("exploreTimes", out object? value) && int.TryParse(value.ToString(), out exploreTimes))
