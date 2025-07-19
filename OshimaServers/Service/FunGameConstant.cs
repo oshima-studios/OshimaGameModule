@@ -4,6 +4,7 @@ using Oshima.Core.Constant;
 using Oshima.FunGame.OshimaModules.Effects.OpenEffects;
 using Oshima.FunGame.OshimaModules.Items;
 using Oshima.FunGame.OshimaModules.Regions;
+using Oshima.FunGame.OshimaServers.Model;
 
 namespace Oshima.FunGame.OshimaServers.Service
 {
@@ -32,6 +33,7 @@ namespace Oshima.FunGame.OshimaServers.Service
         public static List<Skill> AllSkills { get; } = [];
         public static Dictionary<long, User> UserIdAndUsername { get; } = [];
         public static Dictionary<long, Item> MarketItemIdAndItem { get; } = [];
+        public static Dictionary<long, LastStoreModel> UserLastVisitStore { get; } = [];
         public static ItemType[] ItemCanUsed => [ItemType.Consumable, ItemType.MagicCard, ItemType.SpecialItem, ItemType.GiftBox, ItemType.Others];
         public static ItemType[] ItemCanNotDrawCard => [ItemType.Collectible, ItemType.QuestItem, ItemType.GiftBox, ItemType.Others];
 
@@ -40,49 +42,57 @@ namespace Oshima.FunGame.OshimaServers.Service
             {
                 0, new()
                 {
-                    { General.GameplayEquilibriumConstant.InGameMaterial, 20 },
+                    { General.GameplayEquilibriumConstant.InGameMaterial, 40 },
                     { nameof(升华之印), 2 }
                 }
             },
             {
                 1, new()
                 {
-                    { General.GameplayEquilibriumConstant.InGameMaterial, 40 },
-                    { nameof(升华之印), 4 }
+                    { General.GameplayEquilibriumConstant.InGameMaterial, 80 },
+                    { nameof(升华之印), 4 },
+                    { nameof(流光之印), 2 }
                 }
             },
             {
                 2, new()
                 {
-                    { General.GameplayEquilibriumConstant.InGameMaterial, 80 },
-                    { nameof(升华之印), 6 },
-                    { nameof(流光之印), 2 }
+                    { General.GameplayEquilibriumConstant.InGameMaterial, 160 },
+                    { nameof(升华之印), 8 },
+                    { nameof(流光之印), 4 },
+                    { nameof(永恒之印), 3 }
                 }
             },
             {
                 3, new()
                 {
-                    { General.GameplayEquilibriumConstant.InGameMaterial, 160 },
-                    { nameof(升华之印), 9 },
-                    { nameof(流光之印), 4 }
+                    { General.GameplayEquilibriumConstant.InGameMaterial, 320 },
+                    { nameof(升华之印), 16 },
+                    { nameof(流光之印), 8 },
+                    { nameof(永恒之印), 6 },
+                    { nameof(原初之印), 5 }
                 }
             },
             {
                 4, new()
                 {
-                    { General.GameplayEquilibriumConstant.InGameMaterial, 320 },
-                    { nameof(升华之印), 12 },
-                    { nameof(流光之印), 6 },
-                    { nameof(永恒之印), 2 }
+                    { General.GameplayEquilibriumConstant.InGameMaterial, 640 },
+                    { nameof(升华之印), 32 },
+                    { nameof(流光之印), 16 },
+                    { nameof(永恒之印), 12 },
+                    { nameof(原初之印), 10 },
+                    { nameof(创生之印), 5 }
                 }
             },
             {
                 5, new()
                 {
-                    { General.GameplayEquilibriumConstant.InGameMaterial, 640 },
-                    { nameof(升华之印), 16 },
-                    { nameof(流光之印), 9 },
-                    { nameof(永恒之印), 4 }
+                    { General.GameplayEquilibriumConstant.InGameMaterial, 1280 },
+                    { nameof(升华之印), 64 },
+                    { nameof(流光之印), 32 },
+                    { nameof(永恒之印), 24 },
+                    { nameof(原初之印), 20 },
+                    { nameof(创生之印), 10 }
                 }
             },
         };
@@ -93,61 +103,68 @@ namespace Oshima.FunGame.OshimaServers.Service
                 1, new()
                 {
                     { "角色等级", 1 },
-                    { General.GameplayEquilibriumConstant.InGameCurrency, 2000 },
-                    { General.GameplayEquilibriumConstant.InGameMaterial, 10 },
-                    { nameof(技能卷轴), 1 },
+                    { General.GameplayEquilibriumConstant.InGameCurrency, 5000 },
+                    { General.GameplayEquilibriumConstant.InGameMaterial, 50 },
+                    { nameof(技能卷轴), 1 }
                 }
             },
             {
                 2, new()
                 {
                     { "角色等级", 12 },
-                    { General.GameplayEquilibriumConstant.InGameCurrency, 5000 },
-                    { General.GameplayEquilibriumConstant.InGameMaterial, 30 },
+                    { General.GameplayEquilibriumConstant.InGameCurrency, 10000 },
+                    { General.GameplayEquilibriumConstant.InGameMaterial, 100 },
                     { nameof(技能卷轴), 2 },
+                    { nameof(智慧之果), 1 }
                 }
             },
             {
                 3, new()
                 {
                     { "角色等级", 24 },
-                    { General.GameplayEquilibriumConstant.InGameCurrency, 10000 },
-                    { General.GameplayEquilibriumConstant.InGameMaterial, 60 },
+                    { General.GameplayEquilibriumConstant.InGameCurrency, 20000 },
+                    { General.GameplayEquilibriumConstant.InGameMaterial, 150 },
                     { nameof(技能卷轴), 4 },
-                    { nameof(智慧之果), 1 },
+                    { nameof(智慧之果), 2 },
+                    { nameof(奥术符文), 1 }
                 }
             },
             {
                 4, new()
                 {
                     { "角色等级", 36 },
-                    { General.GameplayEquilibriumConstant.InGameCurrency, 18000 },
-                    { General.GameplayEquilibriumConstant.InGameMaterial, 100 },
-                    { nameof(技能卷轴), 6 },
-                    { nameof(智慧之果), 2 },
+                    { General.GameplayEquilibriumConstant.InGameCurrency, 40000 },
+                    { General.GameplayEquilibriumConstant.InGameMaterial, 250 },
+                    { nameof(技能卷轴), 8 },
+                    { nameof(智慧之果), 4 },
+                    { nameof(奥术符文), 3 },
+                    { nameof(混沌之核), 1 }
                 }
             },
             {
                 5, new()
                 {
                     { "角色等级", 48 },
-                    { General.GameplayEquilibriumConstant.InGameCurrency, 30000 },
-                    { General.GameplayEquilibriumConstant.InGameMaterial, 150 },
-                    { nameof(技能卷轴), 9 },
-                    { nameof(智慧之果), 4 },
-                    { nameof(奥术符文), 1 }
+                    { General.GameplayEquilibriumConstant.InGameCurrency, 70000 },
+                    { General.GameplayEquilibriumConstant.InGameMaterial, 400 },
+                    { nameof(技能卷轴), 16 },
+                    { nameof(智慧之果), 8 },
+                    { nameof(奥术符文), 6 },
+                    { nameof(混沌之核), 4 },
+                    { nameof(法则精粹), 1 }
                 }
             },
             {
                 6, new()
                 {
                     { "角色等级", 60 },
-                    { General.GameplayEquilibriumConstant.InGameCurrency, 47000 },
-                    { General.GameplayEquilibriumConstant.InGameMaterial, 210 },
-                    { nameof(技能卷轴), 6 },
-                    { nameof(智慧之果), 6 },
-                    { nameof(奥术符文), 2 },
-                    { nameof(混沌之核), 1 }
+                    { General.GameplayEquilibriumConstant.InGameCurrency, 110000 },
+                    { General.GameplayEquilibriumConstant.InGameMaterial, 600 },
+                    { nameof(技能卷轴), 32 },
+                    { nameof(智慧之果), 16 },
+                    { nameof(奥术符文), 12 },
+                    { nameof(混沌之核), 8 },
+                    { nameof(法则精粹), 5 }
                 }
             }
         };
@@ -159,37 +176,41 @@ namespace Oshima.FunGame.OshimaServers.Service
                 {
                     { "角色等级", 8 },
                     { General.GameplayEquilibriumConstant.InGameCurrency, 2000 },
-                    { General.GameplayEquilibriumConstant.InGameMaterial, 10 },
-                    { nameof(技能卷轴), 1 },
+                    { General.GameplayEquilibriumConstant.InGameMaterial, 30 },
+                    { nameof(技能卷轴), 1 }
                 }
             },
             {
                 3, new()
                 {
                     { "角色等级", 16 },
-                    { General.GameplayEquilibriumConstant.InGameCurrency, 5000 },
-                    { General.GameplayEquilibriumConstant.InGameMaterial, 30 },
+                    { General.GameplayEquilibriumConstant.InGameCurrency, 10000 },
+                    { General.GameplayEquilibriumConstant.InGameMaterial, 100 },
                     { nameof(技能卷轴), 2 },
+                    { nameof(智慧之果), 1 }
                 }
             },
             {
                 4, new()
                 {
                     { "角色等级", 24 },
-                    { General.GameplayEquilibriumConstant.InGameCurrency, 10000 },
-                    { General.GameplayEquilibriumConstant.InGameMaterial, 60 },
+                    { General.GameplayEquilibriumConstant.InGameCurrency, 20000 },
+                    { General.GameplayEquilibriumConstant.InGameMaterial, 150 },
                     { nameof(技能卷轴), 4 },
-                    { nameof(智慧之果), 1 },
+                    { nameof(智慧之果), 2 },
+                    { nameof(奥术符文), 1 }
                 }
             },
             {
                 5, new()
                 {
                     { "角色等级", 32 },
-                    { General.GameplayEquilibriumConstant.InGameCurrency, 18000 },
-                    { General.GameplayEquilibriumConstant.InGameMaterial, 100 },
-                    { nameof(技能卷轴), 6 },
-                    { nameof(智慧之果), 2 },
+                    { General.GameplayEquilibriumConstant.InGameCurrency, 40000 },
+                    { General.GameplayEquilibriumConstant.InGameMaterial, 250 },
+                    { nameof(技能卷轴), 8 },
+                    { nameof(智慧之果), 4 },
+                    { nameof(奥术符文), 3 },
+                    { nameof(混沌之核), 1 }
                 }
             },
             {
@@ -197,34 +218,39 @@ namespace Oshima.FunGame.OshimaServers.Service
                 {
                     { "角色等级", 40 },
                     { "角色突破进度", 4 },
-                    { General.GameplayEquilibriumConstant.InGameCurrency, 30000 },
-                    { General.GameplayEquilibriumConstant.InGameMaterial, 150 },
-                    { nameof(技能卷轴), 9 },
-                    { nameof(智慧之果), 4 },
-                    { nameof(奥术符文), 1 }
+                    { General.GameplayEquilibriumConstant.InGameCurrency, 70000 },
+                    { General.GameplayEquilibriumConstant.InGameMaterial, 400 },
+                    { nameof(技能卷轴), 16 },
+                    { nameof(智慧之果), 8 },
+                    { nameof(奥术符文), 6 },
+                    { nameof(混沌之核), 4 },
+                    { nameof(法则精粹), 1 }
                 }
             },
             {
                 7, new()
                 {
                     { "角色等级", 48 },
-                    { General.GameplayEquilibriumConstant.InGameCurrency, 47000 },
-                    { General.GameplayEquilibriumConstant.InGameMaterial, 210 },
-                    { nameof(技能卷轴), 12 },
-                    { nameof(智慧之果), 6 },
-                    { nameof(奥术符文), 2 }
+                    { General.GameplayEquilibriumConstant.InGameCurrency, 110000 },
+                    { General.GameplayEquilibriumConstant.InGameMaterial, 600 },
+                    { nameof(技能卷轴), 32 },
+                    { nameof(智慧之果), 16 },
+                    { nameof(奥术符文), 12 },
+                    { nameof(混沌之核), 8 },
+                    { nameof(法则精粹), 5 }
                 }
             },
             {
                 8, new()
                 {
                     { "角色等级", 56 },
-                    { General.GameplayEquilibriumConstant.InGameCurrency, 70000 },
-                    { General.GameplayEquilibriumConstant.InGameMaterial, 280 },
-                    { nameof(技能卷轴), 16 },
-                    { nameof(智慧之果), 9 },
-                    { nameof(奥术符文), 4 },
-                    { nameof(混沌之核), 1 }
+                    { General.GameplayEquilibriumConstant.InGameCurrency, 160000 },
+                    { General.GameplayEquilibriumConstant.InGameMaterial, 850 },
+                    { nameof(技能卷轴), 64 },
+                    { nameof(智慧之果), 32 },
+                    { nameof(奥术符文), 24 },
+                    { nameof(混沌之核), 16 },
+                    { nameof(法则精粹), 10 }
                 }
             }
         };
@@ -313,7 +339,7 @@ namespace Oshima.FunGame.OshimaServers.Service
                 if (_precomputeTotalExperience.Count == 0)
                 {
                     double sum = 0;
-                    _precomputeTotalExperience[0] = 0;
+                    _precomputeTotalExperience[1] = 0;
                     for (int i = 2; i <= General.GameplayEquilibriumConstant.MaxLevel; i++)
                     {
                         sum += General.GameplayEquilibriumConstant.EXPUpperLimit[i - 1];
@@ -390,12 +416,12 @@ namespace Oshima.FunGame.OshimaServers.Service
         public static Dictionary<QualityType, (int Min, int Max)> PriceRanges { get; } = new()
         {
             { QualityType.White, (200, 800) },
-            { QualityType.Green, (800, 3500) },
-            { QualityType.Blue, (3500, 8800) },
-            { QualityType.Purple, (8800, 15600) },
-            { QualityType.Orange, (15600, 32200) },
-            { QualityType.Red, (32200, 67000) },
-            { QualityType.Gold, (67000, 130000) }
+            { QualityType.Green, (800, 4200) },
+            { QualityType.Blue, (4200, 11000) },
+            { QualityType.Purple, (11000, 32200) },
+            { QualityType.Orange, (32200, 67000) },
+            { QualityType.Red, (67000, 130000) },
+            { QualityType.Gold, (130000, 240000) }
         };
 
         public static string[] GreekAlphabet { get; } = ["α", "β", "γ", "δ", "ε", "ζ", "η", "θ", "ι", "κ", "λ", "μ", "ν", "ξ", "ο", "π", "ρ", "σ", "τ", "υ", "φ", "χ", "ψ", "ω"];

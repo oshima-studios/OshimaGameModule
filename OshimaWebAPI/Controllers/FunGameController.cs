@@ -1813,7 +1813,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
                         user.LastTime = DateTime.Now;
                         pc.Add("user", user);
                         pc.SaveConfig();
-                        return $"装备{ItemSet.GetQualityTypeName(item.QualityType)}{ItemSet.GetItemTypeName(item.ItemType)}【{item.Name}】成功！" +
+                        return $"角色：{character.ToStringWithLevelWithOutUser()}\r\n装备{ItemSet.GetQualityTypeName(item.QualityType)}{ItemSet.GetItemTypeName(item.ItemType)}【{item.Name}】成功！" +
                             $"（{ItemSet.GetEquipSlotTypeName(item.EquipSlotType)}栏位）\r\n物品描述：{item.Description}";
                     }
                     else
@@ -1860,7 +1860,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
                             user.LastTime = DateTime.Now;
                             pc.Add("user", user);
                             pc.SaveConfig();
-                            return $"取消装备{ItemSet.GetQualityTypeName(item.QualityType)}{ItemSet.GetItemTypeName(item.ItemType)}【{item.Name}】成功！（{ItemSet.GetEquipSlotTypeName(type)}栏位）";
+                            return $"角色：{character.ToStringWithLevelWithOutUser()}\r\n取消装备{ItemSet.GetQualityTypeName(item.QualityType)}{ItemSet.GetItemTypeName(item.ItemType)}【{item.Name}】成功！（{ItemSet.GetEquipSlotTypeName(type)}栏位）";
                         }
                         else return $"取消装备失败！角色并没有装备{ItemSet.GetEquipSlotTypeName(type)}，或者库存中不存在此物品！";
                     }
@@ -2636,7 +2636,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
                 }
 
                 return $"角色 [ {character} ] 目前突破进度：{character.LevelBreak + 1}/{General.GameplayEquilibriumConstant.LevelBreakList.Count}" +
-                    $"\r\n该角色下一个等级突破阶段在 {General.GameplayEquilibriumConstant.LevelBreakList.ToArray()[character.LevelBreak + 1]} 级，所需材料：\r\n" + FunGameService.GetLevelBreakNeedy(character.LevelBreak + 1);
+                    $"\r\n该角色下一个等级突破阶段在 {General.GameplayEquilibriumConstant.LevelBreakList.ToArray()[character.LevelBreak + 1]} 级，所需材料：\r\n" + FunGameService.GetLevelBreakNeedy(character.LevelBreak + 1, user);
             }
             else
             {
@@ -2719,7 +2719,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
                     if (originalBreak == character.LevelBreak)
                     {
                         return $"突破失败！角色 [ {character} ] 目前突破进度：{character.LevelBreak + 1}/{General.GameplayEquilibriumConstant.LevelBreakList.Count}。" +
-                            $"\r\n该角色下一个等级突破阶段在 {General.GameplayEquilibriumConstant.LevelBreakList.ToArray()[character.LevelBreak + 1]} 级，所需材料：\r\n" + FunGameService.GetLevelBreakNeedy(character.LevelBreak + 1);
+                            $"\r\n该角色下一个等级突破阶段在 {General.GameplayEquilibriumConstant.LevelBreakList.ToArray()[character.LevelBreak + 1]} 级，所需材料：\r\n" + FunGameService.GetLevelBreakNeedy(character.LevelBreak + 1, user);
                     }
                     else
                     {
@@ -2729,7 +2729,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
                         return $"突破成功！角色 [ {character} ] 目前突破进度：{character.LevelBreak + 1}/{General.GameplayEquilibriumConstant.LevelBreakList.Count}。" +
                             $"{(character.LevelBreak + 1 == General.GameplayEquilibriumConstant.LevelBreakList.Count ?
                             "\r\n该角色已完成全部的突破阶段，恭喜！" :
-                            $"\r\n该角色下一个等级突破阶段在 {General.GameplayEquilibriumConstant.LevelBreakList.ToArray()[character.LevelBreak + 1]} 级，所需材料：\r\n" + FunGameService.GetLevelBreakNeedy(character.LevelBreak + 1))}";
+                            $"\r\n该角色下一个等级突破阶段在 {General.GameplayEquilibriumConstant.LevelBreakList.ToArray()[character.LevelBreak + 1]} 级，所需材料：\r\n" + FunGameService.GetLevelBreakNeedy(character.LevelBreak + 1, user))}";
                     }
                 }
                 else
@@ -3510,7 +3510,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
                         }
 
                         return $"角色 [ {character} ] 的【{skill.Name}】技能等级：{skill.Level} / {General.GameplayEquilibriumConstant.MaxSkillLevel}" +
-                            $"\r\n下一级所需升级材料：\r\n" + FunGameService.GetSkillLevelUpNeedy(skill.Level + 1);
+                            $"\r\n下一级所需升级材料：\r\n" + FunGameService.GetSkillLevelUpNeedy(skill.Level + 1, user, character);
                     }
                     return $"此技能无法升级！";
                 }
@@ -3639,14 +3639,14 @@ namespace Oshima.FunGame.WebAPI.Controllers
                                 }
                                 else
                                 {
-                                    msg += $"\r\n下一级所需升级材料：\r\n" + FunGameService.GetSkillLevelUpNeedy(skill.Level + 1);
+                                    msg += $"\r\n下一级所需升级材料：\r\n" + FunGameService.GetSkillLevelUpNeedy(skill.Level + 1, user, character);
                                 }
 
                                 return msg;
                             }
 
                             return $"{isStudy}技能失败！角色 [ {character} ] 的【{skill.Name}】技能当前等级：{skill.Level}/{General.GameplayEquilibriumConstant.MaxSkillLevel}" +
-                                $"\r\n下一级所需升级材料：\r\n" + FunGameService.GetSkillLevelUpNeedy(skill.Level + 1);
+                                $"\r\n下一级所需升级材料：\r\n" + FunGameService.GetSkillLevelUpNeedy(skill.Level + 1, user, character);
                         }
                         return $"此技能无法{isStudy}！";
                     }
@@ -3696,7 +3696,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
                     return $"角色 [ {character} ] 的【{na.Name}】已经升至满级！";
                 }
                 return $"角色 [ {character} ] 的【{na.Name}】等级：{na.Level} / {General.GameplayEquilibriumConstant.MaxNormalAttackLevel}" +
-                    $"\r\n下一级所需升级材料：\r\n" + FunGameService.GetNormalAttackLevelUpNeedy(na.Level + 1);
+                    $"\r\n下一级所需升级材料：\r\n" + FunGameService.GetNormalAttackLevelUpNeedy(na.Level + 1, user, character);
             }
             else
             {
@@ -3812,14 +3812,14 @@ namespace Oshima.FunGame.WebAPI.Controllers
                         }
                         else
                         {
-                            msg += $"\r\n下一级所需升级材料：\r\n" + FunGameService.GetNormalAttackLevelUpNeedy(na.Level + 1);
+                            msg += $"\r\n下一级所需升级材料：\r\n" + FunGameService.GetNormalAttackLevelUpNeedy(na.Level + 1, user, character);
                         }
 
                         return msg;
                     }
 
                     return $"升级{na.Name}失败！角色 [ {character} ] 的【{na.Name}】当前等级：{na.Level}/{General.GameplayEquilibriumConstant.MaxNormalAttackLevel}" +
-                        $"\r\n下一级所需升级材料：\r\n" + FunGameService.GetSkillLevelUpNeedy(na.Level + 1);
+                        $"\r\n下一级所需升级材料：\r\n" + FunGameService.GetSkillLevelUpNeedy(na.Level + 1, user, character);
                 }
                 else
                 {
@@ -5317,10 +5317,10 @@ namespace Oshima.FunGame.WebAPI.Controllers
                     return refused + (e.EventMsg != "" ? $"原因：{e.EventMsg}" : "");
                 }
 
-                EntityModuleConfig<Store> store = new("stores", userid.ToString());
-                store.LoadConfig();
-                string msg = FunGameService.CheckDailyStore(store, user);
-                store.SaveConfig();
+                EntityModuleConfig<Store> stores = new("stores", userid.ToString());
+                stores.LoadConfig();
+                string msg = FunGameService.CheckDailyStore(stores, user);
+                stores.SaveConfig();
 
                 user.LastTime = DateTime.Now;
                 pc.Add("user", user);
@@ -5355,30 +5355,29 @@ namespace Oshima.FunGame.WebAPI.Controllers
             {
                 User user = FunGameService.GetUser(pc);
 
-                EntityModuleConfig<Store> store = new("stores", userid.ToString());
-                store.LoadConfig();
+                EntityModuleConfig<Store> stores = new("stores", userid.ToString());
+                stores.LoadConfig();
 
                 string msg = "";
-                Store? daily = store.Get("daily");
+                Store? daily = stores.Get("daily");
                 if (daily != null)
                 {
                     if (daily.Goods.Values.FirstOrDefault(g => g.Id == goodid) is Goods good)
                     {
-                        msg = FunGameService.StoreBuyItem(daily, good, user, buycount);
+                        msg = FunGameService.StoreBuyItem(daily, good, pc, user, buycount);
                     }
                     else
                     {
                         return $"没有对应编号的商品！";
                     }
-
                 }
                 else
                 {
                     return $"商品列表为空，请使用【每日商店】指令来获取商品列表！";
                 }
 
-                store.Add("daily", daily);
-                store.SaveConfig();
+                stores.Add("daily", daily);
+                stores.SaveConfig();
                 user.LastTime = DateTime.Now;
                 pc.Add("user", user);
                 pc.SaveConfig();
@@ -5403,11 +5402,11 @@ namespace Oshima.FunGame.WebAPI.Controllers
             {
                 User user = FunGameService.GetUser(pc);
 
-                EntityModuleConfig<Store> store = new("stores", userid.ToString());
-                store.LoadConfig();
+                EntityModuleConfig<Store> stores = new("stores", userid.ToString());
+                stores.LoadConfig();
 
                 string msg = "";
-                Store? daily = store.Get("daily");
+                Store? daily = stores.Get("daily");
                 if (daily != null)
                 {
                     if (daily.Goods.Values.FirstOrDefault(g => g.Id == goodid) is Goods good)
@@ -5424,13 +5423,12 @@ namespace Oshima.FunGame.WebAPI.Controllers
                         }
                         msg = good.ToString().Split("包含物品：")[0].Trim();
                         msg += $"\r\n包含物品：\r\n" + itemMsg +
-                            $"\r\n剩余库存：{good.Stock}";
+                            $"\r\n剩余库存：{(good.Stock == - 1 ? "不限量提供" : good.Stock)}";
                     }
                     else
                     {
                         return $"没有对应编号的物品！";
                     }
-
                 }
                 else
                 {
@@ -7009,6 +7007,136 @@ namespace Oshima.FunGame.WebAPI.Controllers
             {
                 Logger.LogError(e, "Error: {e}", e);
                 return busy;
+            }
+        }
+
+        [HttpPost("showsystemstore")]
+        public string ShowSystemStore([FromQuery] long? uid = null, [FromQuery] string storeRegion = "", [FromQuery] string storeName = "")
+        {
+            long userid = uid ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
+
+            PluginConfig pc = new("saved", userid.ToString());
+            pc.LoadConfig();
+
+            if (pc.Count > 0)
+            {
+                User user = FunGameService.GetUser(pc);
+
+                EntityModuleConfig<Store> stores = new("stores", userid.ToString());
+                stores.LoadConfig();
+                string msg = FunGameService.CheckRegionStore(stores, user, storeRegion, storeName, out bool exist);
+
+                user.LastTime = DateTime.Now;
+                pc.Add("user", user);
+                pc.SaveConfig();
+
+                return msg;
+            }
+            else
+            {
+                return noSaved;
+            }
+        }
+        
+        [HttpPost("systemstorebuy")]
+        public string SystemStoreBuy([FromQuery] long? uid = null, [FromQuery] string storeRegion = "", [FromQuery] string storeName = "", [FromQuery] long id = 0, [FromQuery] int count = 0)
+        {
+            long userid = uid ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
+
+            PluginConfig pc = new("saved", userid.ToString());
+            pc.LoadConfig();
+
+            if (pc.Count > 0)
+            {
+                User user = FunGameService.GetUser(pc);
+
+                EntityModuleConfig<Store> stores = new("stores", userid.ToString());
+                stores.LoadConfig();
+                string msg = "";
+                Store? store = stores.Get(storeName);
+                if (store != null)
+                {
+                    if (store.Goods.Values.FirstOrDefault(g => g.Id == id) is Goods good)
+                    {
+                        msg = FunGameService.StoreBuyItem(store, good, pc, user, count);
+                        stores.Add(storeName, store);
+                        stores.SaveConfig();
+                    }
+                    else
+                    {
+                        msg = $"没有对应编号的商品！";
+                    }
+                }
+                else
+                {
+                    string msg2 = FunGameService.CheckRegionStore(stores, user, storeRegion, storeName, out bool exist);
+                    msg = exist ? $"正在获取最新商店数据，请稍后查看。" : msg2;
+                }
+
+                user.LastTime = DateTime.Now;
+                pc.Add("user", user);
+                pc.SaveConfig();
+
+                return msg;
+            }
+            else
+            {
+                return noSaved;
+            }
+        }
+
+        [HttpPost("systemstoreshowinfo")]
+        public string SystemStoreShowInfo([FromQuery] long? uid = null, [FromQuery] string storeRegion = "", [FromQuery] string storeName = "", [FromQuery] long? id = null)
+        {
+            long userid = uid ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
+            long goodid = id ?? 0;
+
+            PluginConfig pc = new("saved", userid.ToString());
+            pc.LoadConfig();
+
+            if (pc.Count > 0)
+            {
+                User user = FunGameService.GetUser(pc);
+
+                EntityModuleConfig<Store> stores = new("stores", userid.ToString());
+                stores.LoadConfig();
+
+                string msg = "";
+                Store? store = stores.Get(storeName);
+                if (store != null)
+                {
+                    if (store.Goods.Values.FirstOrDefault(g => g.Id == goodid) is Goods good)
+                    {
+                        int count = 0;
+                        string itemMsg = "";
+                        foreach (Item item in good.Items)
+                        {
+                            count++;
+                            Item newItem = item.Copy(true);
+                            newItem.Character = user.Inventory.MainCharacter;
+                            if (newItem.ItemType != ItemType.MagicCard) newItem.SetLevel(1);
+                            itemMsg += $"[ {count} ] {newItem.ToString(false, true)}".Trim();
+                        }
+                        msg = good.ToString().Split("包含物品：")[0].Trim();
+                        msg += $"\r\n包含物品：\r\n" + itemMsg +
+                            $"\r\n剩余库存：{(good.Stock == -1 ? "不限量提供" : good.Stock)}";
+                    }
+                    else
+                    {
+                        return $"没有对应编号的物品！";
+                    }
+                }
+                else
+                {
+                    string msg2 = FunGameService.CheckRegionStore(stores, user, storeRegion, storeName, out bool exist);
+                    msg = exist ? $"正在获取最新商店数据，请稍后查看。" : msg2;
+                }
+
+                return msg;
+            }
+            else
+            {
+                return noSaved;
             }
         }
 

@@ -1,4 +1,9 @@
-﻿namespace Oshima.FunGame.OshimaModules.Regions
+﻿using Milimoe.FunGame.Core.Api.Utility;
+using Milimoe.FunGame.Core.Entity;
+using Milimoe.FunGame.Core.Library.Constant;
+using Oshima.FunGame.OshimaModules.Items;
+
+namespace Oshima.FunGame.OshimaModules.Regions
 {
     public class 铎京城 : OshimaRegion
     {
@@ -17,6 +22,39 @@
             Weathers.Add("严寒", -7);
             Weathers.Add("霜冻", -18);
             ChangeRandomWeather();
+        }
+
+        public override string VisitStore(EntityModuleConfig<Store> stores, User user, string storeName)
+        {
+            Store? store = stores.Get(storeName);
+
+            if (store is null)
+            {
+                EntityModuleConfig<Store> storeTemplate = new("stores", "dokyo");
+                storeTemplate.LoadConfig();
+                Store? template = storeTemplate.Get(storeName);
+                if (template != null)
+                {
+                    if (template.NextRefreshDate < DateTime.Now)
+                    {
+                        template.NextRefreshDate = DateTime.Today.AddHours(4);
+                        template.UpdateRefreshTime(template.NextRefreshDate);
+                        storeTemplate.Add(storeName, template);
+                        storeTemplate.SaveConfig();
+                    }
+                    stores.Add(storeName, template);
+                    stores.SaveConfig();
+                    stores.LoadConfig();
+                    store = stores.Get(storeName);
+                }
+            }
+
+            if (store != null)
+            {
+                return store.ToString();
+            }
+
+            return "";
         }
     }
 }

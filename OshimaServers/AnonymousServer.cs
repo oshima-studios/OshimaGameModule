@@ -166,6 +166,10 @@ namespace Oshima.FunGame.OshimaServers
                                 pc.Add("user", user);
                                 pc.SaveConfig();
                             }
+                            if (FunGameConstant.UserLastVisitStore.TryGetValue(user.Id, out LastStoreModel? value) && value != null && (DateTime.Now - value.LastTime).TotalMinutes > 2)
+                            {
+                                FunGameConstant.UserLastVisitStore.Remove(user.Id);
+                            }
                         }
                     }
                     Controller.WriteLine("读取 FunGame 存档缓存", LogLevel.Debug);
@@ -223,10 +227,23 @@ namespace Oshima.FunGame.OshimaServers
                         foreach (string filePath in filePaths)
                         {
                             string fileName = Path.GetFileNameWithoutExtension(filePath);
-                            EntityModuleConfig<Store> store = new("stores", fileName);
-                            store.Clear();
-                            FunGameService.CheckDailyStore(store);
-                            store.SaveConfig();
+                            if (long.TryParse(fileName, out long userId) && FunGameConstant.UserIdAndUsername.TryGetValue(userId, out User? user) && user != null)
+                            {
+                                EntityModuleConfig<Store> store = new("stores", fileName);
+                                store.LoadConfig();
+                                store.Remove("daily");
+                                string[] stores = [.. store.Keys];
+                                foreach (string key in stores)
+                                {
+                                    Store? s = store.Get(key);
+                                    if (s != null && s.AutoRefresh && s.NextRefreshDate.Date == DateTime.Today)
+                                    {
+                                        store.Remove(key);
+                                    }
+                                }
+                                FunGameService.CheckDailyStore(store, user);
+                                store.SaveConfig();
+                            }
                         }
                         Controller.WriteLine("刷新商店");
                     }

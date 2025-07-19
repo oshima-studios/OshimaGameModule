@@ -7,7 +7,7 @@ namespace Oshima.FunGame.OshimaModules.Items
     {
         public override long Id => (long)SpecialItemID.混沌之核;
         public override string Name => "混沌之核";
-        public override string Description => "升级技能必备的终级材料。";
+        public override string Description => "升级技能必备的特级材料。";
         public override QualityType QualityType => QualityType.Purple;
     }
 }

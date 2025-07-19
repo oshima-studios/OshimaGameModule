@@ -1,4 +1,3 @@
-using System.Reflection;
 using System.Text;
 using Milimoe.FunGame.Core.Api.Transmittal;
 using Milimoe.FunGame.Core.Api.Utility;
@@ -64,7 +63,7 @@ namespace Oshima.FunGame.OshimaServers.Service
             FunGameConstant.Items.AddRange(exItems.Values.Where(i => (int)i.ItemType > 4));
             FunGameConstant.Items.AddRange([new 小经验书(), new 中经验书(), new 大经验书(), new 升华之印(), new 流光之印(), new 永恒之印(), new 技能卷轴(), new 智慧之果(), new 奥术符文(), new 混沌之核(),
                 new 小回复药(), new 中回复药(), new 大回复药(), new 魔力填充剂1(), new 魔力填充剂2(), new 魔力填充剂3(), new 能量饮料1(), new 能量饮料2(), new 能量饮料3(), new 年夜饭(), new 蛇年大吉(), new 新春快乐(), new 毕业礼包(),
-                new 复苏药1(), new 复苏药2(), new 复苏药3(), new 全回复药(), new 魔法卡礼包(), new 奖券(), new 十连奖券(), new 改名卡()
+                new 复苏药1(), new 复苏药2(), new 复苏药3(), new 全回复药(), new 魔法卡礼包(), new 奖券(), new 十连奖券(), new 改名卡(), new 原初之印(), new 创生之印(), new 法则精粹()
             ]);
 
             FunGameConstant.AllItems.AddRange(FunGameConstant.Equipment);
@@ -77,8 +76,8 @@ namespace Oshima.FunGame.OshimaServers.Service
             }
 
             FunGameConstant.DrawCardItems.AddRange(FunGameConstant.AllItems.Where(i => !FunGameConstant.ItemCanNotDrawCard.Contains(i.ItemType)));
-            FunGameConstant.CharacterLevelBreakItems.AddRange([new 升华之印(), new 流光之印(), new 永恒之印()]);
-            FunGameConstant.SkillLevelUpItems.AddRange([new 技能卷轴(), new 智慧之果(), new 奥术符文(), new 混沌之核()]);
+            FunGameConstant.CharacterLevelBreakItems.AddRange([new 升华之印(), new 流光之印(), new 永恒之印(), new 原初之印(), new 创生之印()]);
+            FunGameConstant.SkillLevelUpItems.AddRange([new 技能卷轴(), new 智慧之果(), new 奥术符文(), new 混沌之核(), new 法则精粹()]);
 
             FunGameConstant.AllItems.AddRange(FunGameConstant.ExploreItems.Values.SelectMany(list => list));
 
@@ -704,9 +703,9 @@ namespace Oshima.FunGame.OshimaServers.Service
                         msgs.Add(GetDrawCardResult(reduce, reduceUnit, user, is10, count));
                     }
                 }
-                if (msgs.Count <= 1)
+                if (msgs.Count == 0)
                 {
-                    msgs[0] = $"消耗 {reduce} {reduceUnit}，你什么也没抽中……";
+                    msgs.Add($"消耗 {reduce} {reduceUnit}，你什么也没抽中……");
                 }
                 else
                 {
@@ -1282,10 +1281,7 @@ namespace Oshima.FunGame.OshimaServers.Service
                     for (int i = 0; i < cardBox.Count; i++)
                     {
                         Item newItem = GenerateMagicCard(item.QualityType);
-                        if (newItem.QualityType >= QualityType.Orange) newItem.IsLock = true;
-                        SetSellAndTradeTime(newItem);
-                        newItem.User = user;
-                        user.Inventory.Items.Add(newItem);
+                        AddItemToUserInventory(user, newItem, false);
                         cards.Add($"[{ItemSet.GetQualityTypeName(item.QualityType)}|魔法卡] {newItem.Name}\r\n{newItem.ToStringInventory(false)}");
                     }
                     msg = "打开礼包成功！获得了以下物品：\r\n" + string.Join("\r\n", cards);
@@ -1313,11 +1309,7 @@ namespace Oshima.FunGame.OshimaServers.Service
                         {
                             for (int i = 0; i < box.Gifts[name]; i++)
                             {
-                                Item newItem = currentItem.Copy();
-                                if (newItem.QualityType >= QualityType.Orange) newItem.IsLock = true;
-                                SetSellAndTradeTime(newItem);
-                                newItem.User = user;
-                                user.Inventory.Items.Add(newItem);
+                                AddItemToUserInventory(user, currentItem, toExploreCache: false, toActivitiesCache: false);
                             }
                         }
                     }
@@ -1355,10 +1347,29 @@ namespace Oshima.FunGame.OshimaServers.Service
             return false;
         }
 
-        public static string GetLevelBreakNeedy(int levelBreak)
+        public static string GetLevelBreakNeedy(int levelBreak, User user)
         {
             if (FunGameConstant.LevelBreakNeedyList.TryGetValue(levelBreak, out Dictionary<string, int>? needy) && needy != null && needy.Count > 0)
             {
+                List<string> strings = [];
+                foreach (string key in needy.Keys)
+                {
+                    int value = needy[key];
+                    int count = 0;
+                    if (key == General.GameplayEquilibriumConstant.InGameCurrency)
+                    {
+                        count = (int)user.Inventory.Credits;
+                    }
+                    else if (key == General.GameplayEquilibriumConstant.InGameMaterial)
+                    {
+                        count = (int)user.Inventory.Materials;
+                    }
+                    else
+                    {
+                        count = user.Inventory.Items.Count(i => i.Name == key);
+                    }
+                    strings.Add($"{key} * {value}（{count} / {value}）");
+                }
                 return string.Join("，", needy.Select(kv => kv.Key + " * " + kv.Value));
             }
             return "";
@@ -1458,25 +1469,25 @@ namespace Oshima.FunGame.OshimaServers.Service
                 $"{(isPre ? "练级时间上限 2880 分钟（48小时），超时将不会再产生收益，请按时领取奖励！" : "")}";
         }
 
-        public static string GetSkillLevelUpNeedy(int level)
+        public static string GetSkillLevelUpNeedy(int level, User user, Character character)
         {
             if (FunGameConstant.SkillLevelUpList.TryGetValue(level, out Dictionary<string, int>? needy) && needy != null && needy.Count > 0)
             {
-                return GetNeedyInfo(needy);
+                return GetNeedyInfo(needy, user, character);
             }
             return "";
         }
 
-        public static string GetNormalAttackLevelUpNeedy(int level)
+        public static string GetNormalAttackLevelUpNeedy(int level, User user, Character character)
         {
             if (FunGameConstant.NormalAttackLevelUpList.TryGetValue(level, out Dictionary<string, int>? needy) && needy != null && needy.Count > 0)
             {
-                return GetNeedyInfo(needy);
+                return GetNeedyInfo(needy, user, character);
             }
             return "";
         }
 
-        public static string GetNeedyInfo(Dictionary<string, int> needy)
+        public static string GetNeedyInfo(Dictionary<string, int> needy, User user, Character character)
         {
             string str = "";
             foreach (string key in needy.Keys)
@@ -1488,15 +1499,24 @@ namespace Oshima.FunGame.OshimaServers.Service
                 }
                 if (key == "角色等级")
                 {
-                    str += $"角色等级 {needCount} 级";
+                    str += $"角色等级 {needCount} 级（{character.Level} / {needCount}）";
                 }
                 else if (key == "角色突破进度")
                 {
-                    str += $"角色突破进度 {needCount} 等阶";
+                    str += $"角色突破进度 {needCount} 等阶（{character.LevelBreak + 1} / {needCount}）";
+                }
+                else if (key == General.GameplayEquilibriumConstant.InGameCurrency)
+                {
+                    str += $"{key} * {needCount}（{(int)user.Inventory.Credits} / {needCount}）";
+                }
+                else if (key == General.GameplayEquilibriumConstant.InGameMaterial)
+                {
+                    str += $"{key} * {needCount}（{(int)user.Inventory.Materials} / {needCount}）";
                 }
                 else
                 {
-                    str += $"{key} * {needCount}";
+                    int count = user.Inventory.Items.Count(i => i.Name == key);
+                    str += $"{key} * {needCount}（{count} / {needCount}）";
                 }
             }
             return str;
@@ -1708,7 +1728,7 @@ namespace Oshima.FunGame.OshimaServers.Service
             }
 
             // 伤害贡献
-            double logDamageContribution = Math.Log(1 + (stats.TotalDamage / (stats.TotalTakenDamage + 1.75)));
+            double damageContribution = Math.Log(1 + stats.DamagePerSecond / 40);
             if (team != null && teammateStats != null)
             {
                 // 考虑团队伤害排名，优先高伤害的
@@ -1717,12 +1737,12 @@ namespace Oshima.FunGame.OshimaServers.Service
                 {
                     double d = 1 - (0.1 * (damageRank - 1));
                     if (d < 0.1) d = 0.1;
-                    logDamageContribution *= d;
+                    damageContribution *= d;
                 }
             }
 
             // 存活时间贡献
-            double liveTimeContribution = Math.Log(1 + (stats.LiveTime / (stats.TotalTakenDamage + 0.01) * 100));
+            double liveTimeContribution = Math.Log(1 + stats.LiveTime / ((stats.TotalTakenDamage == 0 ? stats.TotalTakenDamage : 500) + stats.Deaths + 1) * 60);
 
             // 团队模式参团率加成
             double teamContribution = 0;
@@ -1737,12 +1757,12 @@ namespace Oshima.FunGame.OshimaServers.Service
             }
 
             // 权重设置
-            double k = stats.Deaths > 0 ? 0.2 : 0.075; // 伤害贡献权重
+            double k = stats.Deaths > 0 ? 0.2 : 0.06; // 伤害贡献权重
             double l = stats.Deaths > 0 ? 0.2 : 0.05; // 存活时间权重
             double t = stats.Deaths > 0 ? 0.2 : 0.075; // 参团率权重
 
             // 计算最终评分
-            double rating = baseScore + k * logDamageContribution + l * liveTimeContribution + t * teamContribution;
+            double rating = baseScore + k * damageContribution + l * liveTimeContribution + t * teamContribution;
 
             // 确保评分在合理范围内
             return Math.Max(0.01, rating);
@@ -1988,12 +2008,12 @@ namespace Oshima.FunGame.OshimaServers.Service
             }
         }
 
-        public static string CheckDailyStore(EntityModuleConfig<Store> store, User? user = null)
+        public static string CheckDailyStore(EntityModuleConfig<Store> stores, User user)
         {
-            if (store.Count == 0)
+            if (stores.Count == 0)
             {
                 // 生成每日商店
-                Store daily = new($"{(user != null ? user.Username + "的" : "")}每日商店");
+                Store daily = new($"{user.Username}的每日商店");
                 for (int i = 0; i < 4; i++)
                 {
                     Item item;
@@ -2035,14 +2055,16 @@ namespace Oshima.FunGame.OshimaServers.Service
                     item.Price = (int)price;
                     daily.AddItem(item, stock);
                 }
-                store.Add("daily", daily);
-                return daily.ToString() + "\r\n温馨提示：使用【商店查看+序号】查看物品详细信息，使用【商店购买+序号】购买物品！每天 4:00 刷新每日商店。";
+                stores.Add("daily", daily);
+                SetLastStore(user, true, "", "");
+                return daily.ToString();
             }
             else
             {
-                if (store.Count > 0 && store.Where(kv => kv.Key == "daily").Select(kv => kv.Value).FirstOrDefault() is Store daily)
+                if (stores.Count > 0 && stores.Where(kv => kv.Key == "daily").Select(kv => kv.Value).FirstOrDefault() is Store daily)
                 {
-                    return daily.ToString() + "\r\n温馨提示：使用【商店查看+序号】查看物品详细信息，使用【商店购买+序号】购买物品！每天 4:00 刷新每日商店。";
+                    SetLastStore(user, true, "", "");
+                    return daily.ToString();
                 }
                 else
                 {
@@ -2051,10 +2073,38 @@ namespace Oshima.FunGame.OshimaServers.Service
             }
         }
 
-        public static string StoreBuyItem(Store store, Goods goods, User user, int count)
+        public static void SetLastStore(User? user, bool isDaily, string storeRegion, string storeName)
+        {
+            if (user != null && FunGameConstant.UserLastVisitStore.TryGetValue(user.Id, out LastStoreModel? value) && value != null)
+            {
+                value.LastTime = DateTime.Now;
+                value.IsDaily = isDaily;
+                value.StoreRegion = storeRegion;
+                value.StoreName = storeName;
+            }
+            else if (user != null)
+            {
+                FunGameConstant.UserLastVisitStore[user.Id] = new()
+                {
+                    LastTime = DateTime.Now,
+                    IsDaily = isDaily,
+                    StoreRegion = storeRegion,
+                    StoreName = storeName
+                };
+            }
+        }
+
+        public static string StoreBuyItem(Store store, Goods goods, PluginConfig pc, User user, int count)
         {
             string msg = "";
-            if (goods.Stock - count < 0)
+
+            DateTime now = DateTime.Now;
+            if (store.StartTime > now || store.EndTime < now)
+            {
+                return "商店未处于营业时间内。";
+            }
+
+            if (goods.Stock != -1 && goods.Stock - count < 0)
             {
                 return msg = $"此商品【{goods.Name}】库存不足，无法购买！\r\n你想要购买 {count} 件，但库存只有 {goods.Stock} 件。";
             }
@@ -2089,29 +2139,38 @@ namespace Oshima.FunGame.OshimaServers.Service
 
             foreach (Item item in goods.Items)
             {
-                for (int i = 0; i < count; i++)
+                if (item is 探索许可)
                 {
-                    Item newItem = item.Copy(true);
-                    if (newItem.QualityType >= QualityType.Orange) newItem.IsLock = true;
-                    SetSellAndTradeTime(newItem);
-                    if (goods.GetPrice(General.GameplayEquilibriumConstant.InGameCurrency, out double price) && price > 0)
+                    int exploreTimes = FunGameConstant.MaxExploreTimes + count;
+                    if (pc.TryGetValue("exploreTimes", out object? value) && int.TryParse(value.ToString(), out exploreTimes))
                     {
-                        newItem.Price = Calculation.Round2Digits(price * 0.35);
+                        exploreTimes += count;
                     }
-                    newItem.User = user;
-                    user.Inventory.Items.Add(newItem);
-                    // 连接到任务系统
-                    AddExploreItemCache(user.Id, item.Name);
-                    // 连接到活动系统
-                    ActivitiesItemCache.Add(item.Name);
+                    pc.Add("exploreTimes", exploreTimes);
+                }
+                else
+                {
+                    for (int i = 0; i < count; i++)
+                    {
+                        if (goods.GetPrice(General.GameplayEquilibriumConstant.InGameCurrency, out double price))
+                        {
+                            price = Calculation.Round2Digits(price * 0.35);
+                        }
+                        AddItemToUserInventory(user, item, copyLevel: true, price: price);
+                    }
                 }
             }
 
-            goods.Stock -= count;
+            if (goods.Stock != -1)
+            {
+                goods.Stock -= count;
+                if (goods.Stock < 0) goods.Stock = 0;
+            }
 
             msg += $"恭喜你成功购买 {count} 件【{goods.Name}】！\r\n" +
                 $"总计消费：{(goods.Prices.Count > 0 ? string.Join("、", goods.Prices.Select(kv => $"{kv.Value * count:0.##} {kv.Key}")) : "免单")}\r\n" +
-                $"包含物品：{string.Join("、", goods.Items.Select(i => $"[{ItemSet.GetQualityTypeName(i.QualityType)}|{ItemSet.GetItemTypeName(i.ItemType)}] {i.Name} * {count}"))}";
+                $"包含物品：{string.Join("、", goods.Items.Select(i => $"[{ItemSet.GetQualityTypeName(i.QualityType)}|{ItemSet.GetItemTypeName(i.ItemType)}] {i.Name} * {count}"))}\r\n" +
+                $"{store.Name}期待你的下次光临。";
 
             return msg;
         }
@@ -3329,9 +3388,10 @@ namespace Oshima.FunGame.OshimaServers.Service
             return "服务器繁忙，请稍后再试。";
         }
 
-        public static void AddItemToUserInventory(User user, Item item, bool hasLock = true, bool hasSellAndTradeTime = true, bool hasPrice = true, double price = 0, bool toExploreCache = true, bool toActivitiesCache = true)
+        public static void AddItemToUserInventory(User user, Item item, bool copyNew = true, bool copyLevel = false, bool hasLock = true, bool hasSellAndTradeTime = true, bool hasPrice = true, bool useOriginalPrice = false, double price = 0, bool toExploreCache = true, bool toActivitiesCache = true)
         {
-            Item newItem = item.Copy();
+            Item newItem = item;
+            if (copyNew) newItem = item.Copy(copyLevel);
             newItem.User = user;
             if (hasLock && newItem.QualityType >= QualityType.Orange) newItem.IsLock = true;
             if (hasSellAndTradeTime) SetSellAndTradeTime(newItem);
@@ -3339,12 +3399,19 @@ namespace Oshima.FunGame.OshimaServers.Service
             {
                 if (price == 0)
                 {
-                    int min = 0, max = 0;
-                    if (FunGameConstant.PriceRanges.TryGetValue(item.QualityType, out (int Min, int Max) range))
+                    if (useOriginalPrice)
                     {
-                        (min, max) = (range.Min, range.Max);
+                        price = item.Price * 0.35;
                     }
-                    price = Random.Shared.Next(min, max) * 0.35;
+                    else
+                    {
+                        int min = 0, max = 0;
+                        if (FunGameConstant.PriceRanges.TryGetValue(item.QualityType, out (int Min, int Max) range))
+                        {
+                            (min, max) = (range.Min, range.Max);
+                        }
+                        price = Random.Shared.Next(min, max) * 0.35;
+                    }
                 }
                 newItem.Price = price;
             }
@@ -3382,6 +3449,81 @@ namespace Oshima.FunGame.OshimaServers.Service
                     int dcount = enemys.Count(e => e.Name == enemy.Name);
                     if (dcount > 0 && FunGameConstant.GreekAlphabet.Length > dcount) enemy.Name += FunGameConstant.GreekAlphabet[dcount - 1];
                     enemys.Add(enemy);
+                }
+            }
+
+            // 定义奖励
+            Dictionary<Item, double> pCharacterLevelBreak = [];
+            Dictionary<Item, double> pSkillLevelUp = [];
+            Dictionary<Item, double> pRegionItem = [];
+            Dictionary<int, double> rW = new()
+            {
+                { (int)RarityType.OneStar, 60 },
+                { (int)RarityType.TwoStar, 30 },
+                { (int)RarityType.ThreeStar, 10 },
+                { (int)RarityType.FourStar, 0 },
+                { (int)RarityType.FiveStar, 0 }
+            };
+            switch (difficulty)
+            {
+                case 5:
+                    rW[4] = 30;
+                    rW[3] = 30;
+                    rW[2] = 15;
+                    rW[1] = 15;
+                    rW[0] = 10;
+                    break;
+                case 4:
+                    rW[4] = 10;
+                    rW[3] = 30;
+                    rW[2] = 30;
+                    rW[1] = 15;
+                    rW[0] = 10;
+                    break;
+                case 3:
+                    rW[4] = 0;
+                    rW[3] = 15;
+                    rW[2] = 30;
+                    rW[1] = 30;
+                    rW[0] = 25;
+                    break;
+                case 2:
+                    rW[4] = 0;
+                    rW[3] = 5;
+                    rW[2] = 25;
+                    rW[1] = 25;
+                    rW[0] = 45;
+                    break;
+                case 1:
+                default:
+                    break;
+            }
+            double totalWeight;
+            totalWeight = FunGameConstant.CharacterLevelBreakItems.Sum(i => rW[(int)i.QualityType]);
+            foreach (Item item in FunGameConstant.CharacterLevelBreakItems)
+            {
+                if (rW.TryGetValue((int)item.QualityType, out double weight))
+                {
+                    pCharacterLevelBreak[item] = weight / totalWeight;
+                }
+            }
+            totalWeight = FunGameConstant.SkillLevelUpItems.Sum(i => rW[(int)i.QualityType]);
+            foreach (Item item in FunGameConstant.SkillLevelUpItems)
+            {
+                if (rW.TryGetValue((int)item.QualityType, out double weight))
+                {
+                    pSkillLevelUp[item] = weight / totalWeight;
+                }
+            }
+            totalWeight = FunGameConstant.Regions.Sum(r => rW[(int)r.Difficulty]);
+            foreach (OshimaRegion region in FunGameConstant.Regions)
+            {
+                if (rW.TryGetValue((int)region.Difficulty, out double weight))
+                {
+                    foreach (Item item in region.Crops)
+                    {
+                        pRegionItem[item] = weight / totalWeight;
+                    }
                 }
             }
 
@@ -3424,7 +3566,7 @@ namespace Oshima.FunGame.OshimaServers.Service
             builder.AppendLine(string.Join("\r\n", msgs));
             if (enemys.All(c => c.HP <= 0))
             {
-                builder.Append($"探索小队战胜了敌人！获得了：");
+                builder.Append($"小队战胜了敌人！获得了：");
                 switch (type)
                 {
                     case InstanceType.Currency:
@@ -3524,11 +3666,29 @@ namespace Oshima.FunGame.OshimaServers.Service
                         List<string> regionItems = [];
                         for (int i = 0; i < characterCount; i++)
                         {
-                            OshimaRegion region = FunGameConstant.Regions[Random.Shared.Next(FunGameConstant.Regions.Count)];
-                            Item item = FunGameConstant.ExploreItems[region][Random.Shared.Next(FunGameConstant.ExploreItems[region].Count)];
-                            award = Math.Max(2, Random.Shared.Next(2, 5) * difficulty / 2);
-                            regionItems.Add($"{award} 个 {item.Name}（来自{region.Name}）");
-                            AddItemToUserInventory(user, item);
+                            double roll = Random.Shared.NextDouble();
+                            double cumulativeProbability = 0.0;
+                            Item? item = null;
+                            OshimaRegion? region = null;
+                            foreach (Item loop in pRegionItem.Keys)
+                            {
+                                cumulativeProbability += pRegionItem[loop];
+                                // 如果随机数落在当前物品的累积概率范围内，则选中该物品
+                                if (roll < cumulativeProbability)
+                                {
+                                    item = loop;
+                                    region = FunGameConstant.Regions.FirstOrDefault(r => r.Crops.Any(i => i.Id == item.Id));
+                                    break;
+                                }
+                            }
+                            region ??= FunGameConstant.Regions[Random.Shared.Next(FunGameConstant.Regions.Count)];
+                            item ??= region.Crops.ToList()[Random.Shared.Next(region.Crops.Count)];
+                            award = Math.Max(1, Random.Shared.Next(1, 4) * difficulty / 2);
+                            regionItems.Add($"{award} 个{item.Name}（来自{region.Name}）");
+                            for (int j = 0; j < award; j++)
+                            {
+                                AddItemToUserInventory(user, item);
+                            }
                         }
                         builder.AppendLine($"{string.Join("、", regionItems)}！");
                         break;
@@ -3536,10 +3696,26 @@ namespace Oshima.FunGame.OshimaServers.Service
                         List<string> characterLevelBreakItems = [];
                         for (int i = 0; i < characterCount; i++)
                         {
-                            Item item = FunGameConstant.CharacterLevelBreakItems[Random.Shared.Next(FunGameConstant.CharacterLevelBreakItems.Count)];
-                            award = Math.Max(1, Random.Shared.Next(1, 4) * difficulty / 2);
-                            characterLevelBreakItems.Add($"{award} 个 {item.Name}");
-                            AddItemToUserInventory(user, item);
+                            double roll = Random.Shared.NextDouble();
+                            double cumulativeProbability = 0.0;
+                            Item? item = null;
+                            foreach (Item loop in pCharacterLevelBreak.Keys)
+                            {
+                                cumulativeProbability += pCharacterLevelBreak[loop];
+                                // 如果随机数落在当前物品的累积概率范围内，则选中该物品
+                                if (roll < cumulativeProbability)
+                                {
+                                    item = loop;
+                                    break;
+                                }
+                            }
+                            item ??= FunGameConstant.CharacterLevelBreakItems[Random.Shared.Next(FunGameConstant.CharacterLevelBreakItems.Count)];
+                            award = Math.Max(1, Random.Shared.Next(1, 4) * difficulty / Math.Max(2, (int)item.QualityType + 1));
+                            characterLevelBreakItems.Add($"{award} 个{item.Name}");
+                            for (int j = 0; j < award; j++)
+                            {
+                                AddItemToUserInventory(user, item);
+                            }
                         }
                         builder.AppendLine($"{string.Join("、", characterLevelBreakItems)}！");
                         break;
@@ -3547,10 +3723,26 @@ namespace Oshima.FunGame.OshimaServers.Service
                         List<string> skillLevelUpItems = [];
                         for (int i = 0; i < characterCount; i++)
                         {
-                            Item item = FunGameConstant.SkillLevelUpItems[Random.Shared.Next(FunGameConstant.SkillLevelUpItems.Count)];
-                            award = Math.Max(1, Random.Shared.Next(1, 4) * difficulty / 2);
-                            skillLevelUpItems.Add($"{award} 个 {item.Name}");
-                            AddItemToUserInventory(user, item);
+                            double roll = Random.Shared.NextDouble();
+                            double cumulativeProbability = 0.0;
+                            Item? item = null;
+                            foreach (Item loop in pSkillLevelUp.Keys)
+                            {
+                                cumulativeProbability += pSkillLevelUp[loop];
+                                // 如果随机数落在当前物品的累积概率范围内，则选中该物品
+                                if (roll < cumulativeProbability)
+                                {
+                                    item = loop;
+                                    break;
+                                }
+                            }
+                            item ??= FunGameConstant.SkillLevelUpItems[Random.Shared.Next(FunGameConstant.SkillLevelUpItems.Count)];
+                            award = Math.Max(1, Random.Shared.Next(1, 4) * difficulty / Math.Max(2, (int)item.QualityType + 1));
+                            skillLevelUpItems.Add($"{award} 个{item.Name}");
+                            for (int j = 0; j < award; j++)
+                            {
+                                AddItemToUserInventory(user, item);
+                            }
                         }
                         builder.AppendLine($"{string.Join("、", skillLevelUpItems)}！");
                         break;
@@ -3662,13 +3854,85 @@ namespace Oshima.FunGame.OshimaServers.Service
                             List<string> regionItems = [];
                             for (int i = 0; i < count; i++)
                             {
-                                OshimaRegion region = FunGameConstant.Regions[Random.Shared.Next(FunGameConstant.Regions.Count)];
-                                Item item = FunGameConstant.ExploreItems[region][Random.Shared.Next(FunGameConstant.ExploreItems[region].Count)];
+                                double roll = Random.Shared.NextDouble();
+                                double cumulativeProbability = 0.0;
+                                Item? item = null;
+                                OshimaRegion? region = null;
+                                foreach (Item loop in pRegionItem.Keys)
+                                {
+                                    cumulativeProbability += pRegionItem[loop];
+                                    // 如果随机数落在当前物品的累积概率范围内，则选中该物品
+                                    if (roll < cumulativeProbability)
+                                    {
+                                        item = loop;
+                                        region = FunGameConstant.Regions.FirstOrDefault(r => r.Crops.Any(i => i.Id == item.Id));
+                                        break;
+                                    }
+                                }
+                                region ??= FunGameConstant.Regions[Random.Shared.Next(FunGameConstant.Regions.Count)];
+                                item ??= region.Crops.ToList()[Random.Shared.Next(region.Crops.Count)];
                                 award = 1;
-                                regionItems.Add($"{award} 个 {item.Name}（来自{region.Name}）");
-                                AddItemToUserInventory(user, item);
+                                regionItems.Add($"{award} 个{item.Name}（来自{region.Name}）");
+                                for (int j = 0; j < award; j++)
+                                {
+                                    AddItemToUserInventory(user, item);
+                                }
                             }
                             builder.AppendLine($"{string.Join("、", regionItems)}！");
+                            break;
+                        case InstanceType.CharacterLevelBreak:
+                            List<string> characterLevelBreakItems = [];
+                            for (int i = 0; i < count; i++)
+                            {
+                                double roll = Random.Shared.NextDouble();
+                                double cumulativeProbability = 0.0;
+                                Item? item = null;
+                                foreach (Item loop in pCharacterLevelBreak.Keys)
+                                {
+                                    cumulativeProbability += pCharacterLevelBreak[loop];
+                                    // 如果随机数落在当前物品的累积概率范围内，则选中该物品
+                                    if (roll < cumulativeProbability)
+                                    {
+                                        item = loop;
+                                        break;
+                                    }
+                                }
+                                item ??= FunGameConstant.CharacterLevelBreakItems[Random.Shared.Next(FunGameConstant.CharacterLevelBreakItems.Count)];
+                                award = 1;
+                                characterLevelBreakItems.Add($"{award} 个{item.Name}");
+                                for (int j = 0; j < award; j++)
+                                {
+                                    AddItemToUserInventory(user, item);
+                                }
+                            }
+                            builder.AppendLine($"{string.Join("、", characterLevelBreakItems)}！");
+                            break;
+                        case InstanceType.SkillLevelUp:
+                            List<string> skillLevelUpItems = [];
+                            for (int i = 0; i < count; i++)
+                            {
+                                double roll = Random.Shared.NextDouble();
+                                double cumulativeProbability = 0.0;
+                                Item? item = null;
+                                foreach (Item loop in pSkillLevelUp.Keys)
+                                {
+                                    cumulativeProbability += pSkillLevelUp[loop];
+                                    // 如果随机数落在当前物品的累积概率范围内，则选中该物品
+                                    if (roll < cumulativeProbability)
+                                    {
+                                        item = loop;
+                                        break;
+                                    }
+                                }
+                                item ??= FunGameConstant.SkillLevelUpItems[Random.Shared.Next(FunGameConstant.SkillLevelUpItems.Count)];
+                                award = 1;
+                                skillLevelUpItems.Add($"{award} 个{item.Name}");
+                                for (int j = 0; j < award; j++)
+                                {
+                                    AddItemToUserInventory(user, item);
+                                }
+                            }
+                            builder.AppendLine($"{string.Join("、", skillLevelUpItems)}！");
                             break;
                         default:
                             break;
@@ -3677,6 +3941,30 @@ namespace Oshima.FunGame.OshimaServers.Service
             }
 
             return builder.ToString().Trim();
+        }
+
+        public static string CheckRegionStore(EntityModuleConfig<Store> stores, User user, string storeRegion, string storeName, out bool exist)
+        {
+            string msg = "";
+            exist = false;
+
+            Dictionary<string, OshimaRegion> regionStores = FunGameConstant.PlayerRegions.ToDictionary(r => r.Name, r => r);
+            if (regionStores.TryGetValue(storeRegion, out OshimaRegion? value) && value != null)
+            {
+                msg = value.VisitStore(stores, user, storeName);
+                exist = msg != "";
+            }
+
+            if (!exist)
+            {
+                msg = "探索者协会专员为你跑遍了全大陆，也没有找到这个商店。";
+            }
+            else
+            {
+                SetLastStore(user, false, storeRegion, storeName);
+            }
+
+            return msg;
         }
     }
 }

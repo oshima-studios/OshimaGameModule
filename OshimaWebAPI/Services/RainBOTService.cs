@@ -8,6 +8,7 @@ using Milimoe.FunGame.Core.Entity;
 using Milimoe.FunGame.Core.Library.Constant;
 using Oshima.Core.Configs;
 using Oshima.Core.Constant;
+using Oshima.FunGame.OshimaServers.Model;
 using Oshima.FunGame.OshimaServers.Service;
 using Oshima.FunGame.WebAPI.Constant;
 using Oshima.FunGame.WebAPI.Controllers;
@@ -2141,6 +2142,11 @@ namespace Oshima.FunGame.WebAPI.Services
 
                 if (e.Detail.StartsWith("商店购买", StringComparison.CurrentCultureIgnoreCase))
                 {
+                    if (!FunGameConstant.UserLastVisitStore.TryGetValue(uid, out LastStoreModel? model) || model is null || (DateTime.Now - model.LastTime).TotalMinutes > 2)
+                    {
+                        await SendAsync(e, "商店购买", "为防止错误购买，请先打开一个商店，随后在 2 分钟内进行购买操作。");
+                        return result;
+                    }
                     string detail = e.Detail.Replace("商店购买", "").Trim();
                     string[] strings = detail.Split(' ', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
                     if (strings.Length > 0 && int.TryParse(strings[0].Trim(), out int id))
@@ -2150,7 +2156,15 @@ namespace Oshima.FunGame.WebAPI.Services
                         {
                             count = temp;
                         }
-                        string msg = Controller.DailyStoreBuy(uid, id, count);
+                        string msg = "";
+                        if (model.IsDaily)
+                        {
+                            msg = Controller.DailyStoreBuy(uid, id, count);
+                        }
+                        else
+                        {
+                            msg = Controller.SystemStoreBuy(uid, model.StoreRegion, model.StoreName, id, count);
+                        }
                         if (msg != "")
                         {
                             await SendAsync(e, "商店购买", msg);
@@ -2161,10 +2175,23 @@ namespace Oshima.FunGame.WebAPI.Services
 
                 if (e.Detail.StartsWith("商店查看", StringComparison.CurrentCultureIgnoreCase))
                 {
+                    if (!FunGameConstant.UserLastVisitStore.TryGetValue(uid, out LastStoreModel? model) || model is null || (DateTime.Now - model.LastTime).TotalMinutes > 2)
+                    {
+                        await SendAsync(e, "商店购买", "请先打开一个商店，随后在 2 分钟内进行查看操作。");
+                        return result;
+                    }
                     string detail = e.Detail.Replace("商店查看", "").Trim();
                     if (int.TryParse(detail, out int id))
                     {
-                        string msg = Controller.DailyStoreShowInfo(uid, id);
+                        string msg = "";
+                        if (model.IsDaily)
+                        {
+                            msg = Controller.DailyStoreShowInfo(uid, id);
+                        }
+                        else
+                        {
+                            msg = Controller.SystemStoreShowInfo(uid, model.StoreRegion, model.StoreName, id);
+                        }
                         if (msg != "")
                         {
                             await SendAsync(e, "商店", msg);
@@ -2717,6 +2744,34 @@ namespace Oshima.FunGame.WebAPI.Services
                         if (msg.Trim() != "")
                         {
                             await SendAsync(e, "挑战技能秘境", msg);
+                        }
+                    }
+                    return result;
+                }
+                
+                if (e.Detail.StartsWith("商店"))
+                {
+                    string detail = e.Detail.Replace("商店", "").Trim();
+                    string msg = "";
+                    if (int.TryParse(detail, out int storeId))
+                    {
+                        switch (storeId)
+                        {
+                            case 1:
+                                msg = Controller.ShowSystemStore(uid, "铎京城", "dokyo_logistics");
+                                break;
+                            case 2:
+                                msg = Controller.ShowSystemStore(uid, "铎京城", "dokyo_weapons");
+                                break;
+                            case 3:
+                                msg = Controller.ShowSystemStore(uid, "铎京城", "dokyo_yuki");
+                                break;
+                            default:
+                                break;
+                        }
+                        if (msg.Trim() != "")
+                        {
+                            await SendAsync(e, "商店", msg);
                         }
                     }
                     return result;

@@ -1,4 +1,5 @@
 ﻿using System.Text;
+using Milimoe.FunGame.Core.Api.Utility;
 using Milimoe.FunGame.Core.Entity;
 using Milimoe.FunGame.Core.Interface.Entity;
 using Milimoe.FunGame.Core.Library.Constant;
@@ -19,6 +20,11 @@ namespace Oshima.FunGame.OshimaModules.Regions
         public override bool Equals(IBaseEntity? other)
         {
             return other is OshimaRegion && other.GetIdName() == GetIdName();
+        }
+
+        public virtual string VisitStore(EntityModuleConfig<Store> stores, User user, string storeName)
+        {
+            return "";
         }
 
         public override string ToString()
