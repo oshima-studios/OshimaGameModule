@@ -27,7 +27,6 @@ namespace Oshima.FunGame.WebAPI.Controllers
     {
         private ILogger<FunGameController> Logger { get; set; } = logger;
 
-        private readonly SemaphoreSlim _semaphore = new(1, 1);
         private const string noSaved = "你还没有创建存档！请发送【创建存档】创建。";
         private const string refused = "暂时无法使用此指令。";
         private const string busy = "服务器繁忙，请稍后再试。";
@@ -272,8 +271,8 @@ namespace Oshima.FunGame.WebAPI.Controllers
         public string GetSkillInfo([FromQuery] long? uid = null, [FromQuery] long? id = null)
         {
             long userid = uid ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
-            PluginConfig pc = new("saved", userid.ToString());
-            pc.LoadConfig();
+            PluginConfig pc = FunGameService.GetUserConfig(userid);
+            FunGameService.ReleaseUserSemaphoreSlim(userid);
             List<string> msg = [];
             Character? character = null;
             if (pc.Count > 0)
@@ -313,8 +312,8 @@ namespace Oshima.FunGame.WebAPI.Controllers
         public string GetSkillInfo_Name([FromQuery] long? uid = null, [FromQuery] string? name = null)
         {
             long userid = uid ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
-            PluginConfig pc = new("saved", userid.ToString());
-            pc.LoadConfig();
+            PluginConfig pc = FunGameService.GetUserConfig(userid);
+            FunGameService.ReleaseUserSemaphoreSlim(userid);
             List<string> msg = [];
             Character? character = null;
             if (pc.Count > 0)
@@ -354,8 +353,8 @@ namespace Oshima.FunGame.WebAPI.Controllers
         public string GetItemInfo([FromQuery] long? uid = null, [FromQuery] long? id = null)
         {
             long userid = uid ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
-            PluginConfig pc = new("saved", userid.ToString());
-            pc.LoadConfig();
+            PluginConfig pc = FunGameService.GetUserConfig(userid);
+            FunGameService.ReleaseUserSemaphoreSlim(userid);
             List<string> msg = [];
             Character? character = null;
             if (pc.Count > 0)
@@ -390,8 +389,8 @@ namespace Oshima.FunGame.WebAPI.Controllers
         public string GetItemInfo_Name([FromQuery] long? uid = null, [FromQuery] string? name = null)
         {
             long userid = uid ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
-            PluginConfig pc = new("saved", userid.ToString());
-            pc.LoadConfig();
+            PluginConfig pc = FunGameService.GetUserConfig(userid);
+            FunGameService.ReleaseUserSemaphoreSlim(userid);
             List<string> msg = [];
             Character? character = null;
             if (pc.Count > 0)
@@ -476,10 +475,8 @@ namespace Oshima.FunGame.WebAPI.Controllers
                             character.Recovery();
                             user.Inventory.Characters.Add(character);
                             FunGameConstant.UserIdAndUsername[user.Id] = user;
-                            PluginConfig pc = new("saved", user.Id.ToString());
-                            pc.LoadConfig();
-                            pc.Add("user", user);
-                            pc.SaveConfig();
+                            PluginConfig pc = FunGameService.GetUserConfig(user.Id);
+                            FunGameService.SetUserConfig(user.Id, pc, user);
                             return $"创建存档成功！你的昵称是【{username}】。";
                         }
                         else
@@ -501,8 +498,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
             }
             else if (uid != null && uid != 0)
             {
-                PluginConfig pc = new("saved", uid.Value.ToString());
-                pc.LoadConfig();
+                PluginConfig pc = FunGameService.GetUserConfig(uid.Value);
 
                 if (pc.Count == 0)
                 {
@@ -510,12 +506,12 @@ namespace Oshima.FunGame.WebAPI.Controllers
                     user.Inventory.Credits = 5000;
                     user.Inventory.Characters.Add(new CustomCharacter(uid.Value, username));
                     FunGameConstant.UserIdAndUsername[uid.Value] = user;
-                    pc.Add("user", user);
-                    pc.SaveConfig();
+                    FunGameService.SetUserConfig(uid.Value, pc, user);
                     return $"创建存档成功！你的昵称是【{username}】。";
                 }
                 else
                 {
+                    FunGameService.ReleaseUserSemaphoreSlim(uid.Value);
                     return "你已经创建过存档！";
                 }
             }
@@ -555,8 +551,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
         {
             long userid = uid ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
 
-            PluginConfig pc = new("saved", userid.ToString());
-            pc.LoadConfig();
+            PluginConfig pc = FunGameService.GetUserConfig(userid);
 
             if (pc.Count > 0)
             {
@@ -598,13 +593,12 @@ namespace Oshima.FunGame.WebAPI.Controllers
                 builder.AppendLine($"注册时间：{user.RegTime.ToString(General.GeneralDateTimeFormatChinese)}");
                 builder.AppendLine($"最后访问：{user.LastTime.ToString(General.GeneralDateTimeFormatChinese)}");
 
-                user.LastTime = DateTime.Now;
-                pc.Add("user", user);
-                pc.SaveConfig();
+                FunGameService.SetUserConfig(userid, pc, user);
                 return builder.ToString().Trim();
             }
             else
             {
+                FunGameService.ReleaseUserSemaphoreSlim(userid);
                 return noSaved;
             }
         }
@@ -614,8 +608,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
         {
             long userid = uid ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
 
-            PluginConfig pc = new("saved", userid.ToString());
-            pc.LoadConfig();
+            PluginConfig pc = FunGameService.GetUserConfig(userid);
 
             if (pc.Count > 0)
             {
@@ -653,13 +646,12 @@ namespace Oshima.FunGame.WebAPI.Controllers
                     msg = $"你的{General.GameplayEquilibriumConstant.InGameCurrency}不足 {reduce} 呢，无法改名！";
                 }
 
-                user.LastTime = DateTime.Now;
-                pc.Add("user", user);
-                pc.SaveConfig();
+                FunGameService.SetUserConfig(userid, pc, user);
                 return msg;
             }
             else
             {
+                FunGameService.ReleaseUserSemaphoreSlim(userid);
                 return noSaved;
             }
         }
@@ -669,8 +661,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
         {
             long userid = uid ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
 
-            PluginConfig pc = new("saved", userid.ToString());
-            pc.LoadConfig();
+            PluginConfig pc = FunGameService.GetUserConfig(userid);
 
             if (pc.Count > 0)
             {
@@ -678,11 +669,13 @@ namespace Oshima.FunGame.WebAPI.Controllers
 
                 if (name.Length == 0 || name.Length > 12)
                 {
+                    FunGameService.ReleaseUserSemaphoreSlim(userid);
                     return $"昵称【{name}】需要在 1～12 个字符之间。";
                 }
 
                 if (FunGameConstant.UserIdAndUsername.Any(kv => kv.Value.Username == name))
                 {
+                    FunGameService.ReleaseUserSemaphoreSlim(userid);
                     return $"昵称【{name}】已被使用，请更换其他昵称！";
                 }
 
@@ -696,6 +689,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
                     }
                     catch (Exception e)
                     {
+                        FunGameService.ReleaseUserSemaphoreSlim(userid);
                         Logger.LogError(e, "Error: {e}", e);
                         return busy;
                     }
@@ -709,6 +703,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
                     List<string> strings = renameExamine.Get<List<string>>(user.Id.ToString()) ?? [];
                     if (strings.Count > 0)
                     {
+                        FunGameService.ReleaseUserSemaphoreSlim(userid);
                         return $"你已经提交过改名申请，请使用【查询改名】指令查看进度，请耐心等待审核结果！";
                     }
                     else
@@ -717,9 +712,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
                         renameExamine.SaveConfig();
                     }
 
-                    user.LastTime = DateTime.Now;
-                    pc.Add("user", user);
-                    pc.SaveConfig();
+                    FunGameService.SetUserConfig(userid, pc, user);
 
                     TaskUtility.NewTask(() =>
                     {
@@ -732,10 +725,12 @@ namespace Oshima.FunGame.WebAPI.Controllers
 
                     return $"提交自定义改名申请成功！新昵称是【{name}】，将在审核通过后更新。已锁定你的一张改名卡，审核结束前，无法再次提交改名申请，或交易、出售、分解改名卡。";
                 }
+                FunGameService.ReleaseUserSemaphoreSlim(userid);
                 return $"你没有改名卡，无法自定义改名！请检查库存中至少存在一张未上锁、且未处于交易、市场出售状态的改名卡。";
             }
             else
             {
+                FunGameService.ReleaseUserSemaphoreSlim(userid);
                 return noSaved;
             }
         }
@@ -746,8 +741,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
             long userid = uid ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
             bool isConfirm = confirm ?? false;
 
-            PluginConfig pc = new("saved", userid.ToString());
-            pc.LoadConfig();
+            PluginConfig pc = FunGameService.GetUserConfig(userid);
 
             EntityModuleConfig<Character> emc = new("randomcustom", userid.ToString());
             emc.LoadConfig();
@@ -789,9 +783,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
                             character.InitialSPD = newCustom.InitialSPD;
                             character.InitialHR = newCustom.InitialHR;
                             character.InitialMR = newCustom.InitialMR;
-                            user.LastTime = DateTime.Now;
-                            pc.Add("user", user);
-                            pc.SaveConfig();
+                            FunGameService.SetUserConfig(userid, pc, user);
                             emc.Clear();
                             emc.SaveConfig();
                             return $"你已完成重随属性确认，新的自建角色属性如下：\r\n" +
@@ -808,6 +800,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
                         }
                         else
                         {
+                            FunGameService.ReleaseUserSemaphoreSlim(userid);
                             return $"你还没有获取过重随属性预览！";
                         }
                     }
@@ -822,13 +815,12 @@ namespace Oshima.FunGame.WebAPI.Controllers
                             }
                             else
                             {
+                                FunGameService.ReleaseUserSemaphoreSlim(userid);
                                 return $"你的{General.GameplayEquilibriumConstant.InGameMaterial}不足 {reduce} 呢，无法重随自建角色属性！";
                             }
                             newCustom = new CustomCharacter(FunGameConstant.CustomCharacterId, "");
                             FunGameService.SetCharacterPrimaryAttribute(newCustom);
-                            user.LastTime = DateTime.Now;
-                            pc.Add("user", user);
-                            pc.SaveConfig();
+                            FunGameService.SetUserConfig(userid, pc, user);
                             emc.Add("newCustom", newCustom);
                             emc.SaveConfig();
                             return $"消耗 {reduce} {General.GameplayEquilibriumConstant.InGameMaterial}，获取到重随属性预览如下：\r\n" +
@@ -846,6 +838,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
                         }
                         else if (newCustom.Id == FunGameConstant.CustomCharacterId)
                         {
+                            FunGameService.ReleaseUserSemaphoreSlim(userid);
                             return $"你已经有一个待确认的重随属性如下：\r\n" +
                                 $"核心属性：{CharacterSet.GetPrimaryAttributeName(oldPA)} => {CharacterSet.GetPrimaryAttributeName(newCustom.PrimaryAttribute)}\r\n" +
                                 $"初始生命：{oldHP} => {newCustom.InitialHP}\r\n" +
@@ -861,17 +854,20 @@ namespace Oshima.FunGame.WebAPI.Controllers
                         }
                         else
                         {
+                            FunGameService.ReleaseUserSemaphoreSlim(userid);
                             return $"重随自建角色属性失败！";
                         }
                     }
                 }
                 else
                 {
+                    FunGameService.ReleaseUserSemaphoreSlim(userid);
                     return $"你似乎没有自建角色，请发送【生成自建角色】创建！";
                 }
             }
             else
             {
+                FunGameService.ReleaseUserSemaphoreSlim(userid);
                 return noSaved;
             }
         }
@@ -881,11 +877,11 @@ namespace Oshima.FunGame.WebAPI.Controllers
         {
             long userid = uid ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
 
-            PluginConfig pc = new("saved", userid.ToString());
-            pc.LoadConfig();
+            PluginConfig pc = FunGameService.GetUserConfig(userid);
 
             if (pc.Count > 0)
             {
+                FunGameService.ReleaseUserSemaphoreSlim(userid);
                 EntityModuleConfig<Character> emc = new("randomcustom", userid.ToString());
                 emc.LoadConfig();
                 if (emc.Count > 0)
@@ -901,17 +897,18 @@ namespace Oshima.FunGame.WebAPI.Controllers
             }
             else
             {
+                FunGameService.ReleaseUserSemaphoreSlim(userid);
                 return noSaved;
             }
         }
 
-        [HttpPost("inventoryinfo")]
+        [HttpGet("inventoryinfo")]
         public string GetInventoryInfo([FromQuery] long? uid = null)
         {
             long userid = uid ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
 
-            PluginConfig pc = new("saved", userid.ToString());
-            pc.LoadConfig();
+            PluginConfig pc = FunGameService.GetUserConfig(userid);
+            FunGameService.ReleaseUserSemaphoreSlim(userid);
 
             if (pc.Count > 0)
             {
@@ -925,15 +922,15 @@ namespace Oshima.FunGame.WebAPI.Controllers
             }
         }
 
-        [HttpPost("inventoryinfo2")]
+        [HttpGet("inventoryinfo2")]
         public List<string> GetInventoryInfo2([FromQuery] long? uid = null, [FromQuery] int? page = null)
         {
             long userid = uid ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
             int showPage = page ?? 1;
             if (showPage <= 0) showPage = 1;
 
-            PluginConfig pc = new("saved", userid.ToString());
-            pc.LoadConfig();
+            PluginConfig pc = FunGameService.GetUserConfig(userid);
+            FunGameService.ReleaseUserSemaphoreSlim(userid);
 
             List<string> list = [];
             if (pc.Count > 0)
@@ -1001,15 +998,15 @@ namespace Oshima.FunGame.WebAPI.Controllers
             return list;
         }
 
-        [HttpPost("inventoryinfo3")]
+        [HttpGet("inventoryinfo3")]
         public List<string> GetInventoryInfo3([FromQuery] long? uid = null, [FromQuery] int? page = null, [FromQuery] int? order = null, [FromQuery] int? orderqty = null)
         {
             long userid = uid ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
             int showPage = page ?? 1;
             if (showPage <= 0) showPage = 1;
 
-            PluginConfig pc = new("saved", userid.ToString());
-            pc.LoadConfig();
+            PluginConfig pc = FunGameService.GetUserConfig(userid);
+            FunGameService.ReleaseUserSemaphoreSlim(userid);
 
             List<string> list = [];
             if (pc.Count > 0)
@@ -1122,7 +1119,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
             return list;
         }
 
-        [HttpPost("inventoryinfo4")]
+        [HttpGet("inventoryinfo4")]
         public List<string> GetInventoryInfo4([FromQuery] long? uid = null, [FromQuery] int? page = null, [FromQuery] int? type = null)
         {
             long userid = uid ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
@@ -1130,8 +1127,8 @@ namespace Oshima.FunGame.WebAPI.Controllers
             int itemtype = type ?? -1;
             if (showPage <= 0) showPage = 1;
 
-            PluginConfig pc = new("saved", userid.ToString());
-            pc.LoadConfig();
+            PluginConfig pc = FunGameService.GetUserConfig(userid);
+            FunGameService.ReleaseUserSemaphoreSlim(userid);
 
             List<string> list = [];
             if (pc.Count > 0)
@@ -1234,15 +1231,15 @@ namespace Oshima.FunGame.WebAPI.Controllers
             return list;
         }
 
-        [HttpPost("inventoryinfo5")]
+        [HttpGet("inventoryinfo5")]
         public List<string> GetInventoryInfo5([FromQuery] long? uid = null, [FromQuery] int? page = null)
         {
             long userid = uid ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
             int showPage = page ?? 1;
             if (showPage <= 0) showPage = 1;
 
-            PluginConfig pc = new("saved", userid.ToString());
-            pc.LoadConfig();
+            PluginConfig pc = FunGameService.GetUserConfig(userid);
+            FunGameService.ReleaseUserSemaphoreSlim(userid);
 
             List<string> list = [];
             if (pc.Count > 0)
@@ -1301,27 +1298,26 @@ namespace Oshima.FunGame.WebAPI.Controllers
         {
             long userid = uid ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
 
-            PluginConfig pc = new("saved", userid.ToString());
-            pc.LoadConfig();
+            PluginConfig pc = FunGameService.GetUserConfig(userid);
 
             if (pc.Count > 0)
             {
                 User user = FunGameService.GetUser(pc);
                 if (user.Inventory.Characters.Any(c => c.Id == FunGameConstant.CustomCharacterId))
                 {
+                    FunGameService.ReleaseUserSemaphoreSlim(userid);
                     return $"你已经拥有一个自建角色【{user.Username}】，无法再创建！";
                 }
                 else
                 {
                     user.Inventory.Characters.Add(new CustomCharacter(FunGameConstant.CustomCharacterId, user.Username));
-                    user.LastTime = DateTime.Now;
-                    pc.Add("user", user);
-                    pc.SaveConfig();
+                    FunGameService.SetUserConfig(userid, pc, user);
                     return $"恭喜你成功创建了一个自建角色【{user.Username}】，请查看你的角色库存！";
                 }
             }
             else
             {
+                FunGameService.ReleaseUserSemaphoreSlim(userid);
                 return noSaved;
             }
         }
@@ -1331,22 +1327,18 @@ namespace Oshima.FunGame.WebAPI.Controllers
         {
             long userid = uid ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
 
-            PluginConfig pc = new("saved", userid.ToString());
-            pc.LoadConfig();
+            PluginConfig pc = FunGameService.GetUserConfig(userid);
 
             if (pc.Count > 0)
             {
                 User user = FunGameService.GetUser(pc);
-
                 List<string> result = FunGameService.DrawCards(user, false, true);
-
-                user.LastTime = DateTime.Now;
-                pc.Add("user", user);
-                pc.SaveConfig();
+                FunGameService.SetUserConfig(userid, pc, user);
                 return result;
             }
             else
             {
+                FunGameService.ReleaseUserSemaphoreSlim(userid);
                 return [noSaved];
             }
         }
@@ -1356,22 +1348,18 @@ namespace Oshima.FunGame.WebAPI.Controllers
         {
             long userid = uid ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
 
-            PluginConfig pc = new("saved", userid.ToString());
-            pc.LoadConfig();
+            PluginConfig pc = FunGameService.GetUserConfig(userid);
 
             if (pc.Count > 0)
             {
                 User user = FunGameService.GetUser(pc);
-
                 List<string> result = FunGameService.DrawCards(user, true, true);
-
-                user.LastTime = DateTime.Now;
-                pc.Add("user", user);
-                pc.SaveConfig();
+                FunGameService.SetUserConfig(userid, pc, user);
                 return result;
             }
             else
             {
+                FunGameService.ReleaseUserSemaphoreSlim(userid);
                 return [noSaved];
             }
         }
@@ -1381,22 +1369,18 @@ namespace Oshima.FunGame.WebAPI.Controllers
         {
             long userid = uid ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
 
-            PluginConfig pc = new("saved", userid.ToString());
-            pc.LoadConfig();
+            PluginConfig pc = FunGameService.GetUserConfig(userid);
 
             if (pc.Count > 0)
             {
                 User user = FunGameService.GetUser(pc);
-
                 List<string> result = FunGameService.DrawCards(user, false, false);
-
-                user.LastTime = DateTime.Now;
-                pc.Add("user", user);
-                pc.SaveConfig();
+                FunGameService.SetUserConfig(userid, pc, user);
                 return result;
             }
             else
             {
+                FunGameService.ReleaseUserSemaphoreSlim(userid);
                 return [noSaved];
             }
         }
@@ -1406,22 +1390,18 @@ namespace Oshima.FunGame.WebAPI.Controllers
         {
             long userid = uid ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
 
-            PluginConfig pc = new("saved", userid.ToString());
-            pc.LoadConfig();
+            PluginConfig pc = FunGameService.GetUserConfig(userid);
 
             if (pc.Count > 0)
             {
                 User user = FunGameService.GetUser(pc);
-
                 List<string> result = FunGameService.DrawCards(user, true, false);
-
-                user.LastTime = DateTime.Now;
-                pc.Add("user", user);
-                pc.SaveConfig();
+                FunGameService.SetUserConfig(userid, pc, user);
                 return result;
             }
             else
             {
+                FunGameService.ReleaseUserSemaphoreSlim(userid);
                 return [noSaved];
             }
         }
@@ -1432,8 +1412,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
             long userid = uid ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
             double useMaterials = materials ?? 0;
 
-            PluginConfig pc = new("saved", userid.ToString());
-            pc.LoadConfig();
+            PluginConfig pc = FunGameService.GetUserConfig(userid);
 
             if (pc.Count > 0)
             {
@@ -1446,23 +1425,23 @@ namespace Oshima.FunGame.WebAPI.Controllers
                     int reward = reduce / 10 * 2000;
                     user.Inventory.Credits += reward;
                     user.Inventory.Materials -= reduce;
-                    user.LastTime = DateTime.Now;
-                    pc.Add("user", user);
-                    pc.SaveConfig();
+                    FunGameService.SetUserConfig(userid, pc, user);
                     return $"兑换成功！你消耗了 {reduce} {General.GameplayEquilibriumConstant.InGameMaterial}，增加了 {reward} {General.GameplayEquilibriumConstant.InGameCurrency}！";
                 }
                 else
                 {
+                    FunGameService.ReleaseUserSemaphoreSlim(userid);
                     return $"你的{General.GameplayEquilibriumConstant.InGameMaterial}不足 {reduce}，最低消耗 10 {General.GameplayEquilibriumConstant.InGameMaterial}兑换 2000 {General.GameplayEquilibriumConstant.InGameCurrency}！";
                 }
             }
             else
             {
+                FunGameService.ReleaseUserSemaphoreSlim(userid);
                 return noSaved;
             }
         }
 
-        [HttpPost("showcharacterinfo")]
+        [HttpGet("showcharacterinfo")]
         public string GetCharacterInfoFromInventory([FromQuery] long? uid = null, [FromQuery] int? seq = null, [FromQuery] bool? simple = null)
         {
             try
@@ -1471,8 +1450,8 @@ namespace Oshima.FunGame.WebAPI.Controllers
                 int cIndex = seq ?? 0;
                 bool isSimple = simple ?? false;
 
-                PluginConfig pc = new("saved", userid.ToString());
-                pc.LoadConfig();
+                PluginConfig pc = FunGameService.GetUserConfig(userid);
+                FunGameService.ReleaseUserSemaphoreSlim(userid);
 
                 if (pc.Count > 0)
                 {
@@ -1515,7 +1494,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
             }
         }
 
-        [HttpPost("showcharacterskills")]
+        [HttpGet("showcharacterskills")]
         public string GetCharacterSkills([FromQuery] long? uid = null, [FromQuery] int? seq = null)
         {
             try
@@ -1523,8 +1502,8 @@ namespace Oshima.FunGame.WebAPI.Controllers
                 long userid = uid ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
                 int cIndex = seq ?? 0;
 
-                PluginConfig pc = new("saved", userid.ToString());
-                pc.LoadConfig();
+                PluginConfig pc = FunGameService.GetUserConfig(userid);
+                FunGameService.ReleaseUserSemaphoreSlim(userid);
 
                 if (pc.Count > 0)
                 {
@@ -1559,7 +1538,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
             }
         }
 
-        [HttpPost("showcharacteritems")]
+        [HttpGet("showcharacteritems")]
         public string GetCharacterItems([FromQuery] long? uid = null, [FromQuery] int? seq = null)
         {
             try
@@ -1567,8 +1546,8 @@ namespace Oshima.FunGame.WebAPI.Controllers
                 long userid = uid ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
                 int cIndex = seq ?? 0;
 
-                PluginConfig pc = new("saved", userid.ToString());
-                pc.LoadConfig();
+                PluginConfig pc = FunGameService.GetUserConfig(userid);
+                FunGameService.ReleaseUserSemaphoreSlim(userid);
 
                 if (pc.Count > 0)
                 {
@@ -1603,7 +1582,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
             }
         }
 
-        [HttpPost("showiteminfo")]
+        [HttpGet("showiteminfo")]
         public string GetItemInfoFromInventory([FromQuery] long? uid = null, [FromQuery] int? seq = null)
         {
             try
@@ -1611,8 +1590,8 @@ namespace Oshima.FunGame.WebAPI.Controllers
                 long userid = uid ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
                 int itemIndex = seq ?? 0;
 
-                PluginConfig pc = new("saved", userid.ToString());
-                pc.LoadConfig();
+                PluginConfig pc = FunGameService.GetUserConfig(userid);
+                FunGameService.ReleaseUserSemaphoreSlim(userid);
 
                 if (pc.Count > 0)
                 {
@@ -1640,7 +1619,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
             }
         }
 
-        [HttpPost("showiteminfoname")]
+        [HttpGet("showiteminfoname")]
         public string GetItemInfoFromInventory_Name([FromQuery] long? uid = null, [FromQuery] string? name = null, [FromQuery] int? page = null)
         {
             try
@@ -1650,8 +1629,8 @@ namespace Oshima.FunGame.WebAPI.Controllers
                 int showPage = page ?? 1;
                 if (showPage <= 0) showPage = 1;
 
-                PluginConfig pc = new("saved", userid.ToString());
-                pc.LoadConfig();
+                PluginConfig pc = FunGameService.GetUserConfig(userid);
+                FunGameService.ReleaseUserSemaphoreSlim(userid);
 
                 if (pc.Count > 0)
                 {
@@ -1761,8 +1740,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
                 int characterIndex = c ?? 0;
                 int itemIndex = i ?? 0;
 
-                PluginConfig pc = new("saved", userid.ToString());
-                pc.LoadConfig();
+                PluginConfig pc = FunGameService.GetUserConfig(userid);
 
                 if (pc.Count > 0)
                 {
@@ -1776,6 +1754,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
                     }
                     else
                     {
+                        FunGameService.ReleaseUserSemaphoreSlim(userid);
                         return $"没有找到与这个序号相对应的角色！";
                     }
                     if (itemIndex > 0 && itemIndex <= user.Inventory.Items.Count)
@@ -1783,10 +1762,12 @@ namespace Oshima.FunGame.WebAPI.Controllers
                         item = user.Inventory.Items.ToList()[itemIndex - 1];
                         if ((int)item.ItemType < (int)ItemType.MagicCardPack || (int)item.ItemType > (int)ItemType.Accessory)
                         {
+                            FunGameService.ReleaseUserSemaphoreSlim(userid);
                             return $"这个物品 {itemIndex}. {item.Name} 无法被装备！";
                         }
                         else if (item.Character != null)
                         {
+                            FunGameService.ReleaseUserSemaphoreSlim(userid);
                             return $"这个物品 {itemIndex}. {item.Name} 无法被装备！[ {item.Character.ToStringWithLevelWithOutUser()} ] 已装备此物品。";
                         }
 
@@ -1795,39 +1776,43 @@ namespace Oshima.FunGame.WebAPI.Controllers
                         {
                             if (sql != null && SQLService.IsItemInOffers(sql, item.Guid))
                             {
+                                FunGameService.ReleaseUserSemaphoreSlim(userid);
                                 return $"这个物品 {itemIndex}. {item.Name} 无法被装备！因为它正在进行交易，请检查交易报价！";
                             }
                         }
                         catch (Exception e)
                         {
+                            FunGameService.ReleaseUserSemaphoreSlim(userid);
                             Logger.LogError(e, "Error: {e}", e);
                             return busy;
                         }
                     }
                     else
                     {
+                        FunGameService.ReleaseUserSemaphoreSlim(userid);
                         return $"没有找到与这个序号相对应的物品！";
                     }
                     if (character != null && item != null && character.Equip(item))
                     {
-                        user.LastTime = DateTime.Now;
-                        pc.Add("user", user);
-                        pc.SaveConfig();
+                        FunGameService.SetUserConfig(userid, pc, user);
                         return $"角色：{character.ToStringWithLevelWithOutUser()}\r\n装备{ItemSet.GetQualityTypeName(item.QualityType)}{ItemSet.GetItemTypeName(item.ItemType)}【{item.Name}】成功！" +
                             $"（{ItemSet.GetEquipSlotTypeName(item.EquipSlotType)}栏位）\r\n物品描述：{item.Description}";
                     }
                     else
                     {
+                        FunGameService.ReleaseUserSemaphoreSlim(userid);
                         return $"装备失败！可能是角色、物品不存在或者其他原因。";
                     }
                 }
                 else
                 {
+                    FunGameService.ReleaseUserSemaphoreSlim(userid);
                     return noSaved;
                 }
             }
             catch (Exception e)
             {
+                FunGameService.ReleaseUserSemaphoreSlim(uid.ToString() ?? "");
                 Logger.LogError(e, "Error: {e}", e);
                 return busy;
             }
@@ -1842,8 +1827,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
                 int characterIndex = c ?? 0;
                 EquipSlotType type = (EquipSlotType)(i ?? 0);
 
-                PluginConfig pc = new("saved", userid.ToString());
-                pc.LoadConfig();
+                PluginConfig pc = FunGameService.GetUserConfig(userid);
 
                 if (pc.Count > 0)
                 {
@@ -1857,25 +1841,30 @@ namespace Oshima.FunGame.WebAPI.Controllers
                         if (item != null && user.Inventory.Items.Where(i => i.Guid == item.Guid).FirstOrDefault() is Item itemInventory)
                         {
                             itemInventory.EquipSlotType = EquipSlotType.None;
-                            user.LastTime = DateTime.Now;
-                            pc.Add("user", user);
-                            pc.SaveConfig();
+                            FunGameService.SetUserConfig(userid, pc, user);
                             return $"角色：{character.ToStringWithLevelWithOutUser()}\r\n取消装备{ItemSet.GetQualityTypeName(item.QualityType)}{ItemSet.GetItemTypeName(item.ItemType)}【{item.Name}】成功！（{ItemSet.GetEquipSlotTypeName(type)}栏位）";
                         }
-                        else return $"取消装备失败！角色并没有装备{ItemSet.GetEquipSlotTypeName(type)}，或者库存中不存在此物品！";
+                        else
+                        {
+                            FunGameService.ReleaseUserSemaphoreSlim(userid);
+                            return $"取消装备失败！角色并没有装备{ItemSet.GetEquipSlotTypeName(type)}，或者库存中不存在此物品！";
+                        }
                     }
                     else
                     {
+                        FunGameService.ReleaseUserSemaphoreSlim(userid);
                         return $"没有找到与这个序号相对应的角色！";
                     }
                 }
                 else
                 {
+                    FunGameService.ReleaseUserSemaphoreSlim(userid);
                     return noSaved;
                 }
             }
             catch (Exception e)
             {
+                FunGameService.ReleaseUserSemaphoreSlim(uid.ToString() ?? "");
                 Logger.LogError(e, "Error: {e}", e);
                 return busy;
             }
@@ -1890,32 +1879,27 @@ namespace Oshima.FunGame.WebAPI.Controllers
                 long enemyid = eqq ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
                 bool showAllRound = all ?? false;
 
-                PluginConfig pc = new("saved", userid.ToString());
-                pc.LoadConfig();
+                PluginConfig pc = FunGameService.GetUserConfig(userid);
 
-                PluginConfig pc2 = new("saved", enemyid.ToString());
-                pc2.LoadConfig();
+                PluginConfig pc2 = FunGameService.GetUserConfig(enemyid);
+                FunGameService.ReleaseUserSemaphoreSlim(enemyid);
 
                 User? user1 = null, user2 = null;
 
                 if (pc.Count > 0)
                 {
                     user1 = FunGameService.GetUser(pc);
-                    user1.LastTime = DateTime.Now;
-                    pc.Add("user", user1);
-                    pc.SaveConfig();
+                    FunGameService.SetUserConfig(userid, pc, user1);
                 }
                 else
                 {
+                    FunGameService.ReleaseUserSemaphoreSlim(userid);
                     return [noSaved];
                 }
 
                 if (pc2.Count > 0)
                 {
                     user2 = FunGameService.GetUser(pc2);
-                    user2.LastTime = DateTime.Now;
-                    pc2.Add("user", user2);
-                    pc2.SaveConfig();
                 }
                 else
                 {
@@ -1935,6 +1919,8 @@ namespace Oshima.FunGame.WebAPI.Controllers
             }
             catch (Exception e)
             {
+                FunGameService.ReleaseUserSemaphoreSlim(uid.ToString() ?? "");
+                FunGameService.ReleaseUserSemaphoreSlim(eqq.ToString() ?? "");
                 Logger.LogError(e, "Error: {e}", e);
                 return [busy];
             }
@@ -1972,29 +1958,26 @@ namespace Oshima.FunGame.WebAPI.Controllers
                 long enemyid = eqq ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
                 bool showAllRound = all ?? false;
 
-                PluginConfig pc = new("saved", userid.ToString());
-                pc.LoadConfig();
+                PluginConfig pc = FunGameService.GetUserConfig(userid);
 
-                PluginConfig pc2 = new("saved", enemyid.ToString());
-                pc2.LoadConfig();
+                PluginConfig pc2 = FunGameService.GetUserConfig(enemyid);
+                FunGameService.ReleaseUserSemaphoreSlim(enemyid);
 
                 User? user1 = null, user2 = null;
 
                 if (pc.Count > 0)
                 {
                     user1 = FunGameService.GetUser(pc);
+                    FunGameService.SetUserConfig(userid, pc, user1);
 
                     if (user1.Inventory.Squad.Count == 0)
                     {
                         return [$"你尚未设置小队，请先设置1-4名角色！"];
                     }
-
-                    user1.LastTime = DateTime.Now;
-                    pc.Add("user", user1);
-                    pc.SaveConfig();
                 }
                 else
                 {
+                    FunGameService.ReleaseUserSemaphoreSlim(userid);
                     return [noSaved];
                 }
 
@@ -2006,10 +1989,6 @@ namespace Oshima.FunGame.WebAPI.Controllers
                     {
                         return [$"对方尚未设置小队，无法决斗。"];
                     }
-
-                    user2.LastTime = DateTime.Now;
-                    pc2.Add("user", user2);
-                    pc2.SaveConfig();
                 }
                 else
                 {
@@ -2036,6 +2015,8 @@ namespace Oshima.FunGame.WebAPI.Controllers
             }
             catch (Exception e)
             {
+                FunGameService.ReleaseUserSemaphoreSlim(uid.ToString() ?? "");
+                FunGameService.ReleaseUserSemaphoreSlim(eqq.ToString() ?? "");
                 Logger.LogError(e, "Error: {e}", e);
                 return [busy];
             }
@@ -2082,8 +2063,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
                 int useTimes = times ?? 1;
                 List<int> charactersIndex = characters?.ToList() ?? [];
 
-                PluginConfig pc = new("saved", userid.ToString());
-                pc.LoadConfig();
+                PluginConfig pc = FunGameService.GetUserConfig(userid);
 
                 if (pc.Count > 0)
                 {
@@ -2098,21 +2078,25 @@ namespace Oshima.FunGame.WebAPI.Controllers
                         {
                             if (item.IsLock)
                             {
+                                FunGameService.ReleaseUserSemaphoreSlim(userid);
                                 return $"此物品已上锁，请先解锁：{itemIndex}. {item.Name}";
                             }
 
                             if (item.ItemType == ItemType.MagicCard)
                             {
+                                FunGameService.ReleaseUserSemaphoreSlim(userid);
                                 return $"此物品 {itemIndex}. {item.Name} 为魔法卡，请使用【使用魔法卡】指令！";
                             }
 
                             if (item.RemainUseTimes <= 0)
                             {
+                                FunGameService.ReleaseUserSemaphoreSlim(userid);
                                 return $"此物品 {itemIndex}. {item.Name} 剩余使用次数为0，无法使用！";
                             }
 
                             if (useTimes > item.RemainUseTimes)
                             {
+                                FunGameService.ReleaseUserSemaphoreSlim(userid);
                                 return $"此物品 {itemIndex}. {item.Name} 剩余使用次数为 {item.RemainUseTimes} 次，但你想使用 {useTimes} 次，使用失败！";
                             }
 
@@ -2121,11 +2105,13 @@ namespace Oshima.FunGame.WebAPI.Controllers
                             {
                                 if (sql != null && SQLService.IsItemInOffers(sql, item.Guid))
                                 {
+                                    FunGameService.ReleaseUserSemaphoreSlim(userid);
                                     return $"这个物品 {itemIndex}. {item.Name} 无法使用！因为它正在进行交易，请检查交易报价！";
                                 }
                             }
                             catch (Exception e)
                             {
+                                FunGameService.ReleaseUserSemaphoreSlim(userid);
                                 Logger.LogError(e, "Error: {e}", e);
                                 return busy;
                             }
@@ -2142,29 +2128,35 @@ namespace Oshima.FunGame.WebAPI.Controllers
 
                             if (FunGameService.UseItem(item, useTimes, user, targets, out string msg))
                             {
-                                user.LastTime = DateTime.Now;
-                                pc.Add("user", user);
-                                pc.SaveConfig();
+                                FunGameService.SetUserConfig(userid, pc, user);
+                            }
+                            else
+                            {
+                                FunGameService.ReleaseUserSemaphoreSlim(userid);
                             }
                             return msg;
                         }
                         else
                         {
+                            FunGameService.ReleaseUserSemaphoreSlim(userid);
                             return $"这个物品 {itemIndex}. {item.Name} 无法使用！";
                         }
                     }
                     else
                     {
+                        FunGameService.ReleaseUserSemaphoreSlim(userid);
                         return $"没有找到与这个序号相对应的物品！";
                     }
                 }
                 else
                 {
+                    FunGameService.ReleaseUserSemaphoreSlim(userid);
                     return noSaved;
                 }
             }
             catch (Exception e)
             {
+                FunGameService.ReleaseUserSemaphoreSlim(uid.ToString() ?? "");
                 Logger.LogError(e, "Error: {e}", e);
                 return busy;
             }
@@ -2192,8 +2184,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
                 }
                 List<int> charactersIndex = characters?.ToList() ?? [];
 
-                PluginConfig pc = new("saved", userid.ToString());
-                pc.LoadConfig();
+                PluginConfig pc = FunGameService.GetUserConfig(userid);
 
                 if (pc.Count > 0)
                 {
@@ -2208,6 +2199,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
                     IEnumerable<Item> items = user.Inventory.Items.Where(i => i.Name == name && i.Character is null && i.ItemType != ItemType.MagicCard && !i.IsLock && !itemTrading.Contains(i.Guid));
                     if (!items.Any())
                     {
+                        FunGameService.ReleaseUserSemaphoreSlim(userid);
                         return $"库存中不存在名称为【{name}】，且未上锁、未在进行交易的物品！如果是魔法卡，请用【使用魔法卡】指令。";
                     }
 
@@ -2235,24 +2227,29 @@ namespace Oshima.FunGame.WebAPI.Controllers
                         bool result = FunGameService.UseItems(items, user, targets, msgs);
                         if (result)
                         {
-                            user.LastTime = DateTime.Now;
-                            pc.Add("user", user);
-                            pc.SaveConfig();
+                            FunGameService.SetUserConfig(userid, pc, user);
+                        }
+                        else
+                        {
+                            FunGameService.ReleaseUserSemaphoreSlim(userid);
                         }
                         return $"使用 {useCount} 件物品{(result ? "成功" : "失败")}！\r\n" + string.Join("\r\n", msgs.Count > 30 ? msgs.Take(30) : msgs);
                     }
                     else
                     {
+                        FunGameService.ReleaseUserSemaphoreSlim(userid);
                         return "此物品的可使用数量小于你想要使用的数量！";
                     }
                 }
                 else
                 {
+                    FunGameService.ReleaseUserSemaphoreSlim(userid);
                     return noSaved;
                 }
             }
             catch (Exception e)
             {
+                FunGameService.ReleaseUserSemaphoreSlim(uid.ToString() ?? "");
                 Logger.LogError(e, "Error: {e}", e);
                 return busy;
             }
@@ -2276,8 +2273,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
                 int itemToIndex = id2 ?? 0;
                 bool isCharacter = c ?? false;
 
-                PluginConfig pc = new("saved", userid.ToString());
-                pc.LoadConfig();
+                PluginConfig pc = FunGameService.GetUserConfig(userid);
 
                 if (pc.Count > 0)
                 {
@@ -2291,11 +2287,13 @@ namespace Oshima.FunGame.WebAPI.Controllers
                         {
                             if (item.IsLock)
                             {
+                                FunGameService.ReleaseUserSemaphoreSlim(userid);
                                 return $"此物品已上锁，请先解锁：{itemIndex}. {item.Name}";
                             }
 
                             if (item.RemainUseTimes <= 0)
                             {
+                                FunGameService.ReleaseUserSemaphoreSlim(userid);
                                 return $"此物品 {itemIndex}. {item.Name} 剩余使用次数为0，无法使用！";
                             }
 
@@ -2304,11 +2302,13 @@ namespace Oshima.FunGame.WebAPI.Controllers
                             {
                                 if (sql != null && SQLService.IsItemInOffers(sql, item.Guid))
                                 {
+                                    FunGameService.ReleaseUserSemaphoreSlim(userid);
                                     return $"这个物品 {itemIndex}. {item.Name} 无法使用！因为它正在进行交易，请检查交易报价！";
                                 }
                             }
                             catch (Exception e)
                             {
+                                FunGameService.ReleaseUserSemaphoreSlim(userid);
                                 Logger.LogError(e, "Error: {e}", e);
                                 return busy;
                             }
@@ -2329,16 +2329,19 @@ namespace Oshima.FunGame.WebAPI.Controllers
                                         }
                                         else
                                         {
+                                            FunGameService.ReleaseUserSemaphoreSlim(userid);
                                             return $"库存中没有找到此角色对应的魔法卡包！";
                                         }
                                     }
                                     else
                                     {
+                                        FunGameService.ReleaseUserSemaphoreSlim(userid);
                                         return $"这个角色没有装备魔法卡包，无法对其使用魔法卡！";
                                     }
                                 }
                                 else
                                 {
+                                    FunGameService.ReleaseUserSemaphoreSlim(userid);
                                     return $"没有找到与这个序号相对应的角色！";
                                 }
                             }
@@ -2353,37 +2356,41 @@ namespace Oshima.FunGame.WebAPI.Controllers
                                     }
                                     else
                                     {
+                                        FunGameService.ReleaseUserSemaphoreSlim(userid);
                                         return $"与目标序号相对应的物品 {itemIndex}. {item.Name} 不是魔法卡包！";
                                     }
                                 }
                                 else
                                 {
+                                    FunGameService.ReleaseUserSemaphoreSlim(userid);
                                     return $"没有找到与目标序号相对应的物品！";
                                 }
                             }
 
-                            user.LastTime = DateTime.Now;
-                            pc.Add("user", user);
-                            pc.SaveConfig();
+                            FunGameService.SetUserConfig(userid, pc, user);
                             return msg;
                         }
                         else
                         {
+                            FunGameService.ReleaseUserSemaphoreSlim(userid);
                             return $"这个物品 {itemIndex}. {item.Name} 不是魔法卡！";
                         }
                     }
                     else
                     {
+                        FunGameService.ReleaseUserSemaphoreSlim(userid);
                         return $"没有找到与目标序号相对应的物品！";
                     }
                 }
                 else
                 {
+                    FunGameService.ReleaseUserSemaphoreSlim(userid);
                     return noSaved;
                 }
             }
             catch (Exception e)
             {
+                FunGameService.ReleaseUserSemaphoreSlim(uid.ToString() ?? "");
                 Logger.LogError(e, "Error: {e}", e);
                 return busy;
             }
@@ -2403,8 +2410,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
                 int[] itemsIndex = idsAndCids.Item1;
                 int[] charactersIndex = idsAndCids.Item2;
 
-                PluginConfig pc = new("saved", uid.ToString());
-                pc.LoadConfig();
+                PluginConfig pc = FunGameService.GetUserConfig(uid);
 
                 if (pc.Count > 0)
                 {
@@ -2428,6 +2434,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
 
                     if (failedCharacters.Count > 0)
                     {
+                        FunGameService.ReleaseUserSemaphoreSlim(uid);
                         return $"没有找到与这些序号相对应的角色：{string.Join("，", failedCharacters)}。";
                     }
 
@@ -2472,11 +2479,13 @@ namespace Oshima.FunGame.WebAPI.Controllers
                                 {
                                     if (sql != null && SQLService.IsItemInOffers(sql, item.Guid))
                                     {
+                                        FunGameService.ReleaseUserSemaphoreSlim(uid);
                                         return $"这个物品 {itemIndex}. {item.Name} 无法使用！因为它正在进行交易，请检查交易报价！";
                                     }
                                 }
                                 catch (Exception e)
                                 {
+                                    FunGameService.ReleaseUserSemaphoreSlim(uid);
                                     Logger.LogError(e, "Error: {e}", e);
                                     return busy;
                                 }
@@ -2519,20 +2528,24 @@ namespace Oshima.FunGame.WebAPI.Controllers
 
                     if (result)
                     {
-                        user.LastTime = DateTime.Now;
-                        pc.Add("user", user);
-                        pc.SaveConfig();
+                        FunGameService.SetUserConfig(uid, pc, user);
+                    }
+                    else
+                    {
+                        FunGameService.ReleaseUserSemaphoreSlim(uid);
                     }
 
                     return msg;
                 }
                 else
                 {
+                    FunGameService.ReleaseUserSemaphoreSlim(uid);
                     return noSaved;
                 }
             }
             catch (Exception e)
             {
+                FunGameService.ReleaseUserSemaphoreSlim(uid);
                 Logger.LogError(e, "Error: {e}", e);
                 return busy;
             }
@@ -2547,8 +2560,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
                 int characterIndex = c ?? 0;
                 int upCount = count ?? 0;
 
-                PluginConfig pc = new("saved", userid.ToString());
-                pc.LoadConfig();
+                PluginConfig pc = FunGameService.GetUserConfig(userid);
 
                 if (pc.Count > 0)
                 {
@@ -2561,11 +2573,13 @@ namespace Oshima.FunGame.WebAPI.Controllers
                     }
                     else
                     {
+                        FunGameService.ReleaseUserSemaphoreSlim(userid);
                         return $"没有找到与这个序号相对应的角色！";
                     }
 
                     if (character.Level == General.GameplayEquilibriumConstant.MaxLevel)
                     {
+                        FunGameService.ReleaseUserSemaphoreSlim(userid);
                         return $"该角色等级已满，无需再升级！";
                     }
 
@@ -2591,31 +2605,31 @@ namespace Oshima.FunGame.WebAPI.Controllers
                         msg += $"\r\n该角色已升级至满级，恭喜！";
                     }
 
-                    user.LastTime = DateTime.Now;
-                    pc.Add("user", user);
-                    pc.SaveConfig();
+                    FunGameService.SetUserConfig(userid, pc, user);
                     return msg;
                 }
                 else
                 {
+                    FunGameService.ReleaseUserSemaphoreSlim(userid);
                     return noSaved;
                 }
             }
             catch (Exception e)
             {
+                FunGameService.ReleaseUserSemaphoreSlim(uid.ToString() ?? "");
                 Logger.LogError(e, "Error: {e}", e);
                 return busy;
             }
         }
 
-        [HttpPost("getlevelbreakneedy")]
+        [HttpGet("getlevelbreakneedy")]
         public string GetLevelBreakNeedy([FromQuery] long? uid = null, [FromQuery] int? id = null)
         {
             long userid = uid ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
             int characterIndex = id ?? 0;
 
-            PluginConfig pc = new("saved", userid.ToString());
-            pc.LoadConfig();
+            PluginConfig pc = FunGameService.GetUserConfig(userid);
+            FunGameService.ReleaseUserSemaphoreSlim(userid);
 
             if (pc.Count > 0)
             {
@@ -2652,8 +2666,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
                 long userid = uid ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
                 int characterIndex = c ?? 0;
 
-                PluginConfig pc = new("saved", userid.ToString());
-                pc.LoadConfig();
+                PluginConfig pc = FunGameService.GetUserConfig(userid);
 
                 if (pc.Count > 0)
                 {
@@ -2666,11 +2679,13 @@ namespace Oshima.FunGame.WebAPI.Controllers
                     }
                     else
                     {
+                        FunGameService.ReleaseUserSemaphoreSlim(userid);
                         return $"没有找到与这个序号相对应的角色！";
                     }
 
                     if (character.LevelBreak + 1 == General.GameplayEquilibriumConstant.LevelBreakList.Count)
                     {
+                        FunGameService.ReleaseUserSemaphoreSlim(userid);
                         return $"该角色已完成全部的突破阶段，无需再突破！";
                     }
 
@@ -2689,6 +2704,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
                                 }
                                 else
                                 {
+                                    FunGameService.ReleaseUserSemaphoreSlim(userid);
                                     return $"你的{General.GameplayEquilibriumConstant.InGameMaterial}不足 {needCount} 呢，不满足突破条件！所需材料：\r\n{FunGameService.GetLevelBreakNeedy(character.LevelBreak + 1, user)}";
                                 }
                             }
@@ -2707,6 +2723,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
                                     }
                                     else
                                     {
+                                        FunGameService.ReleaseUserSemaphoreSlim(userid);
                                         return $"你的物品【{key}】数量不足 {needCount} 呢，不满足突破条件！所需材料：\r\n{FunGameService.GetLevelBreakNeedy(character.LevelBreak + 1, user)}";
                                     }
                                 }
@@ -2718,14 +2735,13 @@ namespace Oshima.FunGame.WebAPI.Controllers
 
                     if (originalBreak == character.LevelBreak)
                     {
+                        FunGameService.ReleaseUserSemaphoreSlim(userid);
                         return $"突破失败！角色 [ {character} ] 目前突破进度：{character.LevelBreak + 1}/{General.GameplayEquilibriumConstant.LevelBreakList.Count}。" +
                             $"\r\n该角色下一个等级突破阶段在 {General.GameplayEquilibriumConstant.LevelBreakList.ToArray()[character.LevelBreak + 1]} 级（当前 {character.Level} 级），所需材料：\r\n" + FunGameService.GetLevelBreakNeedy(character.LevelBreak + 1, user);
                     }
                     else
                     {
-                        user.LastTime = DateTime.Now;
-                        pc.Add("user", user);
-                        pc.SaveConfig();
+                        FunGameService.SetUserConfig(userid, pc, user);
                         return $"突破成功！角色 [ {character} ] 目前突破进度：{character.LevelBreak + 1}/{General.GameplayEquilibriumConstant.LevelBreakList.Count}。" +
                             $"{(character.LevelBreak + 1 == General.GameplayEquilibriumConstant.LevelBreakList.Count ?
                             "\r\n该角色已完成全部的突破阶段，恭喜！" :
@@ -2734,11 +2750,13 @@ namespace Oshima.FunGame.WebAPI.Controllers
                 }
                 else
                 {
+                    FunGameService.ReleaseUserSemaphoreSlim(userid);
                     return noSaved;
                 }
             }
             catch (Exception e)
             {
+                FunGameService.ReleaseUserSemaphoreSlim(uid.ToString() ?? "");
                 Logger.LogError(e, "Error: {e}", e);
                 return busy;
             }
@@ -2756,18 +2774,17 @@ namespace Oshima.FunGame.WebAPI.Controllers
             }
             long targetid = target ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
 
-            PluginConfig pc = new("saved", userid.ToString());
-            pc.LoadConfig();
+            PluginConfig pc = FunGameService.GetUserConfig(userid);
 
             if (pc.Count > 0)
             {
                 User user = FunGameService.GetUser(pc);
+                FunGameService.ReleaseUserSemaphoreSlim(userid);
 
                 string msg = "";
                 if (user.IsAdmin || userid > 0)
                 {
-                    PluginConfig pc2 = new("saved", targetid.ToString());
-                    pc2.LoadConfig();
+                    PluginConfig pc2 = FunGameService.GetUserConfig(targetid);
                     if (pc2.Count > 0)
                     {
                         User user2 = FunGameService.GetUser(pc2);
@@ -2864,13 +2881,14 @@ namespace Oshima.FunGame.WebAPI.Controllers
                         }
                         else
                         {
+                            FunGameService.ReleaseUserSemaphoreSlim(targetid);
                             return $"此物品不存在！";
                         }
-                        pc2.Add("user", user2);
-                        pc2.SaveConfig();
+                        FunGameService.SetUserConfig(targetid, pc2, user2);
                     }
                     else
                     {
+                        FunGameService.ReleaseUserSemaphoreSlim(targetid);
                         return $"目标 UID 不存在！";
                     }
                 }
@@ -2897,8 +2915,8 @@ namespace Oshima.FunGame.WebAPI.Controllers
             }
             long targetid = target ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
 
-            PluginConfig pc = new("saved", userid.ToString());
-            pc.LoadConfig();
+            PluginConfig pc = FunGameService.GetUserConfig(userid);
+            FunGameService.ReleaseUserSemaphoreSlim(userid);
 
             if (pc.Count > 0)
             {
@@ -2907,8 +2925,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
                 string msg = "";
                 if (user.IsAdmin || userid > 0)
                 {
-                    PluginConfig pc2 = new("saved", targetid.ToString());
-                    pc2.LoadConfig();
+                    PluginConfig pc2 = FunGameService.GetUserConfig(targetid);
                     if (pc2.Count > 0)
                     {
                         User user2 = FunGameService.GetUser(pc2);
@@ -2931,13 +2948,14 @@ namespace Oshima.FunGame.WebAPI.Controllers
                         }
                         else
                         {
+                            FunGameService.ReleaseUserSemaphoreSlim(targetid);
                             return $"游戏中不存在 ID 为 {magicId} 的魔法技能，生成失败！";
                         }
-                        pc2.Add("user", user2);
-                        pc2.SaveConfig();
+                        FunGameService.SetUserConfig(targetid, pc2, user2);
                     }
                     else
                     {
+                        FunGameService.ReleaseUserSemaphoreSlim(targetid);
                         return $"目标 UID 不存在！";
                     }
                 }
@@ -2962,8 +2980,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
                 long userid = uid ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
                 int[] ids = items ?? [];
 
-                PluginConfig pc = new("saved", userid.ToString());
-                pc.LoadConfig();
+                PluginConfig pc = FunGameService.GetUserConfig(userid);
 
                 if (pc.Count > 0)
                 {
@@ -2979,7 +2996,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
                         itemTrading = SQLService.GetUserItemGuids(sql, userid);
                     }
                     Dictionary<int, Item> dict = user.Inventory.Items.Select((item, index) => new { item, index })
-                        .Where(x => ids.Contains(x.index) && x.item.Character is null && !x.item.IsLock && !itemTrading.Contains(x.item.Guid))
+                        .Where(x => ids.Contains(x.index + 1) && x.item.Character is null && !x.item.IsLock && !itemTrading.Contains(x.item.Guid))
                         .ToDictionary(x => x.index + 1, x => x.item);
 
                     foreach (int id in dict.Keys)
@@ -2990,11 +3007,11 @@ namespace Oshima.FunGame.WebAPI.Controllers
                         {
                             double gained = item.QualityType switch
                             {
-                                QualityType.Gold => 28,
-                                QualityType.Red => 21,
-                                QualityType.Orange => 15,
-                                QualityType.Purple => 10,
-                                QualityType.Blue => 6,
+                                QualityType.Gold => 128,
+                                QualityType.Red => 64,
+                                QualityType.Orange => 32,
+                                QualityType.Purple => 16,
+                                QualityType.Blue => 8,
                                 QualityType.Green => 3,
                                 _ => 1
                             };
@@ -3006,19 +3023,19 @@ namespace Oshima.FunGame.WebAPI.Controllers
                     if (successCount > 0)
                     {
                         user.Inventory.Materials += totalGained;
-                        user.LastTime = DateTime.Now;
-                        pc.Add("user", user);
-                        pc.SaveConfig();
                     }
+                    FunGameService.SetUserConfig(userid, pc, user);
                     return $"分解完毕！分解 {ids.Length} 件，库存允许分解 {dict.Count} 件，成功 {successCount} 件，得到了 {totalGained} {General.GameplayEquilibriumConstant.InGameMaterial}！";
                 }
                 else
                 {
+                    FunGameService.ReleaseUserSemaphoreSlim(userid);
                     return noSaved;
                 }
             }
             catch (Exception e)
             {
+                FunGameService.ReleaseUserSemaphoreSlim(uid.ToString() ?? "");
                 Logger.LogError(e, "Error: {e}", e);
                 return busy;
             }
@@ -3037,8 +3054,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
                     return "数量必须大于0！";
                 }
 
-                PluginConfig pc = new("saved", userid.ToString());
-                pc.LoadConfig();
+                PluginConfig pc = FunGameService.GetUserConfig(userid);
 
                 if (pc.Count > 0)
                 {
@@ -3053,6 +3069,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
                     IEnumerable<Item> items = user.Inventory.Items.Where(i => i.Name == name && i.Character is null && !i.IsLock && !itemTrading.Contains(i.Guid));
                     if (!items.Any())
                     {
+                        FunGameService.ReleaseUserSemaphoreSlim(userid);
                         return $"库存中不存在名称为【{name}】，且未上锁、未在进行交易的物品！";
                     }
 
@@ -3069,11 +3086,11 @@ namespace Oshima.FunGame.WebAPI.Controllers
                             {
                                 double gained = item.QualityType switch
                                 {
-                                    QualityType.Gold => 28,
-                                    QualityType.Red => 21,
-                                    QualityType.Orange => 15,
-                                    QualityType.Purple => 10,
-                                    QualityType.Blue => 6,
+                                    QualityType.Gold => 128,
+                                    QualityType.Red => 64,
+                                    QualityType.Orange => 32,
+                                    QualityType.Purple => 16,
+                                    QualityType.Blue => 8,
                                     QualityType.Green => 3,
                                     _ => 1
                                 };
@@ -3084,24 +3101,25 @@ namespace Oshima.FunGame.WebAPI.Controllers
                         if (successCount > 0)
                         {
                             user.Inventory.Materials += totalGained;
-                            user.LastTime = DateTime.Now;
-                            pc.Add("user", user);
-                            pc.SaveConfig();
                         }
+                        FunGameService.SetUserConfig(userid, pc, user);
                         return $"分解完毕！分解 {useCount} 件物品，成功 {successCount} 件，得到了 {totalGained} {General.GameplayEquilibriumConstant.InGameMaterial}！";
                     }
                     else
                     {
+                        FunGameService.ReleaseUserSemaphoreSlim(userid);
                         return $"此物品的可分解数量（{items.Count()} 件）小于你想要分解的数量！";
                     }
                 }
                 else
                 {
+                    FunGameService.ReleaseUserSemaphoreSlim(userid);
                     return noSaved;
                 }
             }
             catch (Exception e)
             {
+                FunGameService.ReleaseUserSemaphoreSlim(uid.ToString() ?? "");
                 Logger.LogError(e, "Error: {e}", e);
                 return busy;
             }
@@ -3120,8 +3138,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
                     return $"品质序号输入错误！";
                 }
 
-                PluginConfig pc = new("saved", userid.ToString());
-                pc.LoadConfig();
+                PluginConfig pc = FunGameService.GetUserConfig(userid);
 
                 if (pc.Count > 0)
                 {
@@ -3137,6 +3154,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
                     IEnumerable<Item> items = user.Inventory.Items.Where(i => (int)i.QualityType == qType && i.Character is null && !i.IsLock && !itemTrading.Contains(i.Guid));
                     if (!items.Any())
                     {
+                        FunGameService.ReleaseUserSemaphoreSlim(userid);
                         return $"库存中{qualityName}物品数量为零！";
                     }
 
@@ -3144,11 +3162,11 @@ namespace Oshima.FunGame.WebAPI.Controllers
                     int successCount = 0;
                     double gained = items.First().QualityType switch
                     {
-                        QualityType.Gold => 28,
-                        QualityType.Red => 21,
-                        QualityType.Orange => 15,
-                        QualityType.Purple => 10,
-                        QualityType.Blue => 6,
+                        QualityType.Gold => 128,
+                        QualityType.Red => 64,
+                        QualityType.Orange => 32,
+                        QualityType.Purple => 16,
+                        QualityType.Blue => 8,
                         QualityType.Green => 3,
                         _ => 1
                     };
@@ -3166,19 +3184,19 @@ namespace Oshima.FunGame.WebAPI.Controllers
                     {
                         totalGained = successCount * gained;
                         user.Inventory.Materials += totalGained;
-                        user.LastTime = DateTime.Now;
-                        pc.Add("user", user);
-                        pc.SaveConfig();
                     }
+                    FunGameService.SetUserConfig(userid, pc, user);
                     return $"分解完毕！成功分解 {successCount} 件{qualityName}物品，得到了 {totalGained} {General.GameplayEquilibriumConstant.InGameMaterial}！";
                 }
                 else
                 {
+                    FunGameService.ReleaseUserSemaphoreSlim(userid);
                     return noSaved;
                 }
             }
             catch (Exception e)
             {
+                FunGameService.ReleaseUserSemaphoreSlim(uid.ToString() ?? "");
                 Logger.LogError(e, "Error: {e}", e);
                 return busy;
             }
@@ -3192,8 +3210,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
                 long userid = uid ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
                 List<int> itemsIndex = items?.ToList() ?? [];
 
-                PluginConfig pc = new("saved", userid.ToString());
-                pc.LoadConfig();
+                PluginConfig pc = FunGameService.GetUserConfig(userid);
 
                 if (pc.Count > 0)
                 {
@@ -3208,6 +3225,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
                             item = user.Inventory.Items.ToList()[itemIndex - 1];
                             if (item.IsLock)
                             {
+                                FunGameService.ReleaseUserSemaphoreSlim(userid);
                                 return $"此物品已上锁，请先解锁：{itemIndex}. {item.Name}";
                             }
                             else if (item.ItemType == ItemType.MagicCard && item.RemainUseTimes > 0)
@@ -3216,11 +3234,13 @@ namespace Oshima.FunGame.WebAPI.Controllers
                             }
                             else
                             {
+                                FunGameService.ReleaseUserSemaphoreSlim(userid);
                                 return $"此物品不是魔法卡或者使用次数为0：{itemIndex}. {item.Name}";
                             }
                         }
                         else
                         {
+                            FunGameService.ReleaseUserSemaphoreSlim(userid);
                             return $"没有找到与这个序号相对应的物品：{itemIndex}";
                         }
                     }
@@ -3235,28 +3255,30 @@ namespace Oshima.FunGame.WebAPI.Controllers
                             user.Inventory.Items.Remove(mfks[0]);
                             user.Inventory.Items.Remove(mfks[1]);
                             user.Inventory.Items.Remove(mfks[2]);
-                            user.LastTime = DateTime.Now;
-                            pc.Add("user", user);
-                            pc.SaveConfig();
+                            FunGameService.SetUserConfig(userid, pc, user);
                             return $"合成魔法卡包成功！获得魔法卡包：\r\n{item.ToStringInventory(true)}";
                         }
                         else
                         {
+                            FunGameService.ReleaseUserSemaphoreSlim(userid);
                             return $"合成魔法卡包失败！";
                         }
                     }
                     else
                     {
+                        FunGameService.ReleaseUserSemaphoreSlim(userid);
                         return $"选用的魔法卡不足 3 张，请重新选择！";
                     }
                 }
                 else
                 {
+                    FunGameService.ReleaseUserSemaphoreSlim(userid);
                     return noSaved;
                 }
             }
             catch (Exception e)
             {
+                FunGameService.ReleaseUserSemaphoreSlim(uid.ToString() ?? "");
                 Logger.LogError(e, "Error: {e}", e);
                 return busy;
             }
@@ -3270,8 +3292,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
                 long userid = uid ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
                 int characterIndex = c ?? 0;
 
-                PluginConfig pc = new("saved", userid.ToString());
-                pc.LoadConfig();
+                PluginConfig pc = FunGameService.GetUserConfig(userid);
 
                 if (pc.Count > 0)
                 {
@@ -3284,22 +3305,23 @@ namespace Oshima.FunGame.WebAPI.Controllers
                     }
                     else
                     {
+                        FunGameService.ReleaseUserSemaphoreSlim(userid);
                         return $"没有找到与这个序号相对应的角色！";
                     }
 
                     user.Inventory.MainCharacter = character;
-                    user.LastTime = DateTime.Now;
-                    pc.Add("user", user);
-                    pc.SaveConfig();
+                    FunGameService.SetUserConfig(userid, pc, user);
                     return $"设置主战角色成功：{character}";
                 }
                 else
                 {
+                    FunGameService.ReleaseUserSemaphoreSlim(userid);
                     return noSaved;
                 }
             }
             catch (Exception e)
             {
+                FunGameService.ReleaseUserSemaphoreSlim(uid.ToString() ?? "");
                 Logger.LogError(e, "Error: {e}", e);
                 return busy;
             }
@@ -3313,8 +3335,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
                 long userid = uid ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
                 int characterIndex = c ?? 0;
 
-                PluginConfig pc = new("saved", userid.ToString());
-                pc.LoadConfig();
+                PluginConfig pc = FunGameService.GetUserConfig(userid);
 
                 if (pc.Count > 0)
                 {
@@ -3327,27 +3348,29 @@ namespace Oshima.FunGame.WebAPI.Controllers
                     }
                     else
                     {
+                        FunGameService.ReleaseUserSemaphoreSlim(userid);
                         return $"没有找到与这个序号相对应的角色！";
                     }
 
                     if (user.Inventory.Training.Count > 0)
                     {
+                        FunGameService.ReleaseUserSemaphoreSlim(userid);
                         return $"你已经有角色在练级中，请使用【练级结算】指令结束并获取奖励：{user.Inventory.Training.First()}！";
                     }
 
                     user.Inventory.Training[character.Id] = DateTime.Now;
-                    user.LastTime = DateTime.Now;
-                    pc.Add("user", user);
-                    pc.SaveConfig();
+                    FunGameService.SetUserConfig(userid, pc, user);
                     return $"角色 [{character}] 开始练级，请过一段时间后进行【练级结算】，时间越长奖励越丰盛！练级时间上限 2880 分钟（48小时），超时将不会再产生收益，请按时领取奖励！练级结束时，角色将根据练级总分钟数获得生命回复和魔法回复。";
                 }
                 else
                 {
+                    FunGameService.ReleaseUserSemaphoreSlim(userid);
                     return noSaved;
                 }
             }
             catch (Exception e)
             {
+                FunGameService.ReleaseUserSemaphoreSlim(uid.ToString() ?? "");
                 Logger.LogError(e, "Error: {e}", e);
                 return busy;
             }
@@ -3360,8 +3383,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
             {
                 long userid = uid ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
 
-                PluginConfig pc = new("saved", userid.ToString());
-                pc.LoadConfig();
+                PluginConfig pc = FunGameService.GetUserConfig(userid);
 
                 if (pc.Count > 0)
                 {
@@ -3369,6 +3391,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
 
                     if (user.Inventory.Training.Count == 0)
                     {
+                        FunGameService.ReleaseUserSemaphoreSlim(userid);
                         return $"你目前没有角色在练级中，请使用【开启练级+角色序号】指令进行练级。";
                     }
 
@@ -3408,37 +3431,38 @@ namespace Oshima.FunGame.WebAPI.Controllers
                             user.Inventory.Items.Add(item);
                         }
 
-                        user.LastTime = DateTime.Now;
-                        pc.Add("user", user);
-                        pc.SaveConfig();
+                        FunGameService.SetUserConfig(userid, pc, user);
                         return $"角色 [ {character} ] 练级结束，{msg}";
                     }
                     else
                     {
+                        FunGameService.ReleaseUserSemaphoreSlim(userid);
                         return $"你目前没有角色在练级中，也可能是库存信息获取异常，请稍后再试。";
                     }
                 }
                 else
                 {
+                    FunGameService.ReleaseUserSemaphoreSlim(userid);
                     return noSaved;
                 }
             }
             catch (Exception e)
             {
+                FunGameService.ReleaseUserSemaphoreSlim(uid.ToString() ?? "");
                 Logger.LogError(e, "Error: {e}", e);
                 return busy;
             }
         }
 
-        [HttpPost("gettraininginfo")]
+        [HttpGet("gettraininginfo")]
         public string GetTrainingInfo([FromQuery] long? uid = null)
         {
             try
             {
                 long userid = uid ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
 
-                PluginConfig pc = new("saved", userid.ToString());
-                pc.LoadConfig();
+                PluginConfig pc = FunGameService.GetUserConfig(userid);
+                FunGameService.ReleaseUserSemaphoreSlim(userid);
 
                 if (pc.Count > 0)
                 {
@@ -3477,15 +3501,15 @@ namespace Oshima.FunGame.WebAPI.Controllers
             }
         }
 
-        [HttpPost("getskilllevelupneedy")]
+        [HttpGet("getskilllevelupneedy")]
         public string GetSkillLevelUpNeedy([FromQuery] long? uid = null, [FromQuery] int? c = null, [FromQuery] string? s = null)
         {
             long userid = uid ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
             int characterIndex = c ?? 0;
             string skillName = s ?? "";
 
-            PluginConfig pc = new("saved", userid.ToString());
-            pc.LoadConfig();
+            PluginConfig pc = FunGameService.GetUserConfig(userid);
+            FunGameService.ReleaseUserSemaphoreSlim(userid);
 
             if (pc.Count > 0)
             {
@@ -3534,8 +3558,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
                 int characterIndex = c ?? 0;
                 string skillName = s ?? "";
 
-                PluginConfig pc = new("saved", userid.ToString());
-                pc.LoadConfig();
+                PluginConfig pc = FunGameService.GetUserConfig(userid);
 
                 if (pc.Count > 0)
                 {
@@ -3548,6 +3571,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
                     }
                     else
                     {
+                        FunGameService.ReleaseUserSemaphoreSlim(userid);
                         return $"没有找到与这个序号相对应的角色！";
                     }
 
@@ -3559,6 +3583,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
                         {
                             if (skill.Level == General.GameplayEquilibriumConstant.MaxSkillLevel)
                             {
+                                FunGameService.ReleaseUserSemaphoreSlim(userid);
                                 return $"此技能【{skill.Name}】已经升至满级！";
                             }
 
@@ -3571,6 +3596,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
                                     {
                                         if (character.Level < needCount)
                                         {
+                                            FunGameService.ReleaseUserSemaphoreSlim(userid);
                                             return $"角色 [ {character} ] 等级不足 {needCount} 级（当前 {character.Level} 级），无法{isStudy}此技能！";
                                         }
                                     }
@@ -3578,6 +3604,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
                                     {
                                         if (character.LevelBreak + 1 < needCount)
                                         {
+                                            FunGameService.ReleaseUserSemaphoreSlim(userid);
                                             return $"角色 [ {character} ] 等级突破进度不足 {needCount} 等阶（当前 {character.LevelBreak + 1} 等阶），无法{isStudy}此技能！";
                                         }
                                     }
@@ -3589,6 +3616,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
                                         }
                                         else
                                         {
+                                            FunGameService.ReleaseUserSemaphoreSlim(userid);
                                             return $"你的{General.GameplayEquilibriumConstant.InGameCurrency}不足 {needCount} 呢，不满足{isStudy}条件！所需材料：\r\n{FunGameService.GetSkillLevelUpNeedy(skill.Level + 1, user, character)}";
                                         }
                                     }
@@ -3600,6 +3628,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
                                         }
                                         else
                                         {
+                                            FunGameService.ReleaseUserSemaphoreSlim(userid);
                                             return $"你的{General.GameplayEquilibriumConstant.InGameMaterial}不足 {needCount} 呢，不满足{isStudy}条件！所需材料：\r\n{FunGameService.GetSkillLevelUpNeedy(skill.Level + 1, user, character)}";
                                         }
                                     }
@@ -3618,6 +3647,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
                                             }
                                             else
                                             {
+                                                FunGameService.ReleaseUserSemaphoreSlim(userid);
                                                 return $"你的物品【{key}】数量不足 {needCount} 呢，不满足{isStudy}条件！所需材料：\r\n{FunGameService.GetSkillLevelUpNeedy(skill.Level + 1, user, character)}";
                                             }
                                         }
@@ -3626,9 +3656,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
 
                                 skill.Level += 1;
 
-                                user.LastTime = DateTime.Now;
-                                pc.Add("user", user);
-                                pc.SaveConfig();
+                                FunGameService.SetUserConfig(userid, pc, user);
                                 needy.Remove("角色等级");
                                 needy.Remove("角色突破进度");
                                 string msg = $"{isStudy}技能成功！本次消耗：{string.Join("，", needy.Select(kv => kv.Key + " * " + kv.Value))}，成功将【{skill.Name}】技能提升至 {skill.Level} 级！";
@@ -3645,36 +3673,41 @@ namespace Oshima.FunGame.WebAPI.Controllers
                                 return msg;
                             }
 
+                            FunGameService.ReleaseUserSemaphoreSlim(userid);
                             return $"{isStudy}技能失败！角色 [ {character} ] 的【{skill.Name}】技能当前等级：{skill.Level}/{General.GameplayEquilibriumConstant.MaxSkillLevel}" +
                                 $"\r\n下一级所需升级材料：\r\n" + FunGameService.GetSkillLevelUpNeedy(skill.Level + 1, user, character);
                         }
+                        FunGameService.ReleaseUserSemaphoreSlim(userid);
                         return $"此技能无法{isStudy}！";
                     }
                     else
                     {
+                        FunGameService.ReleaseUserSemaphoreSlim(userid);
                         return $"此角色没有【{skillName}】技能！";
                     }
                 }
                 else
                 {
+                    FunGameService.ReleaseUserSemaphoreSlim(userid);
                     return noSaved;
                 }
             }
             catch (Exception e)
             {
+                FunGameService.ReleaseUserSemaphoreSlim(uid.ToString() ?? "");
                 Logger.LogError(e, "Error: {e}", e);
                 return busy;
             }
         }
 
-        [HttpPost("getnormalattacklevelupneedy")]
+        [HttpGet("getnormalattacklevelupneedy")]
         public string GetNormalAttackLevelUpNeedy([FromQuery] long? uid = null, [FromQuery] int? c = null)
         {
             long userid = uid ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
             int characterIndex = c ?? 0;
 
-            PluginConfig pc = new("saved", userid.ToString());
-            pc.LoadConfig();
+            PluginConfig pc = FunGameService.GetUserConfig(userid);
+            FunGameService.ReleaseUserSemaphoreSlim(userid);
 
             if (pc.Count > 0)
             {
@@ -3712,8 +3745,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
                 long userid = uid ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
                 int characterIndex = c ?? 0;
 
-                PluginConfig pc = new("saved", userid.ToString());
-                pc.LoadConfig();
+                PluginConfig pc = FunGameService.GetUserConfig(userid);
 
                 if (pc.Count > 0)
                 {
@@ -3726,12 +3758,14 @@ namespace Oshima.FunGame.WebAPI.Controllers
                     }
                     else
                     {
+                        FunGameService.ReleaseUserSemaphoreSlim(userid);
                         return $"没有找到与这个序号相对应的角色！";
                     }
 
                     NormalAttack na = character.NormalAttack;
                     if (na.Level == General.GameplayEquilibriumConstant.MaxNormalAttackLevel)
                     {
+                        FunGameService.ReleaseUserSemaphoreSlim(userid);
                         return $"角色 [ {character} ] 的【{na.Name}】已经升至满级！";
                     }
 
@@ -3744,6 +3778,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
                             {
                                 if (character.Level < needCount)
                                 {
+                                    FunGameService.ReleaseUserSemaphoreSlim(userid);
                                     return $"角色 [ {character} ] 等级不足 {needCount} 级（当前 {character.Level} 级），无法升级此技能！";
                                 }
                             }
@@ -3751,6 +3786,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
                             {
                                 if (character.LevelBreak + 1 < needCount)
                                 {
+                                    FunGameService.ReleaseUserSemaphoreSlim(userid);
                                     return $"角色 [ {character} ] 等级突破进度不足 {needCount} 等阶（当前 {character.LevelBreak + 1} 等阶），无法升级此技能！";
                                 }
                             }
@@ -3762,7 +3798,8 @@ namespace Oshima.FunGame.WebAPI.Controllers
                                 }
                                 else
                                 {
-                                    return $"你的{General.GameplayEquilibriumConstant.InGameCurrency}不足 {needCount} 呢，不满足升级条件！所需材料：\r\n{FunGameService.GetSkillLevelUpNeedy(na.Level + 1, user, character)}";
+                                    FunGameService.ReleaseUserSemaphoreSlim(userid);
+                                    return $"你的{General.GameplayEquilibriumConstant.InGameCurrency}不足 {needCount} 呢，不满足升级条件！所需材料：\r\n{FunGameService.GetNormalAttackLevelUpNeedy(na.Level + 1, user, character)}";
                                 }
                             }
                             else if (key == General.GameplayEquilibriumConstant.InGameMaterial)
@@ -3773,7 +3810,8 @@ namespace Oshima.FunGame.WebAPI.Controllers
                                 }
                                 else
                                 {
-                                    return $"你的{General.GameplayEquilibriumConstant.InGameMaterial}不足 {needCount} 呢，不满足升级条件！所需材料：\r\n{FunGameService.GetSkillLevelUpNeedy(na.Level + 1, user, character)}";
+                                    FunGameService.ReleaseUserSemaphoreSlim(userid);
+                                    return $"你的{General.GameplayEquilibriumConstant.InGameMaterial}不足 {needCount} 呢，不满足升级条件！所需材料：\r\n{FunGameService.GetNormalAttackLevelUpNeedy(na.Level + 1, user, character)}";
                                 }
                             }
                             else
@@ -3791,7 +3829,8 @@ namespace Oshima.FunGame.WebAPI.Controllers
                                     }
                                     else
                                     {
-                                        return $"你的物品【{key}】数量不足 {needCount} 呢，不满足升级条件！所需材料：\r\n{FunGameService.GetSkillLevelUpNeedy(na.Level + 1, user, character)}";
+                                        FunGameService.ReleaseUserSemaphoreSlim(userid);
+                                        return $"你的物品【{key}】数量不足 {needCount} 呢，不满足升级条件！所需材料：\r\n{FunGameService.GetNormalAttackLevelUpNeedy(na.Level + 1, user, character)}";
                                     }
                                 }
                             }
@@ -3799,9 +3838,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
 
                         na.Level += 1;
 
-                        user.LastTime = DateTime.Now;
-                        pc.Add("user", user);
-                        pc.SaveConfig();
+                        FunGameService.SetUserConfig(userid, pc, user);
                         needy.Remove("角色等级");
                         needy.Remove("角色突破进度");
                         string msg = $"角色 [ {character} ] 升级【{na.Name}】成功！本次消耗：{string.Join("，", needy.Select(kv => kv.Key + " * " + kv.Value))}，成功将【{na.Name}】提升至 {na.Level} 级！";
@@ -3818,16 +3855,19 @@ namespace Oshima.FunGame.WebAPI.Controllers
                         return msg;
                     }
 
+                    FunGameService.ReleaseUserSemaphoreSlim(userid);
                     return $"升级{na.Name}失败！角色 [ {character} ] 的【{na.Name}】当前等级：{na.Level}/{General.GameplayEquilibriumConstant.MaxNormalAttackLevel}" +
-                        $"\r\n下一级所需升级材料：\r\n" + FunGameService.GetSkillLevelUpNeedy(na.Level + 1, user, character);
+                        $"\r\n下一级所需升级材料：\r\n" + FunGameService.GetNormalAttackLevelUpNeedy(na.Level + 1, user, character);
                 }
                 else
                 {
+                    FunGameService.ReleaseUserSemaphoreSlim(userid);
                     return noSaved;
                 }
             }
             catch (Exception e)
             {
+                FunGameService.ReleaseUserSemaphoreSlim(uid.ToString() ?? "");
                 Logger.LogError(e, "Error: {e}", e);
                 return busy;
             }
@@ -3871,8 +3911,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
             int bossIndex = index ?? 0;
             bool showAllRound = all ?? false;
 
-            PluginConfig pc = new("saved", userid.ToString());
-            pc.LoadConfig();
+            PluginConfig pc = FunGameService.GetUserConfig(userid);
 
             if (pc.Count > 0)
             {
@@ -3882,6 +3921,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
                 {
                     if (user.Inventory.MainCharacter.HP < user.Inventory.MainCharacter.MaxHP * 0.1)
                     {
+                        FunGameService.ReleaseUserSemaphoreSlim(userid);
                         return [$"主战角色重伤未愈，当前生命值低于 10%，请先等待生命值自动回复或设置其他主战角色！"];
                     }
 
@@ -3902,19 +3942,19 @@ namespace Oshima.FunGame.WebAPI.Controllers
                         boss.EP = boss2.EP;
                         msgs.Add($"挑战 Boss 失败，请稍后再来！");
                     }
-                    user.LastTime = DateTime.Now;
-                    pc.Add("user", user);
-                    pc.SaveConfig();
+                    FunGameService.SetUserConfig(userid, pc, user);
 
                     return msgs;
                 }
                 else
                 {
+                    FunGameService.ReleaseUserSemaphoreSlim(userid);
                     return [$"找不到指定编号的 Boss！"];
                 }
             }
             else
             {
+                FunGameService.ReleaseUserSemaphoreSlim(userid);
                 return [noSaved];
             }
         }
@@ -3927,8 +3967,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
                 long userid = uid ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
                 int characterIndex = c ?? 0;
 
-                PluginConfig pc = new("saved", userid.ToString());
-                pc.LoadConfig();
+                PluginConfig pc = FunGameService.GetUserConfig(userid);
 
                 if (pc.Count > 0)
                 {
@@ -3941,32 +3980,35 @@ namespace Oshima.FunGame.WebAPI.Controllers
                     }
                     else
                     {
+                        FunGameService.ReleaseUserSemaphoreSlim(userid);
                         return $"没有找到与这个序号相对应的角色！";
                     }
 
                     if (user.Inventory.Squad.Count >= 4)
                     {
+                        FunGameService.ReleaseUserSemaphoreSlim(userid);
                         return $"小队人数已满 4 人，无法继续添加角色！当前小队角色如下：\r\n{FunGameService.GetSquadInfo(user.Inventory.Characters, user.Inventory.Squad)}";
                     }
 
                     if (user.Inventory.Squad.Contains(character.Id))
                     {
+                        FunGameService.ReleaseUserSemaphoreSlim(userid);
                         return $"此角色已经在小队中了！";
                     }
 
                     user.Inventory.Squad.Add(character.Id);
-                    user.LastTime = DateTime.Now;
-                    pc.Add("user", user);
-                    pc.SaveConfig();
+                    FunGameService.SetUserConfig(userid, pc, user);
                     return $"添加小队角色成功：{character}\r\n当前小队角色如下：\r\n{FunGameService.GetSquadInfo(user.Inventory.Characters, user.Inventory.Squad)}";
                 }
                 else
                 {
+                    FunGameService.ReleaseUserSemaphoreSlim(userid);
                     return noSaved;
                 }
             }
             catch (Exception e)
             {
+                FunGameService.ReleaseUserSemaphoreSlim(uid.ToString() ?? "");
                 Logger.LogError(e, "Error: {e}", e);
                 return busy;
             }
@@ -3980,8 +4022,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
                 long userid = uid ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
                 int characterIndex = c ?? 0;
 
-                PluginConfig pc = new("saved", userid.ToString());
-                pc.LoadConfig();
+                PluginConfig pc = FunGameService.GetUserConfig(userid);
 
                 if (pc.Count > 0)
                 {
@@ -3994,27 +4035,29 @@ namespace Oshima.FunGame.WebAPI.Controllers
                     }
                     else
                     {
+                        FunGameService.ReleaseUserSemaphoreSlim(userid);
                         return $"没有找到与这个序号相对应的角色！";
                     }
 
                     if (!user.Inventory.Squad.Contains(character.Id))
                     {
+                        FunGameService.ReleaseUserSemaphoreSlim(userid);
                         return $"此角色不在小队中！";
                     }
 
                     user.Inventory.Squad.Remove(character.Id);
-                    user.LastTime = DateTime.Now;
-                    pc.Add("user", user);
-                    pc.SaveConfig();
+                    FunGameService.SetUserConfig(userid, pc, user);
                     return $"移除小队角色成功：{character}\r\n当前小队角色如下：\r\n{FunGameService.GetSquadInfo(user.Inventory.Characters, user.Inventory.Squad)}";
                 }
                 else
                 {
+                    FunGameService.ReleaseUserSemaphoreSlim(userid);
                     return noSaved;
                 }
             }
             catch (Exception e)
             {
+                FunGameService.ReleaseUserSemaphoreSlim(uid.ToString() ?? "");
                 Logger.LogError(e, "Error: {e}", e);
                 return busy;
             }
@@ -4028,8 +4071,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
                 long userid = uid ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
                 int[] characterIndexs = c ?? [];
 
-                PluginConfig pc = new("saved", userid.ToString());
-                pc.LoadConfig();
+                PluginConfig pc = FunGameService.GetUserConfig(userid);
 
                 if (pc.Count > 0)
                 {
@@ -4045,23 +4087,24 @@ namespace Oshima.FunGame.WebAPI.Controllers
                         }
                         else
                         {
+                            FunGameService.ReleaseUserSemaphoreSlim(userid);
                             return $"设置失败：没有找到与序号 {characterIndex} 相对应的角色！";
                         }
                         user.Inventory.Squad.Add(character.Id);
                     }
 
-                    user.LastTime = DateTime.Now;
-                    pc.Add("user", user);
-                    pc.SaveConfig();
+                    FunGameService.SetUserConfig(userid, pc, user);
                     return $"设置小队成员成功！当前小队角色如下：\r\n{FunGameService.GetSquadInfo(user.Inventory.Characters, user.Inventory.Squad)}";
                 }
                 else
                 {
+                    FunGameService.ReleaseUserSemaphoreSlim(userid);
                     return noSaved;
                 }
             }
             catch (Exception e)
             {
+                FunGameService.ReleaseUserSemaphoreSlim(uid.ToString() ?? "");
                 Logger.LogError(e, "Error: {e}", e);
                 return busy;
             }
@@ -4075,40 +4118,39 @@ namespace Oshima.FunGame.WebAPI.Controllers
                 long userid = uid ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
                 int[] characterIndexs = c ?? [];
 
-                PluginConfig pc = new("saved", userid.ToString());
-                pc.LoadConfig();
+                PluginConfig pc = FunGameService.GetUserConfig(userid);
 
                 if (pc.Count > 0)
                 {
                     User user = FunGameService.GetUser(pc);
 
                     user.Inventory.Squad.Clear();
-                    user.LastTime = DateTime.Now;
-                    pc.Add("user", user);
-                    pc.SaveConfig();
+                    FunGameService.SetUserConfig(userid, pc, user);
                     return $"清空小队成员成功！";
                 }
                 else
                 {
+                    FunGameService.ReleaseUserSemaphoreSlim(userid);
                     return noSaved;
                 }
             }
             catch (Exception e)
             {
+                FunGameService.ReleaseUserSemaphoreSlim(uid.ToString() ?? "");
                 Logger.LogError(e, "Error: {e}", e);
                 return busy;
             }
         }
 
-        [HttpPost("showsquad")]
+        [HttpGet("showsquad")]
         public string ShowSquad([FromQuery] long? uid = null)
         {
             try
             {
                 long userid = uid ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
 
-                PluginConfig pc = new("saved", userid.ToString());
-                pc.LoadConfig();
+                PluginConfig pc = FunGameService.GetUserConfig(userid);
+                FunGameService.ReleaseUserSemaphoreSlim(userid);
 
                 if (pc.Count > 0)
                 {
@@ -4134,8 +4176,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
             int bossIndex = index ?? 0;
             bool showAllRound = all ?? false;
 
-            PluginConfig pc = new("saved", userid.ToString());
-            pc.LoadConfig();
+            PluginConfig pc = FunGameService.GetUserConfig(userid);
 
             if (pc.Count > 0)
             {
@@ -4147,6 +4188,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
 
                     if (squad.All(c => c.HP < c.MaxHP * 0.1))
                     {
+                        FunGameService.ReleaseUserSemaphoreSlim(userid);
                         return [$"小队角色均重伤未愈，当前生命值低于 10%，请先等待生命值自动回复或重组小队！\r\n" +
                             $"当前小队角色如下：\r\n{FunGameService.GetSquadInfo(user.Inventory.Characters, user.Inventory.Squad)}"];
                     }
@@ -4170,19 +4212,19 @@ namespace Oshima.FunGame.WebAPI.Controllers
                         boss.EP = boss2.EP;
                         msgs.Add($"挑战 Boss 失败，请稍后再来！");
                     }
-                    user.LastTime = DateTime.Now;
-                    pc.Add("user", user);
-                    pc.SaveConfig();
+                    FunGameService.SetUserConfig(userid, pc, user);
 
                     return msgs;
                 }
                 else
                 {
+                    FunGameService.ReleaseUserSemaphoreSlim(userid);
                     return [$"找不到指定编号的 Boss！"];
                 }
             }
             else
             {
+                FunGameService.ReleaseUserSemaphoreSlim(userid);
                 return [noSaved];
             }
         }
@@ -4192,8 +4234,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
         {
             long userid = uid ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
 
-            PluginConfig pc = new("saved", userid.ToString());
-            pc.LoadConfig();
+            PluginConfig pc = FunGameService.GetUserConfig(userid);
 
             if (pc.Count > 0)
             {
@@ -4204,14 +4245,13 @@ namespace Oshima.FunGame.WebAPI.Controllers
                 string msg = FunGameService.CheckQuestList(quests);
                 quests.SaveConfig();
 
-                user.LastTime = DateTime.Now;
-                pc.Add("user", user);
-                pc.SaveConfig();
+                FunGameService.SetUserConfig(userid, pc, user);
 
                 return msg;
             }
             else
             {
+                FunGameService.ReleaseUserSemaphoreSlim(userid);
                 return noSaved;
             }
         }
@@ -4221,8 +4261,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
         {
             long userid = uid ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
 
-            PluginConfig pc = new("saved", userid.ToString());
-            pc.LoadConfig();
+            PluginConfig pc = FunGameService.GetUserConfig(userid);
 
             if (pc.Count > 0)
             {
@@ -4241,14 +4280,13 @@ namespace Oshima.FunGame.WebAPI.Controllers
                     msg = "你当前没有正在进行中的任务！";
                 }
 
-                user.LastTime = DateTime.Now;
-                pc.Add("user", user);
-                pc.SaveConfig();
+                FunGameService.SetUserConfig(userid, pc, user);
 
                 return msg;
             }
             else
             {
+                FunGameService.ReleaseUserSemaphoreSlim(userid);
                 return noSaved;
             }
         }
@@ -4259,8 +4297,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
             long userid = uid ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
             int questid = id ?? 0;
 
-            PluginConfig pc = new("saved", userid.ToString());
-            pc.LoadConfig();
+            PluginConfig pc = FunGameService.GetUserConfig(userid);
 
             List<string> msgs = [];
             if (pc.Count > 0)
@@ -4316,14 +4353,13 @@ namespace Oshima.FunGame.WebAPI.Controllers
                     msgs.Add($"没有找到序号为 {questid} 的任务！请使用【任务列表】指令来检查你的任务列表！");
                 }
 
-                user.LastTime = DateTime.Now;
-                pc.Add("user", user);
-                pc.SaveConfig();
+                FunGameService.SetUserConfig(userid, pc, user);
 
                 return msgs;
             }
             else
             {
+                FunGameService.ReleaseUserSemaphoreSlim(userid);
                 return [noSaved];
             }
         }
@@ -4333,8 +4369,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
         {
             long userid = uid ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
 
-            PluginConfig pc = new("saved", userid.ToString());
-            pc.LoadConfig();
+            PluginConfig pc = FunGameService.GetUserConfig(userid);
 
             if (pc.Count > 0)
             {
@@ -4345,27 +4380,26 @@ namespace Oshima.FunGame.WebAPI.Controllers
                 if (quests.Count > 0 && FunGameService.SettleQuest(user, quests))
                 {
                     quests.SaveConfig();
-                    user.LastTime = DateTime.Now;
-                    pc.Add("user", user);
-                    pc.SaveConfig();
                 }
+                FunGameService.SetUserConfig(userid, pc, user);
 
                 return "任务结算已完成，请查看你的任务列表！";
             }
             else
             {
+                FunGameService.ReleaseUserSemaphoreSlim(userid);
                 return noSaved;
             }
         }
 
-        [HttpPost("showmaincharacterorsquadstatus")]
+        [HttpGet("showmaincharacterorsquadstatus")]
         public string ShowMainCharacterOrSquadStatus([FromQuery] long? uid = null, [FromQuery] bool? squad = null)
         {
             long userid = uid ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
             bool showSquad = squad ?? false;
 
-            PluginConfig pc = new("saved", userid.ToString());
-            pc.LoadConfig();
+            PluginConfig pc = FunGameService.GetUserConfig(userid);
+            FunGameService.ReleaseUserSemaphoreSlim(userid);
 
             if (pc.Count > 0)
             {
@@ -4399,8 +4433,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
         {
             long userid = uid ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
 
-            PluginConfig pc = new("saved", userid.ToString());
-            pc.LoadConfig();
+            PluginConfig pc = FunGameService.GetUserConfig(userid);
 
             if (pc.Count > 0)
             {
@@ -4425,21 +4458,22 @@ namespace Oshima.FunGame.WebAPI.Controllers
 
                 if (sign)
                 {
+                    FunGameService.ReleaseUserSemaphoreSlim(userid);
                     return $"你今天已经签过到了哦！" +
                         (lastTime != DateTime.MinValue ? $"\r\n你上一次签到时间：{lastTime.ToString(General.GeneralDateTimeFormatChinese)}，连续签到：{days} 天。" : "");
                 }
 
                 string msg = FunGameService.GetSignInResult(user, days);
-                user.LastTime = newLastTime;
                 pc.Add("user", user);
                 pc.Add("signed", true);
                 pc.Add("days", days + 1);
                 pc.Add("lastTime", newLastTime);
-                pc.SaveConfig();
+                FunGameService.SetUserConfig(userid, pc, user);
                 return msg + "\r\n>>> 请发送【帮助】来获取更多玩法指令！<<<";
             }
             else
             {
+                FunGameService.ReleaseUserSemaphoreSlim(userid);
                 return noSaved;
             }
         }
@@ -4450,14 +4484,14 @@ namespace Oshima.FunGame.WebAPI.Controllers
             long userid = uid ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
             long clubid = id ?? 0;
 
-            PluginConfig pc = new("saved", userid.ToString());
-            pc.LoadConfig();
+            PluginConfig pc = FunGameService.GetUserConfig(userid);
 
             if (pc.Count > 0)
             {
                 User user = FunGameService.GetUser(pc);
                 if (pc.TryGetValue("club", out object? value) && long.TryParse(value.ToString(), out long userClub) && userClub != 0)
                 {
+                    FunGameService.ReleaseUserSemaphoreSlim(userid);
                     return $"你需要先退出当前社团才可以加入新社团。";
                 }
 
@@ -4466,11 +4500,13 @@ namespace Oshima.FunGame.WebAPI.Controllers
                 Club? club = emc.Get("club");
                 if (club is null)
                 {
+                    FunGameService.ReleaseUserSemaphoreSlim(userid);
                     return $"不存在编号为 {clubid} 的社团！";
                 }
 
                 if (!club.IsPublic)
                 {
+                    FunGameService.ReleaseUserSemaphoreSlim(userid);
                     return $"社团 [ {club.Name} ] 未公开，只能通过邀请加入。";
                 }
 
@@ -4492,13 +4528,12 @@ namespace Oshima.FunGame.WebAPI.Controllers
                 emc.Add("club", club);
                 emc.SaveConfig();
 
-                user.LastTime = DateTime.Now;
-                pc.Add("user", user);
-                pc.SaveConfig();
+                FunGameService.SetUserConfig(userid, pc, user);
                 return msg;
             }
             else
             {
+                FunGameService.ReleaseUserSemaphoreSlim(userid);
                 return noSaved;
             }
         }
@@ -4508,8 +4543,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
         {
             long userid = uid ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
 
-            PluginConfig pc = new("saved", userid.ToString());
-            pc.LoadConfig();
+            PluginConfig pc = FunGameService.GetUserConfig(userid);
 
             if (pc.Count > 0)
             {
@@ -4522,6 +4556,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
 
                 if (clubid == 0)
                 {
+                    FunGameService.ReleaseUserSemaphoreSlim(userid);
                     return $"你当前没有加入任何社团！";
                 }
 
@@ -4530,16 +4565,19 @@ namespace Oshima.FunGame.WebAPI.Controllers
                 Club? club = emc.Get("club");
                 if (club is null)
                 {
+                    FunGameService.ReleaseUserSemaphoreSlim(userid);
                     return $"不存在编号为 {clubid} 的社团！";
                 }
 
                 if (club.Master?.Id == userid)
                 {
+                    FunGameService.ReleaseUserSemaphoreSlim(userid);
                     return $"你是社团的社长，不能退出社团，请转让社长或【解散社团】！";
                 }
 
                 if (!club.Members.Remove(userid))
                 {
+                    FunGameService.ReleaseUserSemaphoreSlim(userid);
                     return $"你不是此社团的成员，请联系管理员处理。";
                 }
 
@@ -4548,14 +4586,13 @@ namespace Oshima.FunGame.WebAPI.Controllers
                 emc.SaveConfig();
 
                 string msg = $"退出社团 [ {club.Name} ] 成功！";
-                user.LastTime = DateTime.Now;
-                pc.Add("user", user);
                 pc.Add("club", 0);
-                pc.SaveConfig();
+                FunGameService.SetUserConfig(userid, pc, user);
                 return msg;
             }
             else
             {
+                FunGameService.ReleaseUserSemaphoreSlim(userid);
                 return noSaved;
             }
         }
@@ -4567,20 +4604,21 @@ namespace Oshima.FunGame.WebAPI.Controllers
             bool isPublic = @public ?? false;
             string clubPrefix = prefix ?? "";
 
-            PluginConfig pc = new("saved", userid.ToString());
-            pc.LoadConfig();
+            PluginConfig pc = FunGameService.GetUserConfig(userid);
 
             if (pc.Count > 0)
             {
                 User user = FunGameService.GetUser(pc);
                 if (pc.TryGetValue("club", out object? value) && long.TryParse(value.ToString(), out long userClub) && userClub != 0)
                 {
+                    FunGameService.ReleaseUserSemaphoreSlim(userid);
                     return $"你需要先退出当前社团才可以创建新社团。";
                 }
 
                 string pattern = @"^[a-zA-Z-_=+*%#^~.?!;:'"",]{3,4}$";
                 if (!Regex.IsMatch(clubPrefix, pattern))
                 {
+                    FunGameService.ReleaseUserSemaphoreSlim(userid);
                     return $"社团的前缀只能包含总共3-4个英文字母和数字、允许的特殊字符，此前缀不满足条件。";
                 }
 
@@ -4625,25 +4663,24 @@ namespace Oshima.FunGame.WebAPI.Controllers
                 emc.SaveConfig();
 
                 string msg = $"创建社团 [ {club.Name} ] （编号 {clubid}）成功！";
-                user.LastTime = DateTime.Now;
-                pc.Add("user", user);
                 pc.Add("club", clubid);
-                pc.SaveConfig();
+                FunGameService.SetUserConfig(userid, pc, user);
                 return msg;
             }
             else
             {
+                FunGameService.ReleaseUserSemaphoreSlim(userid);
                 return noSaved;
             }
         }
 
-        [HttpPost("showclubinfo")]
+        [HttpGet("showclubinfo")]
         public string ShowClubInfo([FromQuery] long? uid = null)
         {
             long userid = uid ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
 
-            PluginConfig pc = new("saved", userid.ToString());
-            pc.LoadConfig();
+            PluginConfig pc = FunGameService.GetUserConfig(userid);
+            FunGameService.ReleaseUserSemaphoreSlim(userid);
 
             if (pc.Count > 0)
             {
@@ -4704,7 +4741,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
             }
         }
 
-        [HttpPost("showclubmemberlist")]
+        [HttpGet("showclubmemberlist")]
         public string ShowClubMemberList([FromQuery] long? uid = null, [FromQuery] int? type = null, [FromQuery] int? page = null)
         {
             long userid = uid ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
@@ -4712,8 +4749,8 @@ namespace Oshima.FunGame.WebAPI.Controllers
             int showPage = page ?? 1;
             if (showPage <= 0) showPage = 1;
 
-            PluginConfig pc = new("saved", userid.ToString());
-            pc.LoadConfig();
+            PluginConfig pc = FunGameService.GetUserConfig(userid);
+            FunGameService.ReleaseUserSemaphoreSlim(userid);
 
             if (pc.Count > 0)
             {
@@ -4859,8 +4896,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
         {
             long userid = uid ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
 
-            PluginConfig pc = new("saved", userid.ToString());
-            pc.LoadConfig();
+            PluginConfig pc = FunGameService.GetUserConfig(userid);
 
             if (pc.Count > 0)
             {
@@ -4873,6 +4909,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
 
                 if (clubid == 0)
                 {
+                    FunGameService.ReleaseUserSemaphoreSlim(userid);
                     return $"你当前没有加入任何社团！";
                 }
 
@@ -4881,11 +4918,13 @@ namespace Oshima.FunGame.WebAPI.Controllers
                 Club? club = emc.Get("club");
                 if (club is null)
                 {
+                    FunGameService.ReleaseUserSemaphoreSlim(userid);
                     return $"不存在编号为 {clubid} 的社团！";
                 }
 
                 if (club.Master?.Id != userid)
                 {
+                    FunGameService.ReleaseUserSemaphoreSlim(userid);
                     return $"你不是社团的社长，没有权限使用此指令！";
                 }
 
@@ -4895,10 +4934,8 @@ namespace Oshima.FunGame.WebAPI.Controllers
                 {
                     System.IO.File.Delete(path);
                     msg = $"解散社团 [ {club.Name} ] 成功！";
-                    user.LastTime = DateTime.Now;
-                    pc.Add("user", user);
                     pc.Add("club", 0);
-                    pc.SaveConfig();
+                    FunGameService.SetUserConfig(userid, pc, user);
                     string directoryPath = $@"{AppDomain.CurrentDomain.BaseDirectory}configs/saved";
                     if (Directory.Exists(directoryPath))
                     {
@@ -4906,27 +4943,30 @@ namespace Oshima.FunGame.WebAPI.Controllers
                         foreach (string filePath in filePaths)
                         {
                             string fileName = Path.GetFileNameWithoutExtension(filePath);
-                            PluginConfig pc2 = new("saved", fileName);
-                            pc2.LoadConfig();
+                            PluginConfig pc2 = FunGameService.GetUserConfig(fileName);
                             if (pc2.TryGetValue("club", out value) && long.TryParse(value.ToString(), out long userClub) && userClub == clubid)
                             {
                                 User user2 = FunGameService.GetUser(pc2);
-                                user2.LastTime = DateTime.Now;
-                                pc2.Add("user", user2);
                                 pc2.Add("club", 0);
-                                pc2.SaveConfig();
+                                FunGameService.SetUserConfig(fileName, pc2, user2);
+                            }
+                            else
+                            {
+                                FunGameService.ReleaseUserSemaphoreSlim(fileName);
                             }
                         }
                     }
                 }
                 catch
                 {
+                    FunGameService.ReleaseUserSemaphoreSlim(userid);
                     msg = $"解散社团 [ {club.Name} ] 失败，请联系服务器管理员处理！";
                 }
                 return msg;
             }
             else
             {
+                FunGameService.ReleaseUserSemaphoreSlim(userid);
                 return noSaved;
             }
         }
@@ -4938,8 +4978,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
             long applicant = id ?? 0;
             bool isApproval = approval ?? false;
 
-            PluginConfig pc = new("saved", userid.ToString());
-            pc.LoadConfig();
+            PluginConfig pc = FunGameService.GetUserConfig(userid);
 
             if (pc.Count > 0)
             {
@@ -4953,13 +4992,13 @@ namespace Oshima.FunGame.WebAPI.Controllers
                     Club? club = emc.Get("club");
                     if (club is null)
                     {
+                        FunGameService.ReleaseUserSemaphoreSlim(userid);
                         return $"你当前没有加入任何社团！";
                     }
 
                     if (club.Master?.Id == userid || club.Admins.ContainsKey(userid))
                     {
-                        PluginConfig pc2 = new("saved", applicant.ToString());
-                        pc2.LoadConfig();
+                        PluginConfig pc2 = FunGameService.GetUserConfig(applicant);
                         if (pc2.ContainsKey("user"))
                         {
                             User user2 = FunGameService.GetUser(pc2);
@@ -4975,10 +5014,8 @@ namespace Oshima.FunGame.WebAPI.Controllers
                                     msg += $"已批准 [ {user2.Username} ] 加入社团 [ {club.Name} ] ！";
                                     if (!pc2.ContainsKey("club") || (pc2.TryGetValue("club", out value) && long.TryParse(value.ToString(), out long user2Club) && user2Club == 0))
                                     {
-                                        user2.LastTime = DateTime.Now;
-                                        pc2.Add("user", user2);
                                         pc2.Add("club", userClub);
-                                        pc2.SaveConfig();
+                                        FunGameService.SetUserConfig(applicant, pc2, user2);
                                     }
                                     else
                                     {
@@ -4995,31 +5032,36 @@ namespace Oshima.FunGame.WebAPI.Controllers
                             }
                             else
                             {
+                                FunGameService.ReleaseUserSemaphoreSlim(userid);
+                                FunGameService.ReleaseUserSemaphoreSlim(applicant);
                                 return $"对方并没有申请此社团！";
                             }
                         }
                         else
                         {
+                            FunGameService.ReleaseUserSemaphoreSlim(userid);
+                            FunGameService.ReleaseUserSemaphoreSlim(applicant);
                             return $"对方似乎还没创建存档呢！";
                         }
                     }
                     else
                     {
+                        FunGameService.ReleaseUserSemaphoreSlim(userid);
                         return $"你没有权限审批申请人！";
                     }
                 }
                 else
                 {
+                    FunGameService.ReleaseUserSemaphoreSlim(userid);
                     return $"你当前没有加入任何社团！";
                 }
 
-                user.LastTime = DateTime.Now;
-                pc.Add("user", user);
-                pc.SaveConfig();
+                FunGameService.SetUserConfig(userid, pc, user);
                 return msg;
             }
             else
             {
+                FunGameService.ReleaseUserSemaphoreSlim(userid);
                 return noSaved;
             }
         }
@@ -5030,8 +5072,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
             long userid = uid ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
             long kickid = id ?? 0;
 
-            PluginConfig pc = new("saved", userid.ToString());
-            pc.LoadConfig();
+            PluginConfig pc = FunGameService.GetUserConfig(userid);
 
             if (pc.Count > 0)
             {
@@ -5045,6 +5086,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
                     Club? club = emc.Get("club");
                     if (club is null)
                     {
+                        FunGameService.ReleaseUserSemaphoreSlim(userid);
                         return $"你当前没有加入任何社团！";
                     }
 
@@ -5052,8 +5094,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
                     {
                         if (!club.Admins.ContainsKey(kickid) || (club.Master?.Id == userid && club.Admins.ContainsKey(kickid)))
                         {
-                            PluginConfig pc2 = new("saved", kickid.ToString());
-                            pc2.LoadConfig();
+                            PluginConfig pc2 = FunGameService.GetUserConfig(kickid);
                             if (pc2.ContainsKey("user"))
                             {
                                 User user2 = FunGameService.GetUser(pc2);
@@ -5064,46 +5105,50 @@ namespace Oshima.FunGame.WebAPI.Controllers
                                     club.Members.Remove(user2.Id);
                                     club.Admins.Remove(user2.Id);
                                     msg += $"操作成功，已将 [ {user2.Username} ] 踢出社团 [ {club.Name} ] ！";
-                                    user2.LastTime = DateTime.Now;
-                                    pc2.Add("user", user2);
                                     pc2.Add("club", 0);
-                                    pc2.SaveConfig();
+                                    FunGameService.SetUserConfig(kickid, pc2, user2);
 
                                     emc.Add("club", club);
                                     emc.SaveConfig();
                                 }
                                 else
                                 {
+                                    FunGameService.ReleaseUserSemaphoreSlim(userid);
+                                    FunGameService.ReleaseUserSemaphoreSlim(kickid);
                                     return $"对方并不在此社团中，无法踢出！";
                                 }
                             }
                             else
                             {
+                                FunGameService.ReleaseUserSemaphoreSlim(userid);
+                                FunGameService.ReleaseUserSemaphoreSlim(kickid);
                                 return $"对方似乎还没创建存档呢！";
                             }
                         }
                         else
                         {
+                            FunGameService.ReleaseUserSemaphoreSlim(userid);
                             return $"你没有权限踢出管理员！";
                         }
                     }
                     else
                     {
+                        FunGameService.ReleaseUserSemaphoreSlim(userid);
                         return $"你没有权限踢出成员！";
                     }
                 }
                 else
                 {
+                    FunGameService.ReleaseUserSemaphoreSlim(userid);
                     return $"你当前没有加入任何社团！";
                 }
 
-                user.LastTime = DateTime.Now;
-                pc.Add("user", user);
-                pc.SaveConfig();
+                FunGameService.SetUserConfig(userid, pc, user);
                 return msg;
             }
             else
             {
+                FunGameService.ReleaseUserSemaphoreSlim(userid);
                 return noSaved;
             }
         }
@@ -5115,8 +5160,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
             string name = part?.Trim().ToLower() ?? "";
             string[] values = args ?? [];
 
-            PluginConfig pc = new("saved", userid.ToString());
-            pc.LoadConfig();
+            PluginConfig pc = FunGameService.GetUserConfig(userid);
 
             if (pc.Count > 0)
             {
@@ -5130,6 +5174,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
                     Club? club = emc.Get("club");
                     if (club is null)
                     {
+                        FunGameService.ReleaseUserSemaphoreSlim(userid);
                         return $"你当前没有加入任何社团！";
                     }
 
@@ -5143,6 +5188,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
                             case "name":
                                 if (!isMaster)
                                 {
+                                    FunGameService.ReleaseUserSemaphoreSlim(userid);
                                     return "只有社长可以修改社团名称！";
                                 }
                                 if (values.Length > 0)
@@ -5152,16 +5198,22 @@ namespace Oshima.FunGame.WebAPI.Controllers
                                         club.Name = values[0];
                                         msg = "修改成功，新的社团名称是：" + club.Name;
                                     }
-                                    else return "社团名称只能包含2至15个字符！";
+                                    else
+                                    {
+                                        FunGameService.ReleaseUserSemaphoreSlim(userid);
+                                        return "社团名称只能包含2至15个字符！";
+                                    }
                                 }
                                 else
                                 {
+                                    FunGameService.ReleaseUserSemaphoreSlim(userid);
                                     return "请提供新的社团名称！";
                                 }
                                 break;
                             case "prefix":
                                 if (!isMaster)
                                 {
+                                    FunGameService.ReleaseUserSemaphoreSlim(userid);
                                     return "只有社长可以修改社团前缀！";
                                 }
                                 string pattern = @"^[a-zA-Z0-9-_=+*%#^~.?!;:'"",]{3,4}$";
@@ -5170,6 +5222,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
                                     string clubPrefix = values[0];
                                     if (!Regex.IsMatch(clubPrefix, pattern))
                                     {
+                                        FunGameService.ReleaseUserSemaphoreSlim(userid);
                                         return $"社团的前缀只能包含总共3-4个英文字母和数字、允许的特殊字符，此前缀不满足条件。";
                                     }
                                     club.Prefix = clubPrefix;
@@ -5177,6 +5230,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
                                 }
                                 else
                                 {
+                                    FunGameService.ReleaseUserSemaphoreSlim(userid);
                                     return "请提供新的社团前缀！";
                                 }
                                 break;
@@ -5189,6 +5243,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
                                 }
                                 else
                                 {
+                                    FunGameService.ReleaseUserSemaphoreSlim(userid);
                                     return "请提供新的社团描述！";
                                 }
                                 break;
@@ -5200,6 +5255,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
                                 }
                                 else
                                 {
+                                    FunGameService.ReleaseUserSemaphoreSlim(userid);
                                     return "请提供正确的布尔值（true 或 false）来设置加入是否需要批准！";
                                 }
                                 break;
@@ -5211,12 +5267,14 @@ namespace Oshima.FunGame.WebAPI.Controllers
                                 }
                                 else
                                 {
+                                    FunGameService.ReleaseUserSemaphoreSlim(userid);
                                     return "请提供正确的布尔值（true 或 false）来设置社团是否公开/私密！";
                                 }
                                 break;
                             case "setadmin":
                                 if (!isMaster)
                                 {
+                                    FunGameService.ReleaseUserSemaphoreSlim(userid);
                                     return "只有社长可以设置社团管理员！";
                                 }
                                 if (values.Length > 0 && long.TryParse(values[0], out long id) && club.Members.ContainsKey(id) && FunGameConstant.UserIdAndUsername.TryGetValue(id, out User? user2) && user2 != null)
@@ -5226,12 +5284,14 @@ namespace Oshima.FunGame.WebAPI.Controllers
                                 }
                                 else
                                 {
+                                    FunGameService.ReleaseUserSemaphoreSlim(userid);
                                     return "指定的用户不是此社团的成员！";
                                 }
                                 break;
                             case "setnotadmin":
                                 if (!isMaster)
                                 {
+                                    FunGameService.ReleaseUserSemaphoreSlim(userid);
                                     return "只有社长可以取消社团管理员！";
                                 }
                                 if (values.Length > 0 && long.TryParse(values[0], out id) && club.Members.ContainsKey(id) && FunGameConstant.UserIdAndUsername.TryGetValue(id, out user2) && user2 != null)
@@ -5247,12 +5307,14 @@ namespace Oshima.FunGame.WebAPI.Controllers
                                 }
                                 else
                                 {
+                                    FunGameService.ReleaseUserSemaphoreSlim(userid);
                                     return "指定的用户不是此社团的成员！";
                                 }
                                 break;
                             case "setmaster":
                                 if (!isMaster)
                                 {
+                                    FunGameService.ReleaseUserSemaphoreSlim(userid);
                                     return "只有社长可以转让社团！";
                                 }
                                 if (values.Length > 0 && long.TryParse(values[0], out id) && club.Members.ContainsKey(id) && FunGameConstant.UserIdAndUsername.TryGetValue(id, out user2) && user2 != null)
@@ -5264,10 +5326,12 @@ namespace Oshima.FunGame.WebAPI.Controllers
                                 }
                                 else
                                 {
+                                    FunGameService.ReleaseUserSemaphoreSlim(userid);
                                     return "指定的用户不是此社团的成员！";
                                 }
                                 break;
                             default:
+                                FunGameService.ReleaseUserSemaphoreSlim(userid);
                                 return "未知的社团设置项，设置失败。";
                         }
 
@@ -5276,21 +5340,22 @@ namespace Oshima.FunGame.WebAPI.Controllers
                     }
                     else
                     {
+                        FunGameService.ReleaseUserSemaphoreSlim(userid);
                         return $"你没有权限修改社团设置！";
                     }
                 }
                 else
                 {
+                    FunGameService.ReleaseUserSemaphoreSlim(userid);
                     return $"你当前没有加入任何社团！";
                 }
 
-                user.LastTime = DateTime.Now;
-                pc.Add("user", user);
-                pc.SaveConfig();
+                FunGameService.SetUserConfig(userid, pc, user);
                 return msg;
             }
             else
             {
+                FunGameService.ReleaseUserSemaphoreSlim(userid);
                 return noSaved;
             }
         }
@@ -5300,39 +5365,23 @@ namespace Oshima.FunGame.WebAPI.Controllers
         {
             long userid = uid ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
 
-            PluginConfig pc = new("saved", userid.ToString());
-            pc.LoadConfig();
+            PluginConfig pc = FunGameService.GetUserConfig(userid);
 
             if (pc.Count > 0)
             {
                 User user = FunGameService.GetUser(pc);
 
-                GeneralEventArgs e = new()
-                {
-                    EventMsg = $"{user.Username}正在访问每日商店"
-                };
-                FunGameService.ServerPluginLoader?.OnBeforeOpenStoreEvent(user, e);
-                if (e.Cancel)
-                {
-                    return refused + (e.EventMsg != "" ? $"原因：{e.EventMsg}" : "");
-                }
-
                 EntityModuleConfig<Store> stores = new("stores", userid.ToString());
                 stores.LoadConfig();
                 string msg = FunGameService.CheckDailyStore(stores, user);
                 stores.SaveConfig();
-
-                user.LastTime = DateTime.Now;
-                pc.Add("user", user);
-                pc.SaveConfig();
-
-                e.EventMsg = $"{user.Username}访问每日商店成功";
-                FunGameService.ServerPluginLoader?.OnAfterOpenStoreEvent(user, e);
+                FunGameService.SetUserConfig(userid, pc, user);
 
                 return msg;
             }
             else
             {
+                FunGameService.ReleaseUserSemaphoreSlim(userid);
                 return noSaved;
             }
         }
@@ -5348,8 +5397,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
                 return "数量必须大于0！";
             }
 
-            PluginConfig pc = new("saved", userid.ToString());
-            pc.LoadConfig();
+            PluginConfig pc = FunGameService.GetUserConfig(userid);
 
             if (pc.Count > 0)
             {
@@ -5368,35 +5416,36 @@ namespace Oshima.FunGame.WebAPI.Controllers
                     }
                     else
                     {
+                        FunGameService.ReleaseUserSemaphoreSlim(userid);
                         return $"没有对应编号的商品！";
                     }
                 }
                 else
                 {
+                    FunGameService.ReleaseUserSemaphoreSlim(userid);
                     return $"商品列表为空，请使用【每日商店】指令来获取商品列表！";
                 }
 
                 stores.Add("daily", daily);
                 stores.SaveConfig();
-                user.LastTime = DateTime.Now;
-                pc.Add("user", user);
-                pc.SaveConfig();
+                FunGameService.SetUserConfig(userid, pc, user);
                 return msg;
             }
             else
             {
+                FunGameService.ReleaseUserSemaphoreSlim(userid);
                 return noSaved;
             }
         }
 
-        [HttpPost("dailystoreshowinfo")]
+        [HttpGet("dailystoreshowinfo")]
         public string DailyStoreShowInfo([FromQuery] long? uid = null, [FromQuery] long? id = null)
         {
             long userid = uid ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
             long goodid = id ?? 0;
 
-            PluginConfig pc = new("saved", userid.ToString());
-            pc.LoadConfig();
+            PluginConfig pc = FunGameService.GetUserConfig(userid);
+            FunGameService.ReleaseUserSemaphoreSlim(userid);
 
             if (pc.Count > 0)
             {
@@ -5449,8 +5498,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
             long userid = uid ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
             string itemName = name ?? "";
 
-            PluginConfig pc = new("saved", userid.ToString());
-            pc.LoadConfig();
+            PluginConfig pc = FunGameService.GetUserConfig(userid);
 
             if (pc.Count > 0)
             {
@@ -5471,10 +5519,12 @@ namespace Oshima.FunGame.WebAPI.Controllers
 
                         if ((maxRepeat is null || maxRepeat == 0) && list.Contains(user.Id))
                         {
+                            FunGameService.ReleaseUserSemaphoreSlim(userid);
                             return $"你已经领取过这个礼包【{itemName}】啦，不能重复领取哦！";
                         }
                         else if (list.Count(id => id == user.Id) >= maxRepeat)
                         {
+                            FunGameService.ReleaseUserSemaphoreSlim(userid);
                             return $"礼包【{itemName}】的领取次数已经达到上限 {maxRepeat} 次，无法继续领取了！";
                         }
 
@@ -5490,19 +5540,19 @@ namespace Oshima.FunGame.WebAPI.Controllers
                     user.Inventory.Items.Add(newItem);
                     string msg = $"恭喜你获得礼包【{itemName}】一份！";
 
-                    user.LastTime = DateTime.Now;
-                    pc.Add("user", user);
-                    pc.SaveConfig();
+                    FunGameService.SetUserConfig(userid, pc, user);
 
                     return msg;
                 }
                 else
                 {
+                    FunGameService.ReleaseUserSemaphoreSlim(userid);
                     return "没有找到这个礼包，可能已经过期。";
                 }
             }
             else
             {
+                FunGameService.ReleaseUserSemaphoreSlim(userid);
                 return noSaved;
             }
         }
@@ -5589,10 +5639,9 @@ namespace Oshima.FunGame.WebAPI.Controllers
         }
 
         [HttpPost("exploreregion")]
-        public async Task<(string, string)> ExploreRegion([FromQuery] long? uid = null, [FromQuery] long? id = null, [FromBody] long[]? cids = null)
+        public (string, string) ExploreRegion([FromQuery] long? uid = null, [FromQuery] long? id = null, [FromBody] long[]? cids = null)
         {
             string exploreId = "";
-            await _semaphore.WaitAsync();
             try
             {
                 long userid = uid ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
@@ -5600,8 +5649,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
                 long[] characterIds = cids ?? [];
                 int characterCount = characterIds.Length;
 
-                PluginConfig pc = new("saved", userid.ToString());
-                pc.LoadConfig();
+                PluginConfig pc = FunGameService.GetUserConfig(userid);
 
                 string msg = "";
                 if (pc.Count > 0)
@@ -5656,6 +5704,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
                     }
                     else
                     {
+                        FunGameService.ReleaseUserSemaphoreSlim(userid);
                         return ($"没有找到与这个序号相对应的地区！", exploreId);
                     }
 
@@ -5708,21 +5757,20 @@ namespace Oshima.FunGame.WebAPI.Controllers
                         msg += $"本次消耗探索许可 {reduce} 个，你的剩余探索许可：{exploreTimes} 个。需要注意：探索难度星级一比一兑换探索许可，并且参与探索的角色，都需要消耗相同数量的探索许可。";
                     }
 
-                    user.LastTime = DateTime.Now;
-                    pc.Add("user", user);
                     pc.Add("exploreTimes", exploreTimes);
-                    pc.SaveConfig();
+                    FunGameService.SetUserConfig(userid, pc, user);
 
                     return (msg, exploreId);
                 }
                 else
                 {
+                    FunGameService.ReleaseUserSemaphoreSlim(userid);
                     return (noSaved, exploreId);
                 }
             }
             catch (Exception e)
             {
-                _semaphore.Release();
+                FunGameService.ReleaseUserSemaphoreSlim(uid.ToString() ?? "");
                 Logger.LogError(e, "Error: {e}", e);
                 return (busy, exploreId);
             }
@@ -5733,8 +5781,8 @@ namespace Oshima.FunGame.WebAPI.Controllers
         {
             long userid = uid ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
 
-            PluginConfig pc = new("saved", userid.ToString());
-            pc.LoadConfig();
+            PluginConfig pc = FunGameService.GetUserConfig(userid);
+            FunGameService.ReleaseUserSemaphoreSlim(userid);
 
             string msg = "";
             if (pc.Count > 0)
@@ -5781,10 +5829,6 @@ namespace Oshima.FunGame.WebAPI.Controllers
                 if (msg != "") msg += "\r\n";
                 msg += $"你的剩余探索许可：{exploreTimes} 个。";
 
-                user.LastTime = DateTime.Now;
-                pc.Add("user", user);
-                pc.SaveConfig();
-
                 return msg;
             }
             else
@@ -5798,8 +5842,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
         {
             long userid = uid ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
 
-            PluginConfig pc = new("saved", userid.ToString());
-            pc.LoadConfig();
+            PluginConfig pc = FunGameService.GetUserConfig(userid);
 
             string msg;
             if (pc.Count > 0)
@@ -5825,14 +5868,13 @@ namespace Oshima.FunGame.WebAPI.Controllers
                     msg = $"你目前没有角色正在探索。";
                 }
 
-                user.LastTime = DateTime.Now;
-                pc.Add("user", user);
-                pc.SaveConfig();
+                FunGameService.SetUserConfig(userid, pc, user);
 
                 return msg;
             }
             else
             {
+                FunGameService.ReleaseUserSemaphoreSlim(userid);
                 return noSaved;
             }
         }
@@ -5842,8 +5884,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
         {
             long userid = uid ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
 
-            PluginConfig pc = new("saved", userid.ToString());
-            pc.LoadConfig();
+            PluginConfig pc = FunGameService.GetUserConfig(userid);
 
             string msg = "";
             if (pc.Count > 0)
@@ -5861,14 +5902,13 @@ namespace Oshima.FunGame.WebAPI.Controllers
                     }
                 }
 
-                user.LastTime = DateTime.Now;
-                pc.Add("user", user);
-                pc.SaveConfig();
+                FunGameService.SetUserConfig(userid, pc, user);
 
                 return msg;
             }
             else
             {
+                FunGameService.ReleaseUserSemaphoreSlim(userid);
                 return noSaved;
             }
         }
@@ -5878,8 +5918,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
         {
             long userid = uid ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
 
-            PluginConfig pc = new("saved", userid.ToString());
-            pc.LoadConfig();
+            PluginConfig pc = FunGameService.GetUserConfig(userid);
 
             string msg = "";
             if (pc.Count > 0)
@@ -5908,10 +5947,6 @@ namespace Oshima.FunGame.WebAPI.Controllers
                     }
 
                     msg = $"感谢使用生命之泉服务！你已消费：{total:0.##} {General.GameplayEquilibriumConstant.InGameCurrency}。";
-
-                    user.LastTime = DateTime.Now;
-                    pc.Add("user", user);
-                    pc.SaveConfig();
                 }
                 else
                 {
@@ -5923,10 +5958,12 @@ namespace Oshima.FunGame.WebAPI.Controllers
                     $"150 {General.GameplayEquilibriumConstant.InGameCurrency} / 50% 生命值以下的角色\r\n" +
                     $"50 {General.GameplayEquilibriumConstant.InGameCurrency} / 50% 生命值以上的角色";
 
+                FunGameService.SetUserConfig(userid, pc, user);
                 return msg;
             }
             else
             {
+                FunGameService.ReleaseUserSemaphoreSlim(userid);
                 return noSaved;
             }
         }
@@ -5936,8 +5973,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
         {
             long userid = uid ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
 
-            PluginConfig pc = new("saved", userid.ToString());
-            pc.LoadConfig();
+            PluginConfig pc = FunGameService.GetUserConfig(userid);
 
             string msg = "";
             if (pc.Count > 0)
@@ -5966,10 +6002,6 @@ namespace Oshima.FunGame.WebAPI.Controllers
                     }
 
                     msg = $"欢迎来访酒馆，你的本次消费：{total:0.##} {General.GameplayEquilibriumConstant.InGameMaterial}。";
-
-                    user.LastTime = DateTime.Now;
-                    pc.Add("user", user);
-                    pc.SaveConfig();
                 }
                 else
                 {
@@ -5981,10 +6013,12 @@ namespace Oshima.FunGame.WebAPI.Controllers
                     $"0.6 {General.GameplayEquilibriumConstant.InGameMaterial} / 100 点能量值以下的角色\r\n" +
                     $"0.2 {General.GameplayEquilibriumConstant.InGameMaterial} / 200 点能量值以下的角色";
 
+                FunGameService.SetUserConfig(userid, pc, user);
                 return msg;
             }
             else
             {
+                FunGameService.ReleaseUserSemaphoreSlim(userid);
                 return noSaved;
             }
         }
@@ -6009,22 +6043,20 @@ namespace Oshima.FunGame.WebAPI.Controllers
             long activityid = aid ?? 0;
             long questid = qid ?? 0;
 
-            PluginConfig pc = new("saved", userid.ToString());
-            pc.LoadConfig();
+            PluginConfig pc = FunGameService.GetUserConfig(userid);
 
             string msg = "";
             if (pc.Count > 0)
             {
                 User user = FunGameService.GetUser(pc);
 
-                user.LastTime = DateTime.Now;
-                pc.Add("user", user);
-                pc.SaveConfig();
+                FunGameService.SetUserConfig(userid, pc, user);
 
                 return msg;
             }
             else
             {
+                FunGameService.ReleaseUserSemaphoreSlim(userid);
                 return noSaved;
             }
         }
@@ -6037,8 +6069,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
                 long userid = uid ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
                 int[] items = seq ?? [];
 
-                PluginConfig pc = new("saved", userid.ToString());
-                pc.LoadConfig();
+                PluginConfig pc = FunGameService.GetUserConfig(userid);
 
                 if (pc.Count > 0)
                 {
@@ -6063,6 +6094,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
                             }
                             catch (Exception e)
                             {
+                                FunGameService.ReleaseUserSemaphoreSlim(userid);
                                 Logger.LogError(e, "Error: {e}", e);
                                 return busy;
                             }
@@ -6103,20 +6135,19 @@ namespace Oshima.FunGame.WebAPI.Controllers
                         if (msg != "") msg += "\r\n";
                         msg += "没有找到与这个序号相对应的物品：" + string.Join("，", failedItems);
                     }
-
-                    user.LastTime = DateTime.Now;
-                    pc.Add("user", user);
-                    pc.SaveConfig();
+                    FunGameService.SetUserConfig(userid, pc, user);
 
                     return msg;
                 }
                 else
                 {
+                    FunGameService.ReleaseUserSemaphoreSlim(userid);
                     return noSaved;
                 }
             }
             catch (Exception e)
             {
+                FunGameService.ReleaseUserSemaphoreSlim(uid.ToString() ?? "");
                 Logger.LogError(e, "Error: {e}", e);
                 return busy;
             }
@@ -6129,8 +6160,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
 
             try
             {
-                PluginConfig pc = new("saved", userid.ToString());
-                pc.LoadConfig();
+                PluginConfig pc = FunGameService.GetUserConfig(userid);
 
                 string msg = "";
                 if (pc.Count > 0)
@@ -6139,6 +6169,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
 
                     if (user.Id == offeree)
                     {
+                        FunGameService.ReleaseUserSemaphoreSlim(userid);
                         return "报价的目标玩家不能是自己。";
                     }
 
@@ -6149,22 +6180,23 @@ namespace Oshima.FunGame.WebAPI.Controllers
                     }
                     else
                     {
+                        FunGameService.ReleaseUserSemaphoreSlim(userid);
                         return $"目标玩家不存在。";
                     }
 
-                    user.LastTime = DateTime.Now;
-                    pc.Add("user", user);
-                    pc.SaveConfig();
+                    FunGameService.SetUserConfig(userid, pc, user);
 
                     return msg;
                 }
                 else
                 {
+                    FunGameService.ReleaseUserSemaphoreSlim(userid);
                     return noSaved;
                 }
             }
             catch (Exception e)
             {
+                FunGameService.ReleaseUserSemaphoreSlim(userid);
                 Logger.LogError(e, "Error: {e}", e);
                 return busy;
             }
@@ -6179,8 +6211,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
 
             try
             {
-                PluginConfig pc = new("saved", userid.ToString());
-                pc.LoadConfig();
+                PluginConfig pc = FunGameService.GetUserConfig(userid);
 
                 string msg = "";
                 if (pc.Count > 0)
@@ -6196,19 +6227,19 @@ namespace Oshima.FunGame.WebAPI.Controllers
                         msg = "没有找到对应的报价。";
                     }
 
-                    user.LastTime = DateTime.Now;
-                    pc.Add("user", user);
-                    pc.SaveConfig();
+                    FunGameService.SetUserConfig(userid, pc, user);
 
                     return msg;
                 }
                 else
                 {
+                    FunGameService.ReleaseUserSemaphoreSlim(userid);
                     return noSaved;
                 }
             }
             catch (Exception e)
             {
+                FunGameService.ReleaseUserSemaphoreSlim(userid);
                 Logger.LogError(e, "Error: {e}", e);
                 return busy;
             }
@@ -6221,8 +6252,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
 
             try
             {
-                PluginConfig pc = new("saved", userid.ToString());
-                pc.LoadConfig();
+                PluginConfig pc = FunGameService.GetUserConfig(userid);
 
                 string msg = "";
                 if (pc.Count > 0)
@@ -6231,19 +6261,18 @@ namespace Oshima.FunGame.WebAPI.Controllers
 
                     msg = FunGameService.SendOffer(user, offerId ?? -1);
 
-                    user.LastTime = DateTime.Now;
-                    pc.Add("user", user);
-                    pc.SaveConfig();
-
+                    FunGameService.SetUserConfig(userid, pc, user);
                     return msg;
                 }
                 else
                 {
+                    FunGameService.ReleaseUserSemaphoreSlim(userid);
                     return noSaved;
                 }
             }
             catch (Exception e)
             {
+                FunGameService.ReleaseUserSemaphoreSlim(userid);
                 Logger.LogError(e, "Error: {e}", e);
                 return busy;
             }
@@ -6257,8 +6286,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
 
             try
             {
-                PluginConfig pc = new("saved", userid.ToString());
-                pc.LoadConfig();
+                PluginConfig pc = FunGameService.GetUserConfig(userid);
 
                 string msg = "";
                 if (pc.Count > 0)
@@ -6274,15 +6302,18 @@ namespace Oshima.FunGame.WebAPI.Controllers
                         msg = "没有找到对应的报价。";
                     }
 
+                    FunGameService.ReleaseUserSemaphoreSlim(userid);
                     return msg;
                 }
                 else
                 {
+                    FunGameService.ReleaseUserSemaphoreSlim(userid);
                     return noSaved;
                 }
             }
             catch (Exception e)
             {
+                FunGameService.ReleaseUserSemaphoreSlim(userid);
                 Logger.LogError(e, "Error: {e}", e);
                 return busy;
             }
@@ -6297,8 +6328,8 @@ namespace Oshima.FunGame.WebAPI.Controllers
 
             try
             {
-                PluginConfig pc = new("saved", userid.ToString());
-                pc.LoadConfig();
+                PluginConfig pc = FunGameService.GetUserConfig(userid);
+                FunGameService.ReleaseUserSemaphoreSlim(userid);
 
                 string msg = "";
                 if (pc.Count > 0)
@@ -6397,10 +6428,6 @@ namespace Oshima.FunGame.WebAPI.Controllers
                         return $"没有这么多页！当前总页数为 {maxPage}，但你请求的是第 {showPage} 页。";
                     }
 
-                    user.LastTime = DateTime.Now;
-                    pc.Add("user", user);
-                    pc.SaveConfig();
-
                     return msg;
                 }
                 else
@@ -6424,8 +6451,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
 
             try
             {
-                PluginConfig pc = new("saved", userid.ToString());
-                pc.LoadConfig();
+                PluginConfig pc = FunGameService.GetUserConfig(userid);
 
                 string msg = "";
                 if (pc.Count > 0)
@@ -6441,19 +6467,18 @@ namespace Oshima.FunGame.WebAPI.Controllers
                         msg = "没有找到对应的报价。";
                     }
 
-                    user.LastTime = DateTime.Now;
-                    pc.Add("user", user);
-                    pc.SaveConfig();
-
+                    FunGameService.SetUserConfig(userid, pc, user);
                     return msg;
                 }
                 else
                 {
+                    FunGameService.ReleaseUserSemaphoreSlim(userid);
                     return noSaved;
                 }
             }
             catch (Exception e)
             {
+                FunGameService.ReleaseUserSemaphoreSlim(userid);
                 Logger.LogError(e, "Error: {e}", e);
                 return busy;
             }
@@ -6466,8 +6491,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
 
             try
             {
-                PluginConfig pc = new("saved", userid.ToString());
-                pc.LoadConfig();
+                PluginConfig pc = FunGameService.GetUserConfig(userid);
 
                 string msg = "";
                 if (pc.Count > 0)
@@ -6476,19 +6500,18 @@ namespace Oshima.FunGame.WebAPI.Controllers
 
                     msg = FunGameService.CancelOffer(user, offerId ?? -1);
 
-                    user.LastTime = DateTime.Now;
-                    pc.Add("user", user);
-                    pc.SaveConfig();
-
+                    FunGameService.SetUserConfig(userid, pc, user);
                     return msg;
                 }
                 else
                 {
+                    FunGameService.ReleaseUserSemaphoreSlim(userid);
                     return noSaved;
                 }
             }
             catch (Exception e)
             {
+                FunGameService.ReleaseUserSemaphoreSlim(userid);
                 Logger.LogError(e, "Error: {e}", e);
                 return busy;
             }
@@ -6502,8 +6525,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
                 long userid = uid ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
                 int[] ids = items ?? [];
 
-                PluginConfig pc = new("saved", userid.ToString());
-                pc.LoadConfig();
+                PluginConfig pc = FunGameService.GetUserConfig(userid);
 
                 if (pc.Count > 0)
                 {
@@ -6567,19 +6589,19 @@ namespace Oshima.FunGame.WebAPI.Controllers
                     if (successCount > 0)
                     {
                         user.Inventory.Credits += totalGained;
-                        user.LastTime = DateTime.Now;
-                        pc.Add("user", user);
-                        pc.SaveConfig();
                     }
+                    FunGameService.SetUserConfig(userid, pc, user);
                     return $"出售完毕！出售 {ids.Length} 件，成功 {successCount} 件！\r\n{string.Join("\r\n", msgs)}";
                 }
                 else
                 {
+                    FunGameService.ReleaseUserSemaphoreSlim(userid);
                     return noSaved;
                 }
             }
             catch (Exception e)
             {
+                FunGameService.ReleaseUserSemaphoreSlim(uid.ToString() ?? "");
                 Logger.LogError(e, "Error: {e}", e);
                 return busy;
             }
@@ -6592,8 +6614,8 @@ namespace Oshima.FunGame.WebAPI.Controllers
 
             try
             {
-                PluginConfig pc = new("saved", userid.ToString());
-                pc.LoadConfig();
+                PluginConfig pc = FunGameService.GetUserConfig(userid);
+                FunGameService.ReleaseUserSemaphoreSlim(userid);
 
                 string msg = "";
                 if (pc.Count > 0)
@@ -6612,11 +6634,6 @@ namespace Oshima.FunGame.WebAPI.Controllers
                     {
                         msg = $"你目前没有已提交的改名申请。";
                     }
-
-                    user.LastTime = DateTime.Now;
-                    pc.Add("user", user);
-                    pc.SaveConfig();
-
                     return msg;
                 }
                 else
@@ -6638,8 +6655,8 @@ namespace Oshima.FunGame.WebAPI.Controllers
 
             try
             {
-                PluginConfig pc = new("saved", userid.ToString());
-                pc.LoadConfig();
+                PluginConfig pc = FunGameService.GetUserConfig(userid);
+                FunGameService.ReleaseUserSemaphoreSlim(userid);
 
                 string msg = "";
                 if (pc.Count > 0)
@@ -6694,10 +6711,6 @@ namespace Oshima.FunGame.WebAPI.Controllers
                         msg = "你没有权限查看这个列表。";
                     }
 
-                    user.LastTime = DateTime.Now;
-                    pc.Add("user", user);
-                    pc.SaveConfig();
-
                     return msg;
                 }
                 else
@@ -6719,13 +6732,20 @@ namespace Oshima.FunGame.WebAPI.Controllers
 
             try
             {
-                PluginConfig pc = new("saved", userid.ToString());
-                pc.LoadConfig();
+                PluginConfig pc = FunGameService.GetUserConfig(userid);
 
                 string msg = "";
                 if (pc.Count > 0)
                 {
                     User user = FunGameService.GetUser(pc);
+                    if (user.Id != target)
+                    {
+                        FunGameService.SetUserConfig(userid, pc, user);
+                    }
+                    else
+                    {
+                        FunGameService.ReleaseUserSemaphoreSlim(userid);
+                    }
 
                     if (user.IsAdmin || user.IsOperator)
                     {
@@ -6734,8 +6754,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
                         List<string> strings = renameExamine.Get<List<string>>(target.ToString()) ?? [];
                         if (strings.Count > 0)
                         {
-                            PluginConfig pc2 = new("saved", target.ToString());
-                            pc2.LoadConfig();
+                            PluginConfig pc2 = FunGameService.GetUserConfig(target);
 
                             if (pc2.Count > 0)
                             {
@@ -6759,9 +6778,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
                                             user2.Inventory.Name = user2.Username + "的库存";
                                         }
                                         user2.Inventory.Items.Remove(gmk);
-                                        user2.LastTime = DateTime.Now;
-                                        pc2.Add("user", user2);
-                                        pc2.SaveConfig();
+                                        FunGameService.SetUserConfig(target, pc2, user2);
                                         FunGameConstant.UserIdAndUsername[user2.Id] = user2;
                                         renameExamine.Remove(target.ToString());
                                         msg = $"该用户的新昵称【{name}】已审核通过！";
@@ -6770,9 +6787,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
                                     else
                                     {
                                         gmk.IsLock = false;
-                                        user2.LastTime = DateTime.Now;
-                                        pc2.Add("user", user2);
-                                        pc2.SaveConfig();
+                                        FunGameService.SetUserConfig(target, pc2, user2);
                                         renameExamine.Remove(target.ToString());
                                         msg = $"已拒绝该用户的新昵称【{name}】申请！";
                                         FunGameService.AddNotice(user2.Id, $"改名系统通知：你先前提交的新昵称【{name}】审核不通过，请重新提交申请！");
@@ -6802,18 +6817,12 @@ namespace Oshima.FunGame.WebAPI.Controllers
                     {
                         msg = "你没有权限使用此指令。";
                     }
-
-                    if (user.Id != target)
-                    {
-                        user.LastTime = DateTime.Now;
-                        pc.Add("user", user);
-                        pc.SaveConfig();
-                    }
-
+                    FunGameService.ReleaseUserSemaphoreSlim(target);
                     return msg;
                 }
                 else
                 {
+                    FunGameService.ReleaseUserSemaphoreSlim(target);
                     return noSaved;
                 }
             }
@@ -6827,12 +6836,11 @@ namespace Oshima.FunGame.WebAPI.Controllers
         [HttpPost("marketsellitem")]
         public string MarketSellItem([FromQuery] long? uid = null, [FromQuery] int itemIndex = -1, [FromQuery] double price = 0)
         {
+            long userid = uid ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
+
             try
             {
-                long userid = uid ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
-
-                PluginConfig pc = new("saved", userid.ToString());
-                pc.LoadConfig();
+                PluginConfig pc = FunGameService.GetUserConfig(userid);
 
                 if (pc.Count > 0)
                 {
@@ -6905,18 +6913,18 @@ namespace Oshima.FunGame.WebAPI.Controllers
                         msgs.Add($"没有成功上架任何物品。请检查物品是否存在或是否满足上架条件。");
                     }
 
-                    user.LastTime = DateTime.Now;
-                    pc.Add("user", user);
-                    pc.SaveConfig();
+                    FunGameService.SetUserConfig(userid, pc, user);
                     return string.Join("\r\n", msgs);
                 }
                 else
                 {
+                    FunGameService.ReleaseUserSemaphoreSlim(userid);
                     return noSaved;
                 }
             }
             catch (Exception e)
             {
+                FunGameService.ReleaseUserSemaphoreSlim(userid);
                 Logger.LogError(e, "Error: {e}", e);
                 return busy;
             }
@@ -6929,8 +6937,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
 
             try
             {
-                PluginConfig pc = new("saved", userid.ToString());
-                pc.LoadConfig();
+                PluginConfig pc = FunGameService.GetUserConfig(userid);
 
                 string msg = "";
                 if (pc.Count > 0)
@@ -6987,20 +6994,20 @@ namespace Oshima.FunGame.WebAPI.Controllers
                         }
                     }
 
-                    user.LastTime = DateTime.Now;
-                    pc.Add("user", user);
                     pc.Add("exploreTimes", exploreTimes);
-                    pc.SaveConfig();
+                    FunGameService.SetUserConfig(userid, pc, user);
 
                     return msg;
                 }
                 else
                 {
+                    FunGameService.ReleaseUserSemaphoreSlim(userid);
                     return noSaved;
                 }
             }
             catch (Exception e)
             {
+                FunGameService.ReleaseUserSemaphoreSlim(userid);
                 Logger.LogError(e, "Error: {e}", e);
                 return busy;
             }
@@ -7011,8 +7018,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
         {
             long userid = uid ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
 
-            PluginConfig pc = new("saved", userid.ToString());
-            pc.LoadConfig();
+            PluginConfig pc = FunGameService.GetUserConfig(userid);
 
             if (pc.Count > 0)
             {
@@ -7022,14 +7028,12 @@ namespace Oshima.FunGame.WebAPI.Controllers
                 stores.LoadConfig();
                 string msg = FunGameService.CheckRegionStore(stores, user, storeRegion, storeName, out bool exist);
 
-                user.LastTime = DateTime.Now;
-                pc.Add("user", user);
-                pc.SaveConfig();
-
+                FunGameService.SetUserConfig(userid, pc, user);
                 return msg;
             }
             else
             {
+                FunGameService.ReleaseUserSemaphoreSlim(userid);
                 return noSaved;
             }
         }
@@ -7039,8 +7043,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
         {
             long userid = uid ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
 
-            PluginConfig pc = new("saved", userid.ToString());
-            pc.LoadConfig();
+            PluginConfig pc = FunGameService.GetUserConfig(userid);
 
             if (pc.Count > 0)
             {
@@ -7069,26 +7072,24 @@ namespace Oshima.FunGame.WebAPI.Controllers
                     msg = exist ? $"正在获取最新商店数据，请稍后查看。" : msg2;
                 }
 
-                user.LastTime = DateTime.Now;
-                pc.Add("user", user);
-                pc.SaveConfig();
-
+                FunGameService.SetUserConfig(userid, pc, user);
                 return msg;
             }
             else
             {
+                FunGameService.ReleaseUserSemaphoreSlim(userid);
                 return noSaved;
             }
         }
 
-        [HttpPost("systemstoreshowinfo")]
+        [HttpGet("systemstoreshowinfo")]
         public string SystemStoreShowInfo([FromQuery] long? uid = null, [FromQuery] string storeRegion = "", [FromQuery] string storeName = "", [FromQuery] long? id = null)
         {
             long userid = uid ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
             long goodid = id ?? 0;
 
-            PluginConfig pc = new("saved", userid.ToString());
-            pc.LoadConfig();
+            PluginConfig pc = FunGameService.GetUserConfig(userid);
+            FunGameService.ReleaseUserSemaphoreSlim(userid);
 
             if (pc.Count > 0)
             {
@@ -7143,27 +7144,26 @@ namespace Oshima.FunGame.WebAPI.Controllers
 
             try
             {
-                PluginConfig pc = new("saved", userid.ToString());
-                pc.LoadConfig();
+                PluginConfig pc = FunGameService.GetUserConfig(userid);
 
                 string msg = "";
                 if (pc.Count > 0)
                 {
                     User user = FunGameService.GetUser(pc);
 
-                    user.LastTime = DateTime.Now;
-                    pc.Add("user", user);
-                    pc.SaveConfig();
+                    FunGameService.SetUserConfig(userid, pc, user);
 
                     return msg;
                 }
                 else
                 {
+                    FunGameService.ReleaseUserSemaphoreSlim(userid);
                     return noSaved;
                 }
             }
             catch (Exception e)
             {
+                FunGameService.ReleaseUserSemaphoreSlim(userid);
                 Logger.LogError(e, "Error: {e}", e);
                 return busy;
             }

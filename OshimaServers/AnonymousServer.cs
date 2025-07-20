@@ -135,8 +135,7 @@ namespace Oshima.FunGame.OshimaServers
                     foreach (string filePath in filePaths)
                     {
                         string fileName = Path.GetFileNameWithoutExtension(filePath);
-                        PluginConfig pc = new("saved", fileName);
-                        pc.LoadConfig();
+                        PluginConfig pc = FunGameService.GetUserConfig(fileName);
                         if (pc.Count > 0)
                         {
                             User user = FunGameService.GetUser(pc);
@@ -162,15 +161,14 @@ namespace Oshima.FunGame.OshimaServers
                             }
                             if (updateQuest || updateExplore)
                             {
-                                user.LastTime = DateTime.Now;
-                                pc.Add("user", user);
-                                pc.SaveConfig();
+                                FunGameService.SetUserConfig(user.Id, pc, user);
                             }
                             if (FunGameConstant.UserLastVisitStore.TryGetValue(user.Id, out LastStoreModel? value) && value != null && (DateTime.Now - value.LastTime).TotalMinutes > 2)
                             {
                                 FunGameConstant.UserLastVisitStore.Remove(user.Id);
                             }
                         }
+                        FunGameService.ReleaseUserSemaphoreSlim(fileName);
                     }
                     Controller.WriteLine("读取 FunGame 存档缓存", LogLevel.Debug);
                 }
@@ -207,12 +205,12 @@ namespace Oshima.FunGame.OshimaServers
                         foreach (string filePath in filePaths)
                         {
                             string fileName = Path.GetFileNameWithoutExtension(filePath);
-                            PluginConfig pc = new("saved", fileName);
-                            pc.LoadConfig();
+                            PluginConfig pc = FunGameService.GetUserConfig(fileName);
                             pc.Add("signed", false);
                             pc.Add("logon", false);
                             pc.Add("exploreTimes", FunGameConstant.MaxExploreTimes);
                             pc.SaveConfig();
+                            FunGameService.ReleaseUserSemaphoreSlim(fileName);
                         }
                         Controller.WriteLine("刷新签到");
                     }

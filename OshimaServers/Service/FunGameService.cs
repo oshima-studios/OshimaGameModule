@@ -965,8 +965,7 @@ namespace Oshima.FunGame.OshimaServers.Service
                     tasks.Add(Task.Run(() =>
                     {
                         string fileNameWithoutExtension = Path.GetFileNameWithoutExtension(file);
-                        PluginConfig pc = new("saved", fileNameWithoutExtension);
-                        pc.LoadConfig();
+                        PluginConfig pc = GetUserConfig(fileNameWithoutExtension);
                         if (pc.Count > 0)
                         {
                             User user = GetUser(pc);
@@ -983,8 +982,11 @@ namespace Oshima.FunGame.OshimaServers.Service
                                     item.IsTradable = true;
                                 }
                             }
-                            pc.Add("user", user);
-                            pc.SaveConfig();
+                            SetUserConfig(user.Id, pc, user, false);
+                        }
+                        else
+                        {
+                            ReleaseUserSemaphoreSlim(fileNameWithoutExtension);
                         }
                     }));
                 }
@@ -2114,7 +2116,7 @@ namespace Oshima.FunGame.OshimaServers.Service
                     }
                     else
                     {
-                        return NetworkUtility.JsonSerialize($"你的{General.GameplayEquilibriumConstant.InGameCurrency}不足 {reduce} 呢，无法购买【{goods.Name}】！");
+                        return $"你的{General.GameplayEquilibriumConstant.InGameCurrency}不足 {reduce} 呢，无法购买【{goods.Name}】！";
                     }
                 }
                 else if (needy == General.GameplayEquilibriumConstant.InGameMaterial)
@@ -2126,7 +2128,7 @@ namespace Oshima.FunGame.OshimaServers.Service
                     }
                     else
                     {
-                        return NetworkUtility.JsonSerialize($"你的{General.GameplayEquilibriumConstant.InGameMaterial}不足 {reduce} 呢，无法购买【{goods.Name}】！");
+                        return $"你的{General.GameplayEquilibriumConstant.InGameMaterial}不足 {reduce} 呢，无法购买【{goods.Name}】！";
                     }
                 }
             }
@@ -3280,13 +3282,8 @@ namespace Oshima.FunGame.OshimaServers.Service
                                         itemsTradeRecord.Add("offeree", offereeItems);
                                         itemsTradeRecord.SaveConfig();
 
-                                        user.LastTime = DateTime.Now;
-                                        pc.Add("user", user);
-                                        pc.SaveConfig();
-
-                                        user2.LastTime = DateTime.Now;
-                                        pc2.Add("user", user2);
-                                        pc2.SaveConfig();
+                                        SetUserConfig(user.Id, pc, user);
+                                        SetUserConfig(user2.Id, pc2, user2);
 
                                         AddNotice(offer.Offeror, $"报价编号 {offerId} 已交易完成，请通过【查报价{offerId}】查询报价记录。");
 
@@ -3960,5 +3957,58 @@ namespace Oshima.FunGame.OshimaServers.Service
 
             return msg;
         }
+
+        public static void ReleaseUserSemaphoreSlim(string key)
+        {
+            if (FunGameConstant.UserSemaphoreSlims.TryGetValue(key, out SemaphoreSlim? obj) && obj != null)
+            {
+                obj.Release();
+            }
+        }
+
+        public static void ReleaseUserSemaphoreSlim(long uid) => ReleaseUserSemaphoreSlim(uid.ToString());
+
+        public static void SetUserConfig(string key, PluginConfig pc, User user, bool updateLastTime = true)
+        {
+            if (updateLastTime) user.LastTime = DateTime.Now;
+            pc.Add("user", user);
+            pc.SaveConfig();
+            if (FunGameConstant.UserSemaphoreSlims.TryGetValue(key, out SemaphoreSlim? obj) && obj != null)
+            {
+                obj.Release();
+            }
+        }
+
+        public static void SetUserConfig(long uid, PluginConfig pc, User user, bool updateLastTime = true) => SetUserConfig(uid.ToString(), pc, user, updateLastTime);
+
+        public static PluginConfig GetUserConfig(string key)
+        {
+            if (FunGameConstant.UserSemaphoreSlims.TryGetValue(key, out SemaphoreSlim? obj) && obj != null)
+            {
+                obj.Wait();
+            }
+            else
+            {
+                obj = new(1, 1);
+                obj.Wait();
+                FunGameConstant.UserSemaphoreSlims[key] = obj;
+            }
+            PluginConfig pc = new("saved", key);
+            pc.LoadConfig();
+            return pc;
+        }
+
+        public static PluginConfig GetUserConfig(long uid) => GetUserConfig(uid.ToString());
+
+        public static bool CheckSemaphoreSlim(string key)
+        {
+            if (FunGameConstant.UserSemaphoreSlims.TryGetValue(key, out SemaphoreSlim? obj) && obj != null)
+            {
+                return obj.CurrentCount == 0;
+            }
+            return false;
+        }
+
+        public static bool CheckSemaphoreSlim(long uid) => CheckSemaphoreSlim(uid.ToString());
     }
 }

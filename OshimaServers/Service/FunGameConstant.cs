@@ -1,4 +1,5 @@
-﻿using Milimoe.FunGame.Core.Entity;
+﻿using System.Collections.Concurrent;
+using Milimoe.FunGame.Core.Entity;
 using Milimoe.FunGame.Core.Library.Constant;
 using Oshima.Core.Constant;
 using Oshima.FunGame.OshimaModules.Effects.OpenEffects;
@@ -34,6 +35,7 @@ namespace Oshima.FunGame.OshimaServers.Service
         public static Dictionary<long, User> UserIdAndUsername { get; } = [];
         public static Dictionary<long, Item> MarketItemIdAndItem { get; } = [];
         public static Dictionary<long, LastStoreModel> UserLastVisitStore { get; } = [];
+        public static ConcurrentDictionary<string, SemaphoreSlim> UserSemaphoreSlims { get; } = [];
         public static ItemType[] ItemCanUsed => [ItemType.Consumable, ItemType.MagicCard, ItemType.SpecialItem, ItemType.GiftBox, ItemType.Others];
         public static ItemType[] ItemCanNotDrawCard => [ItemType.Collectible, ItemType.QuestItem, ItemType.GiftBox, ItemType.Others];
 

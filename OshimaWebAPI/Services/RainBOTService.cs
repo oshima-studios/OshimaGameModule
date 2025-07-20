@@ -114,6 +114,19 @@ namespace Oshima.FunGame.WebAPI.Services
                     }
                 }
 
+                if (e.Detail == "重置状态")
+                {
+                    FunGameService.ReleaseUserSemaphoreSlim(uid);
+                    await SendAsync(e, "筽祀牻", "Done");
+                    return result;
+                }
+
+                if (FunGameService.CheckSemaphoreSlim(uid))
+                {
+                    await SendAsync(e, "筽祀牻", "检测到上一条指令尚未完成，若出现异常情况，请等待其执行完成，或者使用【重置状态】指令重置当前的指令执行状态。", msgSeq: 999);
+                    return result;
+                }
+
                 //if (QQOpenID.QQAndOpenID.TryGetValue(openid, out long temp_qq))
                 //{
                 //    qq = temp_qq;
@@ -2282,7 +2295,7 @@ namespace Oshima.FunGame.WebAPI.Services
                     }
                     if (cindexs.Count > 1 && cindexs.Count <= 5)
                     {
-                        (msg, eid) = await Controller.ExploreRegion(uid, cindexs[0], [.. cindexs.Skip(1).Select(id => (long)id)]);
+                        (msg, eid) = Controller.ExploreRegion(uid, cindexs[0], [.. cindexs.Skip(1).Select(id => (long)id)]);
                         if (msg.Trim() != "")
                         {
                             await SendAsync(e, "探索", msg);
