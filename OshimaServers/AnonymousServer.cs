@@ -135,7 +135,7 @@ namespace Oshima.FunGame.OshimaServers
                     foreach (string filePath in filePaths)
                     {
                         string fileName = Path.GetFileNameWithoutExtension(filePath);
-                        PluginConfig pc = FunGameService.GetUserConfig(fileName);
+                        PluginConfig pc = FunGameService.GetUserConfig(fileName, out _);
                         if (pc.Count > 0)
                         {
                             User user = FunGameService.GetUser(pc);
@@ -161,7 +161,7 @@ namespace Oshima.FunGame.OshimaServers
                             }
                             if (updateQuest || updateExplore)
                             {
-                                FunGameService.SetUserConfig(user.Id, pc, user);
+                                FunGameService.SetUserConfigAndReleaseSemaphoreSlim(user.Id, pc, user);
                             }
                             if (FunGameConstant.UserLastVisitStore.TryGetValue(user.Id, out LastStoreModel? value) && value != null && (DateTime.Now - value.LastTime).TotalMinutes > 2)
                             {
@@ -205,7 +205,7 @@ namespace Oshima.FunGame.OshimaServers
                         foreach (string filePath in filePaths)
                         {
                             string fileName = Path.GetFileNameWithoutExtension(filePath);
-                            PluginConfig pc = FunGameService.GetUserConfig(fileName);
+                            PluginConfig pc = FunGameService.GetUserConfig(fileName, out _);
                             pc.Add("signed", false);
                             pc.Add("logon", false);
                             pc.Add("exploreTimes", FunGameConstant.MaxExploreTimes);
@@ -384,7 +384,7 @@ namespace Oshima.FunGame.OshimaServers
 
         public string SCList(Dictionary<string, object> data)
         {
-            string result = "";
+            string result;
 
             SQLHelper? sql = Controller.SQLHelper;
             if (sql != null)

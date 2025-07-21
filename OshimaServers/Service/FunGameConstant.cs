@@ -18,6 +18,7 @@ namespace Oshima.FunGame.OshimaServers.Service
         public const int MaxExploreTimes = 60;
         public const int DrawCardReduce = 1000;
         public const int DrawCardReduce_Material = 5;
+        public const int SemaphoreSlimTimeout = 5000;
         public static List<Character> Characters { get; } = [];
         public static List<Skill> Skills { get; } = [];
         public static List<Skill> PassiveSkills { get; } = [];

@@ -567,9 +567,9 @@ namespace Oshima.FunGame.WebAPI.Services
                 }
 
                 if (e.Detail.StartsWith("生成"))
-				{
-					e.UseNotice = false;
-                    string pattern = @"生成\s*(\d+)\s*个\s*([\s\S]+)(?:\s*给\s*(\d+))?";
+                {
+                    e.UseNotice = false;
+                    string pattern = @"生成\s*(\d+)\s*个\s*([^给\s]+)(?:\s*给\s*(\d+))?";
                     Regex regex = new(pattern, RegexOptions.IgnoreCase);
                     Match match = regex.Match(e.Detail);
 

@@ -1,4 +1,5 @@
 using System.Text;
+using Milimoe.FunGame;
 using Milimoe.FunGame.Core.Api.Transmittal;
 using Milimoe.FunGame.Core.Api.Utility;
 using Milimoe.FunGame.Core.Entity;
@@ -965,7 +966,7 @@ namespace Oshima.FunGame.OshimaServers.Service
                     tasks.Add(Task.Run(() =>
                     {
                         string fileNameWithoutExtension = Path.GetFileNameWithoutExtension(file);
-                        PluginConfig pc = GetUserConfig(fileNameWithoutExtension);
+                        PluginConfig pc = GetUserConfig(fileNameWithoutExtension, out _);
                         if (pc.Count > 0)
                         {
                             User user = GetUser(pc);
@@ -982,7 +983,7 @@ namespace Oshima.FunGame.OshimaServers.Service
                                     item.IsTradable = true;
                                 }
                             }
-                            SetUserConfig(user.Id, pc, user, false);
+                            SetUserConfigAndReleaseSemaphoreSlim(user.Id, pc, user, false);
                         }
                         else
                         {
@@ -2016,7 +2017,13 @@ namespace Oshima.FunGame.OshimaServers.Service
             if (daily is null)
             {
                 // 生成每日商店
-                daily = new($"{user.Username}的每日商店");
+                daily = new($"{user.Username}的每日商店")
+                {
+                    AutoRefresh = true,
+                    NextRefreshDate = DateTime.Today.AddHours(4),
+                    RefreshInterval = 1
+                };
+                daily.UpdateRefreshTime(daily.NextRefreshDate);
                 for (int i = 0; i < 4; i++)
                 {
                     Item item;
@@ -3282,8 +3289,8 @@ namespace Oshima.FunGame.OshimaServers.Service
                                         itemsTradeRecord.Add("offeree", offereeItems);
                                         itemsTradeRecord.SaveConfig();
 
-                                        SetUserConfig(user.Id, pc, user);
-                                        SetUserConfig(user2.Id, pc2, user2);
+                                        SetUserConfigAndReleaseSemaphoreSlim(user.Id, pc, user);
+                                        SetUserConfigAndReleaseSemaphoreSlim(user2.Id, pc2, user2);
 
                                         AddNotice(offer.Offeror, $"报价编号 {offerId} 已交易完成，请通过【查报价{offerId}】查询报价记录。");
 
@@ -3960,7 +3967,7 @@ namespace Oshima.FunGame.OshimaServers.Service
 
         public static void ReleaseUserSemaphoreSlim(string key)
         {
-            if (FunGameConstant.UserSemaphoreSlims.TryGetValue(key, out SemaphoreSlim? obj) && obj != null)
+            if (FunGameConstant.UserSemaphoreSlims.TryGetValue(key, out SemaphoreSlim? obj) && obj != null && obj.CurrentCount == 0)
             {
                 obj.Release();
             }
@@ -3968,37 +3975,40 @@ namespace Oshima.FunGame.OshimaServers.Service
 
         public static void ReleaseUserSemaphoreSlim(long uid) => ReleaseUserSemaphoreSlim(uid.ToString());
 
-        public static void SetUserConfig(string key, PluginConfig pc, User user, bool updateLastTime = true)
+        public static void SetUserConfig(string key, PluginConfig pc, User user, bool updateLastTime = true, bool release = true)
         {
             if (updateLastTime) user.LastTime = DateTime.Now;
             pc.Add("user", user);
             pc.SaveConfig();
-            if (FunGameConstant.UserSemaphoreSlims.TryGetValue(key, out SemaphoreSlim? obj) && obj != null)
+            if (release && FunGameConstant.UserSemaphoreSlims.TryGetValue(key, out SemaphoreSlim? obj) && obj != null && obj.CurrentCount == 0)
             {
                 obj.Release();
             }
         }
 
-        public static void SetUserConfig(long uid, PluginConfig pc, User user, bool updateLastTime = true) => SetUserConfig(uid.ToString(), pc, user, updateLastTime);
+        public static void SetUserConfigAndReleaseSemaphoreSlim(long uid, PluginConfig pc, User user, bool updateLastTime = true) => SetUserConfig(uid.ToString(), pc, user, updateLastTime);
+        
+        public static void SetUserConfigButNotRelease(long uid, PluginConfig pc, User user, bool updateLastTime = true) => SetUserConfig(uid.ToString(), pc, user, updateLastTime, false);
 
-        public static PluginConfig GetUserConfig(string key)
+        public static PluginConfig GetUserConfig(string key, out bool isTimeout)
         {
-            if (FunGameConstant.UserSemaphoreSlims.TryGetValue(key, out SemaphoreSlim? obj) && obj != null)
+            isTimeout = false;
+            try
             {
-                obj.Wait();
+                SemaphoreSlim obj = FunGameConstant.UserSemaphoreSlims.GetOrAdd(key, _ => new SemaphoreSlim(1, 1));
+                obj.Wait(FunGameConstant.SemaphoreSlimTimeout);
+                PluginConfig pc = new("saved", key);
+                pc.LoadConfig();
+                return pc;
             }
-            else
+            catch
             {
-                obj = new(1, 1);
-                obj.Wait();
-                FunGameConstant.UserSemaphoreSlims[key] = obj;
+                isTimeout = true;
+                return new("saved", "0");
             }
-            PluginConfig pc = new("saved", key);
-            pc.LoadConfig();
-            return pc;
         }
 
-        public static PluginConfig GetUserConfig(long uid) => GetUserConfig(uid.ToString());
+        public static PluginConfig GetUserConfig(long uid, out bool isTimeout) => GetUserConfig(uid.ToString(), out isTimeout);
 
         public static bool CheckSemaphoreSlim(string key)
         {
