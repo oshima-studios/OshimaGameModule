@@ -2020,10 +2020,16 @@ namespace Oshima.FunGame.OshimaServers.Service
                 daily = new($"{user.Username}的每日商店")
                 {
                     AutoRefresh = true,
-                    NextRefreshDate = DateTime.Today.AddHours(4),
                     RefreshInterval = 1
                 };
-                daily.UpdateRefreshTime(daily.NextRefreshDate);
+                if (DateTime.Now > DateTime.Today.AddHours(4))
+                {
+                    daily.NextRefreshDate = DateTime.Today.AddDays(1).AddHours(4);
+                }
+                else
+                {
+                    daily.NextRefreshDate = DateTime.Today.AddHours(4);
+                }
                 for (int i = 0; i < 4; i++)
                 {
                     Item item;
