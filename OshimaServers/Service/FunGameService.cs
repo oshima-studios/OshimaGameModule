@@ -2118,6 +2118,12 @@ namespace Oshima.FunGame.OshimaServers.Service
                 return msg = $"此商品【{goods.Name}】库存不足，无法购买！\r\n你想要购买 {count} 件，但库存只有 {goods.Stock} 件。";
             }
 
+            goods.UsersBuyCount.TryGetValue(user.Id, out int buyCount);
+            if (goods.Quota > 0 && (buyCount + count > goods.Quota))
+            {
+                return msg = $"此商品【{goods.Name}】限量购买 {goods.Quota} 件！\r\n你已经购买了 {buyCount} 件，想要购买 {count} 件，超过了购买限制。";
+            }
+
             foreach (string needy in goods.Prices.Keys)
             {
                 if (needy == General.GameplayEquilibriumConstant.InGameCurrency)
@@ -2176,7 +2182,12 @@ namespace Oshima.FunGame.OshimaServers.Service
                 if (goods.Stock < 0) goods.Stock = 0;
             }
 
-            msg += $"恭喜你成功购买 {count} 件【{goods.Name}】！\r\n" +
+            if (!goods.UsersBuyCount.TryAdd(user.Id, count))
+            {
+                goods.UsersBuyCount[user.Id] += count;
+            }
+
+            msg += $"恭喜你成功购买 {count} 件【{goods.Name}】！\r\n" + (goods.Quota > 0 ? $"此商品限购 {goods.Quota} 件，你还可以再购买 {goods.Quota - count - buyCount} 件。\r\n" : "") +
                 $"总计消费：{(goods.Prices.Count > 0 ? string.Join("、", goods.Prices.Select(kv => $"{kv.Value * count:0.##} {kv.Key}")) : "免单")}\r\n" +
                 $"包含物品：{string.Join("、", goods.Items.Select(i => $"[{ItemSet.GetQualityTypeName(i.QualityType)}|{ItemSet.GetItemTypeName(i.ItemType)}] {i.Name} * {count}"))}\r\n" +
                 $"{store.Name}期待你的下次光临。";
@@ -3397,7 +3408,7 @@ namespace Oshima.FunGame.OshimaServers.Service
             Item newItem = item;
             if (copyNew) newItem = item.Copy(copyLevel);
             newItem.User = user;
-            if (hasLock && newItem.QualityType >= QualityType.Orange) newItem.IsLock = true;
+            if (hasLock && (newItem.QualityType >= QualityType.Orange || FunGameConstant.CharacterLevelBreakItems.Any(c => c.Id == item.Id)) || FunGameConstant.SkillLevelUpItems.Any(c => c.Id == item.Id)) newItem.IsLock = true;
             if (hasSellAndTradeTime) SetSellAndTradeTime(newItem);
             if (hasPrice)
             {
@@ -3947,6 +3958,27 @@ namespace Oshima.FunGame.OshimaServers.Service
             return builder.ToString().Trim();
         }
 
+        public static Store? GetRegionStore(EntityModuleConfig<Store> stores, User user, string storeRegion, string storeName)
+        {
+            Store? store = null;
+
+            Dictionary<string, OshimaRegion> regionStores = FunGameConstant.PlayerRegions.ToDictionary(r => r.Name, r => r);
+            if (regionStores.TryGetValue(storeRegion, out OshimaRegion? value) && value != null)
+            {
+                store = value.VisitStore(stores, user, storeName);
+            }
+
+            return store;
+        }
+        
+        public static void SaveRegionStore(Store store, string storeRegion, string storeName)
+        {
+            if (FunGameConstant.PlayerRegions.FirstOrDefault(r => r.Name == storeRegion) is OshimaRegion value)
+            {
+                value.SaveGlobalStore(store, storeName);
+            }
+        }
+        
         public static string CheckRegionStore(EntityModuleConfig<Store> stores, User user, string storeRegion, string storeName, out bool exist)
         {
             string msg = "";
@@ -3955,8 +3987,9 @@ namespace Oshima.FunGame.OshimaServers.Service
             Dictionary<string, OshimaRegion> regionStores = FunGameConstant.PlayerRegions.ToDictionary(r => r.Name, r => r);
             if (regionStores.TryGetValue(storeRegion, out OshimaRegion? value) && value != null)
             {
-                msg = value.VisitStore(stores, user, storeName);
-                exist = msg != "";
+                Store? store = value.VisitStore(stores, user, storeName);
+                exist = store != null;
+                msg = store?.ToString() ?? "";
             }
 
             if (!exist)

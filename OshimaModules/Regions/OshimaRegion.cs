@@ -22,9 +22,14 @@ namespace Oshima.FunGame.OshimaModules.Regions
             return other is OshimaRegion && other.GetIdName() == GetIdName();
         }
 
-        public virtual string VisitStore(EntityModuleConfig<Store> stores, User user, string storeName)
+        public virtual Store? VisitStore(EntityModuleConfig<Store> stores, User user, string storeName)
         {
-            return "";
+            return null;
+        }
+        
+        public virtual void SaveGlobalStore(Store store, string storeName)
+        {
+
         }
 
         public override string ToString()

@@ -218,30 +218,57 @@ namespace Oshima.FunGame.OshimaServers
                 Task.Run(() =>
                 {
                     // 刷新商店
-                    string directoryPath = $@"{AppDomain.CurrentDomain.BaseDirectory}configs/stores";
+                    string directoryPath = $@"{AppDomain.CurrentDomain.BaseDirectory}configs/storeNames";
                     if (Directory.Exists(directoryPath))
                     {
                         string[] filePaths = Directory.GetFiles(directoryPath);
                         foreach (string filePath in filePaths)
                         {
                             string fileName = Path.GetFileNameWithoutExtension(filePath);
+                            EntityModuleConfig<Store> stores = new("storeNames", fileName);
+                            stores.LoadConfig();
+                            string[] storeNames = [.. stores.Keys];
                             if (long.TryParse(fileName, out long userId) && FunGameConstant.UserIdAndUsername.TryGetValue(userId, out User? user) && user != null)
                             {
-                                EntityModuleConfig<Store> store = new("stores", fileName);
-                                store.LoadConfig();
-                                store.Remove("daily");
-                                string[] stores = [.. store.Keys];
-                                foreach (string key in stores)
+                                // 更新玩家商店数据，移除所有当天刷新的商店
+                                FunGameConstant.UserLastVisitStore.Remove(userId);
+                                stores.Remove("daily");
+                                foreach (string key in storeNames)
                                 {
-                                    Store? s = store.Get(key);
-                                    if (s != null && s.AutoRefresh && s.NextRefreshDate.Date == DateTime.Today)
+                                    Store? store = stores.Get(key);
+                                    if (store != null && (store.GlobalStock || (store.AutoRefresh && store.NextRefreshDate.Date <= DateTime.Today)))
                                     {
-                                        store.Remove(key);
+                                        stores.Remove(key);
                                     }
                                 }
-                                FunGameService.CheckDailyStore(store, user);
-                                store.SaveConfig();
+                                FunGameService.CheckDailyStore(stores, user);
                             }
+                            else
+                            {
+                                // 非玩家商店数据，需要更新模板的商品
+                                foreach (string key in storeNames)
+                                {
+                                    Store? store = stores.Get(key);
+                                    if (store != null)
+                                    {
+                                        if (store.ExpireTime != null && store.ExpireTime.Value.Date <= DateTime.Today)
+                                        {
+                                            stores.Remove(key);
+                                            continue;
+                                        }
+                                        if (store.AutoRefresh && store.NextRefreshDate.Date <= DateTime.Today)
+                                        {
+                                            store.Goods.Clear();
+                                            foreach (long goodsId in store.NextRefreshGoods.Keys)
+                                            {
+                                                store.Goods[goodsId] = store.NextRefreshGoods[goodsId];
+                                            }
+                                            store.NextRefreshDate = DateTime.Today.AddHours(4).AddDays(store.RefreshInterval);
+                                        }
+                                    }
+                                }
+                            }
+                            stores.SaveConfig();
                         }
                         Controller.WriteLine("刷新商店");
                     }

@@ -1,7 +1,5 @@
 ﻿using Milimoe.FunGame.Core.Api.Utility;
 using Milimoe.FunGame.Core.Entity;
-using Milimoe.FunGame.Core.Library.Constant;
-using Oshima.FunGame.OshimaModules.Items;
 
 namespace Oshima.FunGame.OshimaModules.Regions
 {
@@ -24,37 +22,82 @@ namespace Oshima.FunGame.OshimaModules.Regions
             ChangeRandomWeather();
         }
 
-        public override string VisitStore(EntityModuleConfig<Store> stores, User user, string storeName)
+        public override Store? VisitStore(EntityModuleConfig<Store> stores, User user, string storeName)
         {
+            EntityModuleConfig<Store> storeTemplate = new("stores", "dokyo");
+            storeTemplate.LoadConfig();
+            Store? template = storeTemplate.Get(storeName);
+
+            if (template is null)
+            {
+                return null;
+            }
+
+            if (template.NextRefreshDate < DateTime.Now)
+            {
+                template.NextRefreshDate = DateTime.Today.AddHours(4);
+                template.UpdateRefreshTime(template.NextRefreshDate);
+                storeTemplate.Add(storeName, template);
+                storeTemplate.SaveConfig();
+            }
+
+            if (template.GlobalStock)
+            {
+                return template;
+            }
+
             Store? store = stores.Get(storeName);
 
             if (store is null)
             {
-                EntityModuleConfig<Store> storeTemplate = new("stores", "dokyo");
-                storeTemplate.LoadConfig();
-                Store? template = storeTemplate.Get(storeName);
-                if (template != null)
+                template.NextRefreshGoods.Clear();
+                stores.Add(storeName, template);
+                stores.SaveConfig();
+                stores.LoadConfig();
+                store = stores.Get(storeName);
+            }
+            else
+            {
+                if (template.GetNewerGoodsOnVisiting)
                 {
-                    if (template.NextRefreshDate < DateTime.Now)
-                    {
-                        template.NextRefreshDate = DateTime.Today.AddHours(4);
-                        template.UpdateRefreshTime(template.NextRefreshDate);
-                        storeTemplate.Add(storeName, template);
-                        storeTemplate.SaveConfig();
-                    }
+                    Dictionary<string, int> goodsNameAndStock = store.Goods.Values.ToDictionary(g => g.Name, g => g.Stock);
+                    Dictionary<string, Dictionary<long, int>> usersBuyCount = store.Goods.Values.ToDictionary(g => g.Name, g => g.UsersBuyCount);
+                    template.NextRefreshGoods.Clear();
                     stores.Add(storeName, template);
                     stores.SaveConfig();
                     stores.LoadConfig();
                     store = stores.Get(storeName);
+                    if (store != null)
+                    {
+                        foreach (Goods goods in store.Goods.Values)
+                        {
+                            if (goodsNameAndStock.TryGetValue(goods.Name, out int stock) && stock < goods.Stock)
+                            {
+                                goods.Stock = stock;
+                            }
+                            if (usersBuyCount.TryGetValue(goods.Name, out Dictionary<long, int>? userBuyCount) && userBuyCount != null)
+                            {
+                                foreach (long uid in userBuyCount.Keys)
+                                {
+                                    goods.UsersBuyCount[uid] = userBuyCount[uid];
+                                }
+                            }
+                        }
+                        stores.Add(storeName, store);
+                        stores.SaveConfig();
+                    }
                 }
             }
 
-            if (store != null)
-            {
-                return store.ToString();
-            }
+            return store;
+        }
 
-            return "";
+        public override void SaveGlobalStore(Store store, string storeName)
+        {
+            EntityModuleConfig<Store> storeTemplate = new("stores", "dokyo");
+            storeTemplate.LoadConfig();
+            storeTemplate.Add(storeName, store);
+            storeTemplate.SaveConfig();
         }
     }
 }

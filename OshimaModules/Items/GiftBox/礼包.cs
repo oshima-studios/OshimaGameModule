@@ -196,6 +196,27 @@ namespace Oshima.FunGame.OshimaModules.Items
         }
     }
 
+    public class 探索助力礼包 : Item, 礼包.GiftBox
+    {
+        public override long Id => (long)GiftBoxID.探索助力礼包;
+        public override string Name => "探索助力礼包";
+        public override string Description => Skills.Active?.Description ?? "";
+        public override QualityType QualityType => QualityType.Red;
+        public Dictionary<string, int> Gifts { get; set; } = [];
+
+        public 探索助力礼包(User? user = null, int remainUseTimes = 1) : base(ItemType.GiftBox)
+        {
+            User = user;
+            礼包.Init(this, new()
+            {
+                { General.GameplayEquilibriumConstant.InGameCurrency, 20000 },
+                { General.GameplayEquilibriumConstant.InGameMaterial, 50 },
+                { new 升华之印().Name, 20 },
+                { new 技能卷轴().Name, 20 },
+            }, remainUseTimes);
+        }
+    }
+
     public class 礼包技能 : Skill
     {
         public override long Id => (long)ItemActiveID.礼包;

@@ -1511,6 +1511,27 @@ namespace Oshima.FunGame.WebAPI.Services
                     return result;
                 }
 
+                if (e.Detail.StartsWith("强制分解", StringComparison.CurrentCultureIgnoreCase))
+                {
+                    string detail = e.Detail.Replace("强制分解", "").Trim();
+                    string pattern = @"\s*(?<itemName>[^\d]+)\s*(?<count>\d+)\s*";
+                    Match match = Regex.Match(detail, pattern);
+                    if (match.Success)
+                    {
+                        string itemName = match.Groups["itemName"].Value.Trim();
+                        if (int.TryParse(match.Groups["count"].Value, out int count))
+                        {
+                            string msg = Controller.DecomposeItem2(uid, itemName, count, true);
+                            if (msg != "")
+                            {
+                                await SendAsync(e, "分解", msg);
+                            }
+                        }
+                    }
+
+                    return result;
+                }
+
                 if (e.Detail.StartsWith("分解", StringComparison.CurrentCultureIgnoreCase))
                 {
                     string detail = e.Detail.Replace("分解", "").Trim();
@@ -2383,6 +2404,48 @@ namespace Oshima.FunGame.WebAPI.Services
                     return result;
                 }
 
+                if (e.Detail.StartsWith("批量锁定", StringComparison.CurrentCultureIgnoreCase))
+                {
+                    string detail = e.Detail.Replace("批量锁定", "").Trim();
+                    string pattern = @"\s*(?<itemName>[^\d]+)\s*(?<count>\d+)\s*";
+                    Match match = Regex.Match(detail, pattern);
+                    if (match.Success)
+                    {
+                        string itemName = match.Groups["itemName"].Value.Trim();
+                        if (int.TryParse(match.Groups["count"].Value, out int count))
+                        {
+                            string msg = Controller.LockItems(uid, itemName, count, false);
+                            if (msg != "")
+                            {
+                                await SendAsync(e, "批量锁定", msg);
+                            }
+                        }
+                    }
+
+                    return result;
+                }
+
+                if (e.Detail.StartsWith("批量解锁", StringComparison.CurrentCultureIgnoreCase))
+                {
+                    string detail = e.Detail.Replace("批量解锁", "").Trim();
+                    string pattern = @"\s*(?<itemName>[^\d]+)\s*(?<count>\d+)\s*";
+                    Match match = Regex.Match(detail, pattern);
+                    if (match.Success)
+                    {
+                        string itemName = match.Groups["itemName"].Value.Trim();
+                        if (int.TryParse(match.Groups["count"].Value, out int count))
+                        {
+                            string msg = Controller.LockItems(uid, itemName, count, true);
+                            if (msg != "")
+                            {
+                                await SendAsync(e, "批量解锁", msg);
+                            }
+                        }
+                    }
+
+                    return result;
+                }
+
                 if (e.Detail.StartsWith("上锁") || e.Detail.StartsWith("锁定"))
                 {
                     string detail = e.Detail.Replace("上锁", "").Replace("锁定", "").Trim();
@@ -2778,6 +2841,9 @@ namespace Oshima.FunGame.WebAPI.Services
                                 break;
                             case 3:
                                 msg = Controller.ShowSystemStore(uid, "铎京城", "dokyo_yuki");
+                                break;
+                            case 4:
+                                msg = Controller.ShowSystemStore(uid, "铎京城", "dokyo_welfare");
                                 break;
                             default:
                                 break;

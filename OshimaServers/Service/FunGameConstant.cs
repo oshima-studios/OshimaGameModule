@@ -427,6 +427,17 @@ namespace Oshima.FunGame.OshimaServers.Service
             { QualityType.Gold, (130000, 240000) }
         };
 
+        public static Dictionary<QualityType, double> DecomposedMaterials { get; } = new()
+        {
+            { QualityType.Gold, 128 },
+            { QualityType.Red, 6 },
+            { QualityType.Orange, 32 },
+            { QualityType.Purple, 16 },
+            { QualityType.Blue, 8 },
+            { QualityType.Green, 3 },
+            { QualityType.White, 1 }
+        };
+
         public static string[] GreekAlphabet { get; } = ["α", "β", "γ", "δ", "ε", "ζ", "η", "θ", "ι", "κ", "λ", "μ", "ν", "ξ", "ο", "π", "ρ", "σ", "τ", "υ", "φ", "χ", "ψ", "ω"];
 
         public static string[] CommonSurnames { get; } = [

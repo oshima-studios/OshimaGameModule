@@ -6,6 +6,7 @@ using Microsoft.Extensions.Logging;
 using Milimoe.FunGame.Core.Api.Transmittal;
 using Milimoe.FunGame.Core.Api.Utility;
 using Milimoe.FunGame.Core.Entity;
+using Milimoe.FunGame.Core.Interface.Entity;
 using Milimoe.FunGame.Core.Library.Common.Event;
 using Milimoe.FunGame.Core.Library.Constant;
 using Milimoe.FunGame.Core.Library.SQLScript.Entity;
@@ -2238,7 +2239,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
                     else
                     {
                         FunGameService.ReleaseUserSemaphoreSlim(userid);
-                        return "此物品的可使用数量小于你想要使用的数量！";
+                        return $"此物品的可使用数量（{items.Count()}）小于你想要使用的数量（{useCount}）！";
                     }
                 }
                 else
@@ -3006,16 +3007,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
 
                         if (user.Inventory.Items.Remove(item))
                         {
-                            double gained = item.QualityType switch
-                            {
-                                QualityType.Gold => 128,
-                                QualityType.Red => 64,
-                                QualityType.Orange => 32,
-                                QualityType.Purple => 16,
-                                QualityType.Blue => 8,
-                                QualityType.Green => 3,
-                                _ => 1
-                            };
+                            double gained = FunGameConstant.DecomposedMaterials[item.QualityType];
                             totalGained += gained;
                             successCount++;
                         }
@@ -3043,7 +3035,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
         }
 
         [HttpPost("decomposeitem2")]
-        public string DecomposeItem2([FromQuery] long? uid = null, [FromQuery] string? name = null, [FromQuery] int? count = null)
+        public string DecomposeItem2([FromQuery] long? uid = null, [FromQuery] string? name = null, [FromQuery] int? count = null, [FromQuery] bool allowLock = false)
         {
             try
             {
@@ -3067,11 +3059,11 @@ namespace Oshima.FunGame.WebAPI.Controllers
                     {
                         itemTrading = SQLService.GetUserItemGuids(sql, userid);
                     }
-                    IEnumerable<Item> items = user.Inventory.Items.Where(i => i.Name == name && i.Character is null && !i.IsLock && !itemTrading.Contains(i.Guid));
+                    IEnumerable<Item> items = user.Inventory.Items.Where(i => i.Name == name && i.Character is null && (!allowLock || !i.IsLock) && !itemTrading.Contains(i.Guid));
                     if (!items.Any())
                     {
                         FunGameService.ReleaseUserSemaphoreSlim(userid);
-                        return $"库存中不存在名称为【{name}】，且未上锁、未在进行交易的物品！";
+                        return $"库存中不存在名称为【{name}】，且{(!allowLock ? "未上锁、" : "")}未在进行交易的物品！";
                     }
 
                     if (items.Count() >= useCount)
@@ -3085,16 +3077,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
                         {
                             if (user.Inventory.Items.Remove(item))
                             {
-                                double gained = item.QualityType switch
-                                {
-                                    QualityType.Gold => 128,
-                                    QualityType.Red => 64,
-                                    QualityType.Orange => 32,
-                                    QualityType.Purple => 16,
-                                    QualityType.Blue => 8,
-                                    QualityType.Green => 3,
-                                    _ => 1
-                                };
+                                double gained = FunGameConstant.DecomposedMaterials[item.QualityType];
                                 totalGained += gained;
                                 successCount++;
                             }
@@ -3109,7 +3092,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
                     else
                     {
                         FunGameService.ReleaseUserSemaphoreSlim(userid);
-                        return $"此物品的可分解数量（{items.Count()} 件）小于你想要分解的数量！";
+                        return $"此物品的可分解数量（{items.Count()} 件）小于你想要分解的数量（{useCount}）！";
                     }
                 }
                 else
@@ -3161,16 +3144,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
 
                     List<string> msgs = [];
                     int successCount = 0;
-                    double gained = items.First().QualityType switch
-                    {
-                        QualityType.Gold => 128,
-                        QualityType.Red => 64,
-                        QualityType.Orange => 32,
-                        QualityType.Purple => 16,
-                        QualityType.Blue => 8,
-                        QualityType.Green => 3,
-                        _ => 1
-                    };
+                    double gained = FunGameConstant.DecomposedMaterials[items.First().QualityType];
 
                     foreach (Item item in items)
                     {
@@ -3529,7 +3503,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
                 {
                     if (skill.SkillType == SkillType.Skill || skill.SkillType == SkillType.SuperSkill)
                     {
-                        if (skill.Level + 1 == General.GameplayEquilibriumConstant.MaxSkillLevel)
+                        if (skill.Level == General.GameplayEquilibriumConstant.MaxSkillLevel)
                         {
                             return $"此技能【{skill.Name}】已经升至满级！";
                         }
@@ -3725,7 +3699,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
 
                 NormalAttack na = character.NormalAttack;
 
-                if (na.Level + 1 == General.GameplayEquilibriumConstant.MaxNormalAttackLevel)
+                if (na.Level == General.GameplayEquilibriumConstant.MaxNormalAttackLevel)
                 {
                     return $"角色 [ {character} ] 的【{na.Name}】已经升至满级！";
                 }
@@ -5377,7 +5351,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
                 Store? daily = stores.Get("daily");
                 if (daily != null)
                 {
-                    if (daily.Goods.Values.FirstOrDefault(g => g.Id == goodid) is Goods good)
+                    if (daily.Goods.Values.FirstOrDefault(g => g.Id == goodid && (!g.ExpireTime.HasValue || g.ExpireTime.Value > DateTime.Now)) is Goods good)
                     {
                         msg = FunGameService.StoreBuyItem(daily, good, pc, user, buycount);
                     }
@@ -5425,7 +5399,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
                 Store? daily = stores.Get("daily");
                 if (daily != null)
                 {
-                    if (daily.Goods.Values.FirstOrDefault(g => g.Id == goodid) is Goods good)
+                    if (daily.Goods.Values.FirstOrDefault(g => g.Id == goodid && (!g.ExpireTime.HasValue || g.ExpireTime.Value > DateTime.Now)) is Goods good)
                     {
                         int count = 0;
                         string itemMsg = "";
@@ -5439,7 +5413,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
                         }
                         msg = good.ToString().Split("包含物品：")[0].Trim();
                         msg += $"\r\n包含物品：\r\n" + itemMsg +
-                            $"\r\n剩余库存：{(good.Stock == - 1 ? "不限量提供" : good.Stock)}";
+                            $"\r\n剩余库存：{(good.Stock == -1 ? "不限量提供" : good.Stock)}";
                     }
                     else
                     {
@@ -6050,12 +6024,13 @@ namespace Oshima.FunGame.WebAPI.Controllers
                             Item item = user.Inventory.Items.ToList()[itemIndex - 1];
                             if (msg != "") msg += "\r\n";
 
+                            string isUnLock = unlock ? "解锁" : "锁定";
                             using SQLHelper? sql = Factory.OpenFactory.GetSQLHelper();
                             try
                             {
                                 if (sql != null && SQLService.IsItemInOffers(sql, item.Guid))
                                 {
-                                    msg += $"这个物品 {itemIndex}. {item.Name} 无法上锁/解锁。因为它正在进行交易，请检查交易报价！";
+                                    msg += $"这个物品 {itemIndex}. {item.Name} 无法{isUnLock}。因为它正在进行交易，请检查交易报价！";
                                     continue;
                                 }
                             }
@@ -6088,7 +6063,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
                             else
                             {
                                 item.IsLock = true;
-                                msg += $"物品上锁成功：{itemIndex}. {item.Name}";
+                                msg += $"物品锁定成功：{itemIndex}. {item.Name}";
                             }
                         }
                         else
@@ -6109,6 +6084,100 @@ namespace Oshima.FunGame.WebAPI.Controllers
                 else
                 {
                     FunGameService.ReleaseUserSemaphoreSlim(userid);
+                    return noSaved;
+                }
+            }
+            catch (Exception e)
+            {
+                FunGameService.ReleaseUserSemaphoreSlim(uid.ToString() ?? "");
+                Logger.LogError(e, "Error: {e}", e);
+                return busy;
+            }
+        }
+
+        [HttpPost("lockitems")]
+        public string LockItems([FromQuery] long uid = -1, [FromQuery] string name = "", [FromQuery] int count = 0, [FromQuery] bool unlock = false)
+        {
+            try
+            {
+                if (count <= 0)
+                {
+                    return "数量必须大于0！";
+                }
+
+                PluginConfig pc = FunGameService.GetUserConfig(uid, out _);
+
+                if (pc.Count > 0)
+                {
+                    User user = FunGameService.GetUser(pc);
+
+                    string msg = "";
+                    using SQLHelper? sql = Factory.OpenFactory.GetSQLHelper();
+                    List<Guid> itemTrading = [];
+                    if (sql != null)
+                    {
+                        itemTrading = SQLService.GetUserItemGuids(sql, uid);
+                    }
+
+                    Dictionary<Item, int> items = user.Inventory.Items.Select((i, index) => new { Item = i, Index = index + 1 }).
+                        Where(x => x.Item.Name == name && x.Item.Character is null && x.Item.IsLock == unlock && !itemTrading.Contains(x.Item.Guid)).
+                        ToDictionary(x => x.Item, x => x.Index);
+                    string isUnLock = unlock ? "解锁" : "锁定";
+
+                    if (items.Count == 0)
+                    {
+                        msg = $"库存中不存在名称为【{name}】，且未在进行交易的物品，或者这些物品都已经被{isUnLock}了！";
+                    }
+                    else if (items.Count >= count)
+                    {
+                        items = items.TakeLast(count).ToDictionary();
+                        List<string> msgs = [];
+                        int successCount = 0;
+
+                        foreach (Item item in items.Keys)
+                        {
+                            if (unlock)
+                            {
+                                PluginConfig renameExamine = new("examines", "rename");
+                                renameExamine.LoadConfig();
+                                List<string> strings = renameExamine.Get<List<string>>(user.Id.ToString()) ?? [];
+                                if (strings.Count > 0)
+                                {
+                                    string guid = strings[1];
+                                    Item? gmk = user.Inventory.Items.FirstOrDefault(i => i.Guid.ToString() == guid);
+                                    if (gmk != null)
+                                    {
+                                        msg = $"物品 {items[item]}. {item.Name} 已被自定义改名系统锁定，无法自行解锁。";
+                                        continue;
+                                    }
+                                }
+
+                                item.IsLock = false;
+                                msg += $"物品解锁成功：{items[item]}. {item.Name}";
+                                successCount++;
+                            }
+                            else
+                            {
+                                item.IsLock = true;
+                                msg += $"物品锁定成功：{items[item]}. {item.Name}";
+                                successCount++;
+                            }
+                        }
+
+                        FunGameService.SetUserConfigAndReleaseSemaphoreSlim(uid, pc, user);
+                        return $"{isUnLock}完毕！{isUnLock} {count} 件，库存允许{isUnLock} {items.Count} 件，成功 {successCount} 件！";
+                    }
+                    else
+                    {
+                        msg = $"此物品的可{isUnLock}数量（{items.Count}）小于你想要{isUnLock}的数量（{count}）！";
+                    }
+
+                    FunGameService.ReleaseUserSemaphoreSlim(uid);
+                    return msg;
+                }
+                else
+                {
+                    FunGameService.ReleaseUserSemaphoreSlim(uid);
                     return noSaved;
                 }
             }
@@ -6992,7 +7061,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
 
                 EntityModuleConfig<Store> stores = new("stores", userid.ToString());
                 stores.LoadConfig();
-                string msg = FunGameService.CheckRegionStore(stores, user, storeRegion, storeName, out bool exist);
+                string msg = FunGameService.CheckRegionStore(stores, user, storeRegion, storeName, out _);
 
                 FunGameService.SetUserConfigAndReleaseSemaphoreSlim(userid, pc, user);
                 return msg;
@@ -7003,7 +7072,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
                 return noSaved;
             }
         }
-        
+
         [HttpPost("systemstorebuy")]
         public string SystemStoreBuy([FromQuery] long? uid = null, [FromQuery] string storeRegion = "", [FromQuery] string storeName = "", [FromQuery] long id = 0, [FromQuery] int count = 0)
         {
@@ -7018,14 +7087,21 @@ namespace Oshima.FunGame.WebAPI.Controllers
                 EntityModuleConfig<Store> stores = new("stores", userid.ToString());
                 stores.LoadConfig();
                 string msg = "";
-                Store? store = stores.Get(storeName);
+                Store? store = FunGameService.GetRegionStore(stores, user, storeRegion, storeName);
                 if (store != null)
                 {
-                    if (store.Goods.Values.FirstOrDefault(g => g.Id == id) is Goods good)
+                    if (store.Goods.Values.FirstOrDefault(g => g.Id == id && (!g.ExpireTime.HasValue || g.ExpireTime.Value > DateTime.Now)) is Goods good)
                     {
                         msg = FunGameService.StoreBuyItem(store, good, pc, user, count);
-                        stores.Add(storeName, store);
-                        stores.SaveConfig();
+                        if (store.GlobalStock)
+                        {
+                            FunGameService.SaveRegionStore(store, storeRegion, storeName);
+                        }
+                        else
+                        {
+                            stores.Add(storeName, store);
+                            stores.SaveConfig();
+                        }
                     }
                     else
                     {
@@ -7068,7 +7144,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
                 Store? store = stores.Get(storeName);
                 if (store != null)
                 {
-                    if (store.Goods.Values.FirstOrDefault(g => g.Id == goodid) is Goods good)
+                    if (store.Goods.Values.FirstOrDefault(g => g.Id == goodid && (!g.ExpireTime.HasValue || g.ExpireTime.Value > DateTime.Now)) is Goods good)
                     {
                         int count = 0;
                         string itemMsg = "";
