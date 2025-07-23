@@ -34,9 +34,8 @@ namespace Oshima.FunGame.WebAPI.Services
             {
                 third.Result += "\r\n" + content.Trim();
                 third.IsCompleted = true;
-                return;
             }
-            if (msg.IsGroup)
+            else if (msg.IsGroup)
             {
                 content = "\r\n" + content.Trim();
                 await Service.SendGroupMessageAsync(msg.OpenId, content, msgType, media, msg.Id, msgSeq);
@@ -49,7 +48,7 @@ namespace Oshima.FunGame.WebAPI.Services
             if (msg.UseNotice && msg.FunGameUID > 0 && FunGameService.UserNotice.TryGetValue(msg.FunGameUID, out HashSet<string>? msgs) && msgs != null)
             {
                 FunGameService.UserNotice.Remove(msg.FunGameUID);
-                await SendAsync(msg, "每日登录提醒", string.Join("\r\n", msgs), msgType, media, 5);
+                await SendAsync(msg, "离线未读信箱", $"☆--- 离线未读信箱 ---☆\r\n{string.Join("\r\n", msgs)}", msgType, media, 5);
             }
         }
 
@@ -154,6 +153,81 @@ namespace Oshima.FunGame.WebAPI.Services
                     return true;
                 }
 
+                if (e.Detail == "公告")
+				{
+					e.UseNotice = false;
+                    FunGameService.RefreshNotice();
+                    if (FunGameService.Notices.Count > 0)
+                    {
+                        List<string> msgs = [];
+                        DateTime now = DateTime.Now;
+                        foreach (NoticeModel notice in FunGameService.Notices.Values)
+                        {
+                            if (now >= notice.StartTime && now <= notice.EndTime)
+                            {
+                                msgs.Add(notice.ToString());
+                            }
+                        }
+                        await SendAsync(e, "公告", string.Join("\r\n", msgs));
+                    }
+                    else
+                    {
+                        await SendAsync(e, "公告", "当前没有任何系统公告。");
+                    }
+                    return true;
+                }
+                
+                if (e.Detail == "刷新公告")
+				{
+					e.UseNotice = false;
+					FunGameService.RefreshNotice();
+                    return true;
+                }
+                
+                if (e.Detail.StartsWith("添加公告"))
+				{
+					e.UseNotice = false;
+                    string detail = e.Detail.Replace("添加公告", "").Trim();
+                    string[] strings = detail.Split(new string[] { "\r\n", "\r", "\n" }, StringSplitOptions.RemoveEmptyEntries);
+                    string title = $"#Unknown";
+                    if (strings.Length > 1)
+                    {
+                        title = strings[0].Trim();
+                        detail = strings[1].Trim();
+                    }
+                    else
+                    {
+                        await SendAsync(e, "添加公告", $"格式错误：添加公告 <标题>\r\n<内容> [有效期 <天数>]。");
+                        return true;
+                    }
+                    strings = detail.Split("有效期");
+                    int days = 1;
+                    if (strings.Length > 1)
+                    {
+                        if (int.TryParse(strings[1].Trim(), out int d))
+                        {
+                            days = d;
+                        }
+                        detail = strings[0].Trim();
+                    }
+                    string author = "FunGame";
+                    if (FunGameConstant.UserIdAndUsername.TryGetValue(uid, out User? user) && user != null)
+                    {
+                        author = user.Username;
+                    }
+                    FunGameService.Notices.Add(title, new NoticeModel()
+                    {
+                        Title = title,
+                        Author = author,
+                        Content = detail,
+                        StartTime = DateTime.Now,
+                        EndTime = DateTime.Today.AddHours(3).AddMinutes(59).AddSeconds(59).AddDays(days)
+                    });
+                    FunGameService.Notices.SaveConfig();
+                    await SendAsync(e, "添加公告", $"添加完毕，请查看【公告】列表！");
+                    return true;
+                }
+                
                 if (e.Detail == "查询服务器启动时间")
 				{
 					e.UseNotice = false;

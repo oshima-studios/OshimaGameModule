@@ -5411,7 +5411,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
                             if (newItem.ItemType != ItemType.MagicCard) newItem.SetLevel(1);
                             itemMsg += $"[ {count} ] {newItem.ToString(false, true)}".Trim();
                         }
-                        msg = good.ToString().Split("包含物品：")[0].Trim();
+                        msg = good.ToString(user).Split("包含物品：")[0].Trim();
                         msg += $"\r\n包含物品：\r\n" + itemMsg +
                             $"\r\n剩余库存：{(good.Stock == -1 ? "不限量提供" : good.Stock)}";
                     }
@@ -7156,7 +7156,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
                             if (newItem.ItemType != ItemType.MagicCard) newItem.SetLevel(1);
                             itemMsg += $"[ {count} ] {newItem.ToString(false, true)}".Trim();
                         }
-                        msg = good.ToString().Split("包含物品：")[0].Trim();
+                        msg = good.ToString(user).Split("包含物品：")[0].Trim();
                         msg += $"\r\n包含物品：\r\n" + itemMsg +
                             $"\r\n剩余库存：{(good.Stock == -1 ? "不限量提供" : good.Stock)}";
                     }

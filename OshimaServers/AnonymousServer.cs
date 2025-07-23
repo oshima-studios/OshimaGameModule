@@ -1,13 +1,9 @@
-﻿using System.Data;
-using Milimoe.FunGame.Core.Api.Transmittal;
-using Milimoe.FunGame.Core.Api.Utility;
-using Milimoe.FunGame.Core.Entity;
+﻿using Milimoe.FunGame.Core.Api.Utility;
 using Milimoe.FunGame.Core.Interface.Base;
 using Milimoe.FunGame.Core.Library.Common.Addon;
 using Milimoe.FunGame.Core.Library.Constant;
 using Oshima.Core.Configs;
 using Oshima.Core.Constant;
-using Oshima.FunGame.OshimaServers.Model;
 using Oshima.FunGame.OshimaServers.Service;
 using TaskScheduler = Milimoe.FunGame.Core.Api.Utility.TaskScheduler;
 
@@ -30,6 +26,13 @@ namespace Oshima.FunGame.OshimaServers
         public override bool IsAnonymous => true;
 
         public static HashSet<AnonymousServer> Instances { get; } = [];
+
+        public WebSocketService Service { get; }
+
+        public AnonymousServer()
+        {
+            Service = new(this);
+        }
 
         /// <summary>
         /// 向客户端推送事件
@@ -107,12 +110,14 @@ namespace Oshima.FunGame.OshimaServers
             Controller.NewMailSender();
             FunGameService.InitFunGame();
             FunGameSimulation.InitFunGameSimulation();
+            FunGameService.RefreshNotice();
             TaskScheduler.Shared.AddTask("重置每日运势", new TimeSpan(0, 0, 0), () =>
             {
                 Controller.WriteLine("已重置所有人的今日运势");
                 Daily.ClearDaily();
                 // 刷新活动缓存
                 FunGameService.GetEventCenter();
+                FunGameService.RefreshNotice();
             });
             TaskScheduler.Shared.AddTask("上九", new TimeSpan(9, 0, 0), () =>
             {
@@ -128,153 +133,30 @@ namespace Oshima.FunGame.OshimaServers
             });
             TaskScheduler.Shared.AddRecurringTask("刷新存档缓存", TimeSpan.FromMinutes(1), () =>
             {
-                string directoryPath = $@"{AppDomain.CurrentDomain.BaseDirectory}configs/saved";
-                if (Directory.Exists(directoryPath))
-                {
-                    string[] filePaths = Directory.GetFiles(directoryPath);
-                    foreach (string filePath in filePaths)
-                    {
-                        string fileName = Path.GetFileNameWithoutExtension(filePath);
-                        PluginConfig pc = FunGameService.GetUserConfig(fileName, out _);
-                        if (pc.Count > 0)
-                        {
-                            User user = FunGameService.GetUser(pc);
-                            // 将用户存入缓存
-                            FunGameConstant.UserIdAndUsername[user.Id] = user;
-                            bool updateQuest = false;
-                            bool updateExplore = false;
-                            // 任务结算
-                            EntityModuleConfig<Quest> quests = new("quests", user.Id.ToString());
-                            quests.LoadConfig();
-                            if (quests.Count > 0 && FunGameService.SettleQuest(user, quests))
-                            {
-                                quests.SaveConfig();
-                                updateQuest = true;
-                            }
-                            // 探索结算
-                            PluginConfig pc2 = new("exploring", user.Id.ToString());
-                            pc2.LoadConfig();
-                            if (pc2.Count > 0 && FunGameService.SettleExploreAll(pc2, user))
-                            {
-                                pc2.SaveConfig();
-                                updateExplore = true;
-                            }
-                            if (updateQuest || updateExplore)
-                            {
-                                FunGameService.SetUserConfigAndReleaseSemaphoreSlim(user.Id, pc, user);
-                            }
-                            if (FunGameConstant.UserLastVisitStore.TryGetValue(user.Id, out LastStoreModel? value) && value != null && (DateTime.Now - value.LastTime).TotalMinutes > 2)
-                            {
-                                FunGameConstant.UserLastVisitStore.Remove(user.Id);
-                            }
-                        }
-                        FunGameService.ReleaseUserSemaphoreSlim(fileName);
-                    }
-                    Controller.WriteLine("读取 FunGame 存档缓存", LogLevel.Debug);
-                }
+                FunGameService.RefreshSavedCache();
+                Controller.WriteLine("读取 FunGame 存档缓存", LogLevel.Debug);
             }, true);
             TaskScheduler.Shared.AddTask("刷新每日任务", new TimeSpan(4, 0, 0), () =>
             {
                 // 刷新每日任务
                 Task.Run(() =>
                 {
-                    string directoryPath = $@"{AppDomain.CurrentDomain.BaseDirectory}configs/quests";
-                    if (Directory.Exists(directoryPath))
-                    {
-                        string[] filePaths = Directory.GetFiles(directoryPath);
-                        foreach (string filePath in filePaths)
-                        {
-                            string fileName = Path.GetFileNameWithoutExtension(filePath);
-                            EntityModuleConfig<Quest> quests = new("quests", fileName);
-                            quests.Clear();
-                            FunGameService.CheckQuestList(quests);
-                            quests.SaveConfig();
-                        }
-                        Controller.WriteLine("刷新每日任务");
-                    }
+                    FunGameService.RefreshDailyQuest();
+                    Controller.WriteLine("刷新每日任务");
                 });
                 Task.Run(() =>
                 {
-                    // 刷新每天登录
-                    FunGameService.UserNotice.Clear();
-                    // 刷新签到
-                    string directoryPath = $@"{AppDomain.CurrentDomain.BaseDirectory}configs/saved";
-                    if (Directory.Exists(directoryPath))
-                    {
-                        string[] filePaths = Directory.GetFiles(directoryPath);
-                        foreach (string filePath in filePaths)
-                        {
-                            string fileName = Path.GetFileNameWithoutExtension(filePath);
-                            PluginConfig pc = FunGameService.GetUserConfig(fileName, out _);
-                            pc.Add("signed", false);
-                            pc.Add("logon", false);
-                            pc.Add("exploreTimes", FunGameConstant.MaxExploreTimes);
-                            pc.SaveConfig();
-                            FunGameService.ReleaseUserSemaphoreSlim(fileName);
-                        }
-                        Controller.WriteLine("刷新签到");
-                    }
+                    FunGameService.RefreshDailySignIn();
+                    Controller.WriteLine("刷新签到");
                 });
                 Task.Run(() =>
                 {
-                    // 刷新商店
-                    string directoryPath = $@"{AppDomain.CurrentDomain.BaseDirectory}configs/storeNames";
-                    if (Directory.Exists(directoryPath))
-                    {
-                        string[] filePaths = Directory.GetFiles(directoryPath);
-                        foreach (string filePath in filePaths)
-                        {
-                            string fileName = Path.GetFileNameWithoutExtension(filePath);
-                            EntityModuleConfig<Store> stores = new("storeNames", fileName);
-                            stores.LoadConfig();
-                            string[] storeNames = [.. stores.Keys];
-                            if (long.TryParse(fileName, out long userId) && FunGameConstant.UserIdAndUsername.TryGetValue(userId, out User? user) && user != null)
-                            {
-                                // 更新玩家商店数据，移除所有当天刷新的商店
-                                FunGameConstant.UserLastVisitStore.Remove(userId);
-                                stores.Remove("daily");
-                                foreach (string key in storeNames)
-                                {
-                                    Store? store = stores.Get(key);
-                                    if (store != null && (store.GlobalStock || (store.AutoRefresh && store.NextRefreshDate.Date <= DateTime.Today)))
-                                    {
-                                        stores.Remove(key);
-                                    }
-                                }
-                                FunGameService.CheckDailyStore(stores, user);
-                            }
-                            else
-                            {
-                                // 非玩家商店数据，需要更新模板的商品
-                                foreach (string key in storeNames)
-                                {
-                                    Store? store = stores.Get(key);
-                                    if (store != null)
-                                    {
-                                        if (store.ExpireTime != null && store.ExpireTime.Value.Date <= DateTime.Today)
-                                        {
-                                            stores.Remove(key);
-                                            continue;
-                                        }
-                                        if (store.AutoRefresh && store.NextRefreshDate.Date <= DateTime.Today)
-                                        {
-                                            store.Goods.Clear();
-                                            foreach (long goodsId in store.NextRefreshGoods.Keys)
-                                            {
-                                                store.Goods[goodsId] = store.NextRefreshGoods[goodsId];
-                                            }
-                                            store.NextRefreshDate = DateTime.Today.AddHours(4).AddDays(store.RefreshInterval);
-                                        }
-                                    }
-                                }
-                            }
-                            stores.SaveConfig();
-                        }
-                        Controller.WriteLine("刷新商店");
-                    }
+                    FunGameService.RefreshStoreData();
+                    Controller.WriteLine("刷新商店");
                 });
                 // 刷新活动缓存
                 FunGameService.GetEventCenter();
+                FunGameService.RefreshNotice();
             });
             TaskScheduler.Shared.AddRecurringTask("刷新boss", TimeSpan.FromHours(1), () =>
             {
@@ -326,13 +208,13 @@ namespace Oshima.FunGame.OshimaServers
                 switch (command.Trim().ToLower())
                 {
                     case "scadd":
-                        msg = SCAdd(data);
+                        msg = Service.SCAdd(data);
                         break;
                     case "sclist":
-                        msg = SCList(data);
+                        msg = Service.SCList(data);
                         break;
                     case "screcord":
-                        msg = SCRecord(data);
+                        msg = Service.SCRecord(data);
                         break;
                     case "att":
                         break;
@@ -348,188 +230,6 @@ namespace Oshima.FunGame.OshimaServers
             }
 
             return result;
-        }
-
-        public string SCAdd(Dictionary<string, object> data)
-        {
-            string result = "";
-
-            using SQLHelper? sql = Controller.GetSQLHelper();
-            if (sql != null)
-            {
-                try
-                {
-                    long qq = Controller.JSON.GetObject<long>(data, "qq");
-                    long groupid = Controller.JSON.GetObject<long>(data, "groupid");
-                    double sc = Controller.JSON.GetObject<double>(data, "sc");
-                    sql.NewTransaction();
-                    sql.Script = "select * from saints where qq = @qq and `group` = @group";
-                    sql.Parameters.Add("qq", qq);
-                    sql.Parameters.Add("group", groupid);
-                    sql.ExecuteDataSet();
-                    string content = Controller.JSON.GetObject<string>(data, "content") ?? "";
-                    string record = "";
-                    if (sql.Success)
-                    {
-                        record = Convert.ToString(sql.DataSet.Tables[0].Rows[0]["record"]) ?? "";
-                    }
-                    record = $"{DateTime.Now:MM/dd HH:mm}：{content}（{(sc < 0 ? "-" : "+") + Math.Abs(sc)}）\r\n{record}";
-                    record = string.Join("\r\n", record.Split("\r\n", StringSplitOptions.RemoveEmptyEntries).Take(10));
-                    if (sql.Success)
-                    {
-                        sql.Script = "update saints set sc = sc + @sc, record = @record where qq = @qq and `group` = @group";
-                    }
-                    else
-                    {
-                        sql.Script = "insert into saints(qq, sc, `group`, record) values(@qq, @sc, @group, @record)";
-                    }
-                    sql.Parameters.Add("sc", sc);
-                    sql.Parameters.Add("qq", qq);
-                    sql.Parameters.Add("group", groupid);
-                    sql.Parameters.Add("record", record);
-                    sql.Execute();
-                    if (sql.Success)
-                    {
-                        Controller.WriteLine($"用户 {qq} 的圣人点数增加了 {sc}", LogLevel.Debug);
-                        sql.Commit();
-                    }
-                    else
-                    {
-                        sql.Rollback();
-                    }
-                }
-                catch (Exception e)
-                {
-                    result = e.ToString();
-                    sql.Rollback();
-                }
-            }
-            else result = "无法调用此接口：SQL 服务不可用。";
-
-            return result;
-        }
-
-        public string SCList(Dictionary<string, object> data)
-        {
-            string result;
-
-            SQLHelper? sql = Controller.SQLHelper;
-            if (sql != null)
-            {
-                long userQQ = Controller.JSON.GetObject<long>(data, "qq");
-                (bool userHas, double userSC, int userTop, string userRemark) = (false, 0, 0, "");
-                long groupid = Controller.JSON.GetObject<long>(data, "groupid");
-                bool reverse = Controller.JSON.GetObject<bool>(data, "reverse");
-                if (!reverse)
-                {
-                    result = $"☆--- OSMTV 圣人排行榜 TOP10 ---☆\r\n统计时间：{DateTime.Now.ToString(General.GeneralDateTimeFormatChinese)}\r\n";
-                }
-                else
-                {
-                    result = $"☆--- OSMTV 出生排行榜 TOP10 ---☆\r\n统计时间：{DateTime.Now.ToString(General.GeneralDateTimeFormatChinese)}\r\n";
-                }
-                sql.Script = "select * from saints where `group` = @group order by sc" + (!reverse ? " desc" : "");
-                sql.Parameters.Add("group", groupid);
-                sql.ExecuteDataSet();
-                if (sql.Success && sql.DataSet.Tables.Count > 0)
-                {
-                    int count = 0;
-                    foreach (DataRow dr in sql.DataSet.Tables[0].Rows)
-                    {
-                        count++;
-                        long qq = Convert.ToInt64(dr["qq"]);
-                        double sc = Convert.ToDouble(dr["sc"]);
-                        string remark = Convert.ToString(dr["remark"]) ?? "";
-                        if (reverse)
-                        {
-                            sc = -sc;
-                            remark = remark.Replace("+", "-");
-                        }
-                        if (qq == userQQ)
-                        {
-                            userHas = true;
-                            userSC = sc;
-                            userTop = count;
-                            userRemark = remark;
-                        }
-                        if (count > 10) continue;
-                        if (!reverse)
-                        {
-                            result += $"{count}. 用户：{qq}，圣人点数：{sc} 分{(remark.Trim() != "" ? $" ({remark})" : "")}\r\n";
-                        }
-                        else
-                        {
-                            result += $"{count}. 用户：{qq}，出生点数：{sc} 分{(remark.Trim() != "" ? $" ({remark})" : "")}\r\n";
-                        }
-                    }
-                    if (!reverse && userHas)
-                    {
-                        result += $"你的圣人点数为：{userSC} 分{(userRemark.Trim() != "" ? $"（{userRemark}）" : "")}，排在第 {userTop} / {sql.DataSet.Tables[0].Rows.Count} 名。\r\n" +
-                            $"本排行榜仅供娱乐，不代表任何官方立场或真实情况。";
-                    }
-                    if (reverse && userHas)
-                    {
-                        result += $"你的出生点数为：{userSC} 分{(userRemark.Trim() != "" ? $"（{userRemark}）" : "")}，排在出生榜第 {userTop} / {sql.DataSet.Tables[0].Rows.Count} 名。\r\n" +
-                            $"本排行榜仅供娱乐，不代表任何官方立场或真实情况。";
-                    }
-                }
-                else
-                {
-                    if (reverse)
-                    {
-                        result = "出生榜目前没有任何数据。";
-                    }
-                    else
-                    {
-                        result = "圣人榜目前没有任何数据。";
-                    }
-                }
-            }
-            else result = "无法调用此接口：SQL 服务不可用。";
-
-            return result.Trim();
-        }
-
-        public string SCRecord(Dictionary<string, object> data)
-        {
-            string result = "";
-
-            SQLHelper? sql = Controller.SQLHelper;
-            if (sql != null)
-            {
-                long userQQ = Controller.JSON.GetObject<long>(data, "qq");
-                long groupid = Controller.JSON.GetObject<long>(data, "groupid");
-                result = $"☆--- 圣人点数信息 ---☆\r\n统计时间：{DateTime.Now.ToString(General.GeneralDateTimeFormatChinese)}\r\n";
-                sql.Script = "select * from saints where `group` = @group order by sc desc";
-                sql.Parameters.Add("group", groupid);
-                sql.Parameters.Add("qq", userQQ);
-                sql.ExecuteDataSet();
-                if (sql.Success && sql.DataSet.Tables.Count > 0)
-                {
-                    Dictionary<int, DataRow> dict = sql.DataSet.Tables[0].AsEnumerable().Select((r, i) => new { Index = i + 1, Row = r }).ToDictionary(c => c.Index, c => c.Row);
-                    int index = dict.Where(kv => Convert.ToInt64(kv.Value["qq"]) == userQQ).Select(r => r.Key).FirstOrDefault();
-                    if (index != 0 && dict.TryGetValue(index, out DataRow? dr) && dr != null)
-                    {
-                        long qq = Convert.ToInt64(dr["qq"]);
-                        double sc = Convert.ToDouble(dr["sc"]);
-                        string remark = Convert.ToString(dr["remark"]) ?? "";
-                        string record = Convert.ToString(dr["record"]) ?? "";
-                        result += $"用户：{qq}，圣人点数：{sc} 分{(remark.Trim() != "" ? $" ({remark})" : "")}，排在圣人榜第 {index} / {sql.DataSet.Tables[0].Rows.Count} 名。\r\n" +
-                            $"{(record != "" ? "显示近期点数变动信息：\r\n" + record + "\r\n" : "")}本系统仅供娱乐，不代表任何官方立场或真实情况。";
-                    }
-                    else
-                    {
-                        result = "你在这个群没有任何历史记录。";
-                    }
-                }
-                else
-                {
-                    result = "你在这个群没有任何历史记录。";
-                }
-            }
-            else result = "无法调用此接口：SQL 服务不可用。";
-
-            return result.Trim();
         }
 
         public override Task<Dictionary<string, object>> GamingMessageHandler(IServerModel model, GamingType type, Dictionary<string, object> data)

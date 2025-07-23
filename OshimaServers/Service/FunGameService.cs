@@ -29,6 +29,7 @@ namespace Oshima.FunGame.OshimaServers.Service
         public static Dictionary<int, Character> Bosses { get; } = [];
         public static ServerPluginLoader? ServerPluginLoader { get; set; } = null;
         public static WebAPIPluginLoader? WebAPIPluginLoader { get; set; } = null;
+        public static EntityModuleConfig<NoticeModel> Notices { get; } = new("notices", "notice");
 
         public static void InitFunGame()
         {
@@ -617,13 +618,6 @@ namespace Oshima.FunGame.OshimaServers.Service
                 {
                     user.Inventory.Training[t.Id] = training[cid];
                 }
-            }
-
-            if (!pc.TryGetValue("logon", out object? value) || (value is bool logon && !logon))
-            {
-                pc.Add("logon", true);
-                AddNotice(user.Id, "欢迎回到筽祀牻大陆！请发送【帮助】获取更多玩法指令哦～");
-                AddNotice(user.Id, GetEvents());
             }
 
             return user;
@@ -2073,12 +2067,12 @@ namespace Oshima.FunGame.OshimaServers.Service
                 }
                 stores.Add("daily", daily);
                 SetLastStore(user, true, "", "");
-                return daily.ToString();
+                return daily.ToString(user);
             }
             else
             {
                 SetLastStore(user, true, "", "");
-                return daily.ToString();
+                return daily.ToString(user);
             }
         }
 
@@ -3989,7 +3983,7 @@ namespace Oshima.FunGame.OshimaServers.Service
             {
                 Store? store = value.VisitStore(stores, user, storeName);
                 exist = store != null;
-                msg = store?.ToString() ?? "";
+                msg = store?.ToString(user) ?? "";
             }
 
             if (!exist)
@@ -4004,6 +3998,203 @@ namespace Oshima.FunGame.OshimaServers.Service
             return msg;
         }
 
+        public static void RefreshNotice()
+        {
+            Notices.LoadConfig();
+        }
+
+        public static void RefreshSavedCache()
+        {
+            string directoryPath = $@"{AppDomain.CurrentDomain.BaseDirectory}configs/saved";
+            if (Directory.Exists(directoryPath))
+            {
+                string[] filePaths = Directory.GetFiles(directoryPath);
+                foreach (string filePath in filePaths)
+                {
+                    string fileName = Path.GetFileNameWithoutExtension(filePath);
+                    PluginConfig pc = GetUserConfig(fileName, out _);
+                    if (pc.Count > 0)
+                    {
+                        User user = GetUser(pc);
+                        // 将用户存入缓存
+                        FunGameConstant.UserIdAndUsername[user.Id] = user;
+                        bool updateQuest = false;
+                        bool updateExplore = false;
+                        // 任务结算
+                        EntityModuleConfig<Quest> quests = new("quests", user.Id.ToString());
+                        quests.LoadConfig();
+                        if (quests.Count > 0 && SettleQuest(user, quests))
+                        {
+                            quests.SaveConfig();
+                            updateQuest = true;
+                        }
+                        // 探索结算
+                        PluginConfig pc2 = new("exploring", user.Id.ToString());
+                        pc2.LoadConfig();
+                        if (pc2.Count > 0 && SettleExploreAll(pc2, user))
+                        {
+                            pc2.SaveConfig();
+                            updateExplore = true;
+                        }
+                        if (updateQuest || updateExplore)
+                        {
+                            SetUserConfigButNotRelease(user.Id, pc, user);
+                        }
+                        if (FunGameConstant.UserLastVisitStore.TryGetValue(user.Id, out LastStoreModel? value) && value != null && (DateTime.Now - value.LastTime).TotalMinutes > 2)
+                        {
+                            FunGameConstant.UserLastVisitStore.Remove(user.Id);
+                        }
+                    }
+                    ReleaseUserSemaphoreSlim(fileName);
+                }
+            }
+        }
+
+        public static void RefreshDailyQuest()
+        {
+            string directoryPath = $@"{AppDomain.CurrentDomain.BaseDirectory}configs/quests";
+            if (Directory.Exists(directoryPath))
+            {
+                string[] filePaths = Directory.GetFiles(directoryPath);
+                foreach (string filePath in filePaths)
+                {
+                    string fileName = Path.GetFileNameWithoutExtension(filePath);
+                    EntityModuleConfig<Quest> quests = new("quests", fileName);
+                    quests.Clear();
+                    CheckQuestList(quests);
+                    quests.SaveConfig();
+                }
+            }
+        }
+
+        public static void RefreshDailySignIn()
+        {
+            // 刷新每天登录
+            UserNotice.Clear();
+            // 刷新签到
+            string directoryPath = $@"{AppDomain.CurrentDomain.BaseDirectory}configs/saved";
+            if (Directory.Exists(directoryPath))
+            {
+                string[] filePaths = Directory.GetFiles(directoryPath);
+                foreach (string filePath in filePaths)
+                {
+                    string fileName = Path.GetFileNameWithoutExtension(filePath);
+                    PluginConfig pc = GetUserConfig(fileName, out _);
+                    pc.Add("signed", false);
+                    pc.Add("logon", false);
+                    pc.Add("lunch", false);
+                    pc.Add("dinner", false);
+                    pc.Add("exploreTimes", FunGameConstant.MaxExploreTimes);
+                    pc.SaveConfig();
+                    ReleaseUserSemaphoreSlim(fileName);
+                }
+            }
+        }
+
+        public static void RefreshStoreData()
+        {
+            // 刷新商店
+            string directoryPath = $@"{AppDomain.CurrentDomain.BaseDirectory}configs/stores";
+            if (Directory.Exists(directoryPath))
+            {
+                string[] filePaths = Directory.GetFiles(directoryPath);
+                foreach (string filePath in filePaths)
+                {
+                    string fileName = Path.GetFileNameWithoutExtension(filePath);
+                    EntityModuleConfig<Store> stores = new("stores", fileName);
+                    stores.LoadConfig();
+                    string[] storeNames = [.. stores.Keys];
+                    if (long.TryParse(fileName, out long userId) && FunGameConstant.UserIdAndUsername.TryGetValue(userId, out User? user) && user != null)
+                    {
+                        // 更新玩家商店数据，移除所有当天刷新的商店
+                        FunGameConstant.UserLastVisitStore.Remove(userId);
+                        stores.Remove("daily");
+                        foreach (string key in storeNames)
+                        {
+                            Store? store = stores.Get(key);
+                            if (store != null && (store.GlobalStock || (store.AutoRefresh && store.NextRefreshDate.Date <= DateTime.Today)))
+                            {
+                                stores.Remove(key);
+                            }
+                        }
+                        CheckDailyStore(stores, user);
+                    }
+                    else
+                    {
+                        // 非玩家商店数据，需要更新模板的商品
+                        foreach (string key in storeNames)
+                        {
+                            Store? store = stores.Get(key);
+                            if (store != null)
+                            {
+                                if (store.ExpireTime != null && store.ExpireTime.Value.Date <= DateTime.Today)
+                                {
+                                    stores.Remove(key);
+                                    continue;
+                                }
+                                if (store.AutoRefresh && store.NextRefreshDate.Date <= DateTime.Today)
+                                {
+                                    store.Goods.Clear();
+                                    foreach (long goodsId in store.NextRefreshGoods.Keys)
+                                    {
+                                        store.Goods[goodsId] = store.NextRefreshGoods[goodsId];
+                                    }
+                                    store.NextRefreshDate = DateTime.Today.AddHours(4).AddDays(store.RefreshInterval);
+                                }
+                            }
+                        }
+                    }
+                    stores.SaveConfig();
+                }
+            }
+        }
+
+        public static void OnUserConfigSaving(PluginConfig pc, User user)
+        {
+            DateTime now = DateTime.Now;
+            if (!pc.TryGetValue("logon", out object? value) || (value is bool logon && !logon))
+            {
+                pc.Add("logon", true);
+                AddNotice(user.Id, "欢迎回到筽祀牻大陆！请发送【帮助】获取更多玩法指令哦～");
+                AddNotice(user.Id, GetEvents());
+                foreach (NoticeModel notice in Notices.Values)
+                {
+                    if (now >= notice.StartTime && now <= notice.EndTime)
+                    {
+                        AddNotice(user.Id, notice.ToString());
+                    }
+                }
+            }
+            int count1 = 30;
+            int count2 = 30;
+            DateTime d1 = DateTime.Today.AddHours(11);
+            DateTime d2 = DateTime.Today.AddHours(13);
+            DateTime d3 = DateTime.Today.AddHours(17);
+            DateTime d4 = DateTime.Today.AddHours(19);
+            if (now >= d1 && now <= d2 && (!pc.TryGetValue("lunch", out value) || (value is bool lunch && !lunch)))
+            {
+                int exploreTimes = FunGameConstant.MaxExploreTimes + count1;
+                if (pc.TryGetValue("exploreTimes", out object? value2) && int.TryParse(value2.ToString(), out exploreTimes))
+                {
+                    exploreTimes += count1;
+                }
+                pc.Add("exploreTimes", exploreTimes);
+                pc.Add("lunch", true);
+                AddNotice(user.Id, $"在 11-13 点期间登录游戏获得了午餐！（探索许可+{count1}～）");
+            }
+            if (now >= d3 && now <= d4 && (!pc.TryGetValue("dinner", out value) || (value is bool dinner && !dinner)))
+            {
+                int exploreTimes = FunGameConstant.MaxExploreTimes + count2;
+                if (pc.TryGetValue("exploreTimes", out object? value2) && int.TryParse(value2.ToString(), out exploreTimes))
+                {
+                    exploreTimes += count2;
+                }
+                pc.Add("exploreTimes", exploreTimes);
+                pc.Add("dinner", true);
+                AddNotice(user.Id, $"在 17-19 点期间登录游戏获得了晚餐！（探索许可+{count2}～）");
+            }
+        }
+
         public static void ReleaseUserSemaphoreSlim(string key)
         {
             if (FunGameConstant.UserSemaphoreSlims.TryGetValue(key, out SemaphoreSlim? obj) && obj != null && obj.CurrentCount == 0)
@@ -4016,6 +4207,7 @@ namespace Oshima.FunGame.OshimaServers.Service
 
         public static void SetUserConfig(string key, PluginConfig pc, User user, bool updateLastTime = true, bool release = true)
         {
+            OnUserConfigSaving(pc, user);
             if (updateLastTime) user.LastTime = DateTime.Now;
             pc.Add("user", user);
             pc.SaveConfig();
