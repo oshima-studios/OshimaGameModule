@@ -2783,7 +2783,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
                 FunGameService.SetUserConfigAndReleaseSemaphoreSlim(userid, pc, user);
 
                 string msg = "";
-                if (user.IsAdmin || userid > 0)
+                if (user.IsAdmin)
                 {
                     PluginConfig pc2 = FunGameService.GetUserConfig(targetid, out _);
                     if (pc2.Count > 0)

@@ -187,8 +187,19 @@ namespace Oshima.FunGame.WebAPI.Services
                 if (e.Detail.StartsWith("添加公告"))
 				{
 					e.UseNotice = false;
+                    string author = "FunGame";
+                    FunGameConstant.UserIdAndUsername.TryGetValue(uid, out User? user);
+                    if (user is null || (!user.IsAdmin && !user.IsOperator))
+                    {
+                        await SendAsync(e, "公告", "你没有权限使用此指令。");
+                        return true;
+                    }
+                    else
+                    {
+                        author = user.Username;
+                    }
                     string detail = e.Detail.Replace("添加公告", "").Trim();
-                    string[] strings = detail.Split(new string[] { "\r\n", "\r", "\n" }, StringSplitOptions.RemoveEmptyEntries);
+                    string[] strings = detail.Split(["\r\n", "\r", "\n"], StringSplitOptions.RemoveEmptyEntries);
                     string title = $"#Unknown";
                     if (strings.Length > 1)
                     {
@@ -209,11 +220,6 @@ namespace Oshima.FunGame.WebAPI.Services
                             days = d;
                         }
                         detail = strings[0].Trim();
-                    }
-                    string author = "FunGame";
-                    if (FunGameConstant.UserIdAndUsername.TryGetValue(uid, out User? user) && user != null)
-                    {
-                        author = user.Username;
                     }
                     FunGameService.Notices.Add(title, new NoticeModel()
                     {
