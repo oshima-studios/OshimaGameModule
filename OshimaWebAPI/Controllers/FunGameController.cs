@@ -3908,7 +3908,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
                         FunGameService.Bosses.Remove(bossIndex);
                         double gained = boss.Level;
                         user.Inventory.Materials += gained;
-                        msgs.Add($"恭喜你击败了 Boss，获得 {gained} 材料奖励！");
+                        msgs.Add($"恭喜你击败了 Boss，获得 {gained} {General.GameplayEquilibriumConstant.InGameMaterial}奖励！");
                     }
                     else
                     {
@@ -4178,7 +4178,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
                         FunGameService.Bosses.Remove(bossIndex);
                         double gained = boss.Level;
                         user.Inventory.Materials += gained;
-                        msgs.Add($"恭喜你击败了 Boss，获得 {gained} 材料奖励！");
+                        msgs.Add($"恭喜你击败了 Boss，获得 {gained} {General.GameplayEquilibriumConstant.InGameMaterial}奖励！");
                     }
                     else
                     {
@@ -7141,7 +7141,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
                 stores.LoadConfig();
 
                 string msg = "";
-                Store? store = stores.Get(storeName);
+                Store? store = FunGameService.GetRegionStore(stores, user, storeRegion, storeName);
                 if (store != null)
                 {
                     if (store.Goods.Values.FirstOrDefault(g => g.Id == goodid && (!g.ExpireTime.HasValue || g.ExpireTime.Value > DateTime.Now)) is Goods good)

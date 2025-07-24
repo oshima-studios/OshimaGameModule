@@ -374,7 +374,9 @@ namespace Oshima.FunGame.OshimaServers.Service
                     "{2}的低语在风中消散，但留在你手中的是闪耀的{0}！",
                     "恭喜你！成功在荒野中迷路！奖励…等等，好像是：{0}？至少不是空手而归…",
                     "你凝视着远方，远方也凝视着你…然后，你获得了：{0}！这大概就是命运吧。",
-                    "探索结果：空气，阳光，还有…奖励：{0}！看来今天运气还不错？"
+                    "探索结果：空气，阳光，还有…奖励：{0}！看来今天运气还不错？",
+                    "你随手拨开{4}的草丛，惊喜地发现{0}在阳光下闪闪发光！",
+                    "{3}在{4}的微光中低语，指引你走向了意外的{0}！"
                 ]
             },
             {
@@ -383,7 +385,12 @@ namespace Oshima.FunGame.OshimaServers.Service
                     "{4}地牢里的封印纹丝未动，仿佛在嘲笑着你的徒劳……（什么也没有获得）",
                     "在你的注视下，{4}的宝藏已被{2}掠夺一空。（什么也没有获得）",
                     "你对着空地发呆了半天，只剩冰冷的{4}和你的失望。（什么也没有获得）",
-                    "在空荡的回响中传来讥笑，原来{4}的秘宝不过是个传说。（什么也没有获得）"
+                    "在空荡的回响中传来讥笑，原来{4}的秘宝不过是个传说。（什么也没有获得）",
+                    "{4}的废墟中只有风声作伴，{3}也无法指引你找到任何东西。（什么也没有获得）",
+                    "你翻遍了{4}的每个角落，{2}的笑声仿佛在嘲笑你的空手而归。（什么也没有获得）",
+                    "{6}的阴影笼罩着{4}，但无论你如何寻找，宝藏依然无踪。（什么也没有获得）",
+                    "在{4}的荒凉中，你只找到了一堆无用的碎石和失望。（什么也没有获得）",
+                    "{3}的光芒在{4}中黯淡，仿佛连它都不愿理会你的探索。（什么也没有获得）"
                 ]
             },
             {
@@ -392,7 +399,12 @@ namespace Oshima.FunGame.OshimaServers.Service
                     "当你触碰{3}时，{1}的咆哮震撼着{4}！",
                     "原来这里真的有危险……是{1}守卫着{4}，不得不战了！",
                     "在探索{4}的某处时，身旁的墙突然破裂，{1}从阴影中降临！",
-                    "你惊动了{1}！{4}瞬间化作战场！"
+                    "你惊动了{1}！{4}瞬间化作战场！",
+                    "{1}从{4}的黑暗中冲出，{3}的光芒成了战斗的信号！",
+                    "{4}的宁静被打破，{1}的怒吼在{6}回荡，战斗一触即发！",
+                    "当你靠近{3}时，{1}从{4}的迷雾中现身，剑拔弩张！",
+                    "{4}的深处传来低吼，{1}正守候着，你别无选择只能应战！",
+                    "你踏入{4}的禁地，{1}的咆哮宣告了战斗的开始！"
                 ]
             },
             {
@@ -401,7 +413,12 @@ namespace Oshima.FunGame.OshimaServers.Service
                     "祝福应验！{4}深处的{0}为你所有！",
                     "解开{4}地牢中的谜题后，{0}终于显现！",
                     "屏障消散，至宝{0}光芒万丈，自觉地飞进了你的口袋！",
-                    "在偶遇{1}和{2}的遭遇战时，你渔翁得利抢到了：{0}！"
+                    "在偶遇{1}和{2}的遭遇战时，你渔翁得利抢到了：{0}！",
+                    "{4}的古老祭坛发出光芒，{0}从{3}中缓缓升起，归于你手！",
+                    "你无意间触碰{4}的机关，{0}如流星般落入你的怀抱！",
+                    "{2}的指引让你在{4}的废墟中发现了闪耀的{0}！",
+                    "在{6}的星光下，{3}为你揭示了{0}的藏身之处！",
+                    "{4}的秘密通道在{3}的指引下开启，{0}赫然出现在你面前！"
                 ]
             }
         };
@@ -430,12 +447,31 @@ namespace Oshima.FunGame.OshimaServers.Service
         public static Dictionary<QualityType, double> DecomposedMaterials { get; } = new()
         {
             { QualityType.Gold, 128 },
-            { QualityType.Red, 6 },
+            { QualityType.Red, 64 },
             { QualityType.Orange, 32 },
             { QualityType.Purple, 16 },
             { QualityType.Blue, 8 },
             { QualityType.Green, 3 },
             { QualityType.White, 1 }
+        };
+        
+        public static Dictionary<QualityType, double> ForgeNeedy { get; } = new()
+        {
+            { QualityType.Red, 230 },
+            { QualityType.Orange, 170 },
+            { QualityType.Purple, 120 },
+            { QualityType.Blue, 80 },
+            { QualityType.Green, 50 },
+            { QualityType.White, 30 }
+        };
+        
+        public static Dictionary<RarityType, double> ForgeRegionCoefficient { get; } = new()
+        {
+            { RarityType.OneStar, 0.5 },
+            { RarityType.TwoStar, 0.6 },
+            { RarityType.ThreeStar, 0.7 },
+            { RarityType.FourStar, 0.85 },
+            { RarityType.FiveStar, 1 }
         };
 
         public static string[] GreekAlphabet { get; } = ["α", "β", "γ", "δ", "ε", "ζ", "η", "θ", "ι", "κ", "λ", "μ", "ν", "ξ", "ο", "π", "ρ", "σ", "τ", "υ", "φ", "χ", "ψ", "ω"];

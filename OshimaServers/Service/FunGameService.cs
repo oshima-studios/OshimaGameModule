@@ -1387,7 +1387,7 @@ namespace Oshima.FunGame.OshimaServers.Service
                     int original = has.Level;
                     // 添加技能等级
                     has.Level += magic.Level;
-                    // 补偿材料，1级10材料
+                    // 补偿钻石，1级10钻石
                     int diff = magic.Level - (has.Level - original);
                     if (diff != 0)
                     {
@@ -3402,7 +3402,10 @@ namespace Oshima.FunGame.OshimaServers.Service
             Item newItem = item;
             if (copyNew) newItem = item.Copy(copyLevel);
             newItem.User = user;
-            if (hasLock && (newItem.QualityType >= QualityType.Orange || FunGameConstant.CharacterLevelBreakItems.Any(c => c.Id == item.Id)) || FunGameConstant.SkillLevelUpItems.Any(c => c.Id == item.Id)) newItem.IsLock = true;
+            if (hasLock && (newItem.QualityType >= QualityType.Orange ||
+                FunGameConstant.ExploreItems.Values.SelectMany(i => i).Any(c => c.Id == item.Id) ||
+                FunGameConstant.CharacterLevelBreakItems.Any(c => c.Id == item.Id) ||
+                FunGameConstant.SkillLevelUpItems.Any(c => c.Id == item.Id))) newItem.IsLock = true;
             if (hasSellAndTradeTime) SetSellAndTradeTime(newItem);
             if (hasPrice)
             {
@@ -3996,6 +3999,141 @@ namespace Oshima.FunGame.OshimaServers.Service
             }
 
             return msg;
+        }
+
+        public static void GenerateForgeResult(User user, ForgeModel model)
+        {
+            if (model.ForgeMaterials.Count == 0)
+            {
+                model.ResultString = "没有提交任何锻造材料，请重新提交。";
+                return;
+            }
+
+            Dictionary<OshimaRegion, int> regionMaterialCount = [];
+            Dictionary<string, double> regionMaterialEquivalent = [];
+            Dictionary<OshimaRegion, double> regionContributions = [];
+            foreach (string key in model.ForgeMaterials.Keys)
+            {
+                int c = model.ForgeMaterials[key];
+                OshimaRegion r = FunGameConstant.ExploreItems.FirstOrDefault(kv => kv.Value.Select(i => i.Name).Any(s => s == key)).Key;
+                if (r.Id == 0) continue;
+                if (!regionMaterialCount.TryAdd(r, c)) regionMaterialCount[r] += c;
+                double ce = c * FunGameConstant.ForgeRegionCoefficient[r.Difficulty];
+                if (!regionMaterialEquivalent.TryAdd(key, ce)) regionMaterialEquivalent[key] += ce;
+                if (!regionContributions.TryAdd(r, ce)) regionContributions[r] += ce;
+            }
+
+            if (regionMaterialCount.Count == 0)
+            {
+                model.ResultString = "提交的锻造材料均不属于任何地区，请重新提交。";
+                return;
+            }
+
+            OshimaRegion resultRegion;
+            bool isSimplyForge = regionMaterialCount.Count == 1;
+            int count = 0;
+            if (isSimplyForge)
+            {
+                OshimaRegion region = regionMaterialCount.Keys.First();
+                count = regionMaterialCount[region];
+                if (count < FunGameConstant.ForgeNeedy[QualityType.White])
+                {
+                    model.ResultString = $"提交的锻造材料不足 {FunGameConstant.ForgeNeedy[QualityType.White]} 个，请重新提交。";
+                    return;
+                }
+                resultRegion = FunGameConstant.ExploreItems.Keys.First(r => r.Id == region.Id);
+            }
+            else
+            {
+                count = (int)regionMaterialEquivalent.Values.Sum();
+                if (count < FunGameConstant.ForgeNeedy[QualityType.White])
+                {
+                    model.ResultString = $"有效材料用量 ({count}) 不足最低要求 ({FunGameConstant.ForgeNeedy[QualityType.White]})，请重新提交！";
+                    return;
+                }
+                model.RegionProbabilities = regionContributions.ToDictionary(kv => kv.Key.Id, kv => kv.Value / count);
+                double randomValue = Random.Shared.NextDouble();
+                double cumulative = 0;
+                resultRegion = regionContributions.Keys.First();
+                foreach (OshimaRegion r in regionContributions.Keys)
+                {
+                    cumulative += regionContributions[r] / count;
+                    if (randomValue <= cumulative)
+                    {
+                        resultRegion = r;
+                        break;
+                    }
+                }
+                model.ResultRegion = resultRegion.Id;
+            }
+
+            if (count >= FunGameConstant.ForgeNeedy[QualityType.Red])
+            {
+                model.ResultQuality = QualityType.Red;
+            }
+            else if (count >= FunGameConstant.ForgeNeedy[QualityType.Orange])
+            {
+                model.ResultQuality = QualityType.Orange;
+            }
+            else if (count >= FunGameConstant.ForgeNeedy[QualityType.Purple])
+            {
+                model.ResultQuality = QualityType.Purple;
+            }
+            else if (count >= FunGameConstant.ForgeNeedy[QualityType.Blue])
+            {
+                model.ResultQuality = QualityType.Blue;
+            }
+            else
+            {
+                model.ResultQuality = QualityType.White;
+            }
+            model.ResultPointsGeneral = count * 0.3;
+
+            string resultItemString = "";
+            Item? resultItem = resultRegion.Items.OrderBy(o => Random.Shared.Next()).First(i => i.QualityType == model.ResultQuality);
+            if (resultItem != null)
+            {
+                string itemquality = ItemSet.GetQualityTypeName(resultItem.QualityType);
+                string itemtype = ItemSet.GetItemTypeName(resultItem.ItemType) + (resultItem.ItemType == ItemType.Weapon && resultItem.WeaponType != WeaponType.None ? "-" + ItemSet.GetWeaponTypeName(resultItem.WeaponType) : "");
+                if (itemtype != "") itemtype = $"|{itemtype}";
+                resultItemString = $"{itemtype}{resultItem.Name}";
+                model.ResultItem = resultItem.Name;
+            }
+
+            if (isSimplyForge)
+            {
+                if (resultItem is null)
+                {
+                    model.ResultPointsFail = count * 0.2;
+                    model.ResultString = $"锻造失败！本次锻造物品的品质为：{ItemSet.GetQualityTypeName(model.ResultQuality)}，地区为：{resultRegion.Name}，该地区不存在该品质的物品！\r\n" +
+                        $"本次提交 {count} 个地区 [ {resultRegion.Name} ] 的锻造材料，获得 {model.ResultPoints:0.##} 点锻造积分。";
+                }
+                else
+                {
+                    model.Result = true;
+                    model.ResultPointsSuccess = count - FunGameConstant.ForgeNeedy[model.ResultQuality];
+                    model.ResultString = $"锻造成功！本次锻造物品的品质为：{ItemSet.GetQualityTypeName(model.ResultQuality)}，地区为：{resultRegion.Name}，获得了：{resultItemString}！\r\n" +
+                        $"本次提交 {count} 个地区 [ {resultRegion.Name} ] 的锻造材料，获得 {model.ResultPoints:0.##} 点锻造积分。";
+                    AddItemToUserInventory(user, resultItem);
+                }
+            }
+            else
+            {
+                if (resultItem is null)
+                {
+                    model.ResultPointsFail = count * 0.2;
+                    model.ResultString = $"锻造失败！本次锻造物品的品质为：{ItemSet.GetQualityTypeName(model.ResultQuality)}，地区为：{resultRegion.Name}，该地区不存在该品质的物品！\r\n" +
+                        $"本次提交 {regionContributions.Count} 个地区的锻造材料（{string.Join("、", regionMaterialCount.Select(kv => $"{kv.Value} 个来自{kv.Key}"))}），总共 {count} 有效材料用量，获得 {model.ResultPoints:0.##} 点锻造积分。";
+                }
+                else
+                {
+                    model.Result = true;
+                    model.ResultPointsSuccess = count - FunGameConstant.ForgeNeedy[model.ResultQuality];
+                    model.ResultString = $"锻造成功！本次锻造物品的品质为：{ItemSet.GetQualityTypeName(model.ResultQuality)}，地区为：{resultRegion.Name}，获得了：{resultItemString}！\r\n" +
+                        $"本次提交 {regionContributions.Count} 个地区的锻造材料（{string.Join("、", regionMaterialCount.Select(kv => $"{kv.Value} 个来自{kv.Key}"))}），总共 {count} 有效材料用量，获得 {model.ResultPoints:0.##} 点锻造积分。";
+                    AddItemToUserInventory(user, resultItem);
+                }
+            }
         }
 
         public static void RefreshNotice()

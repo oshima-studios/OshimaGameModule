@@ -950,22 +950,22 @@ namespace Oshima.FunGame.WebAPI.Services
                     return result;
                 }
 
-                if (e.Detail == "材料抽卡")
+                if (e.Detail == "钻石抽卡")
                 {
                     List<string> msgs = Controller.DrawCard_Material(uid);
                     if (msgs.Count > 0)
                     {
-                        await SendAsync(e, "材料抽卡", "\r\n" + string.Join("\r\n", msgs));
+                        await SendAsync(e, "钻石抽卡", "\r\n" + string.Join("\r\n", msgs));
                     }
                     return result;
                 }
 
-                if (e.Detail == "材料十连抽卡")
+                if (e.Detail == "钻石十连抽卡")
                 {
                     List<string> msgs = Controller.DrawCards_Material(uid);
                     if (msgs.Count > 0)
                     {
-                        await SendAsync(e, "材料十连抽卡", "\r\n" + string.Join("\r\n", msgs));
+                        await SendAsync(e, "钻石十连抽卡", "\r\n" + string.Join("\r\n", msgs));
                     }
                     return result;
                 }
@@ -2830,16 +2830,16 @@ namespace Oshima.FunGame.WebAPI.Services
                     return result;
                 }
                 
-                if (e.Detail.StartsWith("挑战材料秘境"))
+                if (e.Detail.StartsWith("挑战钻石秘境"))
                 {
-                    string detail = e.Detail.Replace("挑战材料秘境", "").Trim();
+                    string detail = e.Detail.Replace("挑战钻石秘境", "").Trim();
                     string msg = "";
                     if (int.TryParse(detail, out int diff))
                     {
                         msg = await Controller.FightInstance(uid, (int)InstanceType.Material, diff);
                         if (msg.Trim() != "")
                         {
-                            await SendAsync(e, "挑战材料秘境", msg);
+                            await SendAsync(e, "挑战钻石秘境", msg);
                         }
                     }
                     return result;
@@ -2905,6 +2905,7 @@ namespace Oshima.FunGame.WebAPI.Services
                     return result;
                 }
                 
+                
                 if (e.Detail.StartsWith("商店"))
                 {
                     string detail = e.Detail.Replace("商店", "").Trim();
@@ -2925,6 +2926,9 @@ namespace Oshima.FunGame.WebAPI.Services
                             case 4:
                                 msg = Controller.ShowSystemStore(uid, "铎京城", "dokyo_welfare");
                                 break;
+                            case 5:
+                                msg = Controller.ShowSystemStore(uid, "铎京城", "dokyo_forge");
+                                break;
                             default:
                                 break;
                         }
@@ -2936,6 +2940,46 @@ namespace Oshima.FunGame.WebAPI.Services
                     return result;
                 }
 
+                if (e.Detail.StartsWith("锻造配方"))
+                {
+                    string pattern = @"锻造配方\s*(?:(?<itemName>[^\d\s][^\d]*?)\s+(?<count>\d+)\s*)+";
+                    Dictionary<string, int> recipeItems = [];
+
+                    StringBuilder builder = new();
+                    MatchCollection matches = Regex.Matches(e.Detail, pattern, RegexOptions.ExplicitCapture);
+                    foreach (Match match in matches)
+                    {
+                        CaptureCollection itemNames = match.Groups["itemName"].Captures;
+                        CaptureCollection counts = match.Groups["count"].Captures;
+
+                        for (int i = 0; i < itemNames.Count; i++)
+                        {
+                            string itemName = itemNames[i].Value.Trim();
+                            if (int.TryParse(counts[i].Value, out int count))
+                            {
+                                recipeItems[itemName] = count;
+                                builder.AppendLine($"{itemName} x{count}");
+                            }
+                        }
+                    }
+
+                    User user = Factory.GetUser();
+                    ForgeModel model = new()
+                    {
+                        ForgeMaterials = recipeItems
+                    };
+                    FunGameService.GenerateForgeResult(user, model);
+                    if (model.ResultString != "")
+                    {
+                        await SendAsync(e, "锻造配方", model.ResultString);
+                    }
+                    else
+                    {
+                        await SendAsync(e, "锻造配方", $"失败了……\r\n{builder}");
+                    }
+                    return result;
+                }
+                
                 if (uid == GeneralSettings.Master && e.Detail.StartsWith("重载FunGame", StringComparison.CurrentCultureIgnoreCase))
                 {
                     string msg = Controller.Relaod(uid);
