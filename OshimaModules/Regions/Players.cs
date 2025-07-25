@@ -1,5 +1,7 @@
 ﻿using Milimoe.FunGame.Core.Api.Utility;
 using Milimoe.FunGame.Core.Entity;
+using Oshima.FunGame.OshimaModules.Items;
+using Oshima.FunGame.OshimaModules.Models;
 
 namespace Oshima.FunGame.OshimaModules.Regions
 {
@@ -30,7 +32,11 @@ namespace Oshima.FunGame.OshimaModules.Regions
 
             if (template is null)
             {
-                return null;
+                if (storeName == "dokyo_forge")
+                {
+                    template = CreateNewForgeStore();
+                }
+                else return null;
             }
 
             if (template.NextRefreshDate < DateTime.Now)
@@ -98,6 +104,48 @@ namespace Oshima.FunGame.OshimaModules.Regions
             storeTemplate.LoadConfig();
             storeTemplate.Add(storeName, store);
             storeTemplate.SaveConfig();
+        }
+
+        public override void UpdateNextRefreshGoods()
+        {
+            EntityModuleConfig<Store> storeTemplate = new("stores", "dokyo");
+            storeTemplate.LoadConfig();
+            Store? store = storeTemplate.Get("dokyo_forge");
+            if (store is null)
+            {
+                store = CreateNewForgeStore();
+            }
+            else
+            {
+                Store newStore = CreateNewForgeStore();
+                store.NextRefreshGoods.Clear();
+                store.CopyGoodsToNextRefreshGoods(newStore.Goods);
+            }
+            storeTemplate.Add("dokyo_forge", store);
+            storeTemplate.SaveConfig();
+        }
+
+        private static Store CreateNewForgeStore()
+        {
+            Store store = new("锻造积分商店")
+            {
+                AutoRefresh = true,
+                RefreshInterval = 3,
+                NextRefreshDate = DateTime.Today.AddHours(4),
+                GlobalStock = true,
+            };
+            Item item = new 大师锻造券();
+            store.AddItem(item, -1);
+            store.SetPrice(1, "锻造积分", 400);
+            Dictionary<OshimaRegion, Item> items = FunGameConstant.ExploreItems.OrderBy(o => Random.Shared.Next()).Take(5).ToDictionary(kv => kv.Key, kv => kv.Value.OrderBy(o => Random.Shared.Next()).First());
+            int i = 2;
+            foreach (OshimaRegion region in items.Keys)
+            {
+                store.AddItem(items[region], -1);
+                store.SetPrice(i, "锻造积分", 3 * ((int)region.Difficulty + 1));
+                i++;
+            }
+            return store;
         }
     }
 }

@@ -1,4 +1,4 @@
-﻿namespace Oshima.FunGame.OshimaServers.Model
+﻿namespace Oshima.FunGame.OshimaModules.Models
 {
     public class LastStoreModel
     {

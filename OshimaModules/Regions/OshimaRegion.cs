@@ -31,6 +31,11 @@ namespace Oshima.FunGame.OshimaModules.Regions
         {
 
         }
+        
+        public virtual void UpdateNextRefreshGoods()
+        {
+
+        }
 
         public override string ToString()
         {

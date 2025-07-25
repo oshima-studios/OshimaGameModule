@@ -8,7 +8,7 @@ using Milimoe.FunGame.Core.Entity;
 using Milimoe.FunGame.Core.Library.Constant;
 using Oshima.Core.Configs;
 using Oshima.Core.Constant;
-using Oshima.FunGame.OshimaServers.Model;
+using Oshima.FunGame.OshimaModules.Models;
 using Oshima.FunGame.OshimaServers.Service;
 using Oshima.FunGame.WebAPI.Constant;
 using Oshima.FunGame.WebAPI.Controllers;
@@ -230,6 +230,7 @@ namespace Oshima.FunGame.WebAPI.Services
                         EndTime = DateTime.Today.AddHours(3).AddMinutes(59).AddSeconds(59).AddDays(days)
                     });
                     FunGameService.Notices.SaveConfig();
+                    FunGameService.RefreshNotice();
                     await SendAsync(e, "添加公告", $"添加完毕，请查看【公告】列表！");
                     return true;
                 }
@@ -2940,12 +2941,46 @@ namespace Oshima.FunGame.WebAPI.Services
                     return result;
                 }
 
-                if (e.Detail.StartsWith("锻造配方"))
+                if (e.Detail.StartsWith("模拟锻造配方"))
                 {
-                    string pattern = @"锻造配方\s*(?:(?<itemName>[^\d\s][^\d]*?)\s+(?<count>\d+)\s*)+";
+                    string detail = e.Detail.Replace("模拟", "").Trim();
+                    string pattern = @"锻造配方\s*(?:(?<itemName>[^\d]+?)\s*(?<count>\d+)\s*)+";
                     Dictionary<string, int> recipeItems = [];
 
-                    StringBuilder builder = new();
+                    MatchCollection matches = Regex.Matches(detail, pattern, RegexOptions.ExplicitCapture);
+                    foreach (Match match in matches)
+                    {
+                        CaptureCollection itemNames = match.Groups["itemName"].Captures;
+                        CaptureCollection counts = match.Groups["count"].Captures;
+
+                        for (int i = 0; i < itemNames.Count; i++)
+                        {
+                            string itemName = itemNames[i].Value.Trim();
+                            if (int.TryParse(counts[i].Value, out int count))
+                            {
+                                recipeItems[itemName] = count;
+                            }
+                        }
+                    }
+
+                    User user = Factory.GetUser();
+                    ForgeModel model = new()
+                    {
+                        ForgeMaterials = recipeItems
+                    };
+                    FunGameService.GenerateForgeResult(user, model, true);
+                    if (model.ResultString != "")
+                    {
+                        await SendAsync(e, "模拟锻造配方", model.ResultString);
+                    }
+                    return result;
+                }
+                
+                if (e.Detail.StartsWith("锻造配方"))
+                {
+                    string pattern = @"锻造配方\s*(?:(?<itemName>[^\d]+?)\s*(?<count>\d+)\s*)+";
+                    Dictionary<string, int> recipeItems = [];
+
                     MatchCollection matches = Regex.Matches(e.Detail, pattern, RegexOptions.ExplicitCapture);
                     foreach (Match match in matches)
                     {
@@ -2958,28 +2993,77 @@ namespace Oshima.FunGame.WebAPI.Services
                             if (int.TryParse(counts[i].Value, out int count))
                             {
                                 recipeItems[itemName] = count;
-                                builder.AppendLine($"{itemName} x{count}");
                             }
                         }
                     }
 
-                    User user = Factory.GetUser();
-                    ForgeModel model = new()
+                    string msg = Controller.ForgeItem_Create(uid, recipeItems);
+                    if (msg != "")
                     {
-                        ForgeMaterials = recipeItems
-                    };
-                    FunGameService.GenerateForgeResult(user, model);
-                    if (model.ResultString != "")
-                    {
-                        await SendAsync(e, "锻造配方", model.ResultString);
-                    }
-                    else
-                    {
-                        await SendAsync(e, "锻造配方", $"失败了……\r\n{builder}");
+                        await SendAsync(e, "锻造配方", msg);
                     }
                     return result;
                 }
                 
+                if (e.Detail.StartsWith("模拟锻造"))
+                {
+                    string msg = Controller.ForgeItem_Simulate(uid);
+                    if (msg != "")
+                    {
+                        await SendAsync(e, "模拟锻造", msg);
+                    }
+                    return result;
+                }
+                
+                if (e.Detail.StartsWith("取消锻造"))
+                {
+                    string msg = Controller.ForgeItem_Cancel(uid);
+                    if (msg != "")
+                    {
+                        await SendAsync(e, "取消锻造", msg);
+                    }
+                    return result;
+                }
+                
+                if (e.Detail.StartsWith("确认开始锻造"))
+                {
+                    string msg = Controller.ForgeItem_Complete(uid);
+                    if (msg != "")
+                    {
+                        await SendAsync(e, "确认开始锻造", msg);
+                    }
+                    return result;
+                }
+                
+                if (e.Detail.StartsWith("锻造信息"))
+                {
+                    string msg = Controller.ForgeItem_Info(uid);
+                    if (msg != "")
+                    {
+                        await SendAsync(e, "锻造信息", msg);
+                    }
+                    return result;
+                }
+
+                if (e.Detail.StartsWith("大师锻造"))
+                {
+                    string detail = e.Detail.Replace("大师锻造", "").Trim();
+                    string[] strings = detail.Split(" ", StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
+                    int r = -1, q = -1;
+                    if (strings.Length > 0 && int.TryParse(strings[0].Trim(), out r) && strings.Length > 1 && int.TryParse(strings[1].Trim(), out q))
+                    {
+                        if (r != -1 && q != -1)
+                        {
+                            string msg = Controller.ForgeItem_Master(uid, r, q);
+                            if (msg != "")
+                            {
+                                await SendAsync(e, "大师锻造", msg);
+                            }
+                        }
+                    }
+                    return result;
+                }
+
                 if (uid == GeneralSettings.Master && e.Detail.StartsWith("重载FunGame", StringComparison.CurrentCultureIgnoreCase))
                 {
                     string msg = Controller.Relaod(uid);

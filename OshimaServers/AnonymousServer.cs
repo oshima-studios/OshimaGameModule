@@ -118,6 +118,7 @@ namespace Oshima.FunGame.OshimaServers
                 // 刷新活动缓存
                 FunGameService.GetEventCenter();
                 FunGameService.RefreshNotice();
+                FunGameService.PreRefreshStore();
             });
             TaskScheduler.Shared.AddTask("上九", new TimeSpan(9, 0, 0), () =>
             {

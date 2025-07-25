@@ -6,14 +6,13 @@ using Microsoft.Extensions.Logging;
 using Milimoe.FunGame.Core.Api.Transmittal;
 using Milimoe.FunGame.Core.Api.Utility;
 using Milimoe.FunGame.Core.Entity;
-using Milimoe.FunGame.Core.Interface.Entity;
-using Milimoe.FunGame.Core.Library.Common.Event;
 using Milimoe.FunGame.Core.Library.Constant;
 using Milimoe.FunGame.Core.Library.SQLScript.Entity;
 using Oshima.Core.Configs;
 using Oshima.Core.Constant;
 using Oshima.FunGame.OshimaModules.Characters;
 using Oshima.FunGame.OshimaModules.Items;
+using Oshima.FunGame.OshimaModules.Models;
 using Oshima.FunGame.OshimaModules.Regions;
 using Oshima.FunGame.OshimaServers.Model;
 using Oshima.FunGame.OshimaServers.Service;
@@ -3059,7 +3058,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
                     {
                         itemTrading = SQLService.GetUserItemGuids(sql, userid);
                     }
-                    IEnumerable<Item> items = user.Inventory.Items.Where(i => i.Name == name && i.Character is null && (!allowLock || !i.IsLock) && !itemTrading.Contains(i.Guid));
+                    IEnumerable<Item> items = user.Inventory.Items.Where(i => i.Name == name && i.Character is null && (!i.IsLock || i.IsLock == allowLock) && !itemTrading.Contains(i.Guid));
                     if (!items.Any())
                     {
                         FunGameService.ReleaseUserSemaphoreSlim(userid);
@@ -3367,7 +3366,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
                     if (user.Inventory.Training.Count == 0)
                     {
                         FunGameService.ReleaseUserSemaphoreSlim(userid);
-                        return $"你目前没有角色在练级中，请使用【开启练级+角色序号】指令进行练级。";
+                        return $"你目前没有角色在练级中，请使用【开始练级+角色序号】指令进行练级。";
                     }
 
                     long cid = user.Inventory.Training.Keys.First();
@@ -3445,7 +3444,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
 
                     if (user.Inventory.Training.Count == 0)
                     {
-                        return $"你目前没有角色在练级中，请使用【开启练级+角色序号】指令进行练级。";
+                        return $"你目前没有角色在练级中，请使用【开始练级+角色序号】指令进行练级。";
                     }
 
                     long cid = user.Inventory.Training.Keys.First();
@@ -5412,8 +5411,17 @@ namespace Oshima.FunGame.WebAPI.Controllers
                             itemMsg += $"[ {count} ] {newItem.ToString(false, true)}".Trim();
                         }
                         msg = good.ToString(user).Split("包含物品：")[0].Trim();
+                        int buyCount = 0;
+                        if (user != null)
+                        {
+                            good.UsersBuyCount.TryGetValue(user.Id, out buyCount);
+                        }
                         msg += $"\r\n包含物品：\r\n" + itemMsg +
-                            $"\r\n剩余库存：{(good.Stock == -1 ? "不限量提供" : good.Stock)}";
+                            $"\r\n剩余库存：{(good.Stock == -1 ? "不限" : good.Stock)}（已购：{buyCount}）";
+                        if (good.Quota > 0)
+                        {
+                            msg += $"\r\n限购数量：{good.Quota}";
+                        }
                     }
                     else
                     {
@@ -7026,10 +7034,11 @@ namespace Oshima.FunGame.WebAPI.Controllers
                                 if (msg != "") msg += "\r\n";
                                 msg += $"本次秘境挑战消耗探索许可 {reduce} 个，你的剩余探索许可：{exploreTimes} 个。";
                             }
+
+                            pc.Add("exploreTimes", exploreTimes);
                         }
                     }
 
-                    pc.Add("exploreTimes", exploreTimes);
                     FunGameService.SetUserConfigAndReleaseSemaphoreSlim(userid, pc, user);
 
                     return msg;
@@ -7157,8 +7166,17 @@ namespace Oshima.FunGame.WebAPI.Controllers
                             itemMsg += $"[ {count} ] {newItem.ToString(false, true)}".Trim();
                         }
                         msg = good.ToString(user).Split("包含物品：")[0].Trim();
+                        int buyCount = 0;
+                        if (user != null)
+                        {
+                            good.UsersBuyCount.TryGetValue(user.Id, out buyCount);
+                        }
                         msg += $"\r\n包含物品：\r\n" + itemMsg +
-                            $"\r\n剩余库存：{(good.Stock == -1 ? "不限量提供" : good.Stock)}";
+                            $"\r\n剩余库存：{(good.Stock == -1 ? "不限" : good.Stock)}（已购：{buyCount}）";
+                        if (good.Quota > 0)
+                        {
+                            msg += $"\r\n限购数量：{good.Quota}";
+                        }
                     }
                     else
                     {
@@ -7176,6 +7194,372 @@ namespace Oshima.FunGame.WebAPI.Controllers
             else
             {
                 return noSaved;
+            }
+        }
+
+        [HttpPost("forgeitemcreate")]
+        public string ForgeItem_Create([FromQuery] long uid = -1, [FromBody] Dictionary<string, int>? materials = null)
+        {
+            materials ??= [];
+
+            try
+            {
+                PluginConfig pc = FunGameService.GetUserConfig(uid, out bool isTimeout);
+                if (isTimeout)
+                {
+                    return busy;
+                }
+
+                string msg = "";
+                if (pc.Count > 0)
+                {
+                    User user = FunGameService.GetUser(pc);
+
+                    PluginConfig pc2 = new("forging", uid.ToString());
+                    pc2.LoadConfig();
+                    ForgeModel? model = pc2.Get<ForgeModel>("now");
+                    if (model != null)
+                    {
+                        msg = $"你已经有一个尚未完成的锻造配方：\r\n{model.GetForgingInfo()}\r\n请先【确认开始锻造】或者【取消锻造】后再创建新的配方！";
+                    }
+                    else
+                    {
+                        model = new()
+                        {
+                            ForgeMaterials = materials
+                        };
+                        pc2.Add("now", model);
+                        pc2.SaveConfig();
+                        msg = $"创建配方成功！\r\n{model.GetForgingInfo()}\r\n接下来，你可以【确认开始锻造】或者【取消锻造】、【模拟锻造】。";
+                    }
+
+                    FunGameService.SetUserConfigButNotRelease(uid, pc, user);
+                    return msg;
+                }
+                else
+                {
+                    return noSaved;
+                }
+            }
+            catch (Exception e)
+            {
+                Logger.LogError(e, "Error: {e}", e);
+                return busy;
+            }
+            finally
+            {
+                FunGameService.ReleaseUserSemaphoreSlim(uid);
+            }
+        }
+        
+        [HttpPost("forgeitemmaster")]
+        public string ForgeItem_Master([FromQuery] long uid = -1, [FromQuery] long rid = 0, [FromQuery] int q = 0)
+        {
+            try
+            {
+                PluginConfig pc = FunGameService.GetUserConfig(uid, out bool isTimeout);
+                if (isTimeout)
+                {
+                    return busy;
+                }
+
+                if (!FunGameConstant.Regions.Any(r => r.Id == rid))
+                {
+                    return $"指定了一个虚无地区，请检查【世界地图】，然后重新输入！";
+                }
+
+                QualityType type = QualityType.White;
+                if (q >= 0 && q <= 5)
+                {
+                    type = (QualityType)q;
+                }
+                else
+                {
+                    return $"指定了一个无效的品质序号，请重新输入！";
+                }
+
+                string msg = "";
+                if (pc.Count > 0)
+                {
+                    User user = FunGameService.GetUser(pc);
+
+                    PluginConfig pc2 = new("forging", uid.ToString());
+                    pc2.LoadConfig();
+                    ForgeModel? model = pc2.Get<ForgeModel>("now");
+                    if (model is null)
+                    {
+                        msg = $"你还没有创建锻造配方！大师对此无能为力。";
+                    }
+                    else
+                    {
+                        model.MasterForge = true;
+                        model.TargetRegionId = rid;
+                        model.TargetQuality = type;
+                        pc2.Add("now", model);
+                        pc2.SaveConfig();
+                        msg = $"指定大师锻造的目标成功！\r\n{model.GetForgingInfo()}";
+                    }
+
+                    FunGameService.SetUserConfigButNotRelease(uid, pc, user);
+                    return msg;
+                }
+                else
+                {
+                    return noSaved;
+                }
+            }
+            catch (Exception e)
+            {
+                Logger.LogError(e, "Error: {e}", e);
+                return busy;
+            }
+            finally
+            {
+                FunGameService.ReleaseUserSemaphoreSlim(uid);
+            }
+        }
+        
+        [HttpGet("forgeiteminfo")]
+        public string ForgeItem_Info([FromQuery] long uid = -1)
+        {
+            try
+            {
+                PluginConfig pc = FunGameService.GetUserConfig(uid, out bool isTimeout);
+                if (isTimeout)
+                {
+                    return busy;
+                }
+
+                string msg = "";
+                if (pc.Count > 0)
+                {
+                    User user = FunGameService.GetUser(pc);
+
+                    PluginConfig pc2 = new("forging", uid.ToString());
+                    pc2.LoadConfig();
+                    ForgeModel? model = pc2.Get<ForgeModel>("now");
+                    if (model is null)
+                    {
+                        msg = $"你还没有创建锻造配方。";
+                    }
+                    else
+                    {
+                        msg = model.GetForgingInfo();
+                    }
+
+                    double points = 0;
+                    if (pc.TryGetValue("forgepoints", out object? value) && double.TryParse(value.ToString(), out double temp))
+                    {
+                        points = temp;
+                    }
+
+                    if (msg != "") msg += "\r\n";
+                    msg += $"你现在拥有的锻造积分：{points:0.##} 点。";
+
+                    FunGameService.SetUserConfigButNotRelease(uid, pc, user);
+                    return msg;
+                }
+                else
+                {
+                    return noSaved;
+                }
+            }
+            catch (Exception e)
+            {
+                Logger.LogError(e, "Error: {e}", e);
+                return busy;
+            }
+            finally
+            {
+                FunGameService.ReleaseUserSemaphoreSlim(uid);
+            }
+        }
+
+        [HttpPost("forgeitemcancel")]
+        public string ForgeItem_Cancel([FromQuery] long uid = -1)
+        {
+            try
+            {
+                PluginConfig pc = FunGameService.GetUserConfig(uid, out bool isTimeout);
+                if (isTimeout)
+                {
+                    return busy;
+                }
+
+                string msg = "";
+                if (pc.Count > 0)
+                {
+                    User user = FunGameService.GetUser(pc);
+
+                    PluginConfig pc2 = new("forging", uid.ToString());
+                    pc2.LoadConfig();
+                    ForgeModel? model = pc2.Get<ForgeModel>("now");
+                    if (model is null)
+                    {
+                        msg = $"你还没有创建锻造配方。";
+                    }
+                    else
+                    {
+                        pc2.Remove("now");
+                        pc2.SaveConfig();
+                        msg = $"取消现有的锻造配方成功！\r\n{model.GetForgingInfo()}";
+                    }
+
+                    FunGameService.SetUserConfigButNotRelease(uid, pc, user);
+                    return msg;
+                }
+                else
+                {
+                    return noSaved;
+                }
+            }
+            catch (Exception e)
+            {
+                Logger.LogError(e, "Error: {e}", e);
+                return busy;
+            }
+            finally
+            {
+                FunGameService.ReleaseUserSemaphoreSlim(uid);
+            }
+        }
+        
+        [HttpPost("forgeitemsimulate")]
+        public string ForgeItem_Simulate([FromQuery] long uid = -1)
+        {
+            try
+            {
+                PluginConfig pc = FunGameService.GetUserConfig(uid, out bool isTimeout);
+                if (isTimeout)
+                {
+                    return busy;
+                }
+
+                string msg = "";
+                if (pc.Count > 0)
+                {
+                    User user = FunGameService.GetUser(pc);
+                    FunGameService.SetUserConfigButNotRelease(uid, pc, user);
+
+                    PluginConfig pc2 = new("forging", uid.ToString());
+                    pc2.LoadConfig();
+                    ForgeModel? model = pc2.Get<ForgeModel>("now");
+                    if (model is null)
+                    {
+                        msg = $"你还没有创建锻造配方。";
+                    }
+                    else
+                    {
+                        msg = $"{model.GetForgingInfo()}\r\n\r\n正在启动模拟……\r\n\r\n☆★☆模拟结果☆★☆\r\n";
+                        FunGameService.GenerateForgeResult(user, model, true);
+                        msg += model.ResultString;
+                    }
+                    return msg.Trim();
+                }
+                else
+                {
+                    return noSaved;
+                }
+            }
+            catch (Exception e)
+            {
+                Logger.LogError(e, "Error: {e}", e);
+                return busy;
+            }
+            finally
+            {
+                FunGameService.ReleaseUserSemaphoreSlim(uid);
+            }
+        }
+        
+        [HttpPost("forgeitemcomplete")]
+        public string ForgeItem_Complete([FromQuery] long uid = -1)
+        {
+            try
+            {
+                PluginConfig pc = FunGameService.GetUserConfig(uid, out bool isTimeout);
+                if (isTimeout)
+                {
+                    return busy;
+                }
+
+                string msg = "";
+                if (pc.Count > 0)
+                {
+                    User user = FunGameService.GetUser(pc);
+
+                    PluginConfig pc2 = new("forging", uid.ToString());
+                    pc2.LoadConfig();
+                    ForgeModel? model = pc2.Get<ForgeModel>("now");
+                    if (model is null)
+                    {
+                        msg = $"你还没有创建锻造配方。";
+                    }
+                    else
+                    {
+                        List<Item> willDelete = [];
+                        // 检查材料
+                        foreach (string material in model.ForgeMaterials.Keys)
+                        {
+                            IEnumerable<Item> items = user.Inventory.Items.Where(i => i.Name == material);
+                            if (items.Count() < model.ForgeMaterials[material])
+                            {
+                                msg += $"{material}不足 {model.ForgeMaterials[material]} 个！库存中只有 {items.Count()} 个。\r\n";
+                            }
+                            else
+                            {
+                                willDelete.AddRange(items.TakeLast(model.ForgeMaterials[material]));
+                            }
+                        }
+
+                        if (msg != "")
+                        {
+                            msg = $"锻造失败，原因：\r\n{msg}\r\n你可以在完成材料收集后，重新【确认开始锻造】，或者【取消锻造】来创建一个新的配方。";
+                        }
+                        else
+                        {
+                            msg = $"{model.GetForgingInfo()}\r\n\r\n☆★☆锻造结果☆★☆\r\n";
+                            FunGameService.GenerateForgeResult(user, model);
+                            msg += model.ResultString;
+
+                            if (!model.MasterForgingSuccess)
+                            {
+                                // 删除材料
+                                foreach (Item item in willDelete)
+                                {
+                                    user.Inventory.Items.Remove(item);
+                                }
+                            }
+
+                            double points = 0;
+                            if (pc.TryGetValue("forgepoints", out object? value) && double.TryParse(value.ToString(), out points))
+                            {
+                                points += model.ResultPoints;
+                            }
+                            else points = model.ResultPoints;
+                            pc.Add("forgepoints", points);
+
+                            pc2.Remove("now");
+                            pc2.SaveConfig();
+                        }
+                    }
+
+                    FunGameService.SetUserConfigButNotRelease(uid, pc, user);
+                    return msg.Trim();
+                }
+                else
+                {
+                    return noSaved;
+                }
+            }
+            catch (Exception e)
+            {
+                Logger.LogError(e, "Error: {e}", e);
+                return busy;
+            }
+            finally
+            {
+                FunGameService.ReleaseUserSemaphoreSlim(uid);
             }
         }
 

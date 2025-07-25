@@ -1,5 +1,4 @@
 using System.Text;
-using Milimoe.FunGame;
 using Milimoe.FunGame.Core.Api.Transmittal;
 using Milimoe.FunGame.Core.Api.Utility;
 using Milimoe.FunGame.Core.Entity;
@@ -8,6 +7,7 @@ using Oshima.Core.Constant;
 using Oshima.FunGame.OshimaModules.Characters;
 using Oshima.FunGame.OshimaModules.Effects.OpenEffects;
 using Oshima.FunGame.OshimaModules.Items;
+using Oshima.FunGame.OshimaModules.Models;
 using Oshima.FunGame.OshimaModules.Regions;
 using Oshima.FunGame.OshimaModules.Skills;
 using Oshima.FunGame.OshimaModules.Units;
@@ -65,7 +65,7 @@ namespace Oshima.FunGame.OshimaServers.Service
             FunGameConstant.Items.AddRange(exItems.Values.Where(i => (int)i.ItemType > 4));
             FunGameConstant.Items.AddRange([new 小经验书(), new 中经验书(), new 大经验书(), new 升华之印(), new 流光之印(), new 永恒之印(), new 技能卷轴(), new 智慧之果(), new 奥术符文(), new 混沌之核(),
                 new 小回复药(), new 中回复药(), new 大回复药(), new 魔力填充剂1(), new 魔力填充剂2(), new 魔力填充剂3(), new 能量饮料1(), new 能量饮料2(), new 能量饮料3(), new 年夜饭(), new 蛇年大吉(), new 新春快乐(), new 毕业礼包(),
-                new 复苏药1(), new 复苏药2(), new 复苏药3(), new 全回复药(), new 魔法卡礼包(), new 奖券(), new 十连奖券(), new 改名卡(), new 原初之印(), new 创生之印(), new 法则精粹()
+                new 复苏药1(), new 复苏药2(), new 复苏药3(), new 全回复药(), new 魔法卡礼包(), new 奖券(), new 十连奖券(), new 改名卡(), new 原初之印(), new 创生之印(), new 法则精粹(), new 大师锻造券()
             ]);
 
             FunGameConstant.AllItems.AddRange(FunGameConstant.Equipment);
@@ -85,6 +85,8 @@ namespace Oshima.FunGame.OshimaServers.Service
 
             foreach (OshimaRegion region in FunGameConstant.Regions)
             {
+                FunGameConstant.RegionsName[region.Id] = region.Name;
+                FunGameConstant.RegionsDifficulty[region.Id] = region.Difficulty;
                 IEnumerable<Item> items = FunGameConstant.AllItems.Where(i => i.Others.TryGetValue("region", out object? value) && int.TryParse(value.ToString(), out int rid) && rid == region.Id).Select(i => i.Copy()).OrderByDescending(i => i.QualityType);
                 foreach (Item item in items)
                 {
@@ -94,6 +96,8 @@ namespace Oshima.FunGame.OshimaServers.Service
 
             foreach (OshimaRegion region in FunGameConstant.PlayerRegions)
             {
+                FunGameConstant.RegionsName[region.Id] = region.Name;
+                FunGameConstant.RegionsDifficulty[region.Id] = region.Difficulty;
                 IEnumerable<Item> items;
                 if (region.Id == 0)
                 {
@@ -2144,6 +2148,23 @@ namespace Oshima.FunGame.OshimaServers.Service
                         return $"你的{General.GameplayEquilibriumConstant.InGameMaterial}不足 {reduce} 呢，无法购买【{goods.Name}】！";
                     }
                 }
+                else if (needy == "锻造积分")
+                {
+                    double reduce = Calculation.Round2Digits(goods.Prices[needy] * count);
+                    if (pc.TryGetValue("forgepoints", out object? value) && double.TryParse(value.ToString(), out double points) && points >= reduce)
+                    {
+                        points -= reduce;
+                        pc.Add("forgepoints", points);
+                    }
+                    else
+                    {
+                        return $"你的{needy}不足 {reduce} 呢，无法购买【{goods.Name}】！";
+                    }
+                }
+                else
+                {
+                    return $"不支持的货币类型：{needy}，无法购买【{goods.Name}】！";
+                }
             }
 
             foreach (Item item in goods.Items)
@@ -3597,7 +3618,7 @@ namespace Oshima.FunGame.OshimaServers.Service
                     case InstanceType.Material:
                         for (int i = 0; i < characterCount; i++)
                         {
-                            award += Random.Shared.Next(4, 9) * difficulty;
+                            award += Random.Shared.Next(3, 7) * difficulty;
                         }
                         user.Inventory.Materials += award;
                         builder.AppendLine($"{award} {General.GameplayEquilibriumConstant.InGameMaterial}！");
@@ -4001,7 +4022,7 @@ namespace Oshima.FunGame.OshimaServers.Service
             return msg;
         }
 
-        public static void GenerateForgeResult(User user, ForgeModel model)
+        public static void GenerateForgeResult(User user, ForgeModel model, bool simulate = false)
         {
             if (model.ForgeMaterials.Count == 0)
             {
@@ -4030,8 +4051,8 @@ namespace Oshima.FunGame.OshimaServers.Service
             }
 
             OshimaRegion resultRegion;
-            bool isSimplyForge = regionMaterialCount.Count == 1;
             int count = 0;
+            bool isSimplyForge = regionMaterialCount.Count == 1;
             if (isSimplyForge)
             {
                 OshimaRegion region = regionMaterialCount.Keys.First();
@@ -4041,7 +4062,8 @@ namespace Oshima.FunGame.OshimaServers.Service
                     model.ResultString = $"提交的锻造材料不足 {FunGameConstant.ForgeNeedy[QualityType.White]} 个，请重新提交。";
                     return;
                 }
-                resultRegion = FunGameConstant.ExploreItems.Keys.First(r => r.Id == region.Id);
+                model.RegionProbabilities = regionMaterialCount.ToDictionary(kv => kv.Key.Id, kv => (double)kv.Value / count);
+                resultRegion = regionMaterialCount.Keys.First();
             }
             else
             {
@@ -4064,8 +4086,8 @@ namespace Oshima.FunGame.OshimaServers.Service
                         break;
                     }
                 }
-                model.ResultRegion = resultRegion.Id;
             }
+            model.ResultRegion = resultRegion.Id;
 
             if (count >= FunGameConstant.ForgeNeedy[QualityType.Red])
             {
@@ -4090,13 +4112,13 @@ namespace Oshima.FunGame.OshimaServers.Service
             model.ResultPointsGeneral = count * 0.3;
 
             string resultItemString = "";
-            Item? resultItem = resultRegion.Items.OrderBy(o => Random.Shared.Next()).First(i => i.QualityType == model.ResultQuality);
+            Item? resultItem = resultRegion.Items.OrderBy(o => Random.Shared.Next()).FirstOrDefault(i => i.QualityType == model.ResultQuality);
             if (resultItem != null)
             {
                 string itemquality = ItemSet.GetQualityTypeName(resultItem.QualityType);
                 string itemtype = ItemSet.GetItemTypeName(resultItem.ItemType) + (resultItem.ItemType == ItemType.Weapon && resultItem.WeaponType != WeaponType.None ? "-" + ItemSet.GetWeaponTypeName(resultItem.WeaponType) : "");
                 if (itemtype != "") itemtype = $"|{itemtype}";
-                resultItemString = $"{itemtype}{resultItem.Name}";
+                resultItemString = $"[{itemquality}{itemtype}]{resultItem.Name}";
                 model.ResultItem = resultItem.Name;
             }
 
@@ -4114,7 +4136,10 @@ namespace Oshima.FunGame.OshimaServers.Service
                     model.ResultPointsSuccess = count - FunGameConstant.ForgeNeedy[model.ResultQuality];
                     model.ResultString = $"锻造成功！本次锻造物品的品质为：{ItemSet.GetQualityTypeName(model.ResultQuality)}，地区为：{resultRegion.Name}，获得了：{resultItemString}！\r\n" +
                         $"本次提交 {count} 个地区 [ {resultRegion.Name} ] 的锻造材料，获得 {model.ResultPoints:0.##} 点锻造积分。";
-                    AddItemToUserInventory(user, resultItem);
+                    if (!simulate)
+                    {
+                        AddItemToUserInventory(user, resultItem);
+                    }
                 }
             }
             else
@@ -4123,16 +4148,48 @@ namespace Oshima.FunGame.OshimaServers.Service
                 {
                     model.ResultPointsFail = count * 0.2;
                     model.ResultString = $"锻造失败！本次锻造物品的品质为：{ItemSet.GetQualityTypeName(model.ResultQuality)}，地区为：{resultRegion.Name}，该地区不存在该品质的物品！\r\n" +
-                        $"本次提交 {regionContributions.Count} 个地区的锻造材料（{string.Join("、", regionMaterialCount.Select(kv => $"{kv.Value} 个来自{kv.Key}"))}），总共 {count} 有效材料用量，获得 {model.ResultPoints:0.##} 点锻造积分。";
+                        $"本次提交 {regionContributions.Count} 个地区的锻造材料（{string.Join("、", regionMaterialCount.Select(kv => $"{kv.Value} 个来自{kv.Key.Name}"))}），总共 {count} 有效材料用量，获得 {model.ResultPoints:0.##} 点锻造积分。";
                 }
                 else
                 {
                     model.Result = true;
                     model.ResultPointsSuccess = count - FunGameConstant.ForgeNeedy[model.ResultQuality];
                     model.ResultString = $"锻造成功！本次锻造物品的品质为：{ItemSet.GetQualityTypeName(model.ResultQuality)}，地区为：{resultRegion.Name}，获得了：{resultItemString}！\r\n" +
-                        $"本次提交 {regionContributions.Count} 个地区的锻造材料（{string.Join("、", regionMaterialCount.Select(kv => $"{kv.Value} 个来自{kv.Key}"))}），总共 {count} 有效材料用量，获得 {model.ResultPoints:0.##} 点锻造积分。";
-                    AddItemToUserInventory(user, resultItem);
+                        $"本次提交 {regionContributions.Count} 个地区的锻造材料（{string.Join("、", regionMaterialCount.Select(kv => $"{kv.Value} 个来自{kv.Key.Name}"))}），总共 {count} 有效材料用量，获得 {model.ResultPoints:0.##} 点锻造积分。";
+                    if (!simulate)
+                    {
+                        AddItemToUserInventory(user, resultItem);
+                    }
                 }
+            }
+
+            if (model.MasterForge)
+            {
+                if (model.Result && model.TargetRegionId == resultRegion.Id && model.TargetQuality == model.ResultQuality)
+                {
+                    model.ResultString += "\r\n大师锻造券正在时刻为你护航。";
+                }
+                else if (user.Inventory.Items.FirstOrDefault(i => i.Name == "大师锻造券") is Item item)
+                {
+                    model.MasterForgingSuccess = true;
+                    model.ResultString += "\r\n发动了大师锻造券的效果！为你返还了所有的锻造材料！";
+                    user.Inventory.Items.Remove(item);
+                }
+                else
+                {
+                    model.ResultString += "\r\n你似乎没有大师锻造券，因此本次锻造一切如常。";
+                }
+            }
+
+            if (simulate)
+            {
+                model.ResultString += $"\r\n\r\n☆--- 模拟调试信息 ---☆\r\n本次锻造的出货地区概率：\r\n" +
+                    $"{string.Join("\r\n", model.RegionProbabilities.Select(kv => $"{kv.Key}. {FunGameConstant.RegionsName[kv.Key]}：{kv.Value * 100:0.##}%（{CharacterSet.GetRarityTypeName(FunGameConstant.RegionsDifficulty[kv.Key])}）"))}\r\n" +
+                    $"有效材料用量贡献：" +
+                    (isSimplyForge ? $"单一锻造模式\r\n{string.Join("\r\n", model.ForgeMaterials.Select(kv => $"{kv.Key}：{kv.Value} 个"))}" :
+                        $"混合锻造模式\r\n{string.Join("\r\n", regionMaterialEquivalent.Select(kv => $"{kv.Key}：{kv.Value:0.##} 有效材料用量"))}") + "\r\n" +
+                    $"出货品质：{ItemSet.GetQualityTypeName(model.ResultQuality)}\r\n所需有效材料用量：{FunGameConstant.ForgeNeedy[model.ResultQuality]}\r\n总计有效材料用量：{count}\r\n" +
+                    $"基础锻造积分：{count * 0.3:0.##} 点\r\n失败积分补偿：{count * 0.2:0.##} 点\r\n超量积分补偿：{count - FunGameConstant.ForgeNeedy[model.ResultQuality]:0.##} 点";
             }
         }
 
@@ -4284,6 +4341,14 @@ namespace Oshima.FunGame.OshimaServers.Service
                     }
                     stores.SaveConfig();
                 }
+            }
+        }
+
+        public static void PreRefreshStore()
+        {
+            foreach (OshimaRegion region in FunGameConstant.PlayerRegions)
+            {
+                region.UpdateNextRefreshGoods();
             }
         }
 

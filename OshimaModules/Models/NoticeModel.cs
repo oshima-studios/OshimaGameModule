@@ -2,7 +2,7 @@
 using Milimoe.FunGame.Core.Interface.Entity;
 using Milimoe.FunGame.Core.Library.Constant;
 
-namespace Oshima.FunGame.OshimaServers.Model
+namespace Oshima.FunGame.OshimaModules.Models
 {
     public class NoticeModel : BaseEntity
     {

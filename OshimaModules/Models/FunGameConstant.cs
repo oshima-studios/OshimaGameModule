@@ -5,9 +5,8 @@ using Oshima.Core.Constant;
 using Oshima.FunGame.OshimaModules.Effects.OpenEffects;
 using Oshima.FunGame.OshimaModules.Items;
 using Oshima.FunGame.OshimaModules.Regions;
-using Oshima.FunGame.OshimaServers.Model;
 
-namespace Oshima.FunGame.OshimaServers.Service
+namespace Oshima.FunGame.OshimaModules.Models
 {
     public class FunGameConstant
     {
@@ -333,6 +332,10 @@ namespace Oshima.FunGame.OshimaServers.Service
         public static List<OshimaRegion> PlayerRegions { get; } = [
             new 铎京城()
         ];
+
+        public static Dictionary<long, string> RegionsName { get; } = [];
+
+        public static Dictionary<long, RarityType> RegionsDifficulty { get; } = [];
 
         private readonly static Dictionary<int, double> _precomputeTotalExperience = [];
         public static Dictionary<int, double> PrecomputeTotalExperience
