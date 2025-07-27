@@ -100,12 +100,16 @@ namespace Oshima.FunGame.OshimaModules.Regions
 
         public override string GetCurrencyInfo(PluginConfig pc, User user, string storeName)
         {
-            double forgePoints = 0;
-            if (pc.TryGetValue("forgepoints", out object? value) && double.TryParse(value.ToString(), out double points))
+            if (storeName == "dokyo_forge")
             {
-                forgePoints = points;
+                double forgePoints = 0;
+                if (pc.TryGetValue("forgepoints", out object? value) && double.TryParse(value.ToString(), out double points))
+                {
+                    forgePoints = points;
+                }
+                return $"现有锻造积分：{forgePoints:0.##}";
             }
-            return $"现有锻造积分：{forgePoints:0.##}";
+            return "";
         }
 
         public override void SaveGlobalStore(Store store, string storeName)
