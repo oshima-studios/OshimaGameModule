@@ -98,6 +98,16 @@ namespace Oshima.FunGame.OshimaModules.Regions
             return store;
         }
 
+        public override string GetCurrencyInfo(PluginConfig pc, User user, string storeName)
+        {
+            double forgePoints = 0;
+            if (pc.TryGetValue("forgepoints", out object? value) && double.TryParse(value.ToString(), out double points))
+            {
+                forgePoints = points;
+            }
+            return $"现有锻造积分：{forgePoints:0.##}";
+        }
+
         public override void SaveGlobalStore(Store store, string storeName)
         {
             EntityModuleConfig<Store> storeTemplate = new("stores", "dokyo");

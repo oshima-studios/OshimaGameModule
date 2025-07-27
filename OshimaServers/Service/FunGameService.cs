@@ -2071,12 +2071,12 @@ namespace Oshima.FunGame.OshimaServers.Service
                 }
                 stores.Add("daily", daily);
                 SetLastStore(user, true, "", "");
-                return daily.ToString(user) + $"\r\n现有{General.GameplayEquilibriumConstant.InGameCurrency}：{user.Inventory.Credits:0.##}\r\n现有{General.GameplayEquilibriumConstant.InGameMaterial}：{user.Inventory.Materials:0.##}";
+                return daily.ToString(user) + $"\r\n☆--- {user.Inventory.Name} ---☆\r\n现有{General.GameplayEquilibriumConstant.InGameCurrency}：{user.Inventory.Credits:0.##}\r\n现有{General.GameplayEquilibriumConstant.InGameMaterial}：{user.Inventory.Materials:0.##}";
             }
             else
             {
                 SetLastStore(user, true, "", "");
-                return daily.ToString(user) + $"\r\n现有{General.GameplayEquilibriumConstant.InGameCurrency}：{user.Inventory.Credits:0.##}\r\n现有{General.GameplayEquilibriumConstant.InGameMaterial}：{user.Inventory.Materials:0.##}";
+                return daily.ToString(user) + $"\r\n☆--- {user.Inventory.Name} ---☆\r\n现有{General.GameplayEquilibriumConstant.InGameCurrency}：{user.Inventory.Credits:0.##}\r\n现有{General.GameplayEquilibriumConstant.InGameMaterial}：{user.Inventory.Materials:0.##}";
             }
         }
 
@@ -4009,12 +4009,13 @@ namespace Oshima.FunGame.OshimaServers.Service
                 Store? store = value.VisitStore(stores, user, storeName);
                 exist = store != null;
                 msg = store?.ToString(user) ?? "";
-                string currencyInfo = value.GetCurrencyInfo(pc, user, storeName);
                 if (exist && msg != "")
                 {
-                    if (currencyInfo.Trim() == "")
+                    string currencyInfo = $"☆--- {user.Inventory.Name} ---☆\r\n现有{General.GameplayEquilibriumConstant.InGameCurrency}：{user.Inventory.Credits:0.##}\r\n现有{General.GameplayEquilibriumConstant.InGameMaterial}：{user.Inventory.Materials:0.##}";
+                    string regionCurrency = value.GetCurrencyInfo(pc, user, storeName);
+                    if (regionCurrency.Trim() != "")
                     {
-                        currencyInfo = $"现有{General.GameplayEquilibriumConstant.InGameCurrency}：{user.Inventory.Credits:0.##}\r\n现有{General.GameplayEquilibriumConstant.InGameMaterial}：{user.Inventory.Materials:0.##}";
+                        currencyInfo += $"\r\n{regionCurrency}";
                     }
                     msg += "\r\n" + currencyInfo;
                 }
