@@ -7070,7 +7070,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
 
                 EntityModuleConfig<Store> stores = new("stores", userid.ToString());
                 stores.LoadConfig();
-                string msg = FunGameService.CheckRegionStore(stores, user, storeRegion, storeName, out _);
+                string msg = FunGameService.CheckRegionStore(stores, pc, user, storeRegion, storeName, out _);
 
                 FunGameService.SetUserConfigAndReleaseSemaphoreSlim(userid, pc, user);
                 return msg;
@@ -7119,7 +7119,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
                 }
                 else
                 {
-                    string msg2 = FunGameService.CheckRegionStore(stores, user, storeRegion, storeName, out bool exist);
+                    string msg2 = FunGameService.CheckRegionStore(stores, pc, user, storeRegion, storeName, out bool exist);
                     msg = exist ? $"正在获取最新商店数据，请稍后查看。" : msg2;
                 }
 
@@ -7185,7 +7185,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
                 }
                 else
                 {
-                    string msg2 = FunGameService.CheckRegionStore(stores, user, storeRegion, storeName, out bool exist);
+                    string msg2 = FunGameService.CheckRegionStore(stores, pc, user, storeRegion, storeName, out bool exist);
                     msg = exist ? $"正在获取最新商店数据，请稍后查看。" : msg2;
                 }
 

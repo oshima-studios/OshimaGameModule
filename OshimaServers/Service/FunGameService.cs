@@ -2071,12 +2071,12 @@ namespace Oshima.FunGame.OshimaServers.Service
                 }
                 stores.Add("daily", daily);
                 SetLastStore(user, true, "", "");
-                return daily.ToString(user);
+                return daily.ToString(user) + $"\r\n现有{General.GameplayEquilibriumConstant.InGameCurrency}：{user.Inventory.Credits:0.##}\r\n现有{General.GameplayEquilibriumConstant.InGameMaterial}：{user.Inventory.Materials:0.##}";
             }
             else
             {
                 SetLastStore(user, true, "", "");
-                return daily.ToString(user);
+                return daily.ToString(user) + $"\r\n现有{General.GameplayEquilibriumConstant.InGameCurrency}：{user.Inventory.Credits:0.##}\r\n现有{General.GameplayEquilibriumConstant.InGameMaterial}：{user.Inventory.Materials:0.##}";
             }
         }
 
@@ -2732,6 +2732,7 @@ namespace Oshima.FunGame.OshimaServers.Service
                                 Item? itemDrop = region.Items.Where(i => qualityType == QualityType.Blue ? (int)i.QualityType <= (int)qualityType : (int)i.QualityType == (int)qualityType).OrderBy(o => Random.Shared.Next()).FirstOrDefault();
                                 if (itemDrop != null)
                                 {
+                                    model.Awards[itemDrop.Name] = 1;
                                     string itemquality = ItemSet.GetQualityTypeName(itemDrop.QualityType);
                                     string itemtype = ItemSet.GetItemTypeName(itemDrop.ItemType) + (itemDrop.ItemType == ItemType.Weapon && itemDrop.WeaponType != WeaponType.None ? "-" + ItemSet.GetWeaponTypeName(itemDrop.WeaponType) : "");
                                     if (itemtype != "") itemtype = $"|{itemtype}";
@@ -3997,7 +3998,7 @@ namespace Oshima.FunGame.OshimaServers.Service
             }
         }
         
-        public static string CheckRegionStore(EntityModuleConfig<Store> stores, User user, string storeRegion, string storeName, out bool exist)
+        public static string CheckRegionStore(EntityModuleConfig<Store> stores, PluginConfig pc, User user, string storeRegion, string storeName, out bool exist)
         {
             string msg = "";
             exist = false;
@@ -4008,6 +4009,15 @@ namespace Oshima.FunGame.OshimaServers.Service
                 Store? store = value.VisitStore(stores, user, storeName);
                 exist = store != null;
                 msg = store?.ToString(user) ?? "";
+                string currencyInfo = value.GetCurrencyInfo(pc, user, storeName);
+                if (exist && msg != "")
+                {
+                    if (currencyInfo.Trim() == "")
+                    {
+                        currencyInfo = $"现有{General.GameplayEquilibriumConstant.InGameCurrency}：{user.Inventory.Credits:0.##}\r\n现有{General.GameplayEquilibriumConstant.InGameMaterial}：{user.Inventory.Materials:0.##}";
+                    }
+                    msg += "\r\n" + currencyInfo;
+                }
             }
 
             if (!exist)
@@ -4371,9 +4381,9 @@ namespace Oshima.FunGame.OshimaServers.Service
             int count1 = 30;
             int count2 = 30;
             DateTime d1 = DateTime.Today.AddHours(11);
-            DateTime d2 = DateTime.Today.AddHours(13);
+            DateTime d2 = DateTime.Today.AddHours(13).AddMinutes(59);
             DateTime d3 = DateTime.Today.AddHours(17);
-            DateTime d4 = DateTime.Today.AddHours(19);
+            DateTime d4 = DateTime.Today.AddHours(19).AddMinutes(59);
             if (now >= d1 && now <= d2 && (!pc.TryGetValue("lunch", out value) || (value is bool lunch && !lunch)))
             {
                 int exploreTimes = FunGameConstant.MaxExploreTimes + count1;

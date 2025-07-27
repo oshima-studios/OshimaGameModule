@@ -142,7 +142,7 @@ namespace Oshima.FunGame.OshimaModules.Regions
             foreach (OshimaRegion region in items.Keys)
             {
                 store.AddItem(items[region], -1);
-                store.SetPrice(i, "锻造积分", 3 * ((int)region.Difficulty + 1));
+                store.SetPrice(i, "锻造积分", 2 * ((int)region.Difficulty + 1));
                 i++;
             }
             return store;
