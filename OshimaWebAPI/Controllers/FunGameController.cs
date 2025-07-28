@@ -16,7 +16,6 @@ using Oshima.FunGame.OshimaModules.Models;
 using Oshima.FunGame.OshimaModules.Regions;
 using Oshima.FunGame.OshimaServers.Model;
 using Oshima.FunGame.OshimaServers.Service;
-using ProjectRedbud.FunGame.SQLQueryExtension;
 
 namespace Oshima.FunGame.WebAPI.Controllers
 {
@@ -6877,12 +6876,24 @@ namespace Oshima.FunGame.WebAPI.Controllers
         }
 
         [HttpPost("marketsellitem")]
-        public string MarketSellItem([FromQuery] long? uid = null, [FromQuery] int itemIndex = -1, [FromQuery] double price = 0)
+        public string MarketSellItem([FromQuery] long uid = -1, [FromQuery] double price = 0, [FromBody] int[]? itemIndexs = null)
         {
-            long userid = uid ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
+            long userid = uid;
+            itemIndexs ??= [];
+
+            if (price <= 0)
+            {
+                return "请输入一个大于 0 的售价。";
+            }
 
             try
             {
+                using SQLHelper? sql = Factory.OpenFactory.GetSQLHelper();
+                if (sql is null)
+                {
+                    return busy;
+                }
+
                 PluginConfig pc = FunGameService.GetUserConfig(userid, out _);
 
                 if (pc.Count > 0)
@@ -6890,73 +6901,75 @@ namespace Oshima.FunGame.WebAPI.Controllers
                     User user = FunGameService.GetUser(pc);
 
                     List<string> msgs = [];
-                    using SQLHelper? sql = Factory.OpenFactory.GetSQLHelper();
                     List<Guid> itemTrading = [];
-                    if (sql != null)
-                    {
-                        itemTrading = SQLService.GetUserItemGuids(sql, userid);
-                    }
+                    itemTrading = SQLService.GetUserItemGuids(sql, userid);
                     Dictionary<int, Item> dict = user.Inventory.Items.Select((item, index) => new { item, index }).ToDictionary(x => x.index + 1, x => x.item);
 
-                    Item? item = null;
-                    if (itemIndex > 0 && itemIndex <= user.Inventory.Items.Count)
+                    FunGameService.GetMarketSemaphoreSlim();
+
+                    List<Item> successItems = [];
+                    foreach (int itemIndex in itemIndexs)
                     {
-                        item = user.Inventory.Items.ToList()[itemIndex - 1];
-
-                        if (price <= 0)
+                        if (itemIndex > 0 && itemIndex <= user.Inventory.Items.Count)
                         {
-                            msgs.Add($"请输入一个大于 0 的售价。");
+                            Item item = user.Inventory.Items.ToList()[itemIndex - 1];
+
+                            if (item.IsLock)
+                            {
+                                msgs.Add($"物品 {itemIndex}. {item.Name}：此物品已上锁，无法出售。");
+                            }
+
+                            if (item.Character != null)
+                            {
+                                msgs.Add($"物品 {itemIndex}. {item.Name}：此物品已被 {item.Character} 装备中，无法出售。");
+                            }
+
+                            if (itemTrading.Contains(item.Guid))
+                            {
+                                msgs.Add($"物品 {itemIndex}. {item.Name}：此物品正在进行交易，无法出售，请检查交易报价。");
+                            }
+
+                            if (!item.IsSellable)
+                            {
+                                msgs.Add($"物品 {itemIndex}. {item.Name}：此物品无法出售{(item.NextSellableTime != DateTime.MinValue ? $"，此物品将在 {item.NextSellableTime.ToString(General.GeneralDateTimeFormatChinese)} 后可出售" : "")}。");
+                            }
+
+                            if (msgs.Count == 0)
+                            {
+                                user.Inventory.Items.Remove(item);
+                                successItems.Add(item);
+                                msgs.Add($"物品 {itemIndex}. {item.Name}：上架市场成功！定价：{price:0.##} {General.GameplayEquilibriumConstant.InGameCurrency}。");
+                            }
+                        }
+                        else
+                        {
+                            msgs.Add($"{itemIndex}. 没有找到与这个序号相对应的物品！");
+                        }
+                    }
+
+                    if (successItems.Count > 0)
+                    {
+                        EntityModuleConfig<Market> emc = new("markets", "general");
+                        emc.LoadConfig();
+                        Market market = emc.Get("dokyo") ?? new("铎京集市");
+
+                        foreach (Item successItem in successItems)
+                        {
+                            Item newItem = successItem.Copy(true);
+                            market.AddItem(user, newItem, price, 1);
                         }
 
-                        if (item.IsLock)
-                        {
-                            msgs.Add($"物品 {itemIndex}. {item.Name}：此物品已上锁，无法出售。");
-                        }
-
-                        if (item.Character != null)
-                        {
-                            msgs.Add($"物品 {itemIndex}. {item.Name}：此物品已被 {item.Character} 装备中，无法出售。");
-                        }
-
-                        if (itemTrading.Contains(item.Guid))
-                        {
-                            msgs.Add($"物品 {itemIndex}. {item.Name}：此物品正在进行交易，无法出售，请检查交易报价。");
-                        }
-
-                        if (!item.IsSellable)
-                        {
-                            msgs.Add($"物品 {itemIndex}. {item.Name}：此物品无法出售{(item.NextSellableTime != DateTime.MinValue ? $"，此物品将在 {item.NextSellableTime.ToString(General.GeneralDateTimeFormatChinese)} 后可出售" : "")}。");
-                        }
-
-                        if (msgs.Count > 0) item = null;
+                        emc.Add("dokyo", market);
+                        emc.SaveConfig();
                     }
                     else
-                    {
-                        msgs.Add($"没有找到与这个序号相对应的物品！");
-                    }
-
-                    if (item != null && sql != null && user.Inventory.Items.Remove(item))
-                    {
-                        EntityModuleConfig<Item> emc = new("markets", user.Id.ToString());
-                        emc.LoadConfig();
-                        Item newItem = item.Copy(true);
-                        emc.Add(item.Guid.ToString(), newItem);
-                        sql.AddMarketItem(newItem.Guid, userid, price);
-                        long marketId = sql.LastInsertId;
-                        FunGameConstant.MarketItemIdAndItem[marketId] = newItem;
-                        if (sql.Success)
-                        {
-                            emc.SaveConfig();
-                            msgs.Add($"物品 {itemIndex}. {item.Name} 上架市场成功，售价：{price} {General.GameplayEquilibriumConstant.InGameCurrency}，市场编号：{marketId}。");
-                        }
-                    }
-
-                    if (msgs.Count == 0)
                     {
                         msgs.Add($"没有成功上架任何物品。请检查物品是否存在或是否满足上架条件。");
                     }
 
+                    FunGameService.ReleaseMarketSemaphoreSlim();
                     FunGameService.SetUserConfigAndReleaseSemaphoreSlim(userid, pc, user);
+
                     return string.Join("\r\n", msgs);
                 }
                 else
@@ -6967,6 +6980,262 @@ namespace Oshima.FunGame.WebAPI.Controllers
             }
             catch (Exception e)
             {
+                FunGameService.ReleaseMarketSemaphoreSlim();
+                FunGameService.ReleaseUserSemaphoreSlim(userid);
+                Logger.LogError(e, "Error: {e}", e);
+                return busy;
+            }
+        }
+        
+        [HttpPost("marketshowlist")]
+        public string MarketShowList([FromQuery] long userid = -1, [FromQuery] int page = 0)
+        {
+            try
+            {
+                PluginConfig pc = FunGameService.GetUserConfig(userid, out _);
+
+                if (pc.Count > 0)
+                {
+                    User user = FunGameService.GetUser(pc);
+
+                    FunGameService.GetMarketSemaphoreSlim();
+
+                    EntityModuleConfig<Market> emc = new("markets", "general");
+                    emc.LoadConfig();
+                    Market market = emc.Get("dokyo") ?? new("铎京集市");
+                    string msg = FunGameService.GetMarketInfo(market, user, page, true);
+
+                    FunGameService.ReleaseMarketSemaphoreSlim();
+                    FunGameService.SetUserConfigAndReleaseSemaphoreSlim(userid, pc, user);
+
+                    return msg;
+                }
+                else
+                {
+                    FunGameService.ReleaseUserSemaphoreSlim(userid);
+                    return noSaved;
+                }
+            }
+            catch (Exception e)
+            {
+                FunGameService.ReleaseMarketSemaphoreSlim();
+                FunGameService.ReleaseUserSemaphoreSlim(userid);
+                Logger.LogError(e, "Error: {e}", e);
+                return busy;
+            }
+        }
+        
+        [HttpPost("marketshowlistmysells")]
+        public string MarketShowListMySells([FromQuery] long userid = -1, [FromQuery] int page = 0)
+        {
+            try
+            {
+                PluginConfig pc = FunGameService.GetUserConfig(userid, out _);
+
+                if (pc.Count > 0)
+                {
+                    User user = FunGameService.GetUser(pc);
+
+                    FunGameService.GetMarketSemaphoreSlim();
+
+                    EntityModuleConfig<Market> emc = new("markets", "general");
+                    emc.LoadConfig();
+                    Market market = emc.Get("dokyo") ?? new("铎京集市");
+                    string msg = "☆--- 我的市场商品 ---☆\r\n";
+                    MarketItem[] marketItems = [.. market.MarketItems.Values.Where(m => m.User == userid)];
+                    if (marketItems.Length > 0)
+                    {
+                        foreach (MarketItem marketItem in marketItems)
+                        {
+                            msg += FunGameService.GetMarketItemInfo(marketItem, true, userid) + "\r\n";
+                        }
+                    }
+                    else msg += "你还没有上架过任何物品。";
+
+                    FunGameService.ReleaseMarketSemaphoreSlim();
+                    FunGameService.SetUserConfigAndReleaseSemaphoreSlim(userid, pc, user);
+
+                    return msg.Trim();
+                }
+                else
+                {
+                    FunGameService.ReleaseUserSemaphoreSlim(userid);
+                    return noSaved;
+                }
+            }
+            catch (Exception e)
+            {
+                FunGameService.ReleaseMarketSemaphoreSlim();
+                FunGameService.ReleaseUserSemaphoreSlim(userid);
+                Logger.LogError(e, "Error: {e}", e);
+                return busy;
+            }
+        }
+        
+        [HttpPost("marketiteminfo")]
+        public string MarketItemInfo([FromQuery] long userid = -1, [FromQuery] long itemid = 0)
+        {
+            try
+            {
+                PluginConfig pc = FunGameService.GetUserConfig(userid, out _);
+
+                if (pc.Count > 0)
+                {
+                    User user = FunGameService.GetUser(pc);
+
+                    FunGameService.GetMarketSemaphoreSlim();
+
+                    EntityModuleConfig<Market> emc = new("markets", "general");
+                    emc.LoadConfig();
+                    Market market = emc.Get("dokyo") ?? new("铎京集市");
+                    string msg = "";
+                    if (market.MarketItems.TryGetValue(itemid, out MarketItem? item) && item != null)
+                    {
+                        msg = FunGameService.GetMarketItemInfo(item, false, userid);
+                    }
+                    if (msg != "")
+                    {
+                        msg += $"\r\n提示：使用【市场查看+序号】查看商品详细信息，使用【市场购买+序号】购买商品。\r\n你的现有{General.GameplayEquilibriumConstant.InGameCurrency}：{user.Inventory.Credits:0.##}";
+                    }
+
+                    FunGameService.ReleaseMarketSemaphoreSlim();
+                    FunGameService.SetUserConfigAndReleaseSemaphoreSlim(userid, pc, user);
+
+                    return msg;
+                }
+                else
+                {
+                    FunGameService.ReleaseUserSemaphoreSlim(userid);
+                    return noSaved;
+                }
+            }
+            catch (Exception e)
+            {
+                FunGameService.ReleaseMarketSemaphoreSlim();
+                FunGameService.ReleaseUserSemaphoreSlim(userid);
+                Logger.LogError(e, "Error: {e}", e);
+                return busy;
+            }
+        }
+        
+        [HttpPost("marketbuyitem")]
+        public string MarketBuyItem([FromQuery] long userid = -1, [FromQuery] long itemid = 0, [FromQuery] int count = 1)
+        {
+            if (count <= 0) count = 1;
+            try
+            {
+                PluginConfig pc = FunGameService.GetUserConfig(userid, out _);
+
+                if (pc.Count > 0)
+                {
+                    User user = FunGameService.GetUser(pc);
+
+                    FunGameService.GetMarketSemaphoreSlim();
+
+                    EntityModuleConfig<Market> emc = new("markets", "general");
+                    emc.LoadConfig();
+                    Market market = emc.Get("dokyo") ?? new("铎京集市");
+                    string msg = "";
+                    if (market.MarketItems.TryGetValue(itemid, out MarketItem? item) && item != null)
+                    {
+                        msg = FunGameService.MarketBuyItem(market, item, pc, user, count, out bool result);
+                        if (result)
+                        {
+                            long userid2 = item.User;
+                            try
+                            {
+                                PluginConfig pc2 = FunGameService.GetUserConfig(userid2, out _);
+                                if (pc2.Count > 0)
+                                {
+                                    User user2 = FunGameService.GetUser(pc2);
+                                    double amount = item.Price * count;
+                                    double fee = amount * 0.15;
+                                    double net = amount - fee;
+                                    user2.Inventory.Credits += net;
+                                    FunGameService.AddNotice(userid2, $"【市场通知】你售出了 {count} 件{item.Name}！净收入 {net:0.##} {General.GameplayEquilibriumConstant.InGameCurrency}；市场收取手续费 {fee:0.##} {General.GameplayEquilibriumConstant.InGameCurrency}。");
+                                    FunGameService.SetUserConfigButNotRelease(userid2, pc2, user2, false);
+                                }
+                                FunGameService.ReleaseUserSemaphoreSlim(userid2);
+                            }
+                            catch (Exception e)
+                            {
+                                FunGameService.ReleaseUserSemaphoreSlim(userid2);
+                                Logger.LogError(e, "Error: {e}", e);
+                                throw;
+                            }
+                        }
+                    }
+
+                    emc.Add("dokyo", market);
+                    emc.SaveConfig();
+                    FunGameService.ReleaseMarketSemaphoreSlim();
+                    FunGameService.SetUserConfigAndReleaseSemaphoreSlim(userid, pc, user);
+
+                    return msg;
+                }
+                else
+                {
+                    FunGameService.ReleaseUserSemaphoreSlim(userid);
+                    return noSaved;
+                }
+            }
+            catch (Exception e)
+            {
+                FunGameService.ReleaseMarketSemaphoreSlim();
+                FunGameService.ReleaseUserSemaphoreSlim(userid);
+                Logger.LogError(e, "Error: {e}", e);
+                return busy;
+            }
+        }
+        
+        [HttpPost("marketdelistitem")]
+        public string MarketDelistItem([FromQuery] long userid = -1, [FromQuery] long itemid = 0)
+        {
+            try
+            {
+                PluginConfig pc = FunGameService.GetUserConfig(userid, out _);
+
+                if (pc.Count > 0)
+                {
+                    User user = FunGameService.GetUser(pc);
+
+                    FunGameService.GetMarketSemaphoreSlim();
+
+                    EntityModuleConfig<Market> emc = new("markets", "general");
+                    emc.LoadConfig();
+                    Market market = emc.Get("dokyo") ?? new("铎京集市");
+                    string msg = "";
+                    if (market.MarketItems.TryGetValue(itemid, out MarketItem? item) && item != null && item.User == user.Id)
+                    {
+                        item.Status = MarketItemState.Delisted;
+                        item.FinishTime = DateTime.Now;
+                        for (int i = 0; i < item.Stock; i++)
+                        {
+                            FunGameService.AddItemToUserInventory(user, item.Item, copyLevel: true, useOriginalPrice: true, toExploreCache: false, toActivitiesCache: false);
+                        }
+                        msg = $"下架商品 {item.Name} 成功！{item.Stock} 个 {item.Name} 已回到你的库存。";
+                    }
+                    else
+                    {
+                        msg = $"没有找到指定的商品，或者你不是该商品的卖家，下架失败。";
+                    }
+
+                    emc.Add("dokyo", market);
+                    emc.SaveConfig();
+                    FunGameService.ReleaseMarketSemaphoreSlim();
+                    FunGameService.SetUserConfigAndReleaseSemaphoreSlim(userid, pc, user);
+
+                    return msg;
+                }
+                else
+                {
+                    FunGameService.ReleaseUserSemaphoreSlim(userid);
+                    return noSaved;
+                }
+            }
+            catch (Exception e)
+            {
+                FunGameService.ReleaseMarketSemaphoreSlim();
                 FunGameService.ReleaseUserSemaphoreSlim(userid);
                 Logger.LogError(e, "Error: {e}", e);
                 return busy;
@@ -7563,6 +7832,130 @@ namespace Oshima.FunGame.WebAPI.Controllers
             }
         }
 
+        [HttpPost("chat")]
+        public string Chat([FromQuery] long uid = -1, [FromQuery] long uid2 = -1, [FromQuery] string msgTo = "")
+        {
+            try
+            {
+                PluginConfig pc = FunGameService.GetUserConfig(uid, out bool isTimeout);
+                if (isTimeout)
+                {
+                    return busy;
+                }
+
+                if (msgTo == "")
+                {
+                    return "发送了空信息。";
+                }
+
+                if (msgTo.Length > 30)
+                {
+                    return "超过 30 字符。";
+                }
+
+                string msg = "";
+                if (pc.Count > 0)
+                {
+                    User user = FunGameService.GetUser(pc);
+
+                    if (uid == uid2)
+                    {
+                        msg = "不能对自己发私信。";
+                    }
+                    else if (FunGameConstant.UserIdAndUsername.TryGetValue(uid2, out User? user2) && user2 != null)
+                    {
+                        FunGameService.AddNotice(user2.Id, $"【私信】{DateTime.Now.ToString(General.GeneralDateTimeFormatChinese)} [ {user.Username} ] 说：{msgTo}");
+                        msg = $"私信已经成功发送至 [ {user2.Username} ] 的离线信箱。";
+                    }
+                    else
+                    {
+                        msg = $"没有找到 UID 为 {uid2} 的玩家，无法发送私信。";
+                    }
+
+                    FunGameService.SetUserConfigButNotRelease(uid, pc, user);
+                    return msg;
+                }
+                else
+                {
+                    return noSaved;
+                }
+            }
+            catch (Exception e)
+            {
+                Logger.LogError(e, "Error: {e}", e);
+                return busy;
+            }
+            finally
+            {
+                FunGameService.ReleaseUserSemaphoreSlim(uid);
+            }
+        }
+        
+        [HttpPost("chatname")]
+        public string Chat_Name([FromQuery] long uid = -1, [FromQuery] string name = "", [FromQuery] string msgTo = "")
+        {
+            try
+            {
+                PluginConfig pc = FunGameService.GetUserConfig(uid, out bool isTimeout);
+                if (isTimeout)
+                {
+                    return busy;
+                }
+
+                name = name.Trim();
+                if (name == "")
+                {
+                    return "未输入目标玩家的昵称。";
+                }
+                
+                if (msgTo == "")
+                {
+                    return "发送了空信息。";
+                }
+                
+                if (msgTo.Length > 30)
+                {
+                    return "超过 30 字符。";
+                }
+
+                string msg = "";
+                if (pc.Count > 0)
+                {
+                    User user = FunGameService.GetUser(pc);
+
+                    if (user.Username == name)
+                    {
+                        msg = "不能对自己发私信。";
+                    }
+                    else if (FunGameConstant.UserIdAndUsername.Values.FirstOrDefault(u => u.Username == name) is User user2 && user2 != null)
+                    {
+                        FunGameService.AddNotice(user2.Id, $"【私信】{DateTime.Now.ToString(General.GeneralDateTimeFormatChinese)} [ {user.Username} ] 说：{msgTo}");
+                        msg = $"私信已经成功发送至 [ {user2.Username} ] 的离线信箱。";
+                    }
+                    else
+                    {
+                        msg = $"没有找到昵称为 {name} 的玩家，无法发送私信。";
+                    }
+
+                    FunGameService.SetUserConfigButNotRelease(uid, pc, user);
+                    return msg;
+                }
+                else
+                {
+                    return noSaved;
+                }
+            }
+            catch (Exception e)
+            {
+                Logger.LogError(e, "Error: {e}", e);
+                return busy;
+            }
+            finally
+            {
+                FunGameService.ReleaseUserSemaphoreSlim(uid);
+            }
+        }
+        
         [HttpPost("template")]
         public string Template([FromQuery] long uid = -1)
         {

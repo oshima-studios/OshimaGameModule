@@ -3064,6 +3064,162 @@ namespace Oshima.FunGame.WebAPI.Services
                     return result;
                 }
 
+                if (e.Detail.StartsWith("市场出售"))
+                {
+                    string detail = e.Detail.Replace("市场出售", "").Trim();
+                    string[] strings = detail.Split(' ', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
+                    if (strings.Length < 2 || !double.TryParse(strings[^1], out double price))
+                    {
+                        await SendAsync(e, "市场出售", "格式不正确，请使用：市场出售 <{物品序号...}> <价格>。多个物品序号使用空格隔开。");
+                        return result;
+                    }
+                    List<int> ids = [];
+                    for (int i = 0; i < strings.Length; i++)
+                    {
+                        if (i != strings.Length - 1 && int.TryParse(strings[i], out int id))
+                        {
+                            ids.Add(id);
+                        }
+                    }
+                    string msg = Controller.MarketSellItem(uid, price, [.. ids]);
+                    if (msg != "")
+                    {
+                        await SendAsync(e, "市场出售", msg);
+                    }
+
+                    return result;
+                }
+
+                if (e.Detail.StartsWith("市场购买"))
+                {
+                    string detail = e.Detail.Replace("市场购买", "").Trim();
+                    string[] strings = detail.Split(" ", StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
+                    int id = -1;
+                    if (strings.Length > 0 && int.TryParse(strings[0].Trim(), out id))
+                    {
+                        int count = 1;
+                        if (strings.Length > 1) _ = int.TryParse(strings[1].Trim(), out count);
+                        if (id != -1)
+                        {
+                            string msg = Controller.MarketBuyItem(uid, id, count);
+                            if (msg != "")
+                            {
+                                await SendAsync(e, "市场购买", msg);
+                            }
+                        }
+                    }
+                    return result;
+                }
+
+                if (e.Detail.StartsWith("市场查看"))
+                {
+                    string detail = e.Detail.Replace("市场查看", "").Trim();
+                    string msg = "";
+                    if (int.TryParse(detail, out int id))
+                    {
+                        msg = Controller.MarketItemInfo(uid, id);
+                        if (msg.Trim() != "")
+                        {
+                            await SendAsync(e, "市场查看", msg);
+                        }
+                    }
+                    return result;
+                }
+                
+                if (e.Detail.StartsWith("市场下架"))
+                {
+                    string detail = e.Detail.Replace("市场下架", "").Trim();
+                    string msg = "";
+                    if (int.TryParse(detail, out int id))
+                    {
+                        msg = Controller.MarketDelistItem(uid, id);
+                        if (msg.Trim() != "")
+                        {
+                            await SendAsync(e, "市场下架", msg);
+                        }
+                    }
+                    return result;
+                }
+                
+                if (e.Detail.StartsWith("我的市场"))
+                {
+                    string detail = e.Detail.Replace("我的市场", "").Trim();
+                    string msg = "";
+                    if (int.TryParse(detail, out int page))
+                    {
+                        msg = Controller.MarketShowListMySells(uid, page);
+                    }
+                    else
+                    {
+                        msg = Controller.MarketShowListMySells(uid, 1);
+                    }
+                    if (msg.Trim() != "")
+                    {
+                        await SendAsync(e, "我的市场", msg);
+                    }
+                    return result;
+                }
+
+                if (e.Detail.StartsWith("市场"))
+                {
+                    string detail = e.Detail.Replace("市场", "").Trim();
+                    string msg = "";
+                    if (int.TryParse(detail, out int page))
+                    {
+                        msg = Controller.MarketShowList(uid, page);
+                    }
+                    else
+                    {
+                        msg = Controller.MarketShowList(uid, 1);
+                    }
+                    if (msg.Trim() != "")
+                    {
+                        await SendAsync(e, "市场", msg);
+                    }
+                    return result;
+                }
+
+                if (e.Detail.StartsWith("私信"))
+                {
+                    string detail = e.Detail.Replace("私信", "").Trim();
+                    string[] strings = detail.Split(" ", StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
+                    long id = -1;
+                    string name = "";
+                    bool useId = false; 
+                    if (strings.Length > 0)
+                    {
+                        if (long.TryParse(strings[0].Trim(), out id))
+                        {
+                            useId = true;
+                        }
+                        else
+                        {
+                            name = strings[0].Trim();
+                        }
+                    }
+                    else
+                    {
+                        await SendAsync(e, "私信", "你输入的格式不正确，正确格式：私信 <对方UID/昵称> <内容>");
+                        return result;
+                    }
+                    string content = "";
+                    if (strings.Length > 1) content = string.Join(" ", strings[1..]);
+                    string msg = "";
+                    if (useId)
+                    {
+                        msg = Controller.Chat(uid, id, content);
+                    }
+                    else
+                    {
+                        msg = Controller.Chat_Name(uid, name, content);
+                    }
+                    if (msg != "")
+                    {
+                        await SendAsync(e, "私信", msg);
+                    }
+                    return result;
+                }
+
                 if (uid == GeneralSettings.Master && e.Detail.StartsWith("重载FunGame", StringComparison.CurrentCultureIgnoreCase))
                 {
                     string msg = Controller.Relaod(uid);

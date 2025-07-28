@@ -10,7 +10,7 @@ namespace Oshima.FunGame.OshimaModules.Skills
         public override string Description => Effects.Count > 0 ? Effects.First().Description : "";
         public override string DispelDescription => Effects.Count > 0 ? Effects.First().DispelDescription : "";
         public override double EPCost => 100;
-        public override double CD => 35;
+        public override double CD => 50;
         public override double HardnessTime { get; set; } = 3;
         public override bool CanSelectSelf => true;
         public override bool CanSelectEnemy => false;

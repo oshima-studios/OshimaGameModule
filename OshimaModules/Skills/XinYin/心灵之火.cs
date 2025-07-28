@@ -28,7 +28,7 @@ namespace Oshima.FunGame.OshimaModules.Skills
             (冷却时间 > 0 ? $"（正在冷却：剩余 {冷却时间:0.##} {GameplayEquilibriumConstant.InGameTime}）" : "");
 
         public double 冷却时间 { get; set; } = 0;
-        public double 基础冷却时间 { get; set; } = 12;
+        public double 基础冷却时间 { get; set; } = 10;
         private bool 是否是嵌套普通攻击 = false;
 
         public override double AlterActualDamageAfterCalculation(Character character, Character enemy, double damage, bool isNormalAttack, DamageType damageType, MagicType magicType, DamageResult damageResult, ref bool isEvaded, Dictionary<Effect, double> totalDamageBonus)

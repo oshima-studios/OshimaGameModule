@@ -155,6 +155,11 @@ namespace Oshima.FunGame.OshimaServers
                     FunGameService.RefreshStoreData();
                     Controller.WriteLine("刷新商店");
                 });
+                Task.Run(() =>
+                {
+                    FunGameService.RefreshMarketData();
+                    Controller.WriteLine("刷新市场");
+                });
                 // 刷新活动缓存
                 FunGameService.GetEventCenter();
                 FunGameService.RefreshNotice();

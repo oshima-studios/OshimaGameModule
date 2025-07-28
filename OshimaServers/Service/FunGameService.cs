@@ -2113,13 +2113,13 @@ namespace Oshima.FunGame.OshimaServers.Service
 
             if (goods.Stock != -1 && goods.Stock - count < 0)
             {
-                return msg = $"此商品【{goods.Name}】库存不足，无法购买！\r\n你想要购买 {count} 件，但库存只有 {goods.Stock} 件。";
+                return $"此商品【{goods.Name}】库存不足，无法购买！\r\n你想要购买 {count} 件，但库存只有 {goods.Stock} 件。";
             }
 
             goods.UsersBuyCount.TryGetValue(user.Id, out int buyCount);
             if (goods.Quota > 0 && (buyCount + count > goods.Quota))
             {
-                return msg = $"此商品【{goods.Name}】限量购买 {goods.Quota} 件！\r\n你已经购买了 {buyCount} 件，想要购买 {count} 件，超过了购买限制。";
+                return $"此商品【{goods.Name}】限量购买 {goods.Quota} 件！\r\n你已经购买了 {buyCount} 件，想要购买 {count} 件，超过了购买限制。";
             }
 
             foreach (string needy in goods.Prices.Keys)
@@ -2169,7 +2169,7 @@ namespace Oshima.FunGame.OshimaServers.Service
 
             foreach (Item item in goods.Items)
             {
-                if (item.Name == nameof(探索许可))
+                if (item.Id == (long)SpecialItemID.探索许可)
                 {
                     int exploreTimes = FunGameConstant.MaxExploreTimes + count;
                     if (pc.TryGetValue("exploreTimes", out object? value) && int.TryParse(value.ToString(), out exploreTimes))
@@ -2206,6 +2206,80 @@ namespace Oshima.FunGame.OshimaServers.Service
                 $"总计消费：{(goods.Prices.Count > 0 ? string.Join("、", goods.Prices.Select(kv => $"{kv.Value * count:0.##} {kv.Key}")) : "免单")}\r\n" +
                 $"包含物品：{string.Join("、", goods.Items.Select(i => $"[{ItemSet.GetQualityTypeName(i.QualityType)}|{ItemSet.GetItemTypeName(i.ItemType)}] {i.Name} * {count}"))}\r\n" +
                 $"{store.Name}期待你的下次光临。";
+
+            return msg;
+        }
+        
+        public static string MarketBuyItem(Market market, MarketItem item, PluginConfig pc, User user, int count, out bool result)
+        {
+            result = false;
+            string msg = "";
+
+            DateTime now = DateTime.Now;
+            if (market.StartTime > now || market.EndTime < now)
+            {
+                return "铎京集市未处于营业时间内。";
+            }
+
+            if (item.Status != MarketItemState.Listed)
+            {
+                return $"无法购买此商品，原因：该商品的状态是：{CommonSet.GetMarketItemStatus(item.Status)}。";
+            }
+            
+            if (item.User == user.Id)
+            {
+                return $"不能购买自己上架的商品！如需下架，请使用【市场下架+序号】指令。";
+            }
+            
+            if (item.Stock != -1 && item.Stock - count < 0)
+            {
+                return $"此商品【{item.Name}】库存不足，无法购买！\r\n你想要购买 {count} 件，但库存只有 {item.Stock} 件。";
+            }
+
+            double reduce = Calculation.Round2Digits(item.Price * count);
+            if (user.Inventory.Credits >= reduce)
+            {
+                user.Inventory.Credits -= reduce;
+            }
+            else
+            {
+                return $"你的{General.GameplayEquilibriumConstant.InGameCurrency}不足 {reduce} 呢，无法购买【{item.Name}】！";
+            }
+
+            if (item.Item.Id == (long)SpecialItemID.探索许可)
+            {
+                int exploreTimes = FunGameConstant.MaxExploreTimes + count;
+                if (pc.TryGetValue("exploreTimes", out object? value) && int.TryParse(value.ToString(), out exploreTimes))
+                {
+                    exploreTimes += count;
+                }
+                pc.Add("exploreTimes", exploreTimes);
+            }
+            else
+            {
+                for (int i = 0; i < count; i++)
+                {
+                    AddItemToUserInventory(user, item.Item, copyLevel: true, useOriginalPrice: true, toExploreCache: false, toActivitiesCache: false);
+                }
+            }
+
+            if (item.Stock != -1)
+            {
+                item.Stock -= count;
+                if (item.Stock < 0) item.Stock = 0;
+                if (item.Stock == 0)
+                {
+                    item.Status = MarketItemState.Purchased;
+                    item.FinishTime = DateTime.Now;
+                }
+            }
+
+            item.Buyers.Add(user.Id);
+            result = true;
+            msg += $"恭喜你成功购买 {count} 件【{item.Name}】！\r\n" +
+                $"总计消费：{(item.Price > 0 ? item.Price : "免单")}\r\n" +
+                $"包含物品：[{ItemSet.GetQualityTypeName(item.Item.QualityType)}|{ItemSet.GetItemTypeName(item.Item.ItemType)}] {item.Item.Name} * {count}\r\n" +
+                $"铎京集市期待你的下次光临。";
 
             return msg;
         }
@@ -3289,7 +3363,7 @@ namespace Oshima.FunGame.OshimaServers.Service
                                             {
                                                 user.Inventory.Items.Remove(item);
 
-                                                Item newItem = item.Copy(copyGuid: true);
+                                                Item newItem = item.Copy(true, true);
                                                 newItem.User = user2;
                                                 newItem.IsSellable = false;
                                                 newItem.IsTradable = false;
@@ -3306,7 +3380,7 @@ namespace Oshima.FunGame.OshimaServers.Service
                                             {
                                                 user2.Inventory.Items.Remove(item);
 
-                                                Item newItem = item.Copy(copyGuid: true);
+                                                Item newItem = item.Copy(true, true);
                                                 newItem.User = user;
                                                 newItem.IsSellable = false;
                                                 newItem.IsTradable = false;
@@ -4204,6 +4278,156 @@ namespace Oshima.FunGame.OshimaServers.Service
             }
         }
 
+        public static string GetMarketInfo(Market market, User? user = null, int page = 1, bool simply = false, bool showListed = true)
+        {
+            if (page <= 0) page = 1;
+            int maxPage = market.MarketItems.Values.MaxPage(10);
+            if (page > maxPage) page = maxPage;
+            IEnumerable<MarketItem> marketItems = market.MarketItems.Values.GetPage(page, 10);
+
+            StringBuilder builder = new();
+
+            builder.AppendLine($"☆★☆ {market.Name} ☆★☆");
+            if (market.Description != "") builder.AppendLine($"{market.Description}");
+            if (market.StartTime.HasValue && market.EndTime.HasValue)
+            {
+                builder.AppendLine($"开放时间：{market.StartTime.Value.ToString(General.GeneralDateTimeFormatChinese)} 至 {market.EndTime.Value.ToString(General.GeneralDateTimeFormatChinese)}");
+            }
+            else if (market.StartTime.HasValue && !market.EndTime.HasValue)
+            {
+                builder.AppendLine($"开始开放时间：{market.StartTime.Value.ToString(General.GeneralDateTimeFormatChinese)}");
+            }
+            else if (!market.StartTime.HasValue && market.EndTime.HasValue)
+            {
+                builder.AppendLine($"停止开放时间：{market.EndTime.Value.ToString(General.GeneralDateTimeFormatChinese)}");
+            }
+            else
+            {
+                builder.AppendLine($"开放时间：全年无休，永久开放");
+            }
+            if (market.StartTimeOfDay.HasValue && market.EndTimeOfDay.HasValue)
+            {
+                builder.AppendLine($"每日交易时间：{market.StartTimeOfDay.Value.ToString(General.GeneralDateTimeFormatTimeOnly)} 至 {market.EndTimeOfDay.Value.ToString(General.GeneralDateTimeFormatTimeOnly)}");
+            }
+            else
+            {
+                builder.AppendLine($"[ 24H ] 全天开放交易");
+            }
+            DateTime now = DateTime.Now;
+            TimeSpan nowTimeOfDay = now.TimeOfDay;
+            bool isStoreOpen = true;
+            if (market.StartTime.HasValue && market.StartTime.Value > now || market.EndTime.HasValue && market.EndTime.Value < now)
+            {
+                isStoreOpen = false;
+            }
+            if (isStoreOpen && market.StartTimeOfDay.HasValue && market.EndTimeOfDay.HasValue)
+            {
+                TimeSpan startTimeSpan = market.StartTimeOfDay.Value.TimeOfDay;
+                TimeSpan endTimeSpan = market.EndTimeOfDay.Value.TimeOfDay;
+                if (startTimeSpan <= endTimeSpan)
+                {
+                    isStoreOpen = nowTimeOfDay >= startTimeSpan && nowTimeOfDay <= endTimeSpan;
+                }
+                else
+                {
+                    isStoreOpen = nowTimeOfDay >= startTimeSpan || nowTimeOfDay <= endTimeSpan;
+                }
+            }
+            if (!isStoreOpen)
+            {
+                builder.AppendLine($"市场现在不在交易时间内。");
+            }
+            builder.AppendLine($"☆--- 市场商品列表 ---☆");
+            MarketItem[] MarketItemsValid = [.. market.MarketItems.Values];
+            if (showListed) MarketItemsValid = [.. MarketItemsValid.Where(g => g.Status == MarketItemState.Listed)];
+            if (MarketItemsValid.Length == 0)
+            {
+                builder.AppendLine("当前没有商品可供购买，过一段时间再来吧。");
+            }
+            else
+            {
+                foreach (MarketItem marketItem in MarketItemsValid)
+                {
+                    builder.AppendLine(FunGameService.GetMarketItemInfo(marketItem, true, user?.Id ?? 0));
+                }
+                builder.AppendLine("提示：使用【市场查看+序号】查看商品详细信息，使用【市场购买+序号】购买商品。");
+            }
+            if (user != null)
+            {
+                builder.AppendLine($"你的现有{General.GameplayEquilibriumConstant.InGameCurrency}：{user.Inventory.Credits:0.##}");
+            }
+
+            builder.AppendLine($"页数：{page} / {maxPage}，使用【市场+页码】快速跳转指定页面。");
+
+            return builder.ToString().Trim();
+        }
+
+        public static string GetMarketItemInfo(MarketItem item, bool simply, long visitUser)
+        {
+            StringBuilder builder = new();
+            if (simply)
+            {
+                builder.AppendLine($"{item.Id}. {item.Name}");
+                builder.AppendLine($"{ItemSet.GetQualityTypeName(item.Item.QualityType)} {ItemSet.GetItemTypeName(item.Item.ItemType)}");
+                string username = item.Username;
+                if (FunGameConstant.UserIdAndUsername.TryGetValue(item.User, out User? user) && user != null)
+                {
+                    username = user.Username;
+                }
+                builder.AppendLine($"卖家：{username}");
+                builder.AppendLine($"商品描述：{item.Item.Description}");
+                builder.AppendLine($"商品售价：{(item.Price > 0 ? item.Price : "免费")} {General.GameplayEquilibriumConstant.InGameCurrency}");
+                if (item.Status == MarketItemState.Purchased)
+                {
+                    builder.AppendLine($"商品已售罄");
+                }
+                else if (item.Status == MarketItemState.Delisted)
+                {
+                    builder.AppendLine($"商品已下架");
+                }
+                else builder.AppendLine($"剩余库存：{(item.Stock == -1 ? "不限" : item.Stock)}");
+            }
+            else
+            {
+                builder.AppendLine($"{item.Id}. {item.Name}");
+                string username = item.Username;
+                if (FunGameConstant.UserIdAndUsername.TryGetValue(item.User, out User? user) && user != null)
+                {
+                    username = user.Username;
+                }
+                builder.AppendLine($"卖家：{username}");
+                builder.AppendLine($"上架时间：{item.CreateTime.ToString(General.GeneralDateTimeFormatChinese)}");
+                builder.AppendLine($"商品售价：{(item.Price > 0 ? item.Price : "免费")} {General.GameplayEquilibriumConstant.InGameCurrency}");
+                if (item.Status == MarketItemState.Purchased)
+                {
+                    builder.AppendLine($"商品已售罄");
+                    if (item.FinishTime.HasValue) builder.AppendLine($"售罄时间：{item.FinishTime.Value.ToString(General.GeneralDateTimeFormatChinese)}");
+                    if (visitUser == item.User && item.Buyers.Count > 0)
+                    {
+                        HashSet<string> buyers = [];
+                        foreach (long buyerid in item.Buyers)
+                        {
+                            username = "Unknown";
+                            if (FunGameConstant.UserIdAndUsername.TryGetValue(buyerid, out User? buyer) && buyer != null)
+                            {
+                                username = buyer.Username;
+                            }
+                            buyers.Add(username);
+                        }
+                        builder.AppendLine($"买家：{string.Join("，", buyers)}");
+                    }
+                }
+                else if (item.Status == MarketItemState.Delisted)
+                {
+                    builder.AppendLine($"商品已下架");
+                    if (item.FinishTime.HasValue) builder.AppendLine($"下架时间：{item.FinishTime.Value.ToString(General.GeneralDateTimeFormatChinese)}");
+                }
+                else builder.AppendLine($"剩余库存：{(item.Stock == -1 ? "不限" : item.Stock)}");
+                builder.AppendLine($"☆--- 物品信息 ---☆\r\n{item.Item}");
+            }
+            return builder.ToString().Trim();
+        }
+
         public static void RefreshNotice()
         {
             Notices.LoadConfig();
@@ -4335,7 +4559,6 @@ namespace Oshima.FunGame.OshimaServers.Service
                             {
                                 if (store.ExpireTime != null && store.ExpireTime.Value.Date <= DateTime.Today)
                                 {
-                                    stores.Remove(key);
                                     continue;
                                 }
                                 if (store.AutoRefresh && store.NextRefreshDate.Date <= DateTime.Today)
@@ -4347,12 +4570,51 @@ namespace Oshima.FunGame.OshimaServers.Service
                                     }
                                     store.NextRefreshDate = DateTime.Today.AddHours(4).AddDays(store.RefreshInterval);
                                 }
+                                stores.Add(key, store);
                             }
                         }
                     }
                     stores.SaveConfig();
                 }
             }
+        }
+        
+        public static void RefreshMarketData()
+        {
+            // 刷新市场
+            GetMarketSemaphoreSlim();
+            string directoryPath = $@"{AppDomain.CurrentDomain.BaseDirectory}configs/markets";
+            if (Directory.Exists(directoryPath))
+            {
+                DateTime now = DateTime.Now;
+                string[] filePaths = Directory.GetFiles(directoryPath);
+                foreach (string filePath in filePaths)
+                {
+                    string fileName = Path.GetFileNameWithoutExtension(filePath);
+                    EntityModuleConfig<Market> markets = new("markets", fileName);
+                    markets.LoadConfig();
+                    string[] marketNames = [.. markets.Keys];
+                    foreach (string key in marketNames)
+                    {
+                        Market? market = markets.Get(key);
+                        if (market != null)
+                        {
+                            long[] items = [.. market.MarketItems.Keys];
+                            foreach (long id in items)
+                            {
+                                MarketItem item = market.MarketItems[id];
+                                if ((item.Status == MarketItemState.Delisted || item.Status == MarketItemState.Purchased) && item.FinishTime.HasValue && (now - item.FinishTime.Value).TotalDays >= 3)
+                                {
+                                    market.MarketItems.Remove(id);
+                                }
+                            }
+                            markets.Add(key, market);
+                        }
+                    }
+                    markets.SaveConfig();
+                }
+            }
+            ReleaseMarketSemaphoreSlim();
         }
 
         public static void PreRefreshStore()
@@ -4465,5 +4727,18 @@ namespace Oshima.FunGame.OshimaServers.Service
         }
 
         public static bool CheckSemaphoreSlim(long uid) => CheckSemaphoreSlim(uid.ToString());
+
+        public static void GetMarketSemaphoreSlim()
+        {
+            FunGameConstant.MarketSemaphoreSlim.Wait(FunGameConstant.SemaphoreSlimTimeout);
+        }
+
+        public static void ReleaseMarketSemaphoreSlim()
+        {
+            if (FunGameConstant.MarketSemaphoreSlim.CurrentCount == 0)
+            {
+                FunGameConstant.MarketSemaphoreSlim.Release();
+            }
+        }
     }
 }

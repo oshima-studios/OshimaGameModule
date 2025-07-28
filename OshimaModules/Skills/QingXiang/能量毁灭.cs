@@ -9,8 +9,8 @@ namespace Oshima.FunGame.OshimaModules.Skills
         public override string Name => "能量毁灭";
         public override string Description => Effects.Count > 0 ? Effects.First().Description : "";
         public override double EPCost => 100;
-        public override double CD => 60 - 1 * (Level - 1);
-        public override double HardnessTime { get; set; } = 25;
+        public override double CD => 100 - 4 * (Level - 1);
+        public override double HardnessTime { get; set; } = 18;
         public override string Slogan => "从深渊引爆力量，世界将为之颤抖！！！！";
         public override bool CanSelectSelf => false;
         public override bool CanSelectEnemy => true;
@@ -39,7 +39,7 @@ namespace Oshima.FunGame.OshimaModules.Skills
 
         private double 智力系数 => 0.2 * Level;
         private double 智力伤害 => 智力系数 * Skill.Character?.INT ?? 0;
-        private double 能量系数 => 1.05 * Level;
+        private double 能量系数 => 1 * Level;
 
         public override void OnSkillCasted(Character caster, List<Character> targets, Dictionary<string, object> others)
         {
