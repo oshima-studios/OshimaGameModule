@@ -2875,6 +2875,26 @@ namespace Oshima.FunGame.OshimaServers.Service
             pc.SaveConfig();
         }
 
+        public static string GetExploreInfo(ExploreModel model, IEnumerable<Character> inventoryCharacters, IEnumerable<Region> regions)
+        {
+            StringBuilder sb = new();
+
+            if (model.CharacterIds.Any())
+            {
+                if (regions.FirstOrDefault(r => r.Id == model.RegionId) is Region region)
+                {
+                    sb.AppendLine($"☆--- 正在探索 {model.RegionId} 号地区：{region.Name} ---☆");
+                    if (model.StartTime != null)
+                    {
+                        sb.AppendLine($"探索时间：{model.StartTime.Value.ToString(General.GeneralDateTimeFormatChinese)}");
+                    }
+                    sb.AppendLine($"探索角色：{GetCharacterGroupInfoByInventorySequence(inventoryCharacters, model.CharacterIds, "，")}");
+                }
+            }
+
+            return sb.ToString().Trim();
+        }
+
         public static bool SettleExplore(string exploreId, PluginConfig pc, User user, out string msg)
         {
             bool result = false;
@@ -4348,7 +4368,7 @@ namespace Oshima.FunGame.OshimaServers.Service
             {
                 foreach (MarketItem marketItem in MarketItemsValid)
                 {
-                    builder.AppendLine(FunGameService.GetMarketItemInfo(marketItem, true, user?.Id ?? 0));
+                    builder.AppendLine(GetMarketItemInfo(marketItem, true, user?.Id ?? 0));
                 }
                 builder.AppendLine("提示：使用【市场查看+序号】查看商品详细信息，使用【市场购买+序号】购买商品。");
             }
@@ -4367,8 +4387,7 @@ namespace Oshima.FunGame.OshimaServers.Service
             StringBuilder builder = new();
             if (simply)
             {
-                builder.AppendLine($"{item.Id}. {item.Name}");
-                builder.AppendLine($"{ItemSet.GetQualityTypeName(item.Item.QualityType)} {ItemSet.GetItemTypeName(item.Item.ItemType)}");
+                builder.AppendLine($"{item.Id}. [{ItemSet.GetQualityTypeName(item.Item.QualityType)}|{ItemSet.GetItemTypeName(item.Item.ItemType)}] {item.Name}");
                 string username = item.Username;
                 if (FunGameConstant.UserIdAndUsername.TryGetValue(item.User, out User? user) && user != null)
                 {

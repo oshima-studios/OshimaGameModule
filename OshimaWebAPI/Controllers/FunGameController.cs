@@ -5676,7 +5676,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
                             {
                                 if (msg2 != "") msg2 += "\r\n";
                                 msg2 += $"你暂时无法使用以下角色进行探索：[ {FunGameService.GetCharacterGroupInfoByInventorySequence(user.Inventory.Characters, exploring, " ] / [ ")} ]，" +
-                                    $"因为这些角色已经参与了另一场探索：\r\n{model.GetExploreInfo(user.Inventory.Characters, FunGameConstant.Regions)}";
+                                    $"因为这些角色已经参与了另一场探索：\r\n{FunGameService.GetExploreInfo(model, user.Inventory.Characters, FunGameConstant.Regions)}";
                             }
                         }
                         if (msg2 != "")
@@ -5761,7 +5761,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
                         ExploreModel? model = pc2.Get<ExploreModel>(guid);
                         if (model is null) continue;
                         if (msg2 != "") msg2 += "\r\n";
-                        msg2 += model.GetExploreInfo(user.Inventory.Characters, FunGameConstant.Regions);
+                        msg2 += FunGameService.GetExploreInfo(model, user.Inventory.Characters, FunGameConstant.Regions);
                     }
                     if (msg2 != "")
                     {
