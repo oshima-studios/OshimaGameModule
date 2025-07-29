@@ -2441,6 +2441,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
                     Dictionary<int, string> itemsMsg = [];
 
                     using SQLHelper? sql = Factory.OpenFactory.GetSQLHelper();
+                    Item[] items = [.. user.Inventory.Items];
                     foreach (int itemIndex in itemsIndex)
                     {
                         if (!result)
@@ -2450,10 +2451,10 @@ namespace Oshima.FunGame.WebAPI.Controllers
 
                         bool subResult = true;
                         Item? item = null;
-                        if (itemIndex > 0 && itemIndex <= user.Inventory.Items.Count)
+                        if (itemIndex > 0 && itemIndex <= items.Length)
                         {
                             itemsMsg[itemIndex] = "";
-                            item = user.Inventory.Items.ToList()[itemIndex - 1];
+                            item = items[itemIndex - 1];
                             if (FunGameConstant.ItemCanUsed.Contains(item.ItemType))
                             {
                                 if (item.IsLock)
@@ -2479,7 +2480,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
                                     if (sql != null && SQLService.IsItemInOffers(sql, item.Guid))
                                     {
                                         FunGameService.ReleaseUserSemaphoreSlim(uid);
-                                        return $"这个物品 {itemIndex}. {item.Name} 无法使用！因为它正在进行交易，请检查交易报价！";
+                                        itemsMsg[itemIndex] += $"这个物品 {itemIndex}. {item.Name} 无法使用！因为它正在进行交易，请检查交易报价！\r\n";
                                     }
                                 }
                                 catch (Exception e)
@@ -2531,6 +2532,8 @@ namespace Oshima.FunGame.WebAPI.Controllers
                     }
                     else
                     {
+                        if (msg != "") msg += "\r\n";
+                        msg += "使用物品遇到错误，上述使用结果均已回滚，没有消耗也没有获得任何物品。";
                         FunGameService.ReleaseUserSemaphoreSlim(uid);
                     }
 
@@ -7047,7 +7050,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
                     {
                         foreach (MarketItem marketItem in marketItems)
                         {
-                            msg += FunGameService.GetMarketItemInfo(marketItem, true, userid) + "\r\n";
+                            msg += FunGameService.GetMarketItemInfo(marketItem, true, user) + "\r\n";
                         }
                     }
                     else msg += "你还没有上架过任何物品。";
@@ -7091,7 +7094,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
                     string msg = "";
                     if (market.MarketItems.TryGetValue(itemid, out MarketItem? item) && item != null)
                     {
-                        msg = FunGameService.GetMarketItemInfo(item, false, userid);
+                        msg = FunGameService.GetMarketItemInfo(item, false, user);
                     }
                     if (msg != "")
                     {

@@ -1482,7 +1482,6 @@ namespace Oshima.FunGame.WebAPI.Services
                     if (e.Detail.StartsWith("批量使用"))
                     {
                         string detail = e.Detail.Replace("批量使用", "").Trim();
-                        char[] chars = [',', ' ', '，', '；', ';'];
                         string pattern = @"\s*(?:角色\s*(?<characterId>\d+))?\s*(?<itemIds>[\d\s,，;；]+)";
                         Match match = Regex.Match(detail, pattern);
                         if (match.Success)
@@ -1490,7 +1489,7 @@ namespace Oshima.FunGame.WebAPI.Services
                             string itemIdsString = match.Groups["itemIds"].Value;
                             string characterId = match.Groups["characterId"].Value;
                             int[] characterIds = characterId != "" ? [int.Parse(characterId)] : [1];
-                            int[] itemIds = itemIdsString.Split(chars, StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries).Select(int.Parse).ToArray();
+                            int[] itemIds = itemIdsString.Split(FunGameConstant.SplitChars, StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries).Select(int.Parse).ToArray();
                             if (itemIds.Length > 0)
                             {
                                 string msg = Controller.UseItem4(uid, (itemIds, characterIds));
@@ -1538,7 +1537,6 @@ namespace Oshima.FunGame.WebAPI.Services
                     else
                     {
                         string detail = e.Detail.Replace("使用", "").Trim();
-                        char[] chars = [',', ' ', '，', '；', ';'];
                         string pattern = @"^\s*(?:(?<itemId>\d+)|(?<itemPart>[^\d\s].*?))(?:\s+(?<countPart>\d+))?(?:\s*角色\s*(?<characterIds>[\d\s,，;；]*))?$";
                         Match match = Regex.Match(detail, pattern);
                         if (match.Success)
@@ -1547,7 +1545,7 @@ namespace Oshima.FunGame.WebAPI.Services
                             string itemPart = match.Groups["itemPart"].Value.Trim();
                             string countStr = match.Groups["countPart"].Value;
                             string characterIdsString = match.Groups["characterIds"].Value;
-                            int[] characterIds = characterIdsString != "" ? [.. characterIdsString.Split(chars, StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries).Select(int.Parse)] : [1];
+                            int[] characterIds = characterIdsString != "" ? [.. characterIdsString.Split(FunGameConstant.SplitChars, StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries).Select(int.Parse)] : [1];
                             int count = string.IsNullOrEmpty(countStr) ? 1 : int.Parse(countStr);
 
                             if (!string.IsNullOrEmpty(itemId) && int.TryParse(itemId, out int id))
@@ -1576,7 +1574,7 @@ namespace Oshima.FunGame.WebAPI.Services
                 {
                     string detail = e.Detail.Replace("分解物品", "").Trim();
                     List<int> ids = [];
-                    foreach (string str in detail.Split(' ', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries))
+                    foreach (string str in detail.Split(FunGameConstant.SplitChars, StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries))
                     {
                         if (int.TryParse(str, out int id))
                         {
@@ -2015,7 +2013,7 @@ namespace Oshima.FunGame.WebAPI.Services
                 if (e.Detail.StartsWith("设置小队") || e.Detail.StartsWith("重组小队"))
                 {
                     string detail = e.Detail.Replace("设置小队", "").Replace("重组小队", "").Trim();
-                    string[] strings = detail.Split(' ', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
+                    string[] strings = detail.Split(FunGameConstant.SplitChars, StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
                     List<int> cindexs = [];
                     foreach (string s in strings)
                     {
@@ -2386,7 +2384,7 @@ namespace Oshima.FunGame.WebAPI.Services
                     string detail = e.Detail.Replace("探索", "").Replace("前往", "").Trim();
                     string msg = "";
                     string eid = "";
-                    string[] strings = detail.Split(' ', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
+                    string[] strings = detail.Split(FunGameConstant.SplitChars, StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
                     List<int> cindexs = [];
                     foreach (string s in strings)
                     {
@@ -2531,7 +2529,7 @@ namespace Oshima.FunGame.WebAPI.Services
                 {
                     string detail = e.Detail.Replace("上锁", "").Replace("锁定", "").Trim();
                     string msg = "";
-                    string[] strings = detail.Split(' ', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
+                    string[] strings = detail.Split(FunGameConstant.SplitChars, StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
                     List<int> indexs = [];
                     foreach (string s in strings)
                     {
@@ -2555,7 +2553,7 @@ namespace Oshima.FunGame.WebAPI.Services
                 {
                     string detail = e.Detail.Replace("解锁", "").Trim();
                     string msg = "";
-                    string[] strings = detail.Split(' ', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
+                    string[] strings = detail.Split(FunGameConstant.SplitChars, StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
                     List<int> indexs = [];
                     foreach (string s in strings)
                     {
@@ -2688,7 +2686,7 @@ namespace Oshima.FunGame.WebAPI.Services
                 {
                     string detail = e.Detail.Replace("报价添加物品", "").Trim();
                     string msg = "";
-                    string[] strings = detail.Split(' ', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
+                    string[] strings = detail.Split(FunGameConstant.SplitChars, StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
                     List<int> indexs = [];
                     foreach (string s in strings)
                     {
@@ -2716,7 +2714,7 @@ namespace Oshima.FunGame.WebAPI.Services
                 {
                     string detail = e.Detail.Replace("报价添加对方物品", "").Trim();
                     string msg = "";
-                    string[] strings = detail.Split(' ', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
+                    string[] strings = detail.Split(FunGameConstant.SplitChars, StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
                     List<int> indexs = [];
                     foreach (string s in strings)
                     {
@@ -2744,7 +2742,7 @@ namespace Oshima.FunGame.WebAPI.Services
                 {
                     string detail = e.Detail.Replace("报价移除物品", "").Trim();
                     string msg = "";
-                    string[] strings = detail.Split(' ', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
+                    string[] strings = detail.Split(FunGameConstant.SplitChars, StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
                     List<int> indexs = [];
                     foreach (string s in strings)
                     {
@@ -2772,7 +2770,7 @@ namespace Oshima.FunGame.WebAPI.Services
                 {
                     string detail = e.Detail.Replace("报价移除对方物品", "").Trim();
                     string msg = "";
-                    string[] strings = detail.Split(' ', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
+                    string[] strings = detail.Split(FunGameConstant.SplitChars, StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
                     List<int> indexs = [];
                     foreach (string s in strings)
                     {
@@ -2800,7 +2798,7 @@ namespace Oshima.FunGame.WebAPI.Services
                 {
                     string detail = e.Detail.Replace("商店出售", "").Trim();
                     List<int> ids = [];
-                    foreach (string str in detail.Split(' ', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries))
+                    foreach (string str in detail.Split(FunGameConstant.SplitChars, StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries))
                     {
                         if (int.TryParse(str, out int id))
                         {
@@ -3067,7 +3065,7 @@ namespace Oshima.FunGame.WebAPI.Services
                 if (e.Detail.StartsWith("市场出售"))
                 {
                     string detail = e.Detail.Replace("市场出售", "").Trim();
-                    string[] strings = detail.Split(' ', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
+                    string[] strings = detail.Split(FunGameConstant.SplitChars, StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
                     if (strings.Length < 2 || !double.TryParse(strings[^1], out double price))
                     {
                         await SendAsync(e, "市场出售", "格式不正确，请使用：市场出售 <{物品序号...}> <价格>。多个物品序号使用空格隔开。");

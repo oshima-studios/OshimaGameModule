@@ -38,6 +38,7 @@ namespace Oshima.FunGame.OshimaModules.Models
         public static SemaphoreSlim MarketSemaphoreSlim { get; } = new(1, 1);
         public static ItemType[] ItemCanUsed => [ItemType.Consumable, ItemType.MagicCard, ItemType.SpecialItem, ItemType.GiftBox, ItemType.Others];
         public static ItemType[] ItemCanNotDrawCard => [ItemType.Collectible, ItemType.QuestItem, ItemType.GiftBox, ItemType.Others];
+        public static char[] SplitChars => [',', ' ', '，', '；', ';'];
 
         public static Dictionary<int, Dictionary<string, int>> LevelBreakNeedyList { get; } = new()
         {

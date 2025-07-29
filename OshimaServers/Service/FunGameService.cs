@@ -3811,7 +3811,7 @@ namespace Oshima.FunGame.OshimaServers.Service
                             }
                             region ??= FunGameConstant.Regions[Random.Shared.Next(FunGameConstant.Regions.Count)];
                             item ??= region.Crops.ToList()[Random.Shared.Next(region.Crops.Count)];
-                            award = Math.Max(1, Random.Shared.Next(1, 4) * difficulty / 2);
+                            award = difficulty + Random.Shared.Next(0, 3);
                             regionItems.Add($"{award} 个{item.Name}（来自{region.Name}）");
                             for (int j = 0; j < award; j++)
                             {
@@ -3838,7 +3838,7 @@ namespace Oshima.FunGame.OshimaServers.Service
                                 }
                             }
                             item ??= FunGameConstant.CharacterLevelBreakItems[Random.Shared.Next(FunGameConstant.CharacterLevelBreakItems.Count)];
-                            award = Math.Max(1, Random.Shared.Next(1, 4) * difficulty / Math.Max(2, (int)item.QualityType + 1));
+                            award = difficulty + Random.Shared.Next(0, 3);
                             characterLevelBreakItems.Add($"{award} 个{item.Name}");
                             for (int j = 0; j < award; j++)
                             {
@@ -3865,7 +3865,7 @@ namespace Oshima.FunGame.OshimaServers.Service
                                 }
                             }
                             item ??= FunGameConstant.SkillLevelUpItems[Random.Shared.Next(FunGameConstant.SkillLevelUpItems.Count)];
-                            award = Math.Max(1, Random.Shared.Next(1, 4) * difficulty / Math.Max(2, (int)item.QualityType + 1));
+                            award = difficulty + Random.Shared.Next(0, 3);
                             skillLevelUpItems.Add($"{award} 个{item.Name}");
                             for (int j = 0; j < award; j++)
                             {
@@ -4368,7 +4368,7 @@ namespace Oshima.FunGame.OshimaServers.Service
             {
                 foreach (MarketItem marketItem in MarketItemsValid)
                 {
-                    builder.AppendLine(GetMarketItemInfo(marketItem, true, user?.Id ?? 0));
+                    builder.AppendLine(GetMarketItemInfo(marketItem, true, user ?? General.UnknownUserInstance));
                 }
                 builder.AppendLine("提示：使用【市场查看+序号】查看商品详细信息，使用【市场购买+序号】购买商品。");
             }
@@ -4382,7 +4382,7 @@ namespace Oshima.FunGame.OshimaServers.Service
             return builder.ToString().Trim();
         }
 
-        public static string GetMarketItemInfo(MarketItem item, bool simply, long visitUser)
+        public static string GetMarketItemInfo(MarketItem item, bool simply, User visitUser)
         {
             StringBuilder builder = new();
             if (simply)
@@ -4421,7 +4421,7 @@ namespace Oshima.FunGame.OshimaServers.Service
                 {
                     builder.AppendLine($"商品已售罄");
                     if (item.FinishTime.HasValue) builder.AppendLine($"售罄时间：{item.FinishTime.Value.ToString(General.GeneralDateTimeFormatChinese)}");
-                    if (visitUser == item.User && item.Buyers.Count > 0)
+                    if (visitUser.Id == item.User && item.Buyers.Count > 0)
                     {
                         HashSet<string> buyers = [];
                         foreach (long buyerid in item.Buyers)
@@ -4442,7 +4442,9 @@ namespace Oshima.FunGame.OshimaServers.Service
                     if (item.FinishTime.HasValue) builder.AppendLine($"下架时间：{item.FinishTime.Value.ToString(General.GeneralDateTimeFormatChinese)}");
                 }
                 else builder.AppendLine($"剩余库存：{(item.Stock == -1 ? "不限" : item.Stock)}");
-                builder.AppendLine($"☆--- 物品信息 ---☆\r\n{item.Item}");
+                Item newItem = item.Item.Copy();
+                newItem.Character = visitUser.Inventory.MainCharacter;
+                builder.AppendLine($"☆--- 物品信息 ---☆\r\n{newItem.ToString(false, true)}");
             }
             return builder.ToString().Trim();
         }
