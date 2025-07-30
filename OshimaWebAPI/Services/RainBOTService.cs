@@ -320,7 +320,7 @@ namespace Oshima.FunGame.WebAPI.Services
                         FunGameSimulation = true;
                         List<string> msgs = await Controller.GetTest(false, maxRespawnTimesMix: 0);
                         List<string> real = [];
-                        int remain = 7;
+                        int remain = msgs.Count > 7 ? 7 : msgs.Count - 1;
                         string merge = "";
                         for (int i = 0; i < msgs.Count - 2; i++)
                         {
@@ -350,7 +350,7 @@ namespace Oshima.FunGame.WebAPI.Services
                         foreach (string msg in real)
                         {
                             await SendAsync(e, "筽祀牻", msg.Trim(), msgSeq: count++);
-                            await Task.Delay(5500);
+                            if (count != real.Count) await Task.Delay(5500);
                         }
                         FunGameSimulation = false;
                     }
@@ -375,7 +375,7 @@ namespace Oshima.FunGame.WebAPI.Services
                         FunGameSimulation = true;
                         List<string> msgs = await Controller.GetTest(false, maxRespawnTimesMix: maxRespawnTimesMix);
                         List<string> real = [];
-                        int remain = 7;
+                        int remain = msgs.Count > 7 ? 7 : msgs.Count - 1;
                         string merge = "";
                         for (int i = 0; i < msgs.Count - 2; i++)
                         {
@@ -405,7 +405,7 @@ namespace Oshima.FunGame.WebAPI.Services
                         foreach (string msg in real)
                         {
                             await SendAsync(e, "筽祀牻", msg.Trim(), msgSeq: count++);
-                            await Task.Delay(5500);
+                            if (count != real.Count) await Task.Delay(5500);
                         }
                         FunGameSimulation = false;
                     }
@@ -435,7 +435,7 @@ namespace Oshima.FunGame.WebAPI.Services
                         {
                             real.Add(msgs[0]);
                         }
-                        int remain = 7;
+                        int remain = msgs.Count > 7 ? 7 : msgs.Count - 1;
                         string merge = "";
                         for (int i = 1; i < msgs.Count - 2; i++)
                         {
@@ -465,7 +465,7 @@ namespace Oshima.FunGame.WebAPI.Services
                         foreach (string msg in real)
                         {
                             await SendAsync(e, "筽祀牻", msg.Trim(), msgSeq: count++);
-                            await Task.Delay(5500);
+                            if (count != real.Count) await Task.Delay(5500);
                         }
                         FunGameSimulation = false;
                     }
@@ -1693,7 +1693,7 @@ namespace Oshima.FunGame.WebAPI.Services
                     {
                         if (msgs.Count < 20)
                         {
-                            int remain = 7;
+                            int remain = msgs.Count > 7 ? 7 : msgs.Count - 1;
                             string merge = "";
                             for (int i = 0; i < msgs.Count - 1; i++)
                             {
@@ -1730,7 +1730,7 @@ namespace Oshima.FunGame.WebAPI.Services
                     foreach (string msg in real)
                     {
                         await SendAsync(e, "完整决斗", msg.Trim(), msgSeq: count++);
-                        await Task.Delay(1500);
+                        if (count != real.Count) await Task.Delay(1500);
                     }
                     return result;
                 }
@@ -1750,7 +1750,7 @@ namespace Oshima.FunGame.WebAPI.Services
                     List<string> real = [];
                     if (msgs.Count > 2)
                     {
-                        int remain = 7;
+                        int remain = msgs.Count > 7 ? 7 : msgs.Count - 1;
                         string merge = "";
                         for (int i = 0; i < msgs.Count - 1; i++)
                         {
@@ -1781,7 +1781,7 @@ namespace Oshima.FunGame.WebAPI.Services
                     foreach (string msg in real)
                     {
                         await SendAsync(e, "决斗", msg.Trim(), msgSeq: count++);
-                        await Task.Delay(1500);
+                        if (count != real.Count) await Task.Delay(1500);
                     }
                     return result;
                 }
@@ -1803,7 +1803,7 @@ namespace Oshima.FunGame.WebAPI.Services
                     {
                         if (msgs.Count < 20)
                         {
-                            int remain = 7;
+                            int remain = msgs.Count > 7 ? 7 : msgs.Count - 1;
                             string merge = "";
                             for (int i = 0; i < msgs.Count - 1; i++)
                             {
@@ -1840,7 +1840,7 @@ namespace Oshima.FunGame.WebAPI.Services
                     foreach (string msg in real)
                     {
                         await SendAsync(e, "完整决斗", msg.Trim(), msgSeq: count++);
-                        await Task.Delay(1500);
+                        if (count != real.Count) await Task.Delay(1500);
                     }
                     return result;
                 }
@@ -1876,7 +1876,7 @@ namespace Oshima.FunGame.WebAPI.Services
                         {
                             if (msgs.Count < 20)
                             {
-                                int remain = 7;
+                                int remain = msgs.Count > 7 ? 7 : msgs.Count - 1;
                                 string merge = "";
                                 for (int i = 0; i < msgs.Count - 1; i++)
                                 {
@@ -1913,7 +1913,7 @@ namespace Oshima.FunGame.WebAPI.Services
                         foreach (string msg in real)
                         {
                             await SendAsync(e, "BOSS", msg.Trim(), msgSeq: count++);
-                            await Task.Delay(1500);
+                            if (count != real.Count) await Task.Delay(1500);
                         }
                     }
                     else
@@ -1935,7 +1935,7 @@ namespace Oshima.FunGame.WebAPI.Services
                         {
                             if (msgs.Count < 20)
                             {
-                                int remain = 7;
+                                int remain = msgs.Count > 7 ? 7 : msgs.Count - 1;
                                 string merge = "";
                                 for (int i = 0; i < msgs.Count - 1; i++)
                                 {
@@ -1972,7 +1972,7 @@ namespace Oshima.FunGame.WebAPI.Services
                         foreach (string msg in real)
                         {
                             await SendAsync(e, "BOSS", msg.Trim(), msgSeq: count++);
-                            await Task.Delay(1500);
+                            if (count != real.Count) await Task.Delay(1500);
                         }
                     }
                     else
@@ -2903,8 +2903,67 @@ namespace Oshima.FunGame.WebAPI.Services
                     }
                     return result;
                 }
+
+                if (e.Detail == "后勤部")
+                {
+                    string msg = Controller.ShowSystemStore(uid, "铎京城", "dokyo_logistics");
+                    if (msg.Trim() != "")
+                    {
+                        await SendAsync(e, "商店", msg);
+                    }
+                    return result;
+                }
                 
+                if (e.Detail == "武器商会")
+                {
+                    string msg = Controller.ShowSystemStore(uid, "铎京城", "dokyo_weapons");
+                    if (msg.Trim() != "")
+                    {
+                        await SendAsync(e, "商店", msg);
+                    }
+                    return result;
+                }
                 
+                if (e.Detail == "杂货铺")
+                {
+                    string msg = Controller.ShowSystemStore(uid, "铎京城", "dokyo_yuki");
+                    if (msg.Trim() != "")
+                    {
+                        await SendAsync(e, "商店", msg);
+                    }
+                    return result;
+                }
+                
+                if (e.Detail == "基金会")
+                {
+                    string msg = Controller.ShowSystemStore(uid, "铎京城", "dokyo_welfare");
+                    if (msg.Trim() != "")
+                    {
+                        await SendAsync(e, "商店", msg);
+                    }
+                    return result;
+                }
+                
+                if (e.Detail == "锻造商店")
+                {
+                    string msg = Controller.ShowSystemStore(uid, "铎京城", "dokyo_forge");
+                    if (msg.Trim() != "")
+                    {
+                        await SendAsync(e, "商店", msg);
+                    }
+                    return result;
+                }
+
+                if (e.Detail == "赛马商店")
+                {
+                    string msg = Controller.ShowSystemStore(uid, "铎京城", "dokyo_horseracing");
+                    if (msg.Trim() != "")
+                    {
+                        await SendAsync(e, "商店", msg);
+                    }
+                    return result;
+                }
+
                 if (e.Detail.StartsWith("商店"))
                 {
                     string detail = e.Detail.Replace("商店", "").Trim();
@@ -2927,6 +2986,9 @@ namespace Oshima.FunGame.WebAPI.Services
                                 break;
                             case 5:
                                 msg = Controller.ShowSystemStore(uid, "铎京城", "dokyo_forge");
+                                break;
+                            case 6:
+                                msg = Controller.ShowSystemStore(uid, "铎京城", "dokyo_horseracing");
                                 break;
                             default:
                                 break;
@@ -3214,6 +3276,230 @@ namespace Oshima.FunGame.WebAPI.Services
                     if (msg != "")
                     {
                         await SendAsync(e, "私信", msg);
+                    }
+                    return result;
+                }
+
+                if (e.Detail == "创建赛马")
+                {
+                    string groupId = "";
+                    if (e.IsGroup && e is GroupAtMessage groupAtMessage && groupAtMessage.GroupOpenId != "")
+                    {
+                        groupId = groupAtMessage.GroupOpenId;
+                    }
+                    else if (e.IsGroup && e is ThirdPartyMessage thirdPartyMessage && thirdPartyMessage.GroupOpenId != "")
+                    {
+                        groupId = thirdPartyMessage.GroupOpenId;
+                    }
+                    if (groupId != "")
+                    {
+                        string msg = Controller.CreateRoom(uid, "horseracing", "", groupId);
+                        if (msg.Trim() != "")
+                        {
+                            await SendAsync(e, "赛马", msg);
+                        }
+                    }
+                    else
+                    {
+                        await SendAsync(e, "赛马", "请在群聊中进行多人游戏。");
+                    }
+                    return result;
+                }
+                
+                if (e.Detail == "加入赛马")
+                {
+                    string groupId = "";
+                    if (e.IsGroup && e is GroupAtMessage groupAtMessage && groupAtMessage.GroupOpenId != "")
+                    {
+                        groupId = groupAtMessage.GroupOpenId;
+                    }
+                    else if (e.IsGroup && e is ThirdPartyMessage thirdPartyMessage && thirdPartyMessage.GroupOpenId != "")
+                    {
+                        groupId = thirdPartyMessage.GroupOpenId;
+                    }
+                    if (groupId != "")
+                    {
+                        if (FunGameConstant.Rooms.Values.FirstOrDefault(r => r.GameMap == groupId) is Room room)
+                        {
+                            string msg = Controller.IntoRoom(uid, room.Roomid, "");
+                            if (msg.Trim() != "")
+                            {
+                                await SendAsync(e, "赛马", msg);
+                            }
+                        }
+                        else
+                        {
+                            await SendAsync(e, "赛马", "本群还没有创建赛马房间，请使用【创建赛马】指令来创建一个房间。");
+                        }
+                    }
+                    else
+                    {
+                        await SendAsync(e, "赛马", "请在群聊中进行多人游戏。");
+                    }
+                    return result;
+                }
+
+                if (e.Detail.StartsWith("创建房间"))
+                {
+                    string groupId = "";
+                    if (e.IsGroup && e is GroupAtMessage groupAtMessage && groupAtMessage.GroupOpenId != "")
+                    {
+                        groupId = groupAtMessage.GroupOpenId;
+                    }
+                    else if (e.IsGroup && e is ThirdPartyMessage thirdPartyMessage && thirdPartyMessage.GroupOpenId != "")
+                    {
+                        groupId = thirdPartyMessage.GroupOpenId;
+                    }
+                    if (groupId != "")
+                    {
+                        string detail = e.Detail.Replace("创建房间", "").Trim();
+                        string[] strings = detail.Split(" ", StringSplitOptions.RemoveEmptyEntries);
+                        string roomType = "", password = "";
+                        if (strings.Length > 0) roomType = strings[0];
+                        if (strings.Length > 1)
+                        {
+                            int firstSpaceIndex = detail.IndexOf(' ');
+                            if (firstSpaceIndex != -1 && firstSpaceIndex + 1 < detail.Length)
+                            {
+                                password = detail[(firstSpaceIndex + 1)..].Trim();
+                            }
+                        }
+                        string msg = Controller.CreateRoom(uid, roomType, password, groupId);
+                        if (msg.Trim() != "")
+                        {
+                            await SendAsync(e, "房间", msg);
+                        }
+                    }
+                    else
+                    {
+                        await SendAsync(e, "房间", "请在群聊中进行多人游戏。");
+                    }
+                    return result;
+                }
+                
+                if (e.Detail.StartsWith("加入房间"))
+                {
+                    string groupId = "";
+                    if (e.IsGroup && e is GroupAtMessage groupAtMessage && groupAtMessage.GroupOpenId != "")
+                    {
+                        groupId = groupAtMessage.GroupOpenId;
+                    }
+                    else if (e.IsGroup && e is ThirdPartyMessage thirdPartyMessage && thirdPartyMessage.GroupOpenId != "")
+                    {
+                        groupId = thirdPartyMessage.GroupOpenId;
+                    }
+                    if (groupId != "")
+                    {
+                        string detail = e.Detail.Replace("加入房间", "").Trim();
+                        string[] strings = detail.Split(" ", StringSplitOptions.RemoveEmptyEntries);
+                        string roomid = "", password = "";
+                        if (strings.Length > 0) roomid = strings[0];
+                        if (strings.Length > 1)
+                        {
+                            int firstSpaceIndex = detail.IndexOf(' ');
+                            if (firstSpaceIndex != -1 && firstSpaceIndex + 1 < detail.Length)
+                            {
+                                password = detail[(firstSpaceIndex + 1)..].Trim();
+                            }
+                        }
+                        string msg = Controller.IntoRoom(uid, roomid, password);
+                        if (msg.Trim() != "")
+                        {
+                            await SendAsync(e, "房间", msg);
+                        }
+                    }
+                    else
+                    {
+                        await SendAsync(e, "房间", "请在群聊中进行多人游戏。");
+                    }
+                    return result;
+                }
+
+                if (e.Detail == "开始游戏")
+                {
+                    string groupId = "";
+                    if (e.IsGroup && e is GroupAtMessage groupAtMessage && groupAtMessage.GroupOpenId != "")
+                    {
+                        groupId = groupAtMessage.GroupOpenId;
+                    }
+                    else if (e.IsGroup && e is ThirdPartyMessage thirdPartyMessage && thirdPartyMessage.GroupOpenId != "")
+                    {
+                        groupId = thirdPartyMessage.GroupOpenId;
+                    }
+                    if (groupId != "")
+                    {
+                        (Room room, List<string> msgs) = await Controller.RunGame(uid);
+                        List<string> real = [];
+                        if (msgs.Count > 1)
+                        {
+                            if (msgs.Count > 20)
+                            {
+                                msgs = [msgs[0], .. msgs[^20..]];
+                            }
+                            int remain = msgs.Count > 7 ? 7 : msgs.Count - 1;
+                            string merge = "";
+                            for (int i = 0; i < msgs.Count - 1; i++)
+                            {
+                                remain--;
+                                merge += msgs[i] + "\r\n";
+                                if (remain == 0)
+                                {
+                                    real.Add(merge);
+                                    merge = "";
+                                    if ((msgs.Count - i - 1) < 7)
+                                    {
+                                        remain = msgs.Count - i - 1;
+                                    }
+                                    else remain = 7;
+                                }
+                            }
+                            real.Add(msgs[^1]);
+                        }
+                        else
+                        {
+                            real = msgs;
+                        }
+                        if (real.Count >= 3)
+                        {
+                            real = [real[0], .. real[^2..]];
+                        }
+                        int count = 1;
+                        foreach (string msg in real)
+                        {
+                            await SendAsync(e, "房间", msg.Trim(), msgSeq: count++);
+                            if (count <= real.Count) await Task.Delay(1500);
+                        }
+                        OnlineService.ReSetRoomState(room.Roomid);
+                    }
+                    else
+                    {
+                        await SendAsync(e, "房间", "请在群聊中进行多人游戏。");
+                    }
+                    return result;
+                }
+                
+                if (e.Detail == "退出房间")
+                {
+                    string groupId = "";
+                    if (e.IsGroup && e is GroupAtMessage groupAtMessage && groupAtMessage.GroupOpenId != "")
+                    {
+                        groupId = groupAtMessage.GroupOpenId;
+                    }
+                    else if (e.IsGroup && e is ThirdPartyMessage thirdPartyMessage && thirdPartyMessage.GroupOpenId != "")
+                    {
+                        groupId = thirdPartyMessage.GroupOpenId;
+                    }
+                    if (groupId != "")
+                    {
+                        string msg = Controller.QuitRoom(uid);
+                        if (msg.Trim() != "")
+                        {
+                            await SendAsync(e, "房间", msg);
+                        }
+                    }
+                    else
+                    {
+                        await SendAsync(e, "房间", "请在群聊中进行多人游戏。");
                     }
                     return result;
                 }

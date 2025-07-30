@@ -36,6 +36,8 @@ namespace Oshima.FunGame.OshimaModules.Models
         public static Dictionary<long, LastStoreModel> UserLastVisitStore { get; } = [];
         public static ConcurrentDictionary<string, SemaphoreSlim> UserSemaphoreSlims { get; } = [];
         public static SemaphoreSlim MarketSemaphoreSlim { get; } = new(1, 1);
+        public static Dictionary<string, Room> Rooms { get; set; } = [];
+        public static Dictionary<long, Room> UsersInRoom { get; set; } = [];
         public static ItemType[] ItemCanUsed => [ItemType.Consumable, ItemType.MagicCard, ItemType.SpecialItem, ItemType.GiftBox, ItemType.Others];
         public static ItemType[] ItemCanNotDrawCard => [ItemType.Collectible, ItemType.QuestItem, ItemType.GiftBox, ItemType.Others];
         public static char[] SplitChars => [',', ' ', '，', '；', ';'];

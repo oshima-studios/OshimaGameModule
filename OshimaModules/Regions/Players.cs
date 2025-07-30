@@ -36,6 +36,10 @@ namespace Oshima.FunGame.OshimaModules.Regions
                 {
                     template = CreateNewForgeStore();
                 }
+                else if (storeName == "dokyo_horseracing")
+                {
+                    template = CreateNewHorseRacingStore();
+                }
                 else return null;
             }
 
@@ -109,6 +113,15 @@ namespace Oshima.FunGame.OshimaModules.Regions
                 }
                 return $"现有锻造积分：{forgePoints:0.##}";
             }
+            else if (storeName == "dokyo_horseracing")
+            {
+                double horseRacingPoints = 0;
+                if (pc.TryGetValue("horseRacingPoints", out object? value) && double.TryParse(value.ToString(), out double points))
+                {
+                    horseRacingPoints = points;
+                }
+                return $"现有赛马积分：{horseRacingPoints:0.##}";
+            }
             return "";
         }
 
@@ -124,6 +137,7 @@ namespace Oshima.FunGame.OshimaModules.Regions
         {
             EntityModuleConfig<Store> storeTemplate = new("stores", "dokyo");
             storeTemplate.LoadConfig();
+
             Store? store = storeTemplate.Get("dokyo_forge");
             if (store is null)
             {
@@ -136,6 +150,20 @@ namespace Oshima.FunGame.OshimaModules.Regions
                 store.CopyGoodsToNextRefreshGoods(newStore.Goods);
             }
             storeTemplate.Add("dokyo_forge", store);
+
+            store = storeTemplate.Get("dokyo_horseracing");
+            if (store is null)
+            {
+                store = CreateNewHorseRacingStore();
+            }
+            else
+            {
+                Store newStore = CreateNewHorseRacingStore();
+                store.NextRefreshGoods.Clear();
+                store.CopyGoodsToNextRefreshGoods(newStore.Goods);
+            }
+            storeTemplate.Add("dokyo_horseracing", store);
+
             storeTemplate.SaveConfig();
         }
 
@@ -143,6 +171,7 @@ namespace Oshima.FunGame.OshimaModules.Regions
         {
             Store store = new("锻造积分商店")
             {
+                GetNewerGoodsOnVisiting = true,
                 AutoRefresh = true,
                 RefreshInterval = 3,
                 NextRefreshDate = DateTime.Today.AddHours(4),
@@ -159,6 +188,23 @@ namespace Oshima.FunGame.OshimaModules.Regions
                 store.SetPrice(i, "锻造积分", 2 * ((int)region.Difficulty + 1));
                 i++;
             }
+            return store;
+        }
+
+        private static Store CreateNewHorseRacingStore()
+        {
+            Store store = new("赛马积分商店")
+            {
+                GetNewerGoodsOnVisiting = true,
+                AutoRefresh = true,
+                RefreshInterval = 1,
+                NextRefreshDate = DateTime.Today.AddHours(4),
+                GlobalStock = true,
+            };
+            Item item = new 钻石();
+            store.AddItem(item, -1);
+            store.SetPrice(1, "赛马积分", 5);
+            store.Goods[1].Quota = 300;
             return store;
         }
     }

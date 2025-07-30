@@ -47,10 +47,10 @@ namespace Oshima.FunGame.WebAPI
                         {
                             // 获取 RainBOTService 实例
                             RainBOTService bot = serviceProvider.GetRequiredService<RainBOTService>();
-                            Controller.WriteLine("成功获取 RainBOTService 实例！");
                             ThirdPartyMessage message = new()
                             {
-                                IsGroup = false,
+                                IsGroup = true,
+                                GroupOpenId = "1",
                                 AuthorOpenId = "1",
                                 OpenId = "1",
                                 Detail = input,

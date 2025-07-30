@@ -2813,6 +2813,32 @@ namespace Oshima.FunGame.WebAPI.Controllers
                             pc2.Add("exploreTimes", exploreTimes);
                             msg = $"已为 [ {user2} ] 生成 {itemCount} 个探索许可";
                         }
+                        else if (itemName == "锻造积分")
+                        {
+                            if (pc.TryGetValue("forgepoints", out object? value) && int.TryParse(value.ToString(), out int forgepoints))
+                            {
+                                forgepoints += itemCount;
+                            }
+                            else
+                            {
+                                forgepoints = itemCount;
+                            }
+                            pc2.Add("forgepoints", forgepoints);
+                            msg = $"已为 [ {user2} ] 生成 {itemCount} 个锻造积分";
+                        }
+                        else if (itemName == "赛马积分")
+                        {
+                            if (pc.TryGetValue("horseRacingPoints", out object? value) && int.TryParse(value.ToString(), out int horseRacingPoints))
+                            {
+                                horseRacingPoints += itemCount;
+                            }
+                            else
+                            {
+                                horseRacingPoints = itemCount;
+                            }
+                            pc2.Add("horseRacingPoints", horseRacingPoints);
+                            msg = $"已为 [ {user2} ] 生成 {itemCount} 个锻造积分";
+                        }
                         else if (itemName.Contains("魔法卡礼包"))
                         {
                             foreach (string type in ItemSet.QualityTypeNameArray)
@@ -2926,7 +2952,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
                 FunGameService.SetUserConfigAndReleaseSemaphoreSlim(userid, pc, user);
 
                 string msg = "";
-                if (user.IsAdmin || userid > 0)
+                if (user.IsAdmin)
                 {
                     PluginConfig pc2 = FunGameService.GetUserConfig(targetid, out _);
                     if (pc2.Count > 0)
@@ -6709,7 +6735,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
                 {
                     User user = FunGameService.GetUser(pc);
 
-                    if (user.IsAdmin || user.IsOperator)
+                    if (user.IsAdmin)
                     {
                         PluginConfig renameExamine = new("examines", "rename");
                         renameExamine.LoadConfig();
@@ -6793,7 +6819,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
                         FunGameService.ReleaseUserSemaphoreSlim(userid);
                     }
 
-                    if (user.IsAdmin || user.IsOperator)
+                    if (user.IsAdmin)
                     {
                         PluginConfig renameExamine = new("examines", "rename");
                         renameExamine.LoadConfig();
@@ -7952,6 +7978,162 @@ namespace Oshima.FunGame.WebAPI.Controllers
             {
                 Logger.LogError(e, "Error: {e}", e);
                 return busy;
+            }
+            finally
+            {
+                FunGameService.ReleaseUserSemaphoreSlim(uid);
+            }
+        }
+        
+        [HttpPost("createroom")]
+        public string CreateRoom([FromQuery] long uid = -1, [FromQuery] string roomType = "", [FromQuery] string password = "", [FromQuery] string groupId = "")
+        {
+            try
+            {
+                PluginConfig pc = FunGameService.GetUserConfig(uid, out bool isTimeout);
+                if (isTimeout)
+                {
+                    return busy;
+                }
+
+                string msg = "";
+                if (pc.Count > 0)
+                {
+                    User user = FunGameService.GetUser(pc);
+
+                    Room room = OnlineService.CreateRoom(user, roomType, password, groupId, out msg);
+                    if (room.Roomid != "-1")
+                    {
+                        if (OnlineService.IntoRoom(user, room.Roomid, password, out string msg2))
+                        {
+                            msg += $"\r\n{msg2}";
+                        }
+                    }
+
+                    FunGameService.SetUserConfigButNotRelease(uid, pc, user);
+                    return msg;
+                }
+                else
+                {
+                    return noSaved;
+                }
+            }
+            catch (Exception e)
+            {
+                Logger.LogError(e, "Error: {e}", e);
+                return busy;
+            }
+            finally
+            {
+                FunGameService.ReleaseUserSemaphoreSlim(uid);
+            }
+        }
+        
+        [HttpPost("intoroom")]
+        public string IntoRoom([FromQuery] long uid = -1, [FromQuery] string roomid = "", [FromQuery] string password = "")
+        {
+            try
+            {
+                PluginConfig pc = FunGameService.GetUserConfig(uid, out bool isTimeout);
+                if (isTimeout)
+                {
+                    return busy;
+                }
+
+                string msg = "";
+                if (pc.Count > 0)
+                {
+                    User user = FunGameService.GetUser(pc);
+
+                    OnlineService.IntoRoom(user, roomid, password, out msg);
+
+                    FunGameService.SetUserConfigButNotRelease(uid, pc, user);
+                    return msg;
+                }
+                else
+                {
+                    return noSaved;
+                }
+            }
+            catch (Exception e)
+            {
+                Logger.LogError(e, "Error: {e}", e);
+                return busy;
+            }
+            finally
+            {
+                FunGameService.ReleaseUserSemaphoreSlim(uid);
+            }
+        }
+        
+        [HttpPost("quitroom")]
+        public string QuitRoom([FromQuery] long uid = -1)
+        {
+            try
+            {
+                PluginConfig pc = FunGameService.GetUserConfig(uid, out bool isTimeout);
+                if (isTimeout)
+                {
+                    return busy;
+                }
+
+                string msg = "";
+                if (pc.Count > 0)
+                {
+                    User user = FunGameService.GetUser(pc);
+
+                    OnlineService.QuitRoom(user, out msg);
+
+                    FunGameService.SetUserConfigButNotRelease(uid, pc, user);
+                    return msg;
+                }
+                else
+                {
+                    return noSaved;
+                }
+            }
+            catch (Exception e)
+            {
+                Logger.LogError(e, "Error: {e}", e);
+                return busy;
+            }
+            finally
+            {
+                FunGameService.ReleaseUserSemaphoreSlim(uid);
+            }
+        }
+        
+        [HttpPost("rungame")]
+        public async Task<(Room, List<string>)> RunGame([FromQuery] long uid = -1)
+        {
+            Room room = General.HallInstance;
+            try
+            {
+                PluginConfig pc = FunGameService.GetUserConfig(uid, out bool isTimeout);
+                if (isTimeout)
+                {
+                    return (room, [busy]);
+                }
+
+                List<string> msgs = [];
+                if (pc.Count > 0)
+                {
+                    User user = FunGameService.GetUser(pc);
+
+                    (room, msgs) = await OnlineService.RunGameAsync(user);
+
+                    FunGameService.SetUserConfigButNotRelease(uid, pc, user);
+                    return (room, msgs);
+                }
+                else
+                {
+                    return (room, [noSaved]);
+                }
+            }
+            catch (Exception e)
+            {
+                Logger.LogError(e, "Error: {e}", e);
+                return (room, [busy]);
             }
             finally
             {

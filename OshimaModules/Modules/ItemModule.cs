@@ -56,6 +56,7 @@ namespace Oshima.FunGame.OshimaModules
                     (long)SpecialItemID.创生之印 => new 创生之印(),
                     (long)SpecialItemID.法则精粹 => new 法则精粹(),
                     (long)SpecialItemID.大师锻造券 => new 大师锻造券(),
+                    (long)SpecialItemID.钻石 => new 钻石(),
                     (long)SpecialItemID.探索许可 => new 探索许可(),
                     (long)ConsumableID.小回复药 => new 小回复药(),
                     (long)ConsumableID.中回复药 => new 中回复药(),

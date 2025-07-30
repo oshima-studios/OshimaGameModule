@@ -624,6 +624,12 @@ namespace Oshima.FunGame.OshimaServers.Service
                 }
             }
 
+            // 检查在线状态
+            if (FunGameConstant.UsersInRoom.ContainsKey(user.Id))
+            {
+                user.OnlineState = OnlineState.InRoom;
+            }
+
             return user;
         }
 
@@ -2161,6 +2167,19 @@ namespace Oshima.FunGame.OshimaServers.Service
                         return $"你的{needy}不足 {reduce} 呢，无法购买【{goods.Name}】！";
                     }
                 }
+                else if (needy == "赛马积分")
+                {
+                    double reduce = Calculation.Round2Digits(goods.Prices[needy] * count);
+                    if (pc.TryGetValue("horseRacingPoints", out object? value) && double.TryParse(value.ToString(), out double points) && points >= reduce)
+                    {
+                        points -= reduce;
+                        pc.Add("horseRacingPoints", points);
+                    }
+                    else
+                    {
+                        return $"你的{needy}不足 {reduce} 呢，无法购买【{goods.Name}】！";
+                    }
+                }
                 else
                 {
                     return $"不支持的货币类型：{needy}，无法购买【{goods.Name}】！";
@@ -2169,7 +2188,11 @@ namespace Oshima.FunGame.OshimaServers.Service
 
             foreach (Item item in goods.Items)
             {
-                if (item.Id == (long)SpecialItemID.探索许可)
+                if (item.Id == (long)SpecialItemID.钻石)
+                {
+                    user.Inventory.Materials += count;
+                }
+                else if (item.Id == (long)SpecialItemID.探索许可)
                 {
                     int exploreTimes = FunGameConstant.MaxExploreTimes + count;
                     if (pc.TryGetValue("exploreTimes", out object? value) && int.TryParse(value.ToString(), out exploreTimes))
@@ -4456,7 +4479,45 @@ namespace Oshima.FunGame.OshimaServers.Service
 
         public static void RefreshSavedCache()
         {
-            string directoryPath = $@"{AppDomain.CurrentDomain.BaseDirectory}configs/saved";
+            string directoryPath;
+            Dictionary<long, int> hrPoints = [];
+            try
+            {
+                OnlineService.GetHorseRacingSettleSemaphoreSlim();
+                directoryPath = $@"{AppDomain.CurrentDomain.BaseDirectory}configs/horseracing";
+                if (Directory.Exists(directoryPath))
+                {
+                    string[] filePaths = Directory.GetFiles(directoryPath);
+                    foreach (string filePath in filePaths)
+                    {
+                        string fileName = Path.GetFileNameWithoutExtension(filePath);
+                        PluginConfig pc = new("horseracing", fileName);
+                        pc.LoadConfig();
+                        if (pc.Get<Dictionary<long, int>>("points") is Dictionary<long, int> points)
+                        {
+                            foreach (long userId in points.Keys)
+                            {
+                                if (hrPoints.ContainsKey(userId))
+                                {
+                                    hrPoints[userId] += points[userId];
+                                }
+                                else
+                                {
+                                    hrPoints[userId] = points[userId];
+                                }
+                            }
+                        }
+                        pc.Remove("points");
+                        pc.SaveConfig();
+                    }
+                }
+            }
+            catch { }
+            finally
+            {
+                OnlineService.ReleaseHorseRacingSettleSemaphoreSlim();
+            }
+            directoryPath = $@"{AppDomain.CurrentDomain.BaseDirectory}configs/saved";
             if (Directory.Exists(directoryPath))
             {
                 string[] filePaths = Directory.GetFiles(directoryPath);
@@ -4471,6 +4532,7 @@ namespace Oshima.FunGame.OshimaServers.Service
                         FunGameConstant.UserIdAndUsername[user.Id] = user;
                         bool updateQuest = false;
                         bool updateExplore = false;
+                        bool updateHorseRacing = false;
                         // 任务结算
                         EntityModuleConfig<Quest> quests = new("quests", user.Id.ToString());
                         quests.LoadConfig();
@@ -4487,7 +4549,20 @@ namespace Oshima.FunGame.OshimaServers.Service
                             pc2.SaveConfig();
                             updateExplore = true;
                         }
-                        if (updateQuest || updateExplore)
+                        // 赛马结算
+                        if (hrPoints.TryGetValue(user.Id, out int points))
+                        {
+                            if (pc.TryGetValue("horseRacingPoints", out object? value2) && int.TryParse(value2.ToString(), out int userPoints))
+                            {
+                                pc.Add("horseRacingPoints", userPoints + points);
+                            }
+                            else
+                            {
+                                pc.Add("horseRacingPoints", points);
+                            }
+                            updateHorseRacing = true;
+                        }
+                        if (updateQuest || updateExplore || updateHorseRacing)
                         {
                             SetUserConfigButNotRelease(user.Id, pc, user);
                         }

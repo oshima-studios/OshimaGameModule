@@ -94,6 +94,9 @@ namespace Oshima.FunGame.WebAPI.Models
         [JsonPropertyName("isgroup")]
         public bool IsGroup { get; set; } = false;
 
+        [JsonPropertyName("group_openid")]
+        public string GroupOpenId { get; set; } = "";
+
         [JsonPropertyName("detail")]
         public string Detail { get; set; } = "";
 
