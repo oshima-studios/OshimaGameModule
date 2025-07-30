@@ -4324,9 +4324,9 @@ namespace Oshima.FunGame.OshimaServers.Service
         public static string GetMarketInfo(Market market, User? user = null, int page = 1, bool simply = false, bool showListed = true)
         {
             if (page <= 0) page = 1;
-            int maxPage = market.MarketItems.Values.MaxPage(10);
+            int maxPage = market.MarketItems.Values.MaxPage(8);
             if (page > maxPage) page = maxPage;
-            IEnumerable<MarketItem> marketItems = market.MarketItems.Values.GetPage(page, 10);
+            IEnumerable<MarketItem> marketItems = market.MarketItems.Values.GetPage(page, 8);
 
             StringBuilder builder = new();
 
@@ -4391,7 +4391,7 @@ namespace Oshima.FunGame.OshimaServers.Service
             {
                 foreach (MarketItem marketItem in MarketItemsValid)
                 {
-                    builder.AppendLine(GetMarketItemInfo(marketItem, true, user ?? General.UnknownUserInstance));
+                    builder.AppendLine(GetMarketItemInfo(marketItem, simply, user ?? General.UnknownUserInstance));
                 }
                 builder.AppendLine("提示：使用【市场查看+序号】查看商品详细信息，使用【市场购买+序号】购买商品。");
             }

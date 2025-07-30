@@ -320,7 +320,8 @@ namespace Oshima.FunGame.WebAPI.Services
                         FunGameSimulation = true;
                         List<string> msgs = await Controller.GetTest(false, maxRespawnTimesMix: 0);
                         List<string> real = [];
-                        int remain = msgs.Count > 7 ? 7 : msgs.Count - 1;
+                        int perMergeLength = msgs.Count > 7 ? 7 : msgs.Count - 1;
+                        int remain = perMergeLength;
                         string merge = "";
                         for (int i = 0; i < msgs.Count - 2; i++)
                         {
@@ -330,11 +331,11 @@ namespace Oshima.FunGame.WebAPI.Services
                             {
                                 real.Add(merge);
                                 merge = "";
-                                if ((msgs.Count - i - 3) < 7)
+                                if ((msgs.Count - i - 3) < perMergeLength)
                                 {
                                     remain = msgs.Count - i - 3;
                                 }
-                                else remain = 7;
+                                else remain = perMergeLength;
                             }
                         }
                         if (msgs.Count > 2)
@@ -375,7 +376,8 @@ namespace Oshima.FunGame.WebAPI.Services
                         FunGameSimulation = true;
                         List<string> msgs = await Controller.GetTest(false, maxRespawnTimesMix: maxRespawnTimesMix);
                         List<string> real = [];
-                        int remain = msgs.Count > 7 ? 7 : msgs.Count - 1;
+                        int perMergeLength = msgs.Count > 7 ? 7 : msgs.Count - 1;
+                        int remain = perMergeLength;
                         string merge = "";
                         for (int i = 0; i < msgs.Count - 2; i++)
                         {
@@ -385,11 +387,11 @@ namespace Oshima.FunGame.WebAPI.Services
                             {
                                 real.Add(merge);
                                 merge = "";
-                                if ((msgs.Count - i - 3) < 7)
+                                if ((msgs.Count - i - 3) < perMergeLength)
                                 {
                                     remain = msgs.Count - i - 3;
                                 }
-                                else remain = 7;
+                                else remain = perMergeLength;
                             }
                         }
                         if (msgs.Count > 2)
@@ -435,7 +437,8 @@ namespace Oshima.FunGame.WebAPI.Services
                         {
                             real.Add(msgs[0]);
                         }
-                        int remain = msgs.Count > 7 ? 7 : msgs.Count - 1;
+                        int perMergeLength = msgs.Count > 7 ? 7 : msgs.Count - 1;
+                        int remain = perMergeLength;
                         string merge = "";
                         for (int i = 1; i < msgs.Count - 2; i++)
                         {
@@ -445,11 +448,11 @@ namespace Oshima.FunGame.WebAPI.Services
                             {
                                 real.Add(merge);
                                 merge = "";
-                                if ((msgs.Count - i - 3) < 7)
+                                if ((msgs.Count - i - 3) < perMergeLength)
                                 {
                                     remain = msgs.Count - i - 3;
                                 }
-                                else remain = 7;
+                                else remain = perMergeLength;
                             }
                         }
                         if (msgs.Count > 2)
@@ -1693,7 +1696,8 @@ namespace Oshima.FunGame.WebAPI.Services
                     {
                         if (msgs.Count < 20)
                         {
-                            int remain = msgs.Count > 7 ? 7 : msgs.Count - 1;
+                            int perMergeLength = msgs.Count > 7 ? 7 : msgs.Count - 1;
+                            int remain = perMergeLength;
                             string merge = "";
                             for (int i = 0; i < msgs.Count - 1; i++)
                             {
@@ -1703,11 +1707,11 @@ namespace Oshima.FunGame.WebAPI.Services
                                 {
                                     real.Add(merge);
                                     merge = "";
-                                    if ((msgs.Count - i - 2) < 7)
+                                    if ((msgs.Count - i - 2) < perMergeLength)
                                     {
                                         remain = msgs.Count - i - 2;
                                     }
-                                    else remain = 7;
+                                    else remain = perMergeLength;
                                 }
                             }
                         }
@@ -1750,7 +1754,8 @@ namespace Oshima.FunGame.WebAPI.Services
                     List<string> real = [];
                     if (msgs.Count > 2)
                     {
-                        int remain = msgs.Count > 7 ? 7 : msgs.Count - 1;
+                        int perMergeLength = msgs.Count > 7 ? 7 : msgs.Count - 1;
+                        int remain = perMergeLength;
                         string merge = "";
                         for (int i = 0; i < msgs.Count - 1; i++)
                         {
@@ -1760,11 +1765,11 @@ namespace Oshima.FunGame.WebAPI.Services
                             {
                                 real.Add(merge);
                                 merge = "";
-                                if ((msgs.Count - i - 3) < 7)
+                                if ((msgs.Count - i - 3) < perMergeLength)
                                 {
                                     remain = msgs.Count - i - 3;
                                 }
-                                else remain = 7;
+                                else remain = perMergeLength;
                             }
                         }
                         real.Add(msgs[^1]);
@@ -1803,7 +1808,8 @@ namespace Oshima.FunGame.WebAPI.Services
                     {
                         if (msgs.Count < 20)
                         {
-                            int remain = msgs.Count > 7 ? 7 : msgs.Count - 1;
+                            int perMergeLength = msgs.Count > 7 ? 7 : msgs.Count - 1;
+                            int remain = perMergeLength;
                             string merge = "";
                             for (int i = 0; i < msgs.Count - 1; i++)
                             {
@@ -1813,11 +1819,11 @@ namespace Oshima.FunGame.WebAPI.Services
                                 {
                                     real.Add(merge);
                                     merge = "";
-                                    if ((msgs.Count - i - 3) < 7)
+                                    if ((msgs.Count - i - 3) < perMergeLength)
                                     {
                                         remain = msgs.Count - i - 3;
                                     }
-                                    else remain = 7;
+                                    else remain = perMergeLength;
                                 }
                             }
                         }
@@ -1876,7 +1882,8 @@ namespace Oshima.FunGame.WebAPI.Services
                         {
                             if (msgs.Count < 20)
                             {
-                                int remain = msgs.Count > 7 ? 7 : msgs.Count - 1;
+                                int perMergeLength = msgs.Count > 7 ? 7 : msgs.Count - 1;
+                                int remain = perMergeLength;
                                 string merge = "";
                                 for (int i = 0; i < msgs.Count - 1; i++)
                                 {
@@ -1886,11 +1893,11 @@ namespace Oshima.FunGame.WebAPI.Services
                                     {
                                         real.Add(merge);
                                         merge = "";
-                                        if ((msgs.Count - i - 3) < 7)
+                                        if ((msgs.Count - i - 3) < perMergeLength)
                                         {
                                             remain = msgs.Count - i - 3;
                                         }
-                                        else remain = 7;
+                                        else remain = perMergeLength;
                                     }
                                 }
                             }
@@ -1935,7 +1942,8 @@ namespace Oshima.FunGame.WebAPI.Services
                         {
                             if (msgs.Count < 20)
                             {
-                                int remain = msgs.Count > 7 ? 7 : msgs.Count - 1;
+                                int perMergeLength = msgs.Count > 7 ? 7 : msgs.Count - 1;
+                                int remain = perMergeLength;
                                 string merge = "";
                                 for (int i = 0; i < msgs.Count - 1; i++)
                                 {
@@ -1945,11 +1953,11 @@ namespace Oshima.FunGame.WebAPI.Services
                                     {
                                         real.Add(merge);
                                         merge = "";
-                                        if ((msgs.Count - i - 3) < 7)
+                                        if ((msgs.Count - i - 3) < perMergeLength)
                                         {
                                             remain = msgs.Count - i - 3;
                                         }
-                                        else remain = 7;
+                                        else remain = perMergeLength;
                                     }
                                 }
                             }
@@ -3415,7 +3423,7 @@ namespace Oshima.FunGame.WebAPI.Services
                     return result;
                 }
 
-                if (e.Detail == "开始游戏")
+                if (e.Detail == "开始游戏" || e.Detail == "开始赛马")
                 {
                     string groupId = "";
                     if (e.IsGroup && e is GroupAtMessage groupAtMessage && groupAtMessage.GroupOpenId != "")
@@ -3428,6 +3436,15 @@ namespace Oshima.FunGame.WebAPI.Services
                     }
                     if (groupId != "")
                     {
+                        if (e.Detail == "开始赛马" && FunGameConstant.UsersInRoom.TryGetValue(uid, out Room? value) && value != null && value.Name == "赛马房间")
+                        {
+                            // do nothing
+                        }
+                        else
+                        {
+                            await SendAsync(e, "房间", "你不在房间中或者所在的房间不是赛马房间，请使用【开始游戏】指令。注意：只有房主才可以开始游戏。");
+                            return result;
+                        }
                         (Room room, List<string> msgs) = await Controller.RunGame(uid);
                         List<string> real = [];
                         if (msgs.Count > 1)
@@ -3436,24 +3453,24 @@ namespace Oshima.FunGame.WebAPI.Services
                             {
                                 msgs = [msgs[0], .. msgs[^20..]];
                             }
-                            int remain = msgs.Count > 7 ? 7 : msgs.Count - 1;
+                            int perMergeLength = msgs.Count > 5 ? 5 : msgs.Count;
+                            int remain = perMergeLength;
                             string merge = "";
-                            for (int i = 0; i < msgs.Count - 1; i++)
+                            for (int i = 0; i < msgs.Count; i++)
                             {
                                 remain--;
                                 merge += msgs[i] + "\r\n";
-                                if (remain == 0)
+                                if (remain == 0 || i == msgs.Count - 1)
                                 {
                                     real.Add(merge);
                                     merge = "";
-                                    if ((msgs.Count - i - 1) < 7)
+                                    if (msgs.Count < perMergeLength)
                                     {
-                                        remain = msgs.Count - i - 1;
+                                        remain = msgs.Count;
                                     }
-                                    else remain = 7;
+                                    else remain = perMergeLength;
                                 }
                             }
-                            real.Add(msgs[^1]);
                         }
                         else
                         {

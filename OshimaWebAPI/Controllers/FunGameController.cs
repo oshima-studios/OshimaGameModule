@@ -7074,10 +7074,15 @@ namespace Oshima.FunGame.WebAPI.Controllers
                     MarketItem[] marketItems = [.. market.MarketItems.Values.Where(m => m.User == userid)];
                     if (marketItems.Length > 0)
                     {
+                        if (page <= 0) page = 1;
+                        int maxPage = market.MarketItems.Values.MaxPage(8);
+                        if (page > maxPage) page = maxPage;
+                        marketItems = [.. market.MarketItems.Values.GetPage(page, 8)];
                         foreach (MarketItem marketItem in marketItems)
                         {
                             msg += FunGameService.GetMarketItemInfo(marketItem, true, user) + "\r\n";
                         }
+                        msg += $"页数：{page} / {maxPage}，使用【市场+页码】快速跳转指定页面。";
                     }
                     else msg += "你还没有上架过任何物品。";
 

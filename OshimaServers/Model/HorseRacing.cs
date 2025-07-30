@@ -14,7 +14,7 @@ namespace Oshima.FunGame.OshimaServers.Model
             Dictionary<long, int> userPoints = [];
 
             StringBuilder builder = new();
-            builder.AppendLine("--- 参赛选手 ---");
+            builder.AppendLine("☆--- 参赛选手 ---☆");
 
             List<Horse> horses = [];
             foreach (User user in room.UserAndIsReady.Keys)
@@ -33,14 +33,14 @@ namespace Oshima.FunGame.OshimaServers.Model
                 }
             }
 
-            builder.AppendLine("\r\n--- 比赛开始！ ---");
+            builder.AppendLine("\r\n☆--- 比赛开始！ ---☆");
 
             int maxLength = _random.Next(8, 16);
             builder.AppendLine($"本次抽取赛道长度：{maxLength} 步！");
 
             for (int turn = 1; turn <= MaxTurns; turn++)
             {
-                builder.AppendLine($"\r\n--- 第 {turn} 回合 ---");
+                builder.AppendLine($"\r\n\r\n☆--- 第 {turn} 回合 ---☆");
                 bool raceFinished = false;
                 Dictionary<Horse, int> turnSteps = [];
                 Dictionary<Horse, Dictionary<HorseSkill, Horse>> turnSkills = [];
@@ -161,19 +161,19 @@ namespace Oshima.FunGame.OshimaServers.Model
 
                     if (horse.CurrentPosition >= maxLength)
                     {
-                        builder.AppendLine($"\r\n🎯 恭喜 [ {horse}({horse.HP}) ] 冲过终点线！它赢得了比赛！");
+                        builder.AppendLine($"\r\n🎯 恭喜 [ {horse}({horse.HP}) ] 冲过终点线！它赢得了比赛！\r\n");
                         raceFinished = true;
                         break;
                     }
                 }
 
-                builder.AppendLine("\r\n--- 赛道状况 ---");
+                builder.AppendLine("☆--- 赛道状况 ---☆");
                 for (int i = 0; i < horses.Count; i++)
                 {
                     builder.AppendLine(GenerateTrackString(horses[i], i + 1, maxLength, turnSteps));
                 }
 
-                msgs.Add(builder.ToString().Trim());
+                msgs.Add($"{builder.ToString().Trim()}\r\n");
                 builder.Clear();
 
                 if (raceFinished)
@@ -183,7 +183,7 @@ namespace Oshima.FunGame.OshimaServers.Model
             }
 
             builder.Clear();
-            builder.AppendLine("\r\n--- 比赛结果 ---");
+            builder.AppendLine("☆--- 比赛结果 ---☆");
             List<Horse> finalRanking = [.. horses.OrderByDescending(h => h.CurrentPosition)];
             int points = 10;
             for (int i = 0; i < finalRanking.Count; i++)
@@ -194,8 +194,8 @@ namespace Oshima.FunGame.OshimaServers.Model
                 if (points == 0) points = 1;
             }
 
-            builder.AppendLine("\r\n--- 比赛结束，奖励将在稍后发放！ ---");
-            msgs.Add(builder.ToString().Trim());
+            builder.AppendLine("\r\n比赛结束，奖励将在稍后发放！");
+            msgs.Add($"\r\n{builder.ToString().Trim()}");
 
             return userPoints;
         }
