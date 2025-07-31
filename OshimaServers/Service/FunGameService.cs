@@ -1288,7 +1288,7 @@ namespace Oshima.FunGame.OshimaServers.Service
                     for (int i = 0; i < cardBox.Count; i++)
                     {
                         Item newItem = GenerateMagicCard(item.QualityType);
-                        AddItemToUserInventory(user, newItem, false);
+                        AddItemToUserInventory(user, newItem, false, true);
                         cards.Add($"[{ItemSet.GetQualityTypeName(item.QualityType)}|魔法卡] {newItem.Name}\r\n{newItem.ToStringInventory(false)}");
                     }
                     msg = "打开礼包成功！获得了以下物品：\r\n" + string.Join("\r\n", cards);
@@ -1564,7 +1564,7 @@ namespace Oshima.FunGame.OshimaServers.Service
             }
         }
 
-        private static void EnhanceBoss(Character boss, Item[] weapons, Item[] armors, Item[] shoes, Item[] accessory, Item[] consumables,
+        public static void EnhanceBoss(Character boss, Item[] weapons, Item[] armors, Item[] shoes, Item[] accessory, Item[] consumables,
             int cLevel, int sLevel, int mLevel, int naLevel, bool enhanceHPMP = true, bool enhanceCRCRD = true, bool isUnit = false)
         {
             boss.Level = cLevel;
@@ -4570,9 +4570,19 @@ namespace Oshima.FunGame.OshimaServers.Service
                         {
                             FunGameConstant.UserLastVisitStore.Remove(user.Id);
                         }
+                        // 排行榜更新
+                        FunGameConstant.UserCreditsRanking[user.Id] = user.Inventory.Credits;
+                        FunGameConstant.UserMaterialsRanking[user.Id] = user.Inventory.Materials;
+                        FunGameConstant.UserEXPRanking[user.Id] = user.Inventory.Characters.Select(c => FunGameConstant.PrecomputeTotalExperience[c.Level] + c.EXP).Sum();
+                        FunGameConstant.UserSkillRanking[user.Id] = user.Inventory.Characters.Select(c => (c.NormalAttack.Level - 1) * 50000 + c.Skills.Select(s => s.Level * 40000).Sum()).Sum();
+                        if (pc.TryGetValue("horseRacingPoints", out object? value3) && int.TryParse(value3.ToString(), out int horseRacingPoints))
+                        {
+                            FunGameConstant.UserHorseRacingRanking[user.Id] = horseRacingPoints;
+                        }
                     }
                     ReleaseUserSemaphoreSlim(fileName);
                 }
+                FunGameConstant.RankingUpdateTime = DateTime.Now;
             }
         }
 

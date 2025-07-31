@@ -10,6 +10,7 @@ namespace Oshima.FunGame.OshimaServers.Service
     {
         public static SemaphoreSlim RoomSemaphoreSlim { get; } = new(1, 1);
         public static SemaphoreSlim HorseRacingSettleSemaphoreSlim { get; } = new(1, 1);
+        public static SemaphoreSlim CooperativeSettleSemaphoreSlim { get; } = new(1, 1);
         public static Dictionary<string, bool> GroupsHasHorseRacing { get; } = [];
 
         public static void GetRoomSemaphoreSlim()
@@ -38,6 +39,19 @@ namespace Oshima.FunGame.OshimaServers.Service
             }
         }
 
+        public static void GetCooperativeSettleSemaphoreSlim()
+        {
+            CooperativeSettleSemaphoreSlim.Wait(FunGameConstant.SemaphoreSlimTimeout);
+        }
+
+        public static void ReleaseCooperativeSettleSemaphoreSlim()
+        {
+            if (CooperativeSettleSemaphoreSlim.CurrentCount == 0)
+            {
+                CooperativeSettleSemaphoreSlim.Release();
+            }
+        }
+
         public static Room CreateRoom(User user, string roomType, string password, string groupId, out string msg)
         {
             try
@@ -57,12 +71,13 @@ namespace Oshima.FunGame.OshimaServers.Service
                         case "horseracing":
                             if (GroupsHasHorseRacing.TryGetValue(groupId, out bool has) && has)
                             {
-                                msg = "本群已经存在一个赛马房间！空闲房间会在 6 分钟后自动解散，请先等待该房间完成比赛或自动解散。";
+                                msg = $"本群已经存在一个赛马房间！空闲房间会在 {FunGameConstant.RoomExpireTime} 分钟后自动解散，请先等待该房间完成比赛或自动解散。";
                             }
                             else
                             {
                                 room.RoomType = RoomType.Custom;
                                 room.Name = "赛马房间";
+                                room.GameModule = "horseracing";
                                 room.GameMap = groupId;
                                 room.MaxUsers = 8;
                             }
@@ -70,16 +85,22 @@ namespace Oshima.FunGame.OshimaServers.Service
                         case "mix":
                             room.RoomType = RoomType.Mix;
                             room.Name = "混战房间";
+                            room.GameModule = "mix";
+                            room.GameMap = groupId;
                             room.MaxUsers = 10;
                             break;
                         case "team":
                             room.RoomType = RoomType.Team;
                             room.Name = "团队死斗房间";
+                            room.GameModule = "team";
+                            room.GameMap = groupId;
                             room.MaxUsers = 8;
                             break;
                         case "cooperative":
                             room.RoomType = RoomType.Custom;
                             room.Name = "共斗房间";
+                            room.GameModule = "cooperative";
+                            room.GameMap = groupId;
                             room.MaxUsers = 4;
                             break;
                         default:
@@ -98,14 +119,14 @@ namespace Oshima.FunGame.OshimaServers.Service
                         }
                         room.Roomid = Verification.CreateVerifyCode(VerifyCodeType.MixVerifyCode, 7);
                     }
-                    msg = $"房间创建成功，房间号为：{room.Roomid}\r\n注意：房间若在 6 分钟后仍处于空闲状态，将自动解散。";
+                    msg = $"房间创建成功，房间号为：{room.Roomid}\r\n注意：房间若在 {FunGameConstant.RoomExpireTime} 分钟后仍处于空闲状态，将自动解散。";
                     room.RoomMaster = user;
                     room.CreateTime = DateTime.Now;
                 }
                 if (room.Roomid != "-1")
                 {
                     FunGameConstant.Rooms[room.Roomid] = room;
-                    if (room.Name == "赛马房间")
+                    if (room.GameModule == "horseracing")
                     {
                         GroupsHasHorseRacing[room.GameMap] = true;
                     }
@@ -203,7 +224,7 @@ namespace Oshima.FunGame.OshimaServers.Service
                         {
                             FunGameConstant.Rooms.Remove(room.Roomid);
                             msg += "，该房间人数为零，已解散该房间。";
-                            if (room.Name == "赛马房间")
+                            if (room.GameModule == "horseracing")
                             {
                                 GroupsHasHorseRacing[room.GameMap] = false;
                             }
@@ -238,6 +259,34 @@ namespace Oshima.FunGame.OshimaServers.Service
                 ReleaseRoomSemaphoreSlim();
             }
         }
+        
+        public static string RoomInfo(User user)
+        {
+            string msg = "";
+            if (FunGameConstant.UsersInRoom.TryGetValue(user.Id, out Room? room) && room != null)
+            {
+                string username = "";
+                if (FunGameConstant.UserIdAndUsername.TryGetValue(room.RoomMaster.Id, out User? value) && value != null)
+                {
+                    username = value.Username;
+                }
+                List<string> users = [];
+                foreach (long uid in room.UserAndIsReady.Keys.Select(u => u.Id))
+                {
+                    if (FunGameConstant.UserIdAndUsername.TryGetValue(uid, out value) && value != null)
+                    {
+                        users.Add(value.Username);
+                    }
+                }
+                msg += $"☆--- [ {room.Roomid} ] ---☆\r\n房间类型：{room.Name}\r\n创建时间：{room.CreateTime.ToString(General.GeneralDateTimeFormatChinese)}\r\n房主：{username}\r\n" +
+                    $"人数：{room.UserAndIsReady.Count} / {room.MaxUsers}\r\n在线玩家：{string.Join("、", users)}\r\n该房间将于 {room.CreateTime.AddMinutes(FunGameConstant.RoomExpireTime).ToString(General.GeneralDateTimeFormatChinese)} 后自动解散，请尽快开局";
+            }
+            else
+            {
+                msg = "你当前不在任何房间中。";
+            }
+            return msg;
+        }
 
         public static void RoomsAutoDisband()
         {
@@ -247,14 +296,14 @@ namespace Oshima.FunGame.OshimaServers.Service
                 Room[] rooms = [.. FunGameConstant.Rooms.Values];
                 foreach (Room room in rooms)
                 {
-                    if (room.RoomState == RoomState.Created && room.CreateTime.AddMinutes(6) < DateTime.Now)
+                    if (room.RoomState == RoomState.Created && room.CreateTime.AddMinutes(FunGameConstant.RoomExpireTime) < DateTime.Now)
                     {
                         foreach (User user in room.UserAndIsReady.Keys)
                         {
                             FunGameConstant.UsersInRoom.Remove(user.Id);
                         }
                         FunGameConstant.Rooms.Remove(room.Roomid);
-                        if (room.Name == "赛马房间")
+                        if (room.GameModule == "horseracing")
                         {
                             GroupsHasHorseRacing[room.GameMap] = false;
                         }
@@ -308,7 +357,7 @@ namespace Oshima.FunGame.OshimaServers.Service
                             FunGameConstant.UsersInRoom.Remove(userTemp.Id);
                         }
                         FunGameConstant.Rooms.Remove(room.Roomid);
-                        if (room.Name == "赛马房间")
+                        if (room.GameModule == "horseracing")
                         {
                             GroupsHasHorseRacing[room.GameMap] = false;
                         }
@@ -320,9 +369,9 @@ namespace Oshima.FunGame.OshimaServers.Service
                     else
                     {
                         room.RoomState = RoomState.Gaming;
-                        switch (room.Name)
+                        switch (room.GameModule)
                         {
-                            case "赛马房间":
+                            case "horseracing":
                                 try
                                 {
                                     GetHorseRacingSettleSemaphoreSlim();
@@ -353,6 +402,22 @@ namespace Oshima.FunGame.OshimaServers.Service
                                 {
                                     ReleaseHorseRacingSettleSemaphoreSlim();
                                 }
+                                break;
+                            case "cooperative":
+                                try
+                                {
+                                    GetCooperativeSettleSemaphoreSlim();
+                                    await Cooperative.RunCooperativeGame(msgs, room);
+                                }
+                                catch (Exception e2)
+                                {
+                                    msgs.Add("Error: " + e2.Message);
+                                }
+                                finally
+                                {
+                                    ReleaseCooperativeSettleSemaphoreSlim();
+                                }
+                                room.CreateTime = DateTime.Now;
                                 break;
                             default:
                                 msgs.Add("游戏已开始！");

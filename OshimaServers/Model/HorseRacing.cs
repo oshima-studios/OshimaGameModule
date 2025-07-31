@@ -4,7 +4,7 @@ using Oshima.FunGame.OshimaModules.Models;
 
 namespace Oshima.FunGame.OshimaServers.Model
 {
-    public static class HorseRacing
+    public class HorseRacing
     {
         private const int MaxTurns = 100;
         private static readonly Random _random = new();
@@ -26,10 +26,10 @@ namespace Oshima.FunGame.OshimaServers.Model
                 Horse horse = new(user);
                 AssignRandomSkills(horse);
                 horses.Add(horse);
-                builder.AppendLine($"[ {horse}({horse.HP}) ] 已准备就绪！初始步数: {horse.Step}, 生命值: {horse.HP}, 每回合恢复生命值: {horse.HPRecovery}");
+                builder.AppendLine($"[ {horse} ] 已准备就绪！初始步数: {horse.Step}, 生命值: {horse.HP}, 每回合恢复生命值: {horse.HPRecovery}");
                 if (horse.Skills.Count != 0)
                 {
-                    builder.AppendLine($"[ {horse}({horse.HP}) ] 拥有技能: {string.Join("，", horse.Skills.Select(s => $"{s.Name}（持续 {s.Duration} 回合）"))}");
+                    builder.AppendLine($"[ {horse} ] 拥有技能: {string.Join("，", horse.Skills.Select(s => $"{s.Name}（持续 {s.Duration} 回合）"))}");
                 }
             }
 
@@ -49,6 +49,7 @@ namespace Oshima.FunGame.OshimaServers.Model
                 foreach (Horse horse in horses)
                 {
                     turnSkills.TryAdd(horse, []);
+                    if (horse.HP == 0) continue;
                     // 触发永久技能
                     foreach (HorseSkill skill in horse.Skills)
                     {
@@ -101,7 +102,8 @@ namespace Oshima.FunGame.OshimaServers.Model
                         turnSteps[horse] += skill.ChangePosition;
 
                         Horse? source = skill.Horse;
-                        if (source != null && source != horse) turnEvents.Add($"💥 受到了 [ {skill.Name}（来自：{source}）] 的影响，{skill}");
+                        if (source != null && source != horse) turnEvents.Add($"💥 受到了 [ {skill.Name}（来自：{source}）] 的影响，{skill}（剩余 {activeEffect.RemainDuration} 回合）");
+                        else turnEvents.Add($"💥 受到了 [ {skill.Name} ] 的影响，{skill}（剩余 {activeEffect.RemainDuration} 回合）");
 
                         activeEffect.RemainDuration--;
                         if (activeEffect.RemainDuration <= 0)
@@ -116,7 +118,7 @@ namespace Oshima.FunGame.OshimaServers.Model
                     }
 
                     // 随机事件
-                    if (_random.NextDouble() < 0.5)
+                    if (_random.NextDouble() < 0.3)
                     {
                         HorseSkill eventSkill = GenerateRandomEventSkill();
                         // 随机事件技能也可能持续多回合
@@ -140,11 +142,16 @@ namespace Oshima.FunGame.OshimaServers.Model
                     horse.HP += effectiveHPRecovery;
                     if (hp != horse.HP)
                     {
-                        builder.AppendLine($"[ {horse}({horse.HP}) ] ❤️ 生命值恢复至 {horse.HP} 点（+{effectiveHPRecovery}）。");
+                        turnEvents.Add($"❤️ 生命值恢复至 {horse.HP} 点（+{effectiveHPRecovery}）。");
                     }
 
                     if (horse.HP <= 0)
                     {
+                        turnSteps[horse] = 0;
+                        if (turnEvents.Count != 0)
+                        {
+                            builder.AppendLine($"[ {horse} ] {string.Join("；", turnEvents)}");
+                        }
                         continue;
                     }
 
@@ -153,15 +160,15 @@ namespace Oshima.FunGame.OshimaServers.Model
                     horse.CurrentPosition += effectiveStep; // 移动
 
                     turnSteps[horse] += effectiveStep;
-                    //if (effectiveStep > 1) builder.AppendLine($"[ {horse}({horse.HP}) ] 移动了 {effectiveStep} 步！");
+                    //if (effectiveStep > 1) builder.AppendLine($"[ {horse} ] 移动了 {effectiveStep} 步！");
                     if (turnEvents.Count != 0)
                     {
-                        builder.AppendLine($"[ {horse}({horse.HP}) ] {string.Join("；", turnEvents)}");
+                        builder.AppendLine($"[ {horse} ] {string.Join("；", turnEvents)}");
                     }
 
                     if (horse.CurrentPosition >= maxLength)
                     {
-                        builder.AppendLine($"\r\n🎯 恭喜 [ {horse}({horse.HP}) ] 冲过终点线！它赢得了比赛！\r\n");
+                        builder.AppendLine($"\r\n🎯 恭喜 [ {horse} ] 冲过终点线！它赢得了比赛！\r\n");
                         raceFinished = true;
                         break;
                     }
@@ -185,19 +192,56 @@ namespace Oshima.FunGame.OshimaServers.Model
             builder.Clear();
             builder.AppendLine("☆--- 比赛结果 ---☆");
             List<Horse> finalRanking = [.. horses.OrderByDescending(h => h.CurrentPosition)];
-            int points = 10;
+            int rank = 1;
+            int horsesAtCurrentRankCount = 0; // 当前名次有多少匹马
+            int lastPosition = -1; // 上一匹马的位置
             for (int i = 0; i < finalRanking.Count; i++)
             {
-                userPoints[finalRanking[i].Id] = points;
-                builder.AppendLine($"第 {i + 1} 名：{finalRanking[i].Name}（获得 {points} 点赛马积分）");
-                points = (int)(points * 0.8);
-                if (points == 0) points = 1;
+                Horse currentHorse = finalRanking[i];
+
+                if (i == 0)
+                {
+                    rank = 1;
+                    lastPosition = currentHorse.CurrentPosition;
+                    horsesAtCurrentRankCount = 1;
+                }
+                else if (currentHorse.CurrentPosition == lastPosition) // 与前一匹马平局
+                {
+                    horsesAtCurrentRankCount++;
+                }
+                else
+                {
+                    // 新的名次是当前名次加上之前平局的马匹数量
+                    rank += horsesAtCurrentRankCount;
+                    lastPosition = currentHorse.CurrentPosition;
+                    horsesAtCurrentRankCount = 1;
+                }
+
+                // 根据实际名次计算积分
+                int points = CalculatePointsForRank(rank);
+
+                userPoints[currentHorse.Id] = points;
+                builder.AppendLine($"{(horsesAtCurrentRankCount > 1 ? "并列" : "")}第 {rank} 名：{currentHorse.Name}（获得 {points} 点赛马积分）");
             }
 
             builder.AppendLine("\r\n比赛结束，奖励将在稍后发放！");
             msgs.Add($"\r\n{builder.ToString().Trim()}");
 
             return userPoints;
+        }
+
+        private static int CalculatePointsForRank(int rank)
+        {
+            if (rank <= 0) return 0;
+            if (rank == 1) return 10;
+
+            int points = 10;
+            for (int r = 2; r <= rank; r++)
+            {
+                points = (int)(points * 0.8);
+                if (points == 0) points = 1;
+            }
+            return points;
         }
 
         private static void AssignRandomSkills(Horse horse)
@@ -277,7 +321,7 @@ namespace Oshima.FunGame.OshimaServers.Model
             int dashesAfterHorse = Math.Max(0, maxLength - horse.CurrentPosition);
             builder.Append(new string('=', dashesAfterHorse));
 
-            string horseMarker = $"<{horse}>";
+            string horseMarker = $"<{horse}({horse.HP})>";
             if (horse.ActiveEffects.Count > 0 || horse.HP == 0)
             {
                 if (horse.HP == 0)
@@ -293,7 +337,7 @@ namespace Oshima.FunGame.OshimaServers.Model
             builder.Append(horseMarker);
             builder.Append(new string('=', dashesBeforeHorse));
 
-            int turnStep = 1;
+            int turnStep = 0;
             if (turnSteps.TryGetValue(horse, out int step))
             {
                 turnStep = step;

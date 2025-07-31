@@ -18,6 +18,7 @@ namespace Oshima.FunGame.OshimaModules.Models
         public const int DrawCardReduce = 1000;
         public const int DrawCardReduce_Material = 5;
         public const int SemaphoreSlimTimeout = 5000;
+        public const int RoomExpireTime = 10;
         public static List<Character> Characters { get; } = [];
         public static List<Skill> Skills { get; } = [];
         public static List<Skill> PassiveSkills { get; } = [];
@@ -40,6 +41,12 @@ namespace Oshima.FunGame.OshimaModules.Models
         public static Dictionary<long, Room> UsersInRoom { get; set; } = [];
         public static ItemType[] ItemCanUsed => [ItemType.Consumable, ItemType.MagicCard, ItemType.SpecialItem, ItemType.GiftBox, ItemType.Others];
         public static ItemType[] ItemCanNotDrawCard => [ItemType.Collectible, ItemType.QuestItem, ItemType.GiftBox, ItemType.Others];
+        public static Dictionary<long, int> UserHorseRacingRanking { get; } = [];
+        public static Dictionary<long, double> UserCreditsRanking { get; } = [];
+        public static Dictionary<long, double> UserMaterialsRanking { get; } = [];
+        public static Dictionary<long, double> UserEXPRanking { get; } = [];
+        public static Dictionary<long, double> UserSkillRanking { get; } = [];
+        public static DateTime RankingUpdateTime { get; set; } = DateTime.Now;
         public static char[] SplitChars => [',', ' ', '，', '；', ';'];
 
         public static Dictionary<int, Dictionary<string, int>> LevelBreakNeedyList { get; } = new()

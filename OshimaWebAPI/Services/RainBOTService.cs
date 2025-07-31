@@ -3314,6 +3314,84 @@ namespace Oshima.FunGame.WebAPI.Services
                     return result;
                 }
                 
+                if (e.Detail == "创建共斗")
+                {
+                    string groupId = "";
+                    if (e.IsGroup && e is GroupAtMessage groupAtMessage && groupAtMessage.GroupOpenId != "")
+                    {
+                        groupId = groupAtMessage.GroupOpenId;
+                    }
+                    else if (e.IsGroup && e is ThirdPartyMessage thirdPartyMessage && thirdPartyMessage.GroupOpenId != "")
+                    {
+                        groupId = thirdPartyMessage.GroupOpenId;
+                    }
+                    if (groupId != "")
+                    {
+                        string msg = Controller.CreateRoom(uid, "cooperative", "", groupId);
+                        if (msg.Trim() != "")
+                        {
+                            await SendAsync(e, "房间", msg);
+                        }
+                    }
+                    else
+                    {
+                        await SendAsync(e, "房间", "请在群聊中进行多人游戏。");
+                    }
+                    return result;
+                }
+                
+                if (e.Detail == "创建混战")
+                {
+                    string groupId = "";
+                    if (e.IsGroup && e is GroupAtMessage groupAtMessage && groupAtMessage.GroupOpenId != "")
+                    {
+                        groupId = groupAtMessage.GroupOpenId;
+                    }
+                    else if (e.IsGroup && e is ThirdPartyMessage thirdPartyMessage && thirdPartyMessage.GroupOpenId != "")
+                    {
+                        groupId = thirdPartyMessage.GroupOpenId;
+                    }
+                    if (groupId != "")
+                    {
+                        string msg = Controller.CreateRoom(uid, "mix", "", groupId);
+                        if (msg.Trim() != "")
+                        {
+                            await SendAsync(e, "房间", msg);
+                        }
+                    }
+                    else
+                    {
+                        await SendAsync(e, "房间", "请在群聊中进行多人游戏。");
+                    }
+                    return result;
+                }
+                
+                if (e.Detail == "创建团战")
+                {
+                    string groupId = "";
+                    if (e.IsGroup && e is GroupAtMessage groupAtMessage && groupAtMessage.GroupOpenId != "")
+                    {
+                        groupId = groupAtMessage.GroupOpenId;
+                    }
+                    else if (e.IsGroup && e is ThirdPartyMessage thirdPartyMessage && thirdPartyMessage.GroupOpenId != "")
+                    {
+                        groupId = thirdPartyMessage.GroupOpenId;
+                    }
+                    if (groupId != "")
+                    {
+                        string msg = Controller.CreateRoom(uid, "team", "", groupId);
+                        if (msg.Trim() != "")
+                        {
+                            await SendAsync(e, "房间", msg);
+                        }
+                    }
+                    else
+                    {
+                        await SendAsync(e, "房间", "请在群聊中进行多人游戏。");
+                    }
+                    return result;
+                }
+                
                 if (e.Detail == "加入赛马")
                 {
                     string groupId = "";
@@ -3436,11 +3514,7 @@ namespace Oshima.FunGame.WebAPI.Services
                     }
                     if (groupId != "")
                     {
-                        if (e.Detail == "开始赛马" && FunGameConstant.UsersInRoom.TryGetValue(uid, out Room? value) && value != null && value.Name == "赛马房间")
-                        {
-                            // do nothing
-                        }
-                        else
+                        if (e.Detail == "开始赛马" && (!FunGameConstant.UsersInRoom.TryGetValue(uid, out Room? value) || value is null || value.Name != "赛马房间"))
                         {
                             await SendAsync(e, "房间", "你不在房间中或者所在的房间不是赛马房间，请使用【开始游戏】指令。注意：只有房主才可以开始游戏。");
                             return result;
@@ -3517,6 +3591,56 @@ namespace Oshima.FunGame.WebAPI.Services
                     else
                     {
                         await SendAsync(e, "房间", "请在群聊中进行多人游戏。");
+                    }
+                    return result;
+                }
+                
+                if (e.Detail == "房间信息")
+                {
+                    string msg = Controller.RoomInfo(uid);
+                    if (msg.Trim() != "")
+                    {
+                        await SendAsync(e, "房间", msg);
+                    }
+                    return result;
+                }
+                
+                if (e.Detail == "排行榜" || e.Detail == "养成排行榜")
+                {
+                    string msg = Controller.GetRanking(uid, 2);
+                    if (msg.Trim() != "")
+                    {
+                        await SendAsync(e, "排行榜", msg);
+                    }
+                    return result;
+                }
+                
+                if (e.Detail == $"{General.GameplayEquilibriumConstant.InGameCurrency}排行榜")
+                {
+                    string msg = Controller.GetRanking(uid, 0);
+                    if (msg.Trim() != "")
+                    {
+                        await SendAsync(e, "排行榜", msg);
+                    }
+                    return result;
+                }
+                
+                if (e.Detail == $"{General.GameplayEquilibriumConstant.InGameMaterial}排行榜")
+                {
+                    string msg = Controller.GetRanking(uid, 1);
+                    if (msg.Trim() != "")
+                    {
+                        await SendAsync(e, "排行榜", msg);
+                    }
+                    return result;
+                }
+                
+                if (e.Detail == $"赛马排行榜")
+                {
+                    string msg = Controller.GetRanking(uid, 3);
+                    if (msg.Trim() != "")
+                    {
+                        await SendAsync(e, "排行榜", msg);
                     }
                     return result;
                 }

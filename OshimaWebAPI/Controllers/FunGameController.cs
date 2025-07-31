@@ -4471,7 +4471,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
                 pc.Add("days", days + 1);
                 pc.Add("lastTime", newLastTime);
                 FunGameService.SetUserConfigAndReleaseSemaphoreSlim(userid, pc, user);
-                return msg + "\r\n>>> 请发送【帮助】来获取更多玩法指令！<<<";
+                return msg + "\r\n提示：发送【帮助】来获取更多玩法指令！";
             }
             else
             {
@@ -8108,6 +8108,43 @@ namespace Oshima.FunGame.WebAPI.Controllers
             }
         }
         
+        [HttpPost("roominfo")]
+        public string RoomInfo([FromQuery] long uid = -1)
+        {
+            try
+            {
+                PluginConfig pc = FunGameService.GetUserConfig(uid, out bool isTimeout);
+                if (isTimeout)
+                {
+                    return busy;
+                }
+
+                string msg = "";
+                if (pc.Count > 0)
+                {
+                    User user = FunGameService.GetUser(pc);
+
+                    msg = OnlineService.RoomInfo(user);
+
+                    FunGameService.SetUserConfigButNotRelease(uid, pc, user);
+                    return msg;
+                }
+                else
+                {
+                    return noSaved;
+                }
+            }
+            catch (Exception e)
+            {
+                Logger.LogError(e, "Error: {e}", e);
+                return busy;
+            }
+            finally
+            {
+                FunGameService.ReleaseUserSemaphoreSlim(uid);
+            }
+        }
+        
         [HttpPost("rungame")]
         public async Task<(Room, List<string>)> RunGame([FromQuery] long uid = -1)
         {
@@ -8124,10 +8161,10 @@ namespace Oshima.FunGame.WebAPI.Controllers
                 if (pc.Count > 0)
                 {
                     User user = FunGameService.GetUser(pc);
+                    FunGameService.SetUserConfigButNotRelease(uid, pc, user);
 
                     (room, msgs) = await OnlineService.RunGameAsync(user);
 
-                    FunGameService.SetUserConfigButNotRelease(uid, pc, user);
                     return (room, msgs);
                 }
                 else
@@ -8139,6 +8176,116 @@ namespace Oshima.FunGame.WebAPI.Controllers
             {
                 Logger.LogError(e, "Error: {e}", e);
                 return (room, [busy]);
+            }
+            finally
+            {
+                FunGameService.ReleaseUserSemaphoreSlim(uid);
+            }
+        }
+        
+        [HttpGet("getranking")]
+        public string GetRanking([FromQuery] long uid = -1, [FromQuery] int type = -1)
+        {
+            try
+            {
+                PluginConfig pc = FunGameService.GetUserConfig(uid, out bool isTimeout);
+                if (isTimeout)
+                {
+                    return busy;
+                }
+
+                string msg = "";
+                int currentTop = -1;
+                int showTop = 20;
+                if (pc.Count > 0)
+                {
+                    User user = FunGameService.GetUser(pc);
+
+                    msg = type switch
+                    {
+                        0 => $"【{General.GameplayEquilibriumConstant.InGameCurrency}排行榜】\r\n" +
+                                 $"数据每分钟更新一次，上次更新：{FunGameConstant.RankingUpdateTime.ToString(General.GeneralDateTimeFormatChinese)}\r\n" +
+                                 $"\r\n{(FunGameConstant.UserCreditsRanking.Count > 0 ? string.Join("\r\n", FunGameConstant.UserCreditsRanking.
+                                     OrderByDescending(kv => kv.Value).Take(showTop).Select((kv, index) =>
+                                 {
+                                     string username = "Unknown";
+                                     if (FunGameConstant.UserIdAndUsername.TryGetValue(kv.Key, out User? value) && value != null)
+                                     {
+                                         username = value.Username;
+                                     }
+                                     if (kv.Key == user.Id)
+                                     {
+                                         currentTop = index + 1;
+                                     }
+                                     return $"{index + 1}. UID：{kv.Key}，昵称：{username}，{General.GameplayEquilibriumConstant.InGameCurrency}：{kv.Value:0.##}";
+                                 })) : "暂无任何数据。")}\r\n\r\n仅显示前 {showTop} 位{(currentTop > 0 ? $"，你目前排在第 {currentTop} 位。" : "")}",
+                        1 => $"【{General.GameplayEquilibriumConstant.InGameMaterial}排行榜】\r\n" +
+                                $"数据每分钟更新一次，上次更新：{FunGameConstant.RankingUpdateTime.ToString(General.GeneralDateTimeFormatChinese)}\r\n" +
+                                $"\r\n{(FunGameConstant.UserMaterialsRanking.Count > 0 ? string.Join("\r\n", FunGameConstant.UserMaterialsRanking.
+                                    OrderByDescending(kv => kv.Value).Take(showTop).Select((kv, index) =>
+                                {
+                                    string username = "Unknown";
+                                    if (FunGameConstant.UserIdAndUsername.TryGetValue(kv.Key, out User? value) && value != null)
+                                    {
+                                        username = value.Username;
+                                    }
+                                    if (kv.Key == user.Id)
+                                    {
+                                        currentTop = index + 1;
+                                    }
+                                    return $"{index + 1}. UID：{kv.Key}，昵称：{username}，{General.GameplayEquilibriumConstant.InGameMaterial}：{kv.Value:0.##}";
+                                })) : "暂无任何数据。")}\r\n\r\n仅显示前 {showTop} 位{(currentTop > 0 ? $"，你目前排在第 {currentTop} 位。" : "")}",
+                        2 => $"【角色养成排行榜】\r\n" +
+                                $"数据每分钟更新一次，上次更新：{FunGameConstant.RankingUpdateTime.ToString(General.GeneralDateTimeFormatChinese)}\r\n" +
+                                $"\r\n{(FunGameConstant.UserEXPRanking.Count > 0 ? string.Join("\r\n", FunGameConstant.UserEXPRanking.
+                                    OrderByDescending(kv => kv.Value).Take(showTop).Select((kv, index) =>
+                                {
+                                    string username = "Unknown";
+                                    if (FunGameConstant.UserIdAndUsername.TryGetValue(kv.Key, out User? value) && value != null)
+                                    {
+                                        username = value.Username;
+                                    }
+                                    if (kv.Key == user.Id)
+                                    {
+                                        currentTop = index + 1;
+                                    }
+                                    double score = kv.Value;
+                                    if (FunGameConstant.UserSkillRanking.TryGetValue(kv.Key, out double value2))
+                                    {
+                                        score += value2;
+                                    }
+                                    return $"{index + 1}. UID：{kv.Key}，昵称：{username}，总得分：{score:0.##}";
+                                })) : "暂无任何数据。")}\r\n\r\n本榜单统计角色的经验值总额，并根据其普通和技能等级计算总得分。\r\n仅显示前 {showTop} 位{(currentTop > 0 ? $"，你目前排在第 {currentTop} 位。" : "")}",
+                        3 => $"【赛马积分排行榜】\r\n" +
+                                $"数据每分钟更新一次，上次更新：{FunGameConstant.RankingUpdateTime.ToString(General.GeneralDateTimeFormatChinese)}\r\n" +
+                                $"\r\n{(FunGameConstant.UserHorseRacingRanking.Count > 0 ? string.Join("\r\n", FunGameConstant.UserHorseRacingRanking.
+                                    OrderByDescending(kv => kv.Value).Take(showTop).Select((kv, index) =>
+                                {
+                                    string username = "Unknown";
+                                    if (FunGameConstant.UserIdAndUsername.TryGetValue(kv.Key, out User? value) && value != null)
+                                    {
+                                        username = value.Username;
+                                    }
+                                    if (kv.Key == user.Id)
+                                    {
+                                        currentTop = index + 1;
+                                    }
+                                    return $"{index + 1}. UID：{kv.Key}，昵称：{username}，赛马积分：{kv.Value}";
+                                })) : "暂无任何数据。")}\r\n\r\n仅显示前 {showTop} 位{(currentTop > 0 ? $"，你目前排在第 {currentTop} 位。" : "")}",
+                        _ => "不支持的查询。",
+                    };
+                    FunGameService.SetUserConfigButNotRelease(uid, pc, user);
+                    return msg;
+                }
+                else
+                {
+                    return noSaved;
+                }
+            }
+            catch (Exception e)
+            {
+                Logger.LogError(e, "Error: {e}", e);
+                return busy;
             }
             finally
             {
