@@ -583,7 +583,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
                 Club? club = emc.Get("club");
                 if (club != null)
                 {
-                    builder.AppendLine($"所属社团：{club.Name} [{club.Prefix}]");
+                    builder.AppendLine($"所属社团：{club}");
                 }
                 else
                 {
@@ -2595,7 +2595,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
                     {
                         if (character.EXP < need)
                         {
-                            msg += $"\r\n角色 [ {character} ] 仍需 {need - character.EXP} 点经验值才能继续升级。";
+                            msg += $"\r\n角色 [ {character} ] 仍需 {need - character.EXP:0.##} 点经验值才能继续升级。";
                         }
                         else
                         {
@@ -2837,7 +2837,20 @@ namespace Oshima.FunGame.WebAPI.Controllers
                                 horseRacingPoints = itemCount;
                             }
                             pc2.Add("horseRacingPoints", horseRacingPoints);
-                            msg = $"已为 [ {user2} ] 生成 {itemCount} 个锻造积分";
+                            msg = $"已为 [ {user2} ] 生成 {itemCount} 个赛马积分";
+                        }
+                        else if (itemName == "共斗积分")
+                        {
+                            if (pc.TryGetValue("cooperativePoints", out object? value) && int.TryParse(value.ToString(), out int cooperativePoints))
+                            {
+                                cooperativePoints += itemCount;
+                            }
+                            else
+                            {
+                                cooperativePoints = itemCount;
+                            }
+                            pc2.Add("cooperativePoints", cooperativePoints);
+                            msg = $"已为 [ {user2} ] 生成 {itemCount} 个共斗积分";
                         }
                         else if (itemName.Contains("魔法卡礼包"))
                         {
@@ -3045,7 +3058,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
                         user.Inventory.Materials += totalGained;
                     }
                     FunGameService.SetUserConfigAndReleaseSemaphoreSlim(userid, pc, user);
-                    return $"分解完毕！分解 {ids.Length} 件，库存允许分解 {dict.Count} 件，成功 {successCount} 件，得到了 {totalGained} {General.GameplayEquilibriumConstant.InGameMaterial}！";
+                    return $"分解完毕！分解 {ids.Length} 件，库存允许分解 {dict.Count} 件，成功 {successCount} 件，得到了 {totalGained:0.##} {General.GameplayEquilibriumConstant.InGameMaterial}！";
                 }
                 else
                 {
@@ -3114,7 +3127,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
                             user.Inventory.Materials += totalGained;
                         }
                         FunGameService.SetUserConfigAndReleaseSemaphoreSlim(userid, pc, user);
-                        return $"分解完毕！分解 {useCount} 件物品，成功 {successCount} 件，得到了 {totalGained} {General.GameplayEquilibriumConstant.InGameMaterial}！";
+                        return $"分解完毕！分解 {useCount} 件物品，成功 {successCount} 件，得到了 {totalGained:0.##} {General.GameplayEquilibriumConstant.InGameMaterial}！";
                     }
                     else
                     {
@@ -3188,7 +3201,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
                         user.Inventory.Materials += totalGained;
                     }
                     FunGameService.SetUserConfigAndReleaseSemaphoreSlim(userid, pc, user);
-                    return $"分解完毕！成功分解 {successCount} 件{qualityName}物品，得到了 {totalGained} {General.GameplayEquilibriumConstant.InGameMaterial}！";
+                    return $"分解完毕！成功分解 {successCount} 件{qualityName}物品，得到了 {totalGained:0.##} {General.GameplayEquilibriumConstant.InGameMaterial}！";
                 }
                 else
                 {
@@ -3935,7 +3948,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
                         FunGameService.Bosses.Remove(bossIndex);
                         double gained = boss.Level;
                         user.Inventory.Materials += gained;
-                        msgs.Add($"恭喜你击败了 Boss，获得 {gained} {General.GameplayEquilibriumConstant.InGameMaterial}奖励！");
+                        msgs.Add($"恭喜你击败了 Boss，获得 {gained:0.##} {General.GameplayEquilibriumConstant.InGameMaterial}奖励！");
                     }
                     else
                     {
@@ -4205,7 +4218,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
                         FunGameService.Bosses.Remove(bossIndex);
                         double gained = boss.Level;
                         user.Inventory.Materials += gained;
-                        msgs.Add($"恭喜你击败了 Boss，获得 {gained} {General.GameplayEquilibriumConstant.InGameMaterial}奖励！");
+                        msgs.Add($"恭喜你击败了 Boss，获得 {gained:0.##} {General.GameplayEquilibriumConstant.InGameMaterial}奖励！");
                     }
                     else
                     {
@@ -4480,8 +4493,8 @@ namespace Oshima.FunGame.WebAPI.Controllers
             }
         }
 
-        [HttpPost("joinclub")]
-        public string JoinClub([FromQuery] long? uid = null, [FromQuery] long? id = null)
+        [HttpPost("clubjoin")]
+        public string ClubJoin([FromQuery] long? uid = null, [FromQuery] long? id = null)
         {
             long userid = uid ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
             long clubid = id ?? 0;
@@ -4506,7 +4519,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
                     return $"不存在编号为 {clubid} 的社团！";
                 }
 
-                if (!club.IsPublic)
+                if (!club.IsPublic && !club.Invitees.ContainsKey(user.Id))
                 {
                     FunGameService.ReleaseUserSemaphoreSlim(userid);
                     return $"社团 [ {club.Name} ] 未公开，只能通过邀请加入。";
@@ -4514,21 +4527,30 @@ namespace Oshima.FunGame.WebAPI.Controllers
 
                 string msg = "";
 
-                if (club.IsNeedApproval || club.Applicants.ContainsKey(userid))
+                if (club.IsNeedApproval && !club.Invitees.ContainsKey(user.Id))
                 {
                     club.ApplicationTime[userid] = DateTime.Now;
                     club.Applicants[userid] = user;
                     msg += $"已向社团 [ {club.Name} ] 提交加入申请！";
+                    foreach (long noticeUserId in club.Admins.Keys.Union([club.Master.Id]))
+                    {
+                        FunGameService.AddNotice(noticeUserId, $"【社团通知】[ {user.Username} ] 正在申请加入社团，请使用【查看申请人列表】指令查看列表！");
+                    }
                 }
                 else
                 {
                     club.MemberJoinTime[userid] = DateTime.Now;
                     club.Members[userid] = user;
+                    club.Invitees.Remove(userid);
+                    club.InvitedTime.Remove(userid);
+                    club.Applicants.Remove(userid);
+                    club.ApplicationTime.Remove(userid);
                     msg += $"加入社团 [ {club.Name} ] 成功！";
                     pc.Add("club", clubid);
                 }
                 emc.Add("club", club);
                 emc.SaveConfig();
+                FunGameConstant.ClubIdAndClub[club.Id] = club;
 
                 FunGameService.SetUserConfigAndReleaseSemaphoreSlim(userid, pc, user);
                 return msg;
@@ -4540,8 +4562,8 @@ namespace Oshima.FunGame.WebAPI.Controllers
             }
         }
 
-        [HttpPost("quitclub")]
-        public string QuitClub([FromQuery] long? uid = null)
+        [HttpPost("clubquit")]
+        public string ClubQuit([FromQuery] long? uid = null)
         {
             long userid = uid ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
 
@@ -4571,7 +4593,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
                     return $"不存在编号为 {clubid} 的社团！";
                 }
 
-                if (club.Master?.Id == userid)
+                if (club.Master.Id == userid)
                 {
                     FunGameService.ReleaseUserSemaphoreSlim(userid);
                     return $"你是社团的社长，不能退出社团，请转让社长或【解散社团】！";
@@ -4586,6 +4608,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
                 club.MemberJoinTime.Remove(userid);
                 emc.Add("club", club);
                 emc.SaveConfig();
+                FunGameConstant.ClubIdAndClub[club.Id] = club;
 
                 string msg = $"退出社团 [ {club.Name} ] 成功！";
                 pc.Add("club", 0);
@@ -4599,8 +4622,8 @@ namespace Oshima.FunGame.WebAPI.Controllers
             }
         }
 
-        [HttpPost("createclub")]
-        public string CreateClub([FromQuery] long? uid = null, [FromQuery] bool? @public = null, [FromQuery] string? prefix = null)
+        [HttpPost("clubcreate")]
+        public string ClubCreate([FromQuery] long? uid = null, [FromQuery] bool? @public = null, [FromQuery] string? prefix = null)
         {
             long userid = uid ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
             bool isPublic = @public ?? false;
@@ -4663,6 +4686,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
                 emc.LoadConfig();
                 emc.Add("club", club);
                 emc.SaveConfig();
+                FunGameConstant.ClubIdAndClub[club.Id] = club;
 
                 string msg = $"创建社团 [ {club.Name} ] （编号 {clubid}）成功！";
                 pc.Add("club", clubid);
@@ -4676,8 +4700,8 @@ namespace Oshima.FunGame.WebAPI.Controllers
             }
         }
 
-        [HttpGet("showclubinfo")]
-        public string ShowClubInfo([FromQuery] long? uid = null)
+        [HttpGet("clubshowinfo")]
+        public string ClubShowInfo([FromQuery] long? uid = null)
         {
             long userid = uid ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
 
@@ -4700,25 +4724,25 @@ namespace Oshima.FunGame.WebAPI.Controllers
                 if (club != null)
                 {
                     string master = "无";
-                    if (FunGameConstant.UserIdAndUsername.TryGetValue(club.Master?.Id ?? 0, out User? user2) && user2 != null)
+                    if (FunGameConstant.UserIdAndUsername.TryGetValue(club.Master.Id, out User? user2) && user2 != null)
                     {
                         master = user2.Username;
                     }
 
                     StringBuilder builer = new();
                     builer.AppendLine($"☆--- {user.Username}的社团信息 ---☆");
-                    builer.AppendLine($"所属社团：{club.Name} [{club.Prefix}]");
+                    builer.AppendLine($"所属社团：{club}");
                     builer.AppendLine($"社团编号：{club.Id}");
                     builer.AppendLine($"社团社长：{master}");
                     builer.AppendLine($"是否公开：{(club.IsPublic ? "公开" : "私密")}");
                     if (club.IsPublic) builer.AppendLine($"加入规则：{(club.IsNeedApproval ? "需要批准" : "直接加入")}");
                     builer.AppendLine($"成员数量：{club.Members.Count}");
-                    if (club.Master?.Id == userid || club.Admins.ContainsKey(userid))
+                    if (club.Master.Id == userid || club.Admins.ContainsKey(userid))
                     {
                         builer.AppendLine($"管理员数量：{club.Admins.Count}");
                         builer.AppendLine($"申请人数量：{club.Applicants.Count}");
                         builer.AppendLine($"社团基金：{club.ClubPoins}");
-                        if (club.Master?.Id == userid)
+                        if (club.Master.Id == userid)
                         {
                             builer.AppendLine("你是此社团的社长");
                         }
@@ -4743,8 +4767,57 @@ namespace Oshima.FunGame.WebAPI.Controllers
             }
         }
 
-        [HttpGet("showclubmemberlist")]
-        public string ShowClubMemberList([FromQuery] long? uid = null, [FromQuery] int? type = null, [FromQuery] int? page = null)
+        [HttpGet("clubshowlist")]
+        public string ClubShowList([FromQuery] long? uid = null, [FromQuery] int page = 0)
+        {
+            long userid = uid ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
+
+            PluginConfig pc = FunGameService.GetUserConfig(userid, out _);
+            FunGameService.ReleaseUserSemaphoreSlim(userid);
+
+            if (pc.Count > 0)
+            {
+                User user = FunGameService.GetUser(pc);
+
+                StringBuilder builder = new();
+                Club[] clubs = [.. FunGameConstant.ClubIdAndClub.Values.Where(c => c.IsPublic)];
+                int maxPage = (int)Math.Ceiling((double)clubs.Length / FunGameConstant.ItemsPerPage2);
+                if (maxPage < 1) maxPage = 1;
+                if (page <= maxPage)
+                {
+                    clubs = [.. FunGameService.GetPage(clubs, page, FunGameConstant.ItemsPerPage2)];
+                    builder.AppendLine($"☆--- 公开社团列表 ---☆");
+                    foreach (Club club in clubs)
+                    {
+                        string master = "无";
+                        if (FunGameConstant.UserIdAndUsername.TryGetValue(club.Master.Id, out User? user2) && user2 != null)
+                        {
+                            master = user2.Username;
+                        }
+                        builder.AppendLine($"== {club} ==");
+                        builder.AppendLine($"社团编号：{club.Id}");
+                        builder.AppendLine($"社团社长：{master}");
+                        builder.AppendLine($"加入规则：{(club.IsNeedApproval ? "需要批准" : "直接加入")}");
+                        builder.AppendLine($"成员数量：{club.Members.Count}");
+                        builder.AppendLine($"社团描述：{club.Description}");
+                    }
+                    builder.Append($"页数：{page} / {maxPage}");
+                }
+                else
+                {
+                    builder.Append($"没有这么多页！当前总页数为 {maxPage}，但你请求的是第 {page} 页。");
+                }
+
+                return builder.ToString().Trim();
+            }
+            else
+            {
+                return noSaved;
+            }
+        }
+
+        [HttpGet("clubshowmemberlist")]
+        public string ClubShowMemberList([FromQuery] long? uid = null, [FromQuery] int? type = null, [FromQuery] int? page = null)
         {
             long userid = uid ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
             int showType = type ?? 0;
@@ -4777,7 +4850,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
                             builder.AppendLine($"☆--- 社团 [ {club.Name} ] 管理员列表 ---☆");
                             count = 1;
                             List<long> admins = [];
-                            if (club.Master != null && club.Master.Id != 0)
+                            if (club.Master.Id != 0)
                             {
                                 admins.Add(club.Master.Id);
                             }
@@ -4807,7 +4880,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
                             }
                             break;
                         case 2:
-                            if (club.Master?.Id == user.Id || club.Admins.ContainsKey(user.Id))
+                            if (club.Master.Id == user.Id || club.Admins.ContainsKey(user.Id))
                             {
                                 builder.AppendLine($"☆--- 社团 [ {club.Name} ] 申请人列表 ---☆");
                                 count = 1;
@@ -4824,6 +4897,39 @@ namespace Oshima.FunGame.WebAPI.Controllers
                                             builder.AppendLine($"UID：{user2.Id}");
                                             builder.AppendLine($"玩家昵称：{user2.Username}");
                                             builder.AppendLine($"申请时间：{club.ApplicationTime[user2.Id].ToString(General.GeneralDateTimeFormatChinese)}");
+                                        }
+                                        count++;
+                                    }
+                                    builder.AppendLine($"页数：{showPage} / {maxPage}");
+                                }
+                                else
+                                {
+                                    builder.Append($"没有这么多页！当前总页数为 {maxPage}，但你请求的是第 {showPage} 页。");
+                                }
+                            }
+                            else
+                            {
+                                builder.Append("你没有权限查看这个列表！");
+                            }
+                            break;
+                        case 3:
+                            if (club.Master.Id == user.Id || club.Admins.ContainsKey(user.Id))
+                            {
+                                builder.AppendLine($"☆--- 社团 [ {club.Name} ] 受邀人列表 ---☆");
+                                count = 1;
+                                maxPage = (int)Math.Ceiling((double)club.Invitees.Count / FunGameConstant.ItemsPerPage2);
+                                if (maxPage < 1) maxPage = 1;
+                                if (showPage <= maxPage)
+                                {
+                                    IEnumerable<long> invitees = FunGameService.GetPage(club.Invitees.Keys, showPage, FunGameConstant.ItemsPerPage2);
+                                    foreach (long uid2 in invitees)
+                                    {
+                                        if (FunGameConstant.UserIdAndUsername.TryGetValue(uid2, out User? user2) && user2 != null)
+                                        {
+                                            builder.AppendLine($"{count}.");
+                                            builder.AppendLine($"UID：{user2.Id}");
+                                            builder.AppendLine($"玩家昵称：{user2.Username}");
+                                            builder.AppendLine($"邀请时间：{club.InvitedTime[user2.Id].ToString(General.GeneralDateTimeFormatChinese)}");
                                         }
                                         count++;
                                     }
@@ -4856,7 +4962,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
                                         builder.AppendLine($"UID：{user2.Id}");
                                         builder.AppendLine($"玩家昵称：{user2.Username}");
                                         string userType = "社员";
-                                        if (club.Master?.Id == user2.Id)
+                                        if (club.Master.Id == user2.Id)
                                         {
                                             userType = "社长";
                                         }
@@ -4893,8 +4999,8 @@ namespace Oshima.FunGame.WebAPI.Controllers
             }
         }
 
-        [HttpPost("disbandclub")]
-        public string DisbandClub([FromQuery] long? uid = null)
+        [HttpPost("clubdisband")]
+        public string ClubDisband([FromQuery] long? uid = null)
         {
             long userid = uid ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
 
@@ -4924,7 +5030,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
                     return $"不存在编号为 {clubid} 的社团！";
                 }
 
-                if (club.Master?.Id != userid)
+                if (club.Master.Id != userid)
                 {
                     return $"你不是社团的社长，没有权限使用此指令！";
                 }
@@ -4934,6 +5040,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
                 try
                 {
                     System.IO.File.Delete(path);
+                    FunGameConstant.ClubIdAndClub.Remove(club.Id);
                     msg = $"解散社团 [ {club.Name} ] 成功！";
                     pc.Add("club", 0);
                     FunGameService.SetUserConfigAndReleaseSemaphoreSlim(userid, pc, user);
@@ -4950,6 +5057,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
                                 User user2 = FunGameService.GetUser(pc2);
                                 pc2.Add("club", 0);
                                 FunGameService.SetUserConfig(fileName, pc2, user2);
+                                FunGameService.AddNotice(user2.Id, $"【社团通知】社长 [ {user.Username} ] 已经解散了社团【{club}】。");
                             }
                             else
                             {
@@ -4971,8 +5079,8 @@ namespace Oshima.FunGame.WebAPI.Controllers
             }
         }
 
-        [HttpPost("approveclub")]
-        public string ApproveClub([FromQuery] long? uid = null, [FromQuery] long? id = null, [FromQuery] bool? approval = null)
+        [HttpPost("clubapprove")]
+        public string ClubApprove([FromQuery] long? uid = null, [FromQuery] long? id = null, [FromQuery] bool? approval = null)
         {
             long userid = uid ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
             long applicant = id ?? 0;
@@ -4996,7 +5104,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
                         return $"你当前没有加入任何社团！";
                     }
 
-                    if (club.Master?.Id == userid || club.Admins.ContainsKey(userid))
+                    if (club.Master.Id == userid || club.Admins.ContainsKey(userid))
                     {
                         PluginConfig pc2 = FunGameService.GetUserConfig(applicant, out _);
                         if (pc2.ContainsKey("user"))
@@ -5016,6 +5124,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
                                     {
                                         pc2.Add("club", userClub);
                                         FunGameService.SetUserConfigAndReleaseSemaphoreSlim(applicant, pc2, user2);
+                                        FunGameService.AddNotice(user2.Id, $"【社团通知】管理员 [ {user.Username} ] 已批准你加入社团【{club}】。");
                                     }
                                     else
                                     {
@@ -5025,10 +5134,12 @@ namespace Oshima.FunGame.WebAPI.Controllers
                                 else
                                 {
                                     msg += $"已拒绝 [ {user2.Username} ] 加入社团 [ {club.Name} ] ！";
+                                    FunGameService.AddNotice(user2.Id, $"【社团通知】管理员 [ {user.Username} ] 已拒绝你加入社团【{club}】。");
                                 }
 
                                 emc.Add("club", club);
                                 emc.SaveConfig();
+                                FunGameConstant.ClubIdAndClub[club.Id] = club;
                             }
                             else
                             {
@@ -5060,8 +5171,91 @@ namespace Oshima.FunGame.WebAPI.Controllers
             }
         }
 
-        [HttpPost("kickclub")]
-        public string KickClub([FromQuery] long? uid = null, [FromQuery] long? id = null)
+        [HttpPost("clubinvite")]
+        public string ClubInvite([FromQuery] long? uid = null, [FromQuery] long? id = null, [FromQuery] bool cancel = false)
+        {
+            long userid = uid ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
+            long invitee = id ?? 0;
+
+            PluginConfig pc = FunGameService.GetUserConfig(userid, out _);
+
+            if (pc.Count > 0)
+            {
+                User user = FunGameService.GetUser(pc);
+                FunGameService.SetUserConfigAndReleaseSemaphoreSlim(userid, pc, user);
+
+                string msg = "";
+                if (pc.TryGetValue("club", out object? value) && long.TryParse(value.ToString(), out long userClub) && userClub != 0)
+                {
+                    EntityModuleConfig<Club> emc = new("clubs", userClub.ToString());
+                    emc.LoadConfig();
+                    Club? club = emc.Get("club");
+                    if (club is null)
+                    {
+                        return $"你当前没有加入任何社团！";
+                    }
+
+                    if (club.Master.Id == userid || club.Admins.ContainsKey(userid))
+                    {
+                        PluginConfig pc2 = FunGameService.GetUserConfig(invitee, out _);
+                        if (pc2.ContainsKey("user"))
+                        {
+                            User user2 = FunGameService.GetUser(pc2);
+
+                            if (!club.Members.ContainsKey(user2.Id))
+                            {
+                                if (!cancel)
+                                {
+                                    club.InvitedTime[invitee] = DateTime.Now;
+                                    club.Invitees[invitee] = user2;
+                                    msg += $"已向 [ {user2.Username} ] 发出社团邀请！";
+                                    FunGameService.AddNotice(user2.Id, $"【社团通知】社团【{club}】向你发出了邀请！请使用【加入社团{club.Id}】指令加入此社团。");
+                                }
+                                else
+                                {
+                                    club.InvitedTime.Remove(invitee);
+                                    club.Invitees.Remove(invitee);
+                                    msg += $"已取消对 [ {user2.Username} ] 的社团邀请！";
+                                    FunGameService.AddNotice(user2.Id, $"【社团通知】社团【{club}】不再邀请你加入，接受指令已不可用。");
+                                }
+
+                                emc.Add("club", club);
+                                emc.SaveConfig();
+                                FunGameConstant.ClubIdAndClub[club.Id] = club;
+                                FunGameService.ReleaseUserSemaphoreSlim(invitee);
+                            }
+                            else
+                            {
+                                FunGameService.ReleaseUserSemaphoreSlim(invitee);
+                                return $"对方已经是社团成员！";
+                            }
+                        }
+                        else
+                        {
+                            FunGameService.ReleaseUserSemaphoreSlim(invitee);
+                            return $"对方似乎还没创建存档呢！";
+                        }
+                    }
+                    else
+                    {
+                        return $"你没有邀请权限！";
+                    }
+                }
+                else
+                {
+                    return $"你当前没有加入任何社团！";
+                }
+                return msg;
+            }
+            else
+            {
+                FunGameService.ReleaseUserSemaphoreSlim(userid);
+                return noSaved;
+            }
+        }
+
+        [HttpPost("clubkick")]
+        public string ClubKick([FromQuery] long? uid = null, [FromQuery] long? id = null)
         {
             long userid = uid ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
             long kickid = id ?? 0;
@@ -5084,9 +5278,9 @@ namespace Oshima.FunGame.WebAPI.Controllers
                         return $"你当前没有加入任何社团！";
                     }
 
-                    if (club.Master?.Id == userid || club.Admins.ContainsKey(userid))
+                    if (club.Master.Id == userid || club.Admins.ContainsKey(userid))
                     {
-                        if (!club.Admins.ContainsKey(kickid) || (club.Master?.Id == userid && club.Admins.ContainsKey(kickid)))
+                        if (!club.Admins.ContainsKey(kickid) || (club.Master.Id == userid && club.Admins.ContainsKey(kickid)))
                         {
                             PluginConfig pc2 = FunGameService.GetUserConfig(kickid, out _);
                             if (pc2.ContainsKey("user"))
@@ -5101,9 +5295,11 @@ namespace Oshima.FunGame.WebAPI.Controllers
                                     msg += $"操作成功，已将 [ {user2.Username} ] 踢出社团 [ {club.Name} ] ！";
                                     pc2.Add("club", 0);
                                     FunGameService.SetUserConfigAndReleaseSemaphoreSlim(kickid, pc2, user2);
+                                    FunGameService.AddNotice(user2.Id, $"【社团通知】管理员 [ {user.Username} ] 已将你移出社团【{club}】。");
 
                                     emc.Add("club", club);
                                     emc.SaveConfig();
+                                    FunGameConstant.ClubIdAndClub[club.Id] = club;
                                 }
                                 else
                                 {
@@ -5140,8 +5336,8 @@ namespace Oshima.FunGame.WebAPI.Controllers
             }
         }
 
-        [HttpPost("changeclub")]
-        public string ChangeClub([FromQuery] long? uid = null, [FromQuery] string? part = null, [FromBody] string[]? args = null)
+        [HttpPost("clubchange")]
+        public string ClubChange([FromQuery] long? uid = null, [FromQuery] string? part = null, [FromBody] string[]? args = null)
         {
             long userid = uid ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
             string name = part?.Trim().ToLower() ?? "";
@@ -5166,7 +5362,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
                         return $"你当前没有加入任何社团！";
                     }
 
-                    bool isMaster = club.Master?.Id == userid;
+                    bool isMaster = club.Master.Id == userid;
                     bool isAdmin = club.Admins.ContainsKey(userid);
 
                     if (isMaster || isAdmin)
@@ -5180,10 +5376,39 @@ namespace Oshima.FunGame.WebAPI.Controllers
                                 }
                                 if (values.Length > 0)
                                 {
-                                    if (values[0].Length >= 2 && values[0].Length <= 10)
+                                    string newName = string.Join(" ", values);
+                                    if (newName.Length >= 2 && newName.Length <= 15)
                                     {
-                                        club.Name = values[0];
-                                        msg = "修改成功，新的社团名称是：" + club.Name;
+                                        if (FunGameConstant.ClubIdAndClub.Any(kv => kv.Value.Name == newName))
+                                        {
+                                            return $"社团名称【{newName}】已被使用，请更换其他名称！";
+                                        }
+                                        else
+                                        {
+                                            PluginConfig renameExamine = new("examines", "clubrename");
+                                            renameExamine.LoadConfig();
+                                            List<string> strings = renameExamine.Get<List<string>>(club.Id.ToString()) ?? [];
+                                            if (strings.Count > 0)
+                                            {
+                                                return $"该社团已经提交过改名申请，请使用【查询改名】指令查看进度，请耐心等待审核结果！";
+                                            }
+                                            else
+                                            {
+                                                renameExamine.Add(club.Id.ToString(), new List<string> { newName });
+                                                renameExamine.SaveConfig();
+                                            }
+
+                                            TaskUtility.NewTask(() =>
+                                            {
+                                                User[] operators = [.. FunGameConstant.UserIdAndUsername.Values.Where(u => u.IsAdmin || u.IsOperator)];
+                                                foreach (User op in operators)
+                                                {
+                                                    FunGameService.AddNotice(op.Id, $"有待处理的改名申请，请使用【改名审核】指令查看列表！");
+                                                }
+                                            });
+
+                                            return $"提交社团改名申请成功！新的社团名称是【{newName}】，将在审核通过后更新。";
+                                        }
                                     }
                                     else
                                     {
@@ -5194,7 +5419,6 @@ namespace Oshima.FunGame.WebAPI.Controllers
                                 {
                                     return "请提供新的社团名称！";
                                 }
-                                break;
                             case "prefix":
                                 if (!isMaster)
                                 {
@@ -5309,6 +5533,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
 
                         emc.Add("club", club);
                         emc.SaveConfig();
+                        FunGameConstant.ClubIdAndClub[club.Id] = club;
                     }
                     else
                     {
@@ -5325,6 +5550,79 @@ namespace Oshima.FunGame.WebAPI.Controllers
             {
                 FunGameService.ReleaseUserSemaphoreSlim(userid);
                 return noSaved;
+            }
+        }
+
+        [HttpPost("clubcontribution")]
+        public string ClubContribution([FromQuery] long uid = -1, [FromQuery] double credits = 0)
+        {
+            if (credits <= 0)
+            {
+                return $"{General.GameplayEquilibriumConstant.InGameCurrency}数量必须大于 0。";
+            }
+            try
+            {
+                PluginConfig pc = FunGameService.GetUserConfig(uid, out bool isTimeout);
+                if (isTimeout)
+                {
+                    return busy;
+                }
+
+                long clubid = 0;
+                if (pc.TryGetValue("club", out object? value) && long.TryParse(value.ToString(), out long temp))
+                {
+                    clubid = temp;
+                }
+
+                if (clubid == 0)
+                {
+                    return $"你当前没有加入任何社团！";
+                }
+
+                EntityModuleConfig<Club> emc = new("clubs", clubid.ToString());
+                emc.LoadConfig();
+                Club? club = emc.Get("club");
+                if (club is null)
+                {
+                    return $"不存在编号为 {clubid} 的社团！";
+                }
+
+                string msg = "";
+                if (pc.Count > 0)
+                {
+                    User user = FunGameService.GetUser(pc);
+
+                    if (user.Inventory.Credits >= credits)
+                    {
+                        user.Inventory.Credits -= credits;
+                        club.ClubPoins += credits;
+                        msg = $"你向社团【{club}】捐献了 {credits:0.##} {General.GameplayEquilibriumConstant.InGameCurrency}，社团基金增加至 {club.ClubPoins:0.##}！";
+
+                        emc.Add("club", club);
+                        emc.SaveConfig();
+                        FunGameConstant.ClubIdAndClub[club.Id] = club;
+                    }
+                    else
+                    {
+                        msg = $"你的 {General.GameplayEquilibriumConstant.InGameCurrency} 不足，无法捐献！";
+                    }
+
+                    FunGameService.SetUserConfigButNotRelease(uid, pc, user);
+                    return msg;
+                }
+                else
+                {
+                    return noSaved;
+                }
+            }
+            catch (Exception e)
+            {
+                Logger.LogError(e, "Error: {e}", e);
+                return busy;
+            }
+            finally
+            {
+                FunGameService.ReleaseUserSemaphoreSlim(uid);
             }
         }
 
@@ -5616,7 +5914,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
         }
 
         [HttpPost("exploreregion")]
-        public (string, string) ExploreRegion([FromQuery] long? uid = null, [FromQuery] long? id = null, [FromBody] long[]? cids = null)
+        public (string, string) ExploreRegion([FromQuery] long? uid = null, [FromQuery] long? id = null, [FromQuery] bool useSquad = false, [FromBody] long[]? cids = null)
         {
             string exploreId = "";
             try
@@ -5632,6 +5930,20 @@ namespace Oshima.FunGame.WebAPI.Controllers
                 if (pc.Count > 0)
                 {
                     User user = FunGameService.GetUser(pc);
+
+                    if (useSquad)
+                    {
+                        if (user.Inventory.Squad.Count == 0)
+                        {
+                            FunGameService.ReleaseUserSemaphoreSlim(userid);
+                            return ($"你尚未设置小队，请先设置1-4名角色！", exploreId);
+                        }
+                        else
+                        {
+                            characterIds = [.. user.Inventory.Squad];
+                            characterCount = characterIds.Length;
+                        }
+                    }
 
                     // 检查角色存在
                     List<long> invalid = [];
@@ -6654,7 +6966,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
                             double gained = item.Price;
                             totalGained += gained;
                             successCount++;
-                            msgs.Add($"物品 {itemIndex}. {item.Name} 出售成功，获得了 {gained} {General.GameplayEquilibriumConstant.InGameCurrency}。");
+                            msgs.Add($"物品 {itemIndex}. {item.Name} 出售成功，获得了 {gained:0.##} {General.GameplayEquilibriumConstant.InGameCurrency}。");
                         }
                     }
 
@@ -6696,13 +7008,34 @@ namespace Oshima.FunGame.WebAPI.Controllers
 
                     PluginConfig renameExamine = new("examines", "rename");
                     renameExamine.LoadConfig();
-                    List<string> strings = renameExamine.Get<List<string>>(user.Id.ToString()) ?? [];
-                    if (strings.Count > 0)
+                    List<string> strings1 = renameExamine.Get<List<string>>(user.Id.ToString()) ?? [];
+
+                    long clubid = 0;
+                    if (pc.TryGetValue("club", out object? value) && long.TryParse(value.ToString(), out long temp))
                     {
-                        string name = strings[0];
+                        clubid = temp;
+                    }
+                    PluginConfig renameExamineClub = new("examines", "clubrename");
+                    renameExamineClub.LoadConfig();
+                    List<string> strings2 = renameExamineClub.Get<List<string>>(clubid.ToString()) ?? [];
+
+                    if (strings1.Count > 0)
+                    {
+                        string name = strings1[0];
                         msg = $"你提交的新昵称为【{name}】，正在审核中，请耐心等待。";
                     }
-                    else
+
+                    if (strings2.Count > 0)
+                    {
+                        string name = strings2[0];
+                        if (FunGameConstant.ClubIdAndClub.TryGetValue(clubid, out Club? club) && (club.Master.Id == userid || club.Admins.ContainsKey(userid)))
+                        {
+                            if (msg != "") msg += "\r\n";
+                            msg += $"你所属社团【{club}】提交的新名称【{name}】，正在审核中，请耐心等待。";
+                        }
+                    }
+
+                    if (msg == "")
                     {
                         msg = $"你目前没有已提交的改名申请。";
                     }
@@ -6740,19 +7073,23 @@ namespace Oshima.FunGame.WebAPI.Controllers
                         PluginConfig renameExamine = new("examines", "rename");
                         renameExamine.LoadConfig();
 
-                        if (renameExamine.Count > 0)
+                        PluginConfig renameExamineClub = new("examines", "clubrename");
+                        renameExamineClub.LoadConfig();
+
+                        string[] ids = [.. renameExamine.Keys, .. renameExamineClub.Keys.Select(s => $"club{s}")];
+                        if (ids.Length > 0)
                         {
                             StringBuilder builder = new();
                             builder.AppendLine($"☆--- 自定义改名申请列表 ---☆");
                             int count = 1;
-                            int maxPage = (int)Math.Ceiling((double)renameExamine.Count / FunGameConstant.ItemsPerPage2);
+                            int maxPage = (int)Math.Ceiling((double)ids.Length / FunGameConstant.ItemsPerPage2);
                             if (maxPage < 1) maxPage = 1;
                             if (showPage <= maxPage)
                             {
-                                string[] userIds = [.. FunGameService.GetPage(renameExamine.Keys, showPage, FunGameConstant.ItemsPerPage2)];
-                                foreach (string uidStr2 in userIds)
+                                ids = [.. FunGameService.GetPage(ids, showPage, FunGameConstant.ItemsPerPage2)];
+                                foreach (string id in ids)
                                 {
-                                    if (long.TryParse(uidStr2, out long uid2))
+                                    if (long.TryParse(id, out long uid2))
                                     {
                                         List<string> strings = renameExamine.Get<List<string>>(uid2.ToString()) ?? [];
                                         if (strings.Count > 0 && FunGameConstant.UserIdAndUsername.TryGetValue(uid2, out User? user2) && user2 != null)
@@ -6762,6 +7099,22 @@ namespace Oshima.FunGame.WebAPI.Controllers
                                             builder.AppendLine($"玩家昵称：{user2.Username}");
                                             builder.AppendLine($"新昵称：{strings[0]}");
                                             count++;
+                                        }
+                                    }
+                                    else if (id.StartsWith("club"))
+                                    {
+                                        string cid = id.Replace("club", "").Trim();
+                                        if (long.TryParse(cid, out long clubid))
+                                        {
+                                            List<string> strings = renameExamineClub.Get<List<string>>(clubid.ToString()) ?? [];
+                                            if (strings.Count > 0 && FunGameConstant.ClubIdAndClub.TryGetValue(clubid, out Club? club) && club != null)
+                                            {
+                                                builder.AppendLine($"{count}.");
+                                                builder.AppendLine($"社团编号：{club.Id}");
+                                                builder.AppendLine($"社团名称：{club.Name}");
+                                                builder.AppendLine($"新名称：{strings[0]}");
+                                                count++;
+                                            }
                                         }
                                     }
                                 }
@@ -6798,7 +7151,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
         }
 
         [HttpPost("approverename")]
-        public string ApproveReName([FromQuery] long? uid = null, [FromQuery] long target = -1, [FromQuery] bool approve = true)
+        public string ApproveReName([FromQuery] long? uid = null, [FromQuery] long target = -1, [FromQuery] bool approve = true, [FromQuery] bool isClub = false, [FromQuery] string reason = "")
         {
             long userid = uid ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
 
@@ -6819,71 +7172,118 @@ namespace Oshima.FunGame.WebAPI.Controllers
                         FunGameService.ReleaseUserSemaphoreSlim(userid);
                     }
 
-                    if (user.IsAdmin)
+                    if (user.IsAdmin || user.IsOperator)
                     {
-                        PluginConfig renameExamine = new("examines", "rename");
-                        renameExamine.LoadConfig();
-                        List<string> strings = renameExamine.Get<List<string>>(target.ToString()) ?? [];
-                        if (strings.Count > 0)
+                        if (isClub)
                         {
-                            PluginConfig pc2 = FunGameService.GetUserConfig(target, out _);
-
-                            if (pc2.Count > 0)
+                            PluginConfig renameExamineClub = new("examines", "clubrename");
+                            renameExamineClub.LoadConfig();
+                            List<string> strings = renameExamineClub.Get<List<string>>(target.ToString()) ?? [];
+                            if (strings.Count > 0)
                             {
-                                string name = strings[0];
-                                User user2 = FunGameService.GetUser(pc2);
-                                // 移除改名卡
-                                Item? gmk = user2.Inventory.Items.FirstOrDefault(i => i.Guid.ToString() == strings[1]);
-                                if (gmk != null)
+                                EntityModuleConfig<Club> emc = new("clubs", target.ToString());
+                                emc.LoadConfig();
+                                Club? club = emc.Get("club");
+                                if (club != null)
                                 {
+                                    string name = strings[0];
                                     if (approve)
                                     {
-                                        user2.Username = name;
-                                        user2.NickName = name;
-                                        if (user2.Inventory.Characters.FirstOrDefault(c => c.Id == FunGameConstant.CustomCharacterId) is Character character)
+                                        club.Name = name;
+                                        renameExamineClub.Remove(target.ToString());
+                                        msg = $"已批准该社团的新名称【{name}】申请！";
+                                        emc.Add("club", club);
+                                        emc.SaveConfig();
+                                        FunGameConstant.ClubIdAndClub[club.Id] = club;
+                                        foreach (long noticeUserId in club.Admins.Keys.Union([club.Master.Id]))
                                         {
-                                            character.Name = user2.Username;
-                                            character.NickName = user2.NickName;
+                                            FunGameService.AddNotice(noticeUserId, $"【改名系统】你的社团新名称 [ {name} ] 审核通过，社团名称已更新！");
                                         }
-                                        if (user2.Inventory.Name.EndsWith("的库存"))
-                                        {
-                                            user2.Inventory.Name = user2.Username + "的库存";
-                                        }
-                                        user2.Inventory.Items.Remove(gmk);
-                                        FunGameConstant.UserIdAndUsername[user2.Id] = user2;
-                                        renameExamine.Remove(target.ToString());
-                                        msg = $"该用户的新昵称【{name}】已审核通过！";
-                                        FunGameService.AddNotice(user2.Id, $"改名系统通知：你先前提交的新昵称【{name}】审核通过，已更新你的昵称！已消耗 1 张改名卡。");
                                     }
                                     else
                                     {
-                                        gmk.IsLock = false;
-                                        renameExamine.Remove(target.ToString());
-                                        msg = $"已拒绝该用户的新昵称【{name}】申请！";
-                                        FunGameService.AddNotice(user2.Id, $"改名系统通知：你先前提交的新昵称【{name}】审核不通过，请重新提交申请！");
+                                        renameExamineClub.Remove(target.ToString());
+                                        msg = $"已拒绝该社团的新名称【{name}】申请！";
+                                        foreach (long noticeUserId in club.Admins.Keys.Union([club.Master.Id]))
+                                        {
+                                            FunGameService.AddNotice(noticeUserId, $"【改名系统】你的社团新名称 [ {name} ] 审核不通过，请重新提交申请！{(reason != "" ? $"原因：{reason}" : "")}");
+                                        }
                                     }
-                                    FunGameService.SetUserConfigButNotRelease(target, pc2, user2);
+                                }
+                                else
+                                {
+                                    renameExamineClub.Remove(target.ToString());
+                                    msg = $"该社团不存在。";
+                                }
+                            }
+                            renameExamineClub.SaveConfig();
+                        }
+                        else
+                        {
+                            PluginConfig renameExamine = new("examines", "rename");
+                            renameExamine.LoadConfig();
+                            List<string> strings = renameExamine.Get<List<string>>(target.ToString()) ?? [];
+                            if (strings.Count > 0)
+                            {
+                                PluginConfig pc2 = FunGameService.GetUserConfig(target, out _);
+
+                                if (pc2.Count > 0)
+                                {
+                                    string name = strings[0];
+                                    User user2 = FunGameService.GetUser(pc2);
+                                    // 移除改名卡
+                                    Item? gmk = user2.Inventory.Items.FirstOrDefault(i => i.Guid.ToString() == strings[1]);
+                                    if (gmk != null)
+                                    {
+                                        if (approve)
+                                        {
+                                            user2.Username = name;
+                                            user2.NickName = name;
+                                            if (user2.Inventory.Characters.FirstOrDefault(c => c.Id == FunGameConstant.CustomCharacterId) is Character character)
+                                            {
+                                                character.Name = user2.Username;
+                                                character.NickName = user2.NickName;
+                                            }
+                                            if (user2.Inventory.Name.EndsWith("的库存"))
+                                            {
+                                                user2.Inventory.Name = user2.Username + "的库存";
+                                            }
+                                            user2.Inventory.Items.Remove(gmk);
+                                            FunGameConstant.UserIdAndUsername[user2.Id] = user2;
+                                            renameExamine.Remove(target.ToString());
+                                            msg = $"该用户的新昵称【{name}】已审核通过！";
+                                            FunGameService.AddNotice(user2.Id, $"【改名系统】你先前提交的新昵称【{name}】审核通过，已更新你的昵称！已消耗 1 张改名卡。");
+                                        }
+                                        else
+                                        {
+                                            gmk.IsLock = false;
+                                            renameExamine.Remove(target.ToString());
+                                            msg = $"已拒绝该用户的新昵称【{name}】申请！";
+                                            FunGameService.AddNotice(user2.Id, $"【改名系统】你先前提交的新昵称【{name}】审核不通过，请重新提交申请！{(reason != "" ? $"原因：{reason}" : "")}");
+                                        }
+                                        FunGameService.SetUserConfigButNotRelease(target, pc2, user2);
+                                    }
+                                    else
+                                    {
+                                        renameExamine.Remove(target.ToString());
+                                        msg = $"该用户用于申请自定义改名的改名卡已不存在，改名失败！";
+                                        FunGameService.AddNotice(user2.Id, $"【改名系统】你先前提交的新昵称【{name}】因用于申请自定义改名的改名卡已不存在，改名失败！");
+                                    }
                                 }
                                 else
                                 {
                                     renameExamine.Remove(target.ToString());
-                                    msg = $"该用户用于申请自定义改名的改名卡已不存在，改名失败！";
-                                    FunGameService.AddNotice(user2.Id, $"改名系统通知：你先前提交的新昵称【{name}】因用于申请自定义改名的改名卡已不存在，改名失败！");
+                                    msg = $"该用户不存在。";
                                 }
+                                FunGameService.ReleaseUserSemaphoreSlim(target);
                             }
                             else
                             {
                                 renameExamine.Remove(target.ToString());
-                                msg = $"该用户不存在。";
+                                msg = $"该用户目前没有已提交的改名申请。";
                             }
-                            FunGameService.ReleaseUserSemaphoreSlim(target);
+                            renameExamine.SaveConfig();
                         }
-                        else
-                        {
-                            renameExamine.Remove(target.ToString());
-                            msg = $"该用户目前没有已提交的改名申请。";
-                        }
-                        renameExamine.SaveConfig();
                     }
                     else
                     {
@@ -6939,9 +7339,9 @@ namespace Oshima.FunGame.WebAPI.Controllers
                     List<Item> successItems = [];
                     foreach (int itemIndex in itemIndexs)
                     {
-                        if (itemIndex > 0 && itemIndex <= user.Inventory.Items.Count)
+                        if (itemIndex > 0 && itemIndex <= dict.Count)
                         {
-                            Item item = user.Inventory.Items.ToList()[itemIndex - 1];
+                            Item item = dict[itemIndex];
 
                             if (item.IsLock)
                             {
@@ -7015,7 +7415,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
                 return busy;
             }
         }
-        
+
         [HttpPost("marketshowlist")]
         public string MarketShowList([FromQuery] long userid = -1, [FromQuery] int page = 0)
         {
@@ -7053,7 +7453,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
                 return busy;
             }
         }
-        
+
         [HttpPost("marketshowlistmysells")]
         public string MarketShowListMySells([FromQuery] long userid = -1, [FromQuery] int page = 0)
         {
@@ -7105,7 +7505,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
                 return busy;
             }
         }
-        
+
         [HttpPost("marketiteminfo")]
         public string MarketItemInfo([FromQuery] long userid = -1, [FromQuery] long itemid = 0)
         {
@@ -7151,7 +7551,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
                 return busy;
             }
         }
-        
+
         [HttpPost("marketbuyitem")]
         public string MarketBuyItem([FromQuery] long userid = -1, [FromQuery] long itemid = 0, [FromQuery] int count = 1)
         {
@@ -7221,7 +7621,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
                 return busy;
             }
         }
-        
+
         [HttpPost("marketdelistitem")]
         public string MarketDelistItem([FromQuery] long userid = -1, [FromQuery] long itemid = 0)
         {
@@ -7554,7 +7954,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
                 FunGameService.ReleaseUserSemaphoreSlim(uid);
             }
         }
-        
+
         [HttpPost("forgeitemmaster")]
         public string ForgeItem_Master([FromQuery] long uid = -1, [FromQuery] long rid = 0, [FromQuery] int q = 0)
         {
@@ -7621,7 +8021,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
                 FunGameService.ReleaseUserSemaphoreSlim(uid);
             }
         }
-        
+
         [HttpGet("forgeiteminfo")]
         public string ForgeItem_Info([FromQuery] long uid = -1)
         {
@@ -7726,7 +8126,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
                 FunGameService.ReleaseUserSemaphoreSlim(uid);
             }
         }
-        
+
         [HttpPost("forgeitemsimulate")]
         public string ForgeItem_Simulate([FromQuery] long uid = -1)
         {
@@ -7774,7 +8174,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
                 FunGameService.ReleaseUserSemaphoreSlim(uid);
             }
         }
-        
+
         [HttpPost("forgeitemcomplete")]
         public string ForgeItem_Complete([FromQuery] long uid = -1)
         {
@@ -7924,7 +8324,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
                 FunGameService.ReleaseUserSemaphoreSlim(uid);
             }
         }
-        
+
         [HttpPost("chatname")]
         public string Chat_Name([FromQuery] long uid = -1, [FromQuery] string name = "", [FromQuery] string msgTo = "")
         {
@@ -7941,12 +8341,12 @@ namespace Oshima.FunGame.WebAPI.Controllers
                 {
                     return "未输入目标玩家的昵称。";
                 }
-                
+
                 if (msgTo == "")
                 {
                     return "发送了空信息。";
                 }
-                
+
                 if (msgTo.Length > 30)
                 {
                     return "超过 30 字符。";
@@ -7989,9 +8389,9 @@ namespace Oshima.FunGame.WebAPI.Controllers
                 FunGameService.ReleaseUserSemaphoreSlim(uid);
             }
         }
-        
-        [HttpPost("createroom")]
-        public string CreateRoom([FromQuery] long uid = -1, [FromQuery] string roomType = "", [FromQuery] string password = "", [FromQuery] string groupId = "")
+
+        [HttpPost("roomcreate")]
+        public string RoomCreate([FromQuery] long uid = -1, [FromQuery] string roomType = "", [FromQuery] string password = "", [FromQuery] string groupId = "")
         {
             try
             {
@@ -8033,9 +8433,9 @@ namespace Oshima.FunGame.WebAPI.Controllers
                 FunGameService.ReleaseUserSemaphoreSlim(uid);
             }
         }
-        
-        [HttpPost("intoroom")]
-        public string IntoRoom([FromQuery] long uid = -1, [FromQuery] string roomid = "", [FromQuery] string password = "")
+
+        [HttpPost("roominto")]
+        public string RoomInto([FromQuery] long uid = -1, [FromQuery] string roomid = "", [FromQuery] string password = "")
         {
             try
             {
@@ -8070,9 +8470,9 @@ namespace Oshima.FunGame.WebAPI.Controllers
                 FunGameService.ReleaseUserSemaphoreSlim(uid);
             }
         }
-        
-        [HttpPost("quitroom")]
-        public string QuitRoom([FromQuery] long uid = -1)
+
+        [HttpPost("roomquit")]
+        public string RoomQuit([FromQuery] long uid = -1)
         {
             try
             {
@@ -8107,7 +8507,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
                 FunGameService.ReleaseUserSemaphoreSlim(uid);
             }
         }
-        
+
         [HttpPost("roominfo")]
         public string RoomInfo([FromQuery] long uid = -1)
         {
@@ -8144,9 +8544,50 @@ namespace Oshima.FunGame.WebAPI.Controllers
                 FunGameService.ReleaseUserSemaphoreSlim(uid);
             }
         }
-        
-        [HttpPost("rungame")]
-        public async Task<(Room, List<string>)> RunGame([FromQuery] long uid = -1)
+
+        [HttpGet("roomshowlist")]
+        public string RoomShowList([FromQuery] long uid = -1, [FromQuery] string groupId = "")
+        {
+            try
+            {
+                PluginConfig pc = FunGameService.GetUserConfig(uid, out bool isTimeout);
+                if (isTimeout)
+                {
+                    return busy;
+                }
+
+                if (pc.Count > 0)
+                {
+                    User user = FunGameService.GetUser(pc);
+
+                    StringBuilder builder = new();
+                    builder.AppendLine($"☆--- 本群在线房间列表 ---☆");
+                    foreach (Room room in FunGameConstant.Rooms.Values.Where(r => r.GameMap == groupId))
+                    {
+                        builder.AppendLine(OnlineService.RoomInfo(room));
+                    }
+
+                    FunGameService.SetUserConfigButNotRelease(uid, pc, user);
+                    return builder.ToString().Trim();
+                }
+                else
+                {
+                    return noSaved;
+                }
+            }
+            catch (Exception e)
+            {
+                Logger.LogError(e, "Error: {e}", e);
+                return busy;
+            }
+            finally
+            {
+                FunGameService.ReleaseUserSemaphoreSlim(uid);
+            }
+        }
+
+        [HttpPost("roomrungame")]
+        public async Task<(Room, List<string>)> RoomRunGame([FromQuery] long uid = -1)
         {
             Room room = General.HallInstance;
             try
@@ -8161,7 +8602,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
                 if (pc.Count > 0)
                 {
                     User user = FunGameService.GetUser(pc);
-                    FunGameService.SetUserConfigButNotRelease(uid, pc, user);
+                    FunGameService.SetUserConfigAndReleaseSemaphoreSlim(uid, pc, user);
 
                     (room, msgs) = await OnlineService.RunGameAsync(user);
 
@@ -8182,7 +8623,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
                 FunGameService.ReleaseUserSemaphoreSlim(uid);
             }
         }
-        
+
         [HttpGet("getranking")]
         public string GetRanking([FromQuery] long uid = -1, [FromQuery] int type = -1)
         {
@@ -8255,7 +8696,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
                                         score += value2;
                                     }
                                     return $"{index + 1}. UID：{kv.Key}，昵称：{username}，总得分：{score:0.##}";
-                                })) : "暂无任何数据。")}\r\n\r\n本榜单统计角色的经验值总额，并根据其普通和技能等级计算总得分。\r\n仅显示前 {showTop} 位{(currentTop > 0 ? $"，你目前排在第 {currentTop} 位。" : "")}",
+                                })) : "暂无任何数据。")}\r\n\r\n本榜单统计角色的经验值总额，并根据其普通攻击和技能的等级计算总得分。\r\n仅显示前 {showTop} 位{(currentTop > 0 ? $"，你目前排在第 {currentTop} 位。" : "")}",
                         3 => $"【赛马积分排行榜】\r\n" +
                                 $"数据每分钟更新一次，上次更新：{FunGameConstant.RankingUpdateTime.ToString(General.GeneralDateTimeFormatChinese)}\r\n" +
                                 $"\r\n{(FunGameConstant.UserHorseRacingRanking.Count > 0 ? string.Join("\r\n", FunGameConstant.UserHorseRacingRanking.
@@ -8271,6 +8712,38 @@ namespace Oshima.FunGame.WebAPI.Controllers
                                         currentTop = index + 1;
                                     }
                                     return $"{index + 1}. UID：{kv.Key}，昵称：{username}，赛马积分：{kv.Value}";
+                                })) : "暂无任何数据。")}\r\n\r\n仅显示前 {showTop} 位{(currentTop > 0 ? $"，你目前排在第 {currentTop} 位。" : "")}",
+                        4 => $"【共斗积分排行榜】\r\n" +
+                                $"数据每分钟更新一次，上次更新：{FunGameConstant.RankingUpdateTime.ToString(General.GeneralDateTimeFormatChinese)}\r\n" +
+                                $"\r\n{(FunGameConstant.UserCooperativeRanking.Count > 0 ? string.Join("\r\n", FunGameConstant.UserCooperativeRanking.
+                                    OrderByDescending(kv => kv.Value).Take(showTop).Select((kv, index) =>
+                                {
+                                    string username = "Unknown";
+                                    if (FunGameConstant.UserIdAndUsername.TryGetValue(kv.Key, out User? value) && value != null)
+                                    {
+                                        username = value.Username;
+                                    }
+                                    if (kv.Key == user.Id)
+                                    {
+                                        currentTop = index + 1;
+                                    }
+                                    return $"{index + 1}. UID：{kv.Key}，昵称：{username}，共斗积分：{kv.Value}";
+                                })) : "暂无任何数据。")}\r\n\r\n仅显示前 {showTop} 位{(currentTop > 0 ? $"，你目前排在第 {currentTop} 位。" : "")}",
+                        5 => $"【锻造积分排行榜】\r\n" +
+                                $"数据每分钟更新一次，上次更新：{FunGameConstant.RankingUpdateTime.ToString(General.GeneralDateTimeFormatChinese)}\r\n" +
+                                $"\r\n{(FunGameConstant.UserForgingRanking.Count > 0 ? string.Join("\r\n", FunGameConstant.UserForgingRanking.
+                                    OrderByDescending(kv => kv.Value).Take(showTop).Select((kv, index) =>
+                                {
+                                    string username = "Unknown";
+                                    if (FunGameConstant.UserIdAndUsername.TryGetValue(kv.Key, out User? value) && value != null)
+                                    {
+                                        username = value.Username;
+                                    }
+                                    if (kv.Key == user.Id)
+                                    {
+                                        currentTop = index + 1;
+                                    }
+                                    return $"{index + 1}. UID：{kv.Key}，昵称：{username}，锻造积分：{kv.Value:0.##}";
                                 })) : "暂无任何数据。")}\r\n\r\n仅显示前 {showTop} 位{(currentTop > 0 ? $"，你目前排在第 {currentTop} 位。" : "")}",
                         _ => "不支持的查询。",
                     };
@@ -8292,7 +8765,189 @@ namespace Oshima.FunGame.WebAPI.Controllers
                 FunGameService.ReleaseUserSemaphoreSlim(uid);
             }
         }
-        
+
+        [HttpPost("additemstocharacter")]
+        public string AddItemsToCharacter([FromQuery] long uid = -1, [FromQuery] int cid = -1, [FromBody] int[]? ids = null)
+        {
+            ids ??= [];
+            try
+            {
+                PluginConfig pc = FunGameService.GetUserConfig(uid, out bool isTimeout);
+                if (isTimeout)
+                {
+                    return busy;
+                }
+
+                string msg = "";
+                if (pc.Count > 0)
+                {
+                    using SQLHelper? sql = Factory.OpenFactory.GetSQLHelper();
+                    if (sql is null)
+                    {
+                        return busy;
+                    }
+                    User user = FunGameService.GetUser(pc);
+
+                    List<string> msgs = [];
+                    if (cid > 0 && cid <= user.Inventory.Characters.Count)
+                    {
+                        Character character = user.Inventory.Characters.ToList()[cid - 1];
+                        List<Guid> itemTrading = [];
+                        itemTrading = SQLService.GetUserItemGuids(sql, user.Id);
+                        Dictionary<int, Item> dict = user.Inventory.Items.Select((item, index) => new { item, index }).ToDictionary(x => x.index + 1, x => x.item);
+
+                        List<Item> successItems = [];
+                        foreach (int itemIndex in ids)
+                        {
+                            if (itemIndex > 0 && itemIndex <= dict.Count)
+                            {
+                                Item item = dict[itemIndex];
+
+                                if (item.IsLock)
+                                {
+                                    msgs.Add($"物品 {itemIndex}. {item.Name}：此物品已上锁。");
+                                }
+
+                                if (item.ItemType != ItemType.Consumable)
+                                {
+                                    msgs.Add($"物品 {itemIndex}. {item.Name}：此物品不是消耗品类型。");
+                                }
+
+                                if (item.Character != null)
+                                {
+                                    msgs.Add($"物品 {itemIndex}. {item.Name}：此物品已被 {item.Character} 装备中。");
+                                }
+
+                                if (itemTrading.Contains(item.Guid))
+                                {
+                                    msgs.Add($"物品 {itemIndex}. {item.Name}：此物品正在进行交易，请检查交易报价。");
+                                }
+
+                                if (msgs.Count == 0)
+                                {
+                                    msgs.Add($"添加物品 {itemIndex}. {item.Name} 到角色 [ {character} ] 的背包中成功！");
+                                    user.Inventory.Items.Remove(item);
+                                    character.Items.Add(item);
+                                }
+                            }
+                            else
+                            {
+                                msgs.Add($"{itemIndex}. 没有找到与这个序号相对应的物品！");
+                            }
+                        }
+
+                        if (successItems.Count == 0)
+                        {
+                            msgs.Add($"没有成功添加任何物品到角色背包中。请检查物品是否存在或是否满足条件。");
+                        }
+                    }
+                    else
+                    {
+                        msgs.Add("没有找到与这个序号相对应的角色！");
+                    }
+
+                    msg = string.Join("\r\n", msgs);
+
+                    FunGameService.SetUserConfigButNotRelease(uid, pc, user);
+                    return msg;
+                }
+                else
+                {
+                    return noSaved;
+                }
+            }
+            catch (Exception e)
+            {
+                Logger.LogError(e, "Error: {e}", e);
+                return busy;
+            }
+            finally
+            {
+                FunGameService.ReleaseUserSemaphoreSlim(uid);
+            }
+        }
+
+        [HttpPost("removeitemsfromcharacter")]
+        public string RemoveItemsFromCharacter([FromQuery] long uid = -1, [FromQuery] int cid = -1, [FromBody] int[]? ids = null)
+        {
+            ids ??= [];
+            try
+            {
+                PluginConfig pc = FunGameService.GetUserConfig(uid, out bool isTimeout);
+                if (isTimeout)
+                {
+                    return busy;
+                }
+
+                string msg = "";
+                if (pc.Count > 0)
+                {
+                    using SQLHelper? sql = Factory.OpenFactory.GetSQLHelper();
+                    if (sql is null)
+                    {
+                        return busy;
+                    }
+                    User user = FunGameService.GetUser(pc);
+
+                    List<string> msgs = [];
+                    if (cid > 0 && cid <= user.Inventory.Characters.Count)
+                    {
+                        Character character = user.Inventory.Characters.ToList()[cid - 1];
+                        List<Guid> itemTrading = [];
+                        itemTrading = SQLService.GetUserItemGuids(sql, user.Id);
+                        Dictionary<int, Item> dict = character.Items.Select((item, index) => new { item, index }).ToDictionary(x => x.index + 1, x => x.item);
+
+                        List<Item> successItems = [];
+                        foreach (int itemIndex in ids)
+                        {
+                            if (itemIndex > 0 && itemIndex <= dict.Count)
+                            {
+                                Item item = dict[itemIndex];
+
+                                if (msgs.Count == 0)
+                                {
+                                    msgs.Add($"从角色 [ {character} ] 的背包中取回物品 {itemIndex}. {item.Name} 成功！");
+                                    user.Inventory.Items.Add(item);
+                                    character.Items.Remove(item);
+                                }
+                            }
+                            else
+                            {
+                                msgs.Add($"{itemIndex}. 没有找到与这个序号相对应的物品！");
+                            }
+                        }
+
+                        if (successItems.Count == 0)
+                        {
+                            msgs.Add($"没有成功从角色背包中取回任何物品到库存。");
+                        }
+                    }
+                    else
+                    {
+                        msgs.Add("没有找到与这个序号相对应的角色！");
+                    }
+
+                    msg = string.Join("\r\n", msgs);
+
+                    FunGameService.SetUserConfigButNotRelease(uid, pc, user);
+                    return msg;
+                }
+                else
+                {
+                    return noSaved;
+                }
+            }
+            catch (Exception e)
+            {
+                Logger.LogError(e, "Error: {e}", e);
+                return busy;
+            }
+            finally
+            {
+                FunGameService.ReleaseUserSemaphoreSlim(uid);
+            }
+        }
+
         [HttpPost("template")]
         public string Template([FromQuery] long uid = -1)
         {

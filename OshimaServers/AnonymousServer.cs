@@ -135,6 +135,7 @@ namespace Oshima.FunGame.OshimaServers
             TaskScheduler.Shared.AddRecurringTask("刷新存档缓存", TimeSpan.FromMinutes(1), () =>
             {
                 FunGameService.RefreshSavedCache();
+                FunGameService.RefreshClubData();
                 Controller.WriteLine("读取 FunGame 存档缓存", LogLevel.Debug);
                 OnlineService.RoomsAutoDisband();
                 Controller.WriteLine("清除空闲房间", LogLevel.Debug);

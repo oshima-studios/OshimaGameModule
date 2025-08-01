@@ -287,6 +287,18 @@ namespace Oshima.FunGame.OshimaServers.Service
             }
             return msg;
         }
+        
+        public static string RoomInfo(Room room)
+        {
+            string username = "";
+            if (FunGameConstant.UserIdAndUsername.TryGetValue(room.RoomMaster.Id, out User? value) && value != null)
+            {
+                username = value.Username;
+            }
+            string msg = $"房间号：{room.Roomid}\r\n房间类型：{room.Name}\r\n创建时间：{room.CreateTime.ToString(General.GeneralDateTimeFormatChinese)}\r\n房主：{username}\r\n" +
+                $"人数：{room.UserAndIsReady.Count} / {room.MaxUsers}";
+            return msg;
+        }
 
         public static void RoomsAutoDisband()
         {

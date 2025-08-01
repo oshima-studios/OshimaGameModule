@@ -41,11 +41,14 @@ namespace Oshima.FunGame.OshimaModules.Models
         public static Dictionary<long, Room> UsersInRoom { get; set; } = [];
         public static ItemType[] ItemCanUsed => [ItemType.Consumable, ItemType.MagicCard, ItemType.SpecialItem, ItemType.GiftBox, ItemType.Others];
         public static ItemType[] ItemCanNotDrawCard => [ItemType.Collectible, ItemType.QuestItem, ItemType.GiftBox, ItemType.Others];
+        public static Dictionary<long, double> UserForgingRanking { get; } = [];
         public static Dictionary<long, int> UserHorseRacingRanking { get; } = [];
+        public static Dictionary<long, int> UserCooperativeRanking { get; } = [];
         public static Dictionary<long, double> UserCreditsRanking { get; } = [];
         public static Dictionary<long, double> UserMaterialsRanking { get; } = [];
         public static Dictionary<long, double> UserEXPRanking { get; } = [];
         public static Dictionary<long, double> UserSkillRanking { get; } = [];
+        public static Dictionary<long, Club> ClubIdAndClub { get; } = [];
         public static DateTime RankingUpdateTime { get; set; } = DateTime.Now;
         public static char[] SplitChars => [',', ' ', '，', '；', ';'];
 

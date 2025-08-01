@@ -319,34 +319,7 @@ namespace Oshima.FunGame.WebAPI.Services
                     {
                         FunGameSimulation = true;
                         List<string> msgs = await Controller.GetTest(false, maxRespawnTimesMix: 0);
-                        List<string> real = [];
-                        int perMergeLength = msgs.Count > 7 ? 7 : msgs.Count - 1;
-                        int remain = perMergeLength;
-                        string merge = "";
-                        for (int i = 0; i < msgs.Count - 2; i++)
-                        {
-                            remain--;
-                            merge += msgs[i] + "\r\n";
-                            if (remain == 0)
-                            {
-                                real.Add(merge);
-                                merge = "";
-                                if ((msgs.Count - i - 3) < perMergeLength)
-                                {
-                                    remain = msgs.Count - i - 3;
-                                }
-                                else remain = perMergeLength;
-                            }
-                        }
-                        if (msgs.Count > 2)
-                        {
-                            real.Add(msgs[^2]);
-                            real.Add(msgs[^1]);
-                        }
-                        if (real.Count >= 3)
-                        {
-                            real = real[^3..];
-                        }
+                        List<string> real = MergeMessages(msgs);
                         int count = 1;
                         foreach (string msg in real)
                         {
@@ -375,34 +348,7 @@ namespace Oshima.FunGame.WebAPI.Services
                     {
                         FunGameSimulation = true;
                         List<string> msgs = await Controller.GetTest(false, maxRespawnTimesMix: maxRespawnTimesMix);
-                        List<string> real = [];
-                        int perMergeLength = msgs.Count > 7 ? 7 : msgs.Count - 1;
-                        int remain = perMergeLength;
-                        string merge = "";
-                        for (int i = 0; i < msgs.Count - 2; i++)
-                        {
-                            remain--;
-                            merge += msgs[i] + "\r\n";
-                            if (remain == 0)
-                            {
-                                real.Add(merge);
-                                merge = "";
-                                if ((msgs.Count - i - 3) < perMergeLength)
-                                {
-                                    remain = msgs.Count - i - 3;
-                                }
-                                else remain = perMergeLength;
-                            }
-                        }
-                        if (msgs.Count > 2)
-                        {
-                            real.Add(msgs[^2]);
-                            real.Add(msgs[^1]);
-                        }
-                        if (real.Count >= 3)
-                        {
-                            real = real[^3..];
-                        }
+                        List<string> real = MergeMessages(msgs);
                         int count = 1;
                         foreach (string msg in real)
                         {
@@ -432,38 +378,7 @@ namespace Oshima.FunGame.WebAPI.Services
                     {
                         FunGameSimulation = true;
                         List<string> msgs = await Controller.GetTest(false, true);
-                        List<string> real = [];
-                        if (msgs.Count > 0)
-                        {
-                            real.Add(msgs[0]);
-                        }
-                        int perMergeLength = msgs.Count > 7 ? 7 : msgs.Count - 1;
-                        int remain = perMergeLength;
-                        string merge = "";
-                        for (int i = 1; i < msgs.Count - 2; i++)
-                        {
-                            remain--;
-                            merge += msgs[i] + "\r\n";
-                            if (remain == 0)
-                            {
-                                real.Add(merge);
-                                merge = "";
-                                if ((msgs.Count - i - 3) < perMergeLength)
-                                {
-                                    remain = msgs.Count - i - 3;
-                                }
-                                else remain = perMergeLength;
-                            }
-                        }
-                        if (msgs.Count > 2)
-                        {
-                            real.Add(msgs[^2]);
-                            real.Add(msgs[^1]);
-                        }
-                        if (real.Count >= 3)
-                        {
-                            real = real[^3..];
-                        }
+                        List<string> real = MergeMessages(msgs);
                         int count = 1;
                         foreach (string msg in real)
                         {
@@ -858,13 +773,22 @@ namespace Oshima.FunGame.WebAPI.Services
                 {
                     string detail = e.Detail.Replace("改名拒绝", "").Trim();
                     string msg = "";
-                    if (long.TryParse(detail, out long target))
+                    string[] strings = detail.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+                    if (strings.Length > 0)
                     {
-                        msg = Controller.ApproveReName(uid, target, false);
-                    }
-                    if (msg != "")
-                    {
-                        await SendAsync(e, "改名拒绝", msg);
+                        string reason = "";
+                        if (strings.Length > 1)
+                        {
+                            reason = string.Join(" ", strings[1..]).Trim();
+                        }
+                        if (long.TryParse(strings[0], out long target))
+                        {
+                            msg = Controller.ApproveReName(uid, target, false, false, reason);
+                        }
+                        if (msg != "")
+                        {
+                            await SendAsync(e, "改名拒绝", msg);
+                        }
                     }
                     return result;
                 }
@@ -880,6 +804,45 @@ namespace Oshima.FunGame.WebAPI.Services
                     if (msg != "")
                     {
                         await SendAsync(e, "改名批准", msg);
+                    }
+                    return result;
+                }
+
+                if (e.Detail.StartsWith("社团改名拒绝"))
+                {
+                    string detail = e.Detail.Replace("社团改名拒绝", "").Trim();
+                    string msg = "";
+                    string[] strings = detail.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+                    if (strings.Length > 0)
+                    {
+                        string reason = "";
+                        if (strings.Length > 1)
+                        {
+                            reason = string.Join(" ", strings[1..]).Trim();
+                        }
+                        if (long.TryParse(strings[0], out long target))
+                        {
+                            msg = Controller.ApproveReName(uid, target, false, true, reason);
+                        }
+                        if (msg != "")
+                        {
+                            await SendAsync(e, "社团改名拒绝", msg);
+                        }
+                    }
+                    return result;
+                }
+
+                if (e.Detail.StartsWith("社团改名批准"))
+                {
+                    string detail = e.Detail.Replace("社团改名批准", "").Trim();
+                    string msg = "";
+                    if (long.TryParse(detail, out long target))
+                    {
+                        msg = Controller.ApproveReName(uid, target, isClub: true);
+                    }
+                    if (msg != "")
+                    {
+                        await SendAsync(e, "社团改名批准", msg);
                     }
                     return result;
                 }
@@ -1691,45 +1654,7 @@ namespace Oshima.FunGame.WebAPI.Services
                     {
                         msgs = await Controller.FightCustom2(uid, detail.Trim(), true);
                     }
-                    List<string> real = [];
-                    if (msgs.Count > 2)
-                    {
-                        if (msgs.Count < 20)
-                        {
-                            int perMergeLength = msgs.Count > 7 ? 7 : msgs.Count - 1;
-                            int remain = perMergeLength;
-                            string merge = "";
-                            for (int i = 0; i < msgs.Count - 1; i++)
-                            {
-                                remain--;
-                                merge += msgs[i] + "\r\n";
-                                if (remain == 0)
-                                {
-                                    real.Add(merge);
-                                    merge = "";
-                                    if ((msgs.Count - i - 2) < perMergeLength)
-                                    {
-                                        remain = msgs.Count - i - 2;
-                                    }
-                                    else remain = perMergeLength;
-                                }
-                            }
-                        }
-                        else
-                        {
-                            real.Add(string.Join("\r\n", msgs[^8..^2]));
-                        }
-                        real.Add(msgs[^2]);
-                        real.Add(msgs[^1]);
-                    }
-                    else
-                    {
-                        real = msgs;
-                    }
-                    if (real.Count >= 3)
-                    {
-                        real = real[^3..];
-                    }
+                    List<string> real = MergeMessages(msgs);
                     int count = 1;
                     foreach (string msg in real)
                     {
@@ -1751,37 +1676,7 @@ namespace Oshima.FunGame.WebAPI.Services
                     {
                         msgs = await Controller.FightCustom2(uid, detail.Trim(), false);
                     }
-                    List<string> real = [];
-                    if (msgs.Count > 2)
-                    {
-                        int perMergeLength = msgs.Count > 7 ? 7 : msgs.Count - 1;
-                        int remain = perMergeLength;
-                        string merge = "";
-                        for (int i = 0; i < msgs.Count - 1; i++)
-                        {
-                            remain--;
-                            merge += msgs[i] + "\r\n";
-                            if (remain == 0)
-                            {
-                                real.Add(merge);
-                                merge = "";
-                                if ((msgs.Count - i - 3) < perMergeLength)
-                                {
-                                    remain = msgs.Count - i - 3;
-                                }
-                                else remain = perMergeLength;
-                            }
-                        }
-                        real.Add(msgs[^1]);
-                    }
-                    else
-                    {
-                        real = msgs;
-                    }
-                    if (real.Count >= 3)
-                    {
-                        real = real[^3..];
-                    }
+                    List<string> real = MergeMessages(msgs);
                     int count = 1;
                     foreach (string msg in real)
                     {
@@ -1803,45 +1698,7 @@ namespace Oshima.FunGame.WebAPI.Services
                     {
                         msgs = await Controller.FightCustomTeam2(uid, detail.Trim(), true);
                     }
-                    List<string> real = [];
-                    if (msgs.Count >= 3)
-                    {
-                        if (msgs.Count < 20)
-                        {
-                            int perMergeLength = msgs.Count > 7 ? 7 : msgs.Count - 1;
-                            int remain = perMergeLength;
-                            string merge = "";
-                            for (int i = 0; i < msgs.Count - 1; i++)
-                            {
-                                remain--;
-                                merge += msgs[i] + "\r\n";
-                                if (remain == 0)
-                                {
-                                    real.Add(merge);
-                                    merge = "";
-                                    if ((msgs.Count - i - 3) < perMergeLength)
-                                    {
-                                        remain = msgs.Count - i - 3;
-                                    }
-                                    else remain = perMergeLength;
-                                }
-                            }
-                        }
-                        else
-                        {
-                            real.Add(msgs[^3]);
-                        }
-                        real.Add(msgs[^2]);
-                        real.Add(msgs[^1]);
-                    }
-                    else
-                    {
-                        real = msgs;
-                    }
-                    if (real.Count >= 3)
-                    {
-                        real = real[^3..];
-                    }
+                    List<string> real = MergeMessages(msgs);
                     int count = 1;
                     foreach (string msg in real)
                     {
@@ -1877,45 +1734,7 @@ namespace Oshima.FunGame.WebAPI.Services
                     if (int.TryParse(detail.Trim(), out int index))
                     {
                         msgs = await Controller.FightBossTeam(uid, index, true);
-                        List<string> real = [];
-                        if (msgs.Count >= 3)
-                        {
-                            if (msgs.Count < 20)
-                            {
-                                int perMergeLength = msgs.Count > 7 ? 7 : msgs.Count - 1;
-                                int remain = perMergeLength;
-                                string merge = "";
-                                for (int i = 0; i < msgs.Count - 1; i++)
-                                {
-                                    remain--;
-                                    merge += msgs[i] + "\r\n";
-                                    if (remain == 0)
-                                    {
-                                        real.Add(merge);
-                                        merge = "";
-                                        if ((msgs.Count - i - 3) < perMergeLength)
-                                        {
-                                            remain = msgs.Count - i - 3;
-                                        }
-                                        else remain = perMergeLength;
-                                    }
-                                }
-                            }
-                            else
-                            {
-                                real.Add(msgs[^3]);
-                            }
-                            real.Add(msgs[^2]);
-                            real.Add(msgs[^1]);
-                        }
-                        else
-                        {
-                            real = msgs;
-                        }
-                        if (real.Count >= 3)
-                        {
-                            real = real[^3..];
-                        }
+                        List<string> real = MergeMessages(msgs);
                         int count = 1;
                         foreach (string msg in real)
                         {
@@ -1937,45 +1756,7 @@ namespace Oshima.FunGame.WebAPI.Services
                     if (int.TryParse(detail.Trim(), out int index))
                     {
                         msgs = await Controller.FightBoss(uid, index, true);
-                        List<string> real = [];
-                        if (msgs.Count >= 3)
-                        {
-                            if (msgs.Count < 20)
-                            {
-                                int perMergeLength = msgs.Count > 7 ? 7 : msgs.Count - 1;
-                                int remain = perMergeLength;
-                                string merge = "";
-                                for (int i = 0; i < msgs.Count - 1; i++)
-                                {
-                                    remain--;
-                                    merge += msgs[i] + "\r\n";
-                                    if (remain == 0)
-                                    {
-                                        real.Add(merge);
-                                        merge = "";
-                                        if ((msgs.Count - i - 3) < perMergeLength)
-                                        {
-                                            remain = msgs.Count - i - 3;
-                                        }
-                                        else remain = perMergeLength;
-                                    }
-                                }
-                            }
-                            else
-                            {
-                                real.Add(msgs[^3]);
-                            }
-                            real.Add(msgs[^2]);
-                            real.Add(msgs[^1]);
-                        }
-                        else
-                        {
-                            real = msgs;
-                        }
-                        if (real.Count >= 3)
-                        {
-                            real = real[^3..];
-                        }
+                        List<string> real = MergeMessages(msgs);
                         int count = 1;
                         foreach (string msg in real)
                         {
@@ -2043,7 +1824,35 @@ namespace Oshima.FunGame.WebAPI.Services
                     string detail = e.Detail.Replace("加入社团", "").Trim();
                     if (int.TryParse(detail, out int c))
                     {
-                        string msg = Controller.JoinClub(uid, c);
+                        string msg = Controller.ClubJoin(uid, c);
+                        if (msg != "")
+                        {
+                            await SendAsync(e, "社团", msg);
+                        }
+                    }
+                    return result;
+                }
+                
+                if (e.Detail.StartsWith("邀请加入", StringComparison.CurrentCultureIgnoreCase))
+                {
+                    string detail = e.Detail.Replace("邀请加入", "").Trim();
+                    if (int.TryParse(detail, out int id))
+                    {
+                        string msg = Controller.ClubInvite(uid, id);
+                        if (msg != "")
+                        {
+                            await SendAsync(e, "社团", msg);
+                        }
+                    }
+                    return result;
+                }
+                
+                if (e.Detail.StartsWith("取消邀请加入", StringComparison.CurrentCultureIgnoreCase))
+                {
+                    string detail = e.Detail.Replace("取消邀请加入", "").Trim();
+                    if (int.TryParse(detail, out int id))
+                    {
+                        string msg = Controller.ClubInvite(uid, id, true);
                         if (msg != "")
                         {
                             await SendAsync(e, "社团", msg);
@@ -2061,7 +1870,7 @@ namespace Oshima.FunGame.WebAPI.Services
                         isPublic = false;
                     }
                     detail = detail.Replace("私密", "").Trim();
-                    string msg = Controller.CreateClub(uid, isPublic, detail);
+                    string msg = Controller.ClubCreate(uid, isPublic, detail);
                     if (msg != "")
                     {
                         await SendAsync(e, "社团", msg);
@@ -2071,7 +1880,7 @@ namespace Oshima.FunGame.WebAPI.Services
 
                 if (e.Detail == "退出社团")
                 {
-                    string msg = Controller.QuitClub(uid);
+                    string msg = Controller.ClubQuit(uid);
                     if (msg != "")
                     {
                         await SendAsync(e, "社团", "\r\n" + msg);
@@ -2081,7 +1890,7 @@ namespace Oshima.FunGame.WebAPI.Services
 
                 if (e.Detail == "我的社团")
                 {
-                    string msg = Controller.ShowClubInfo(uid);
+                    string msg = Controller.ClubShowInfo(uid);
                     if (msg != "")
                     {
                         await SendAsync(e, "社团", "\r\n" + msg);
@@ -2089,9 +1898,28 @@ namespace Oshima.FunGame.WebAPI.Services
                     return result;
                 }
 
+                if (e.Detail.StartsWith("社团列表"))
+                {
+                    string detail = e.Detail.Replace("社团列表", "").Trim();
+                    string msg = "";
+                    if (int.TryParse(detail, out int page))
+                    {
+                        msg = Controller.ClubShowList(uid, page);
+                    }
+                    else
+                    {
+                        msg = Controller.ClubShowList(uid, 1);
+                    }
+                    if (msg.Trim() != "")
+                    {
+                        await SendAsync(e, "社团", msg);
+                    }
+                    return result;
+                }
+
                 if (e.Detail == "解散社团")
                 {
-                    string msg = Controller.DisbandClub(uid);
+                    string msg = Controller.ClubDisband(uid);
                     if (msg != "")
                     {
                         await SendAsync(e, "社团", "\r\n" + msg);
@@ -2104,7 +1932,7 @@ namespace Oshima.FunGame.WebAPI.Services
                     string detail = e.Detail.Replace("查看社团成员", "").Trim();
                     if (int.TryParse(detail, out int page) && page > 0)
                     {
-                        string msg = Controller.ShowClubMemberList(uid, 0, page);
+                        string msg = Controller.ClubShowMemberList(uid, 0, page);
                         if (msg != "")
                         {
                             await SendAsync(e, "社团", "\r\n" + msg);
@@ -2112,7 +1940,7 @@ namespace Oshima.FunGame.WebAPI.Services
                     }
                     else
                     {
-                        string msg = Controller.ShowClubMemberList(uid, 0, 1);
+                        string msg = Controller.ClubShowMemberList(uid, 0, 1);
                         if (msg != "")
                         {
                             await SendAsync(e, "社团", "\r\n" + msg);
@@ -2126,7 +1954,7 @@ namespace Oshima.FunGame.WebAPI.Services
                     string detail = e.Detail.Replace("查看社团管理", "").Trim();
                     if (int.TryParse(detail, out int page) && page > 0)
                     {
-                        string msg = Controller.ShowClubMemberList(uid, 1, page);
+                        string msg = Controller.ClubShowMemberList(uid, 1, page);
                         if (msg != "")
                         {
                             await SendAsync(e, "社团", "\r\n" + msg);
@@ -2134,7 +1962,7 @@ namespace Oshima.FunGame.WebAPI.Services
                     }
                     else
                     {
-                        string msg = Controller.ShowClubMemberList(uid, 1, 1);
+                        string msg = Controller.ClubShowMemberList(uid, 1, 1);
                         if (msg != "")
                         {
                             await SendAsync(e, "社团", "\r\n" + msg);
@@ -2148,7 +1976,7 @@ namespace Oshima.FunGame.WebAPI.Services
                     string detail = e.Detail.Replace("查看申请人列表", "").Trim();
                     if (int.TryParse(detail, out int page) && page > 0)
                     {
-                        string msg = Controller.ShowClubMemberList(uid, 2, page);
+                        string msg = Controller.ClubShowMemberList(uid, 2, page);
                         if (msg != "")
                         {
                             await SendAsync(e, "社团", "\r\n" + msg);
@@ -2156,7 +1984,29 @@ namespace Oshima.FunGame.WebAPI.Services
                     }
                     else
                     {
-                        string msg = Controller.ShowClubMemberList(uid, 2, 1);
+                        string msg = Controller.ClubShowMemberList(uid, 2, 1);
+                        if (msg != "")
+                        {
+                            await SendAsync(e, "社团", "\r\n" + msg);
+                        }
+                    }
+                    return result;
+                }
+                
+                if (e.Detail.StartsWith("查看受邀人列表"))
+                {
+                    string detail = e.Detail.Replace("查看受邀人列表", "").Trim();
+                    if (int.TryParse(detail, out int page) && page > 0)
+                    {
+                        string msg = Controller.ClubShowMemberList(uid, 3, page);
+                        if (msg != "")
+                        {
+                            await SendAsync(e, "社团", "\r\n" + msg);
+                        }
+                    }
+                    else
+                    {
+                        string msg = Controller.ClubShowMemberList(uid, 3, 1);
                         if (msg != "")
                         {
                             await SendAsync(e, "社团", "\r\n" + msg);
@@ -2170,7 +2020,7 @@ namespace Oshima.FunGame.WebAPI.Services
                     string detail = e.Detail.Replace("社团批准", "").Replace("@", "").Trim();
                     if (long.TryParse(detail, out long id))
                     {
-                        string msg = Controller.ApproveClub(uid, id, true);
+                        string msg = Controller.ClubApprove(uid, id, true);
                         if (msg != "")
                         {
                             await SendAsync(e, "社团", msg);
@@ -2184,7 +2034,7 @@ namespace Oshima.FunGame.WebAPI.Services
                     string detail = e.Detail.Replace("社团拒绝", "").Replace("@", "").Trim();
                     if (long.TryParse(detail, out long id))
                     {
-                        string msg = Controller.ApproveClub(uid, id, false);
+                        string msg = Controller.ClubApprove(uid, id, false);
                         if (msg != "")
                         {
                             await SendAsync(e, "社团", msg);
@@ -2198,7 +2048,7 @@ namespace Oshima.FunGame.WebAPI.Services
                     string detail = e.Detail.Replace("社团踢出", "").Replace("@", "").Trim();
                     if (long.TryParse(detail, out long id))
                     {
-                        string msg = Controller.KickClub(uid, id);
+                        string msg = Controller.ClubKick(uid, id);
                         if (msg != "")
                         {
                             await SendAsync(e, "社团", msg);
@@ -2230,7 +2080,7 @@ namespace Oshima.FunGame.WebAPI.Services
                         {
                             args = [.. strings[1..]];
                         }
-                        string msg = Controller.ChangeClub(uid, part, [.. args]);
+                        string msg = Controller.ClubChange(uid, part, [.. args]);
                         if (msg != "")
                         {
                             await SendAsync(e, "社团", msg);
@@ -2243,8 +2093,23 @@ namespace Oshima.FunGame.WebAPI.Services
                 {
                     string detail = e.Detail.Replace("社团转让", "").Replace("@", "").Trim();
                     List<string> args = [detail];
-                    string msg = Controller.ChangeClub(uid, "setmaster", [.. args]);
+                    string msg = Controller.ClubChange(uid, "setmaster", [.. args]);
                     if (msg != "")
+                    {
+                        await SendAsync(e, "社团", msg);
+                    }
+                    return result;
+                }
+
+                if (e.Detail.StartsWith("社团捐献"))
+                {
+                    string detail = e.Detail.Replace("社团捐献", "").Trim();
+                    string msg = "";
+                    if (double.TryParse(detail, out double credits))
+                    {
+                        msg = Controller.ClubContribution(uid, credits);
+                    }
+                    if (msg.Trim() != "")
                     {
                         await SendAsync(e, "社团", msg);
                     }
@@ -2403,7 +2268,7 @@ namespace Oshima.FunGame.WebAPI.Services
                     }
                     if (cindexs.Count > 1 && cindexs.Count <= 5)
                     {
-                        (msg, eid) = Controller.ExploreRegion(uid, cindexs[0], [.. cindexs.Skip(1).Select(id => (long)id)]);
+                        (msg, eid) = Controller.ExploreRegion(uid, cindexs[0], false, [.. cindexs.Skip(1).Select(id => (long)id)]);
                         if (msg.Trim() != "")
                         {
                             await SendAsync(e, "探索", msg);
@@ -2425,6 +2290,44 @@ namespace Oshima.FunGame.WebAPI.Services
                     else
                     {
                         await SendAsync(e, "探索", "探索指令格式错误，正确格式为：探索 <地区序号> <{角色序号...}>");
+                    }
+                    return result;
+                }
+                
+                if (e.Detail.StartsWith("小队探索"))
+                {
+                    string detail = e.Detail.Replace("小队探索", "").Trim();
+                    string msg = "";
+                    string eid = "";
+                    string[] strings = detail.Split(FunGameConstant.SplitChars, StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
+                    List<int> cindexs = [];
+                    foreach (string s in strings)
+                    {
+                        if (int.TryParse(s, out int c))
+                        {
+                            cindexs.Add(c);
+                        }
+                    }
+                    if (cindexs.Count > 0)
+                    {
+                        (msg, eid) = Controller.ExploreRegion(uid, cindexs[0], true);
+                        if (msg.Trim() != "")
+                        {
+                            await SendAsync(e, "探索", msg);
+                        }
+                        _ = Task.Run(async () =>
+                        {
+                            await Task.Delay(FunGameConstant.ExploreTime * 60 * 1000);
+                            msg = Controller.SettleExplore(eid, uid);
+                            if (msg.Trim() != "")
+                            {
+                                await SendAsync(e, "探索", msg, msgSeq: 2);
+                            }
+                        });
+                    }
+                    else
+                    {
+                        await SendAsync(e, "探索", "探索指令格式错误，正确格式为：小队探索 <地区序号>");
                     }
                     return result;
                 }
@@ -2971,6 +2874,16 @@ namespace Oshima.FunGame.WebAPI.Services
                     }
                     return result;
                 }
+                
+                if (e.Detail == "共斗商店")
+                {
+                    string msg = Controller.ShowSystemStore(uid, "铎京城", "dokyo_cooperative");
+                    if (msg.Trim() != "")
+                    {
+                        await SendAsync(e, "商店", msg);
+                    }
+                    return result;
+                }
 
                 if (e.Detail.StartsWith("商店"))
                 {
@@ -2997,6 +2910,9 @@ namespace Oshima.FunGame.WebAPI.Services
                                 break;
                             case 6:
                                 msg = Controller.ShowSystemStore(uid, "铎京城", "dokyo_horseracing");
+                                break;
+                            case 7:
+                                msg = Controller.ShowSystemStore(uid, "铎京城", "dokyo_cooperative");
                                 break;
                             default:
                                 break;
@@ -3301,7 +3217,7 @@ namespace Oshima.FunGame.WebAPI.Services
                     }
                     if (groupId != "")
                     {
-                        string msg = Controller.CreateRoom(uid, "horseracing", "", groupId);
+                        string msg = Controller.RoomCreate(uid, "horseracing", "", groupId);
                         if (msg.Trim() != "")
                         {
                             await SendAsync(e, "赛马", msg);
@@ -3327,7 +3243,7 @@ namespace Oshima.FunGame.WebAPI.Services
                     }
                     if (groupId != "")
                     {
-                        string msg = Controller.CreateRoom(uid, "cooperative", "", groupId);
+                        string msg = Controller.RoomCreate(uid, "cooperative", "", groupId);
                         if (msg.Trim() != "")
                         {
                             await SendAsync(e, "房间", msg);
@@ -3353,7 +3269,7 @@ namespace Oshima.FunGame.WebAPI.Services
                     }
                     if (groupId != "")
                     {
-                        string msg = Controller.CreateRoom(uid, "mix", "", groupId);
+                        string msg = Controller.RoomCreate(uid, "mix", "", groupId);
                         if (msg.Trim() != "")
                         {
                             await SendAsync(e, "房间", msg);
@@ -3379,7 +3295,7 @@ namespace Oshima.FunGame.WebAPI.Services
                     }
                     if (groupId != "")
                     {
-                        string msg = Controller.CreateRoom(uid, "team", "", groupId);
+                        string msg = Controller.RoomCreate(uid, "team", "", groupId);
                         if (msg.Trim() != "")
                         {
                             await SendAsync(e, "房间", msg);
@@ -3407,7 +3323,7 @@ namespace Oshima.FunGame.WebAPI.Services
                     {
                         if (FunGameConstant.Rooms.Values.FirstOrDefault(r => r.GameMap == groupId) is Room room)
                         {
-                            string msg = Controller.IntoRoom(uid, room.Roomid, "");
+                            string msg = Controller.RoomInto(uid, room.Roomid, "");
                             if (msg.Trim() != "")
                             {
                                 await SendAsync(e, "赛马", msg);
@@ -3450,7 +3366,7 @@ namespace Oshima.FunGame.WebAPI.Services
                                 password = detail[(firstSpaceIndex + 1)..].Trim();
                             }
                         }
-                        string msg = Controller.CreateRoom(uid, roomType, password, groupId);
+                        string msg = Controller.RoomCreate(uid, roomType, password, groupId);
                         if (msg.Trim() != "")
                         {
                             await SendAsync(e, "房间", msg);
@@ -3488,7 +3404,7 @@ namespace Oshima.FunGame.WebAPI.Services
                                 password = detail[(firstSpaceIndex + 1)..].Trim();
                             }
                         }
-                        string msg = Controller.IntoRoom(uid, roomid, password);
+                        string msg = Controller.RoomInto(uid, roomid, password);
                         if (msg.Trim() != "")
                         {
                             await SendAsync(e, "房间", msg);
@@ -3519,41 +3435,8 @@ namespace Oshima.FunGame.WebAPI.Services
                             await SendAsync(e, "房间", "你不在房间中或者所在的房间不是赛马房间，请使用【开始游戏】指令。注意：只有房主才可以开始游戏。");
                             return result;
                         }
-                        (Room room, List<string> msgs) = await Controller.RunGame(uid);
-                        List<string> real = [];
-                        if (msgs.Count > 1)
-                        {
-                            if (msgs.Count > 20)
-                            {
-                                msgs = [msgs[0], .. msgs[^20..]];
-                            }
-                            int perMergeLength = msgs.Count > 5 ? 5 : msgs.Count;
-                            int remain = perMergeLength;
-                            string merge = "";
-                            for (int i = 0; i < msgs.Count; i++)
-                            {
-                                remain--;
-                                merge += msgs[i] + "\r\n";
-                                if (remain == 0 || i == msgs.Count - 1)
-                                {
-                                    real.Add(merge);
-                                    merge = "";
-                                    if (msgs.Count < perMergeLength)
-                                    {
-                                        remain = msgs.Count;
-                                    }
-                                    else remain = perMergeLength;
-                                }
-                            }
-                        }
-                        else
-                        {
-                            real = msgs;
-                        }
-                        if (real.Count >= 3)
-                        {
-                            real = [real[0], .. real[^2..]];
-                        }
+                        (Room room, List<string> msgs) = await Controller.RoomRunGame(uid);
+                        List<string> real = MergeMessages(msgs);
                         int count = 1;
                         foreach (string msg in real)
                         {
@@ -3582,7 +3465,33 @@ namespace Oshima.FunGame.WebAPI.Services
                     }
                     if (groupId != "")
                     {
-                        string msg = Controller.QuitRoom(uid);
+                        string msg = Controller.RoomQuit(uid);
+                        if (msg.Trim() != "")
+                        {
+                            await SendAsync(e, "房间", msg);
+                        }
+                    }
+                    else
+                    {
+                        await SendAsync(e, "房间", "请在群聊中进行多人游戏。");
+                    }
+                    return result;
+                }
+                
+                if (e.Detail == "房间列表")
+                {
+                    string groupId = "";
+                    if (e.IsGroup && e is GroupAtMessage groupAtMessage && groupAtMessage.GroupOpenId != "")
+                    {
+                        groupId = groupAtMessage.GroupOpenId;
+                    }
+                    else if (e.IsGroup && e is ThirdPartyMessage thirdPartyMessage && thirdPartyMessage.GroupOpenId != "")
+                    {
+                        groupId = thirdPartyMessage.GroupOpenId;
+                    }
+                    if (groupId != "")
+                    {
+                        string msg = Controller.RoomShowList(uid, groupId);
                         if (msg.Trim() != "")
                         {
                             await SendAsync(e, "房间", msg);
@@ -3644,6 +3553,82 @@ namespace Oshima.FunGame.WebAPI.Services
                     }
                     return result;
                 }
+                
+                if (e.Detail == $"共斗排行榜")
+                {
+                    string msg = Controller.GetRanking(uid, 4);
+                    if (msg.Trim() != "")
+                    {
+                        await SendAsync(e, "排行榜", msg);
+                    }
+                    return result;
+                }
+                
+                if (e.Detail == $"锻造排行榜")
+                {
+                    string msg = Controller.GetRanking(uid, 5);
+                    if (msg.Trim() != "")
+                    {
+                        await SendAsync(e, "排行榜", msg);
+                    }
+                    return result;
+                }
+
+                if (e.Detail.StartsWith("加物") || e.Detail.StartsWith("添加背包物品"))
+                {
+                    string detail = e.Detail.Replace("加物", "").Replace("添加背包物品", "").Trim();
+                    string[] strings = detail.Split(FunGameConstant.SplitChars, StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
+                    if (strings.Length < 2)
+                    {
+                        await SendAsync(e, "加物", "格式不正确，请使用：加物 <角色> <{库存物品序号...}>。多个物品序号使用空格隔开。");
+                        return result;
+                    }
+                    List<int> ids = [];
+                    int cid = -999;
+                    for (int i = 0; i < strings.Length; i++)
+                    {
+                        if (int.TryParse(strings[i], out int id))
+                        {
+                            if (i != 0) ids.Add(id);
+                            else cid = id;
+                        }
+                    }
+                    string msg = Controller.AddItemsToCharacter(uid, cid, [.. ids]);
+                    if (msg != "")
+                    {
+                        await SendAsync(e, "加物", msg);
+                    }
+
+                    return result;
+                }
+                
+                if (e.Detail.StartsWith("减物") || e.Detail.StartsWith("移除背包物品"))
+                {
+                    string detail = e.Detail.Replace("减物", "").Replace("移除背包物品", "").Trim();
+                    string[] strings = detail.Split(FunGameConstant.SplitChars, StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
+                    if (strings.Length < 2)
+                    {
+                        await SendAsync(e, "减物", "格式不正确，请使用：减物 <角色> <{库存物品序号...}>。多个物品序号使用空格隔开。");
+                        return result;
+                    }
+                    List<int> ids = [];
+                    int cid = -999;
+                    for (int i = 0; i < strings.Length; i++)
+                    {
+                        if (int.TryParse(strings[i], out int id))
+                        {
+                            if (i != 0) ids.Add(id);
+                            else cid = id;
+                        }
+                    }
+                    string msg = Controller.RemoveItemsFromCharacter(uid, cid, [.. ids]);
+                    if (msg != "")
+                    {
+                        await SendAsync(e, "减物", msg);
+                    }
+
+                    return result;
+                }
 
                 if (uid == GeneralSettings.Master && e.Detail.StartsWith("重载FunGame", StringComparison.CurrentCultureIgnoreCase))
                 {
@@ -3661,6 +3646,45 @@ namespace Oshima.FunGame.WebAPI.Services
             }
 
             return false;
+        }
+
+        public List<string> MergeMessages(List<string> msgs)
+        {
+            List<string> real = [];
+            if (msgs.Count > 1)
+            {
+                if (msgs.Count > 20)
+                {
+                    msgs = [msgs[0], .. msgs[^20..]];
+                }
+                int perMergeLength = msgs.Count > 5 ? 5 : msgs.Count;
+                int remain = perMergeLength;
+                string merge = "";
+                for (int i = 0; i < msgs.Count; i++)
+                {
+                    remain--;
+                    merge += msgs[i] + "\r\n";
+                    if (remain == 0 || i == msgs.Count - 1)
+                    {
+                        real.Add(merge);
+                        merge = "";
+                        if (msgs.Count < perMergeLength)
+                        {
+                            remain = msgs.Count;
+                        }
+                        else remain = perMergeLength;
+                    }
+                }
+            }
+            else
+            {
+                real = msgs;
+            }
+            if (real.Count >= 3)
+            {
+                real = [real[0], .. real[^2..]];
+            }
+            return real;
         }
     }
 }

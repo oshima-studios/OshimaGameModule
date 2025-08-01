@@ -656,6 +656,7 @@ namespace Oshima.FunGame.OshimaServers.Service
             int reduce;
             string reduceUnit;
             IEnumerable<Item>? items = null;
+            bool useItem = false;
             if (useCurrency)
             {
                 if (is10)
@@ -666,7 +667,8 @@ namespace Oshima.FunGame.OshimaServers.Service
                 {
                     items = user.Inventory.Items.Where(i => i is 奖券);
                 }
-                if (items.Any())
+                useItem = items.Any();
+                if (useItem)
                 {
                     reduceUnit = items.First().Name;
                     reduce = 1;
@@ -730,7 +732,7 @@ namespace Oshima.FunGame.OshimaServers.Service
                 }
             }
 
-            if (items != null && items.Any())
+            if (items != null && useItem)
             {
                 msgs.Insert(0, $"本次抽卡使用{reduceUnit}代替金币抽卡！你的库存剩余 {items.Count()} 张{reduceUnit}。");
             }
@@ -2180,6 +2182,19 @@ namespace Oshima.FunGame.OshimaServers.Service
                         return $"你的{needy}不足 {reduce} 呢，无法购买【{goods.Name}】！";
                     }
                 }
+                else if (needy == "共斗积分")
+                {
+                    double reduce = Calculation.Round2Digits(goods.Prices[needy] * count);
+                    if (pc.TryGetValue("cooperativePoints", out object? value) && double.TryParse(value.ToString(), out double points) && points >= reduce)
+                    {
+                        points -= reduce;
+                        pc.Add("cooperativePoints", points);
+                    }
+                    else
+                    {
+                        return $"你的{needy}不足 {reduce} 呢，无法购买【{goods.Name}】！";
+                    }
+                }
                 else
                 {
                     return $"不支持的货币类型：{needy}，无法购买【{goods.Name}】！";
@@ -2632,7 +2647,7 @@ namespace Oshima.FunGame.OshimaServers.Service
                             enemy = region.Units.OrderBy(o => Random.Shared.Next()).First().Copy();
                             enemys.Add(enemy);
                             enemy = region.Units.OrderBy(o => Random.Shared.Next()).First().Copy();
-                            enemy.FirstName = enemys.Any(e => e.Name == enemy.Name) ? "2" : "";
+                            enemy.FirstName = enemys.Any(e => e.Name.StartsWith(enemy.Name)) ? "2" : "";
                             enemys.Add(enemy);
                             break;
                         case 5:
@@ -2640,10 +2655,10 @@ namespace Oshima.FunGame.OshimaServers.Service
                             enemy = region.Units.OrderBy(o => Random.Shared.Next()).First().Copy();
                             enemys.Add(enemy);
                             enemy = region.Units.OrderBy(o => Random.Shared.Next()).First().Copy();
-                            enemy.FirstName = enemys.Any(e => e.Name == enemy.Name) ? "α" : "";
+                            enemy.FirstName = enemys.Any(e => e.Name.StartsWith(enemy.Name)) ? "α" : "";
                             enemys.Add(enemy);
                             enemy = region.Units.OrderBy(o => Random.Shared.Next()).First().Copy();
-                            enemy.FirstName = enemys.Any(e => e.Name == enemy.Name) ? "β" : "";
+                            enemy.FirstName = enemys.Any(e => e.Name.StartsWith(enemy.Name)) ? "β" : "";
                             enemys.Add(enemy);
                             break;
                     }
@@ -3597,7 +3612,7 @@ namespace Oshima.FunGame.OshimaServers.Service
                 if (enemy != null)
                 {
                     enemy = enemy.Copy();
-                    int dcount = enemys.Count(e => e.Name == enemy.Name);
+                    int dcount = enemys.Count(e => e.Name.StartsWith(enemy.Name));
                     if (dcount > 0 && FunGameConstant.GreekAlphabet.Length > dcount) enemy.Name += FunGameConstant.GreekAlphabet[dcount - 1];
                     enemys.Add(enemy);
                 }
@@ -4579,6 +4594,14 @@ namespace Oshima.FunGame.OshimaServers.Service
                         {
                             FunGameConstant.UserHorseRacingRanking[user.Id] = horseRacingPoints;
                         }
+                        if (pc.TryGetValue("forgepoints", out value3) && double.TryParse(value3.ToString(), out double forgepoints))
+                        {
+                            FunGameConstant.UserForgingRanking[user.Id] = forgepoints;
+                        }
+                        if (pc.TryGetValue("cooperativePoints", out value3) && int.TryParse(value3.ToString(), out int cooperativePoints))
+                        {
+                            FunGameConstant.UserCooperativeRanking[user.Id] = cooperativePoints;
+                        }
                     }
                     ReleaseUserSemaphoreSlim(fileName);
                 }
@@ -4586,6 +4609,26 @@ namespace Oshima.FunGame.OshimaServers.Service
             }
         }
 
+        public static void RefreshClubData()
+        {
+            string directoryPath = $@"{AppDomain.CurrentDomain.BaseDirectory}configs/clubs";
+            if (Directory.Exists(directoryPath))
+            {
+                string[] filePaths = Directory.GetFiles(directoryPath);
+                foreach (string filePath in filePaths)
+                {
+                    string fileName = Path.GetFileNameWithoutExtension(filePath);
+                    EntityModuleConfig<Club> clubs = new("clubs", fileName);
+                    clubs.LoadConfig();
+                    Club? club = clubs.Get("club");
+                    if (club != null)
+                    {
+                        FunGameConstant.ClubIdAndClub[club.Id] = club;
+                    }
+                }
+            }
+        }
+        
         public static void RefreshDailyQuest()
         {
             string directoryPath = $@"{AppDomain.CurrentDomain.BaseDirectory}configs/quests";

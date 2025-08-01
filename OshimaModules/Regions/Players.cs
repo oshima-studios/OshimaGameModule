@@ -40,6 +40,10 @@ namespace Oshima.FunGame.OshimaModules.Regions
                 {
                     template = CreateNewHorseRacingStore();
                 }
+                else if (storeName == "dokyo_cooperative")
+                {
+                    template = CreateNewCooperativeStore();
+                }
                 else return null;
             }
 
@@ -106,21 +110,24 @@ namespace Oshima.FunGame.OshimaModules.Regions
         {
             if (storeName == "dokyo_forge")
             {
-                double forgePoints = 0;
                 if (pc.TryGetValue("forgepoints", out object? value) && double.TryParse(value.ToString(), out double points))
                 {
-                    forgePoints = points;
+                    return $"现有锻造积分：{points:0.##}";
                 }
-                return $"现有锻造积分：{forgePoints:0.##}";
             }
             else if (storeName == "dokyo_horseracing")
             {
-                double horseRacingPoints = 0;
-                if (pc.TryGetValue("horseRacingPoints", out object? value) && double.TryParse(value.ToString(), out double points))
+                if (pc.TryGetValue("horseRacingPoints", out object? value) && int.TryParse(value.ToString(), out int points))
                 {
-                    horseRacingPoints = points;
+                    return $"现有赛马积分：{points:0.##}";
                 }
-                return $"现有赛马积分：{horseRacingPoints:0.##}";
+            }
+            else if (storeName == "dokyo_cooperative")
+            {
+                if (pc.TryGetValue("cooperativePoints", out object? value) && int.TryParse(value.ToString(), out int points))
+                {
+                    return $"现有共斗积分：{points:0.##}";
+                }
             }
             return "";
         }
@@ -163,6 +170,19 @@ namespace Oshima.FunGame.OshimaModules.Regions
                 store.CopyGoodsToNextRefreshGoods(newStore.Goods);
             }
             storeTemplate.Add("dokyo_horseracing", store);
+            
+            store = storeTemplate.Get("dokyo_cooperative");
+            if (store is null)
+            {
+                store = CreateNewCooperativeStore();
+            }
+            else
+            {
+                Store newStore = CreateNewCooperativeStore();
+                store.NextRefreshGoods.Clear();
+                store.CopyGoodsToNextRefreshGoods(newStore.Goods);
+            }
+            storeTemplate.Add("dokyo_cooperative", store);
 
             storeTemplate.SaveConfig();
         }
@@ -205,6 +225,35 @@ namespace Oshima.FunGame.OshimaModules.Regions
             store.AddItem(item, -1);
             store.SetPrice(1, "赛马积分", 5);
             store.Goods[1].Quota = 300;
+            return store;
+        }
+
+        private static Store CreateNewCooperativeStore()
+        {
+            Store store = new("共斗积分商店")
+            {
+                GetNewerGoodsOnVisiting = true,
+                AutoRefresh = true,
+                RefreshInterval = 1,
+                NextRefreshDate = DateTime.Today.AddHours(4),
+                GlobalStock = true,
+            };
+            Item item = new 奖券();
+            store.AddItem(item, -1);
+            store.SetPrice(1, "共斗积分", 15);
+            store.Goods[1].Quota = 300;
+            item = new 十连奖券();
+            store.AddItem(item, -1);
+            store.SetPrice(2, "共斗积分", 120);
+            store.Goods[2].Quota = 100;
+            Item[] items = [.. FunGameConstant.CharacterLevelBreakItems.Union(FunGameConstant.SkillLevelUpItems).OrderBy(o => Random.Shared.Next()).Take(5)];
+            int i = 3;
+            foreach (Item cItem in items)
+            {
+                store.AddItem(cItem, -1);
+                store.SetPrice(i, "共斗积分", 4 * ((int)cItem.QualityType + 1));
+                i++;
+            }
             return store;
         }
     }
