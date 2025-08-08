@@ -120,6 +120,10 @@ namespace Oshima.FunGame.OshimaServers.Service
                         room.Roomid = Verification.CreateVerifyCode(VerifyCodeType.MixVerifyCode, 7);
                     }
                     msg = $"房间创建成功，房间号为：{room.Roomid}\r\n注意：房间若在 {FunGameConstant.RoomExpireTime} 分钟后仍处于空闲状态，将自动解散。";
+                    if (room.GameModule == "horseracing")
+                    {
+                        msg += "\r\n在赛马房间内的所有玩家无论是否是房主都可以开始游戏。";
+                    }
                     room.RoomMaster = user;
                     room.CreateTime = DateTime.Now;
                 }
@@ -357,7 +361,7 @@ namespace Oshima.FunGame.OshimaServers.Service
                 if (FunGameConstant.UsersInRoom.TryGetValue(user.Id, out Room? value) && value != null)
                 {
                     room = value;
-                    if (room.RoomMaster.Id != user.Id)
+                    if (room.GameModule != "horseracing" && room.RoomMaster.Id != user.Id)
                     {
                         msgs.Add("你不是房主，无法开始游戏。");
                     }
