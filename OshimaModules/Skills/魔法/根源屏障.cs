@@ -9,7 +9,7 @@ namespace Oshima.FunGame.OshimaModules.Skills
         public override long Id => (long)MagicID.根源屏障;
         public override string Name => "根源屏障";
         public override string Description => string.Join("", Effects.Select(e => e.Description));
-        public override string DispelDescription => "被驱散性：魔法免疫可弱驱散" + (Level > 4 ? $"，技能免疫需强驱散" : "");
+        public override string DispelDescription => "被驱散性：可弱驱散";
         public override double MPCost => Level > 0 ? 200 + (75 * (Level - 1)) : 200;
         public override double CD => Level > 0 ? 120 - (3 * (Level - 1)) : 120;
         public override double CastTime => Level > 0 ? 12 - (0.5 * (Level - 1)) : 12;

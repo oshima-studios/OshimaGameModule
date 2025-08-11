@@ -66,6 +66,7 @@ namespace Oshima.FunGame.OshimaServers.Model
                     }
                 }
 
+                List<string> winners = [];
                 foreach (Horse horse in horses)
                 {
                     turnSteps[horse] = 0;
@@ -168,25 +169,28 @@ namespace Oshima.FunGame.OshimaServers.Model
 
                     if (horse.CurrentPosition >= maxLength)
                     {
-                        builder.AppendLine($"\r\n🎯 恭喜 [ {horse} ] 冲过终点线！它赢得了比赛！\r\n");
+                        winners.Add(horse.Name);
+                        builder.AppendLine($"\r\n🎯 [ {horse} ] 冲过终点线！\r\n");
                         raceFinished = true;
-                        break;
                     }
                 }
 
-                builder.AppendLine("☆--- 赛道状况 ---☆");
+                builder.AppendLine("\r\n☆--- 赛道状况 ---☆");
                 for (int i = 0; i < horses.Count; i++)
                 {
                     builder.AppendLine(GenerateTrackString(horses[i], i + 1, maxLength, turnSteps));
                 }
 
-                msgs.Add($"{builder.ToString().Trim()}\r\n");
-                builder.Clear();
-
                 if (raceFinished)
                 {
+                    builder.AppendLine($"\r\n🎯 赢家：[ {string.Join(" ] / [ ", winners)} ]！");
+                    msgs.Add($"{builder.ToString().Trim()}\r\n");
+                    builder.Clear();
                     break;
                 }
+
+                msgs.Add($"{builder.ToString().Trim()}\r\n");
+                builder.Clear();
             }
 
             builder.Clear();
@@ -205,7 +209,7 @@ namespace Oshima.FunGame.OshimaServers.Model
                     lastPosition = currentHorse.CurrentPosition;
                     horsesAtCurrentRankCount = 1;
                 }
-                else if (currentHorse.CurrentPosition == lastPosition) // 与前一匹马平局
+                else if (currentHorse.CurrentPosition == lastPosition || currentHorse.CurrentPosition >= maxLength) // 与前一匹马平局或都是冠军
                 {
                     horsesAtCurrentRankCount++;
                 }
