@@ -240,11 +240,11 @@ namespace Oshima.FunGame.OshimaModules.Regions
             };
             Item item = new 奖券();
             store.AddItem(item, -1);
-            store.SetPrice(1, "共斗积分", 15);
+            store.SetPrice(1, "共斗积分", 6);
             store.Goods[1].Quota = 300;
             item = new 十连奖券();
             store.AddItem(item, -1);
-            store.SetPrice(2, "共斗积分", 120);
+            store.SetPrice(2, "共斗积分", 50);
             store.Goods[2].Quota = 100;
             Item[] items = [.. FunGameConstant.CharacterLevelBreakItems.Union(FunGameConstant.SkillLevelUpItems).OrderBy(o => Random.Shared.Next()).Take(5)];
             int i = 3;

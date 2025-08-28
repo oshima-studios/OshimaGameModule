@@ -13,7 +13,7 @@ namespace Oshima.FunGame.OshimaModules.Regions
             Weathers.Add("多云", 15);
             Weathers.Add("晴朗", 24);
             ChangeRandomWeather();
-            Difficulty = RarityType.FourStar;
+            Difficulty = RarityType.ThreeStar;
             Characters.Add(new(10201, "旋律古龙"));
             Characters.Add(new(10202, "圣树守护者"));
             Units.Add(new(20201, "荧光精灵"));
