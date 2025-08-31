@@ -151,6 +151,87 @@ namespace Oshima.FunGame.OshimaServers.Service
             return result.Trim();
         }
 
+        public string SCList_Backup(Dictionary<string, object> data)
+        {
+            string result;
+
+            SQLHelper? sql = Controller.SQLHelper;
+            if (sql != null)
+            {
+                long userQQ = Controller.JSON.GetObject<long>(data, "qq");
+                (bool userHas, double userSC, int userTop, string userRemark) = (false, 0, 0, "");
+                long groupid = Controller.JSON.GetObject<long>(data, "groupid");
+                bool reverse = Controller.JSON.GetObject<bool>(data, "reverse");
+                if (!reverse)
+                {
+                    result = $"☆--- OSMTV 圣人排行榜 TOP10 ---☆\r\n该榜单为上赛季封榜记录\r\n";
+                }
+                else
+                {
+                    result = $"☆--- OSMTV 出生排行榜 TOP10 ---☆\r\n该榜单为上赛季封榜记录\r\n";
+                }
+                sql.Script = "select * from saints_backup where `group` = @group order by sc" + (!reverse ? " desc" : "");
+                sql.Parameters.Add("group", groupid);
+                sql.ExecuteDataSet();
+                if (sql.Success && sql.DataSet.Tables.Count > 0)
+                {
+                    int count = 0;
+                    foreach (DataRow dr in sql.DataSet.Tables[0].Rows)
+                    {
+                        count++;
+                        long qq = Convert.ToInt64(dr["qq"]);
+                        double sc = Convert.ToDouble(dr["sc"]);
+                        string remark = Convert.ToString(dr["remark"]) ?? "";
+                        if (reverse)
+                        {
+                            sc = -sc;
+                            remark = remark.Replace("+", "-");
+                        }
+                        if (qq == userQQ)
+                        {
+                            userHas = true;
+                            userSC = sc;
+                            userTop = count;
+                            userRemark = remark;
+                        }
+                        if (count > 10) continue;
+                        if (!reverse)
+                        {
+                            result += $"{count}. 用户：{qq}，圣人点数：{sc} 分{(remark.Trim() != "" ? $" ({remark})" : "")}\r\n";
+                        }
+                        else
+                        {
+                            result += $"{count}. 用户：{qq}，出生点数：{sc} 分{(remark.Trim() != "" ? $" ({remark})" : "")}\r\n";
+                        }
+                    }
+                    if (!reverse && userHas)
+                    {
+                        result += $"你的上赛季圣人点数为：{userSC} 分{(userRemark.Trim() != "" ? $"（{userRemark}）" : "")}，排在第 {userTop} / {sql.DataSet.Tables[0].Rows.Count} 名。\r\n" +
+                            $"本排行榜仅供娱乐，不代表任何官方立场或真实情况。";
+                    }
+                    if (reverse && userHas)
+                    {
+                        result += $"你的上赛季出生点数为：{userSC} 分{(userRemark.Trim() != "" ? $"（{userRemark}）" : "")}，排在出生榜第 {userTop} / {sql.DataSet.Tables[0].Rows.Count} 名。\r\n" +
+                            $"本排行榜仅供娱乐，不代表任何官方立场或真实情况。";
+                    }
+                }
+                else
+                {
+                    if (reverse)
+                    {
+                        result = "出生榜目前没有任何备份数据。";
+                    }
+                    else
+                    {
+                        result = "圣人榜目前没有任何备份数据。";
+                    }
+                }
+            }
+            else result = "无法调用此接口：SQL 服务不可用。";
+
+            return result.Trim();
+        }
+
         public string SCRecord(Dictionary<string, object> data)
         {
             string result = "";

@@ -13,11 +13,11 @@ namespace Oshima.FunGame.OshimaMaps
 
         public override string Author => OshimaGameModuleConstant.Author;
 
-        public override float Length => 6;
+        public override int Length => 6;
 
-        public override float Width => 6;
+        public override int Width => 6;
 
-        public override float Height => 3;
+        public override int Height => 3;
 
         public override float Size => 6;
     }

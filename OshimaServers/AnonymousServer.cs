@@ -222,6 +222,9 @@ namespace Oshima.FunGame.OshimaServers
                     case "sclist":
                         msg = Service.SCList(data);
                         break;
+                    case "sclist_backup":
+                        msg = Service.SCList_Backup(data);
+                        break;
                     case "screcord":
                         msg = Service.SCRecord(data);
                         break;
