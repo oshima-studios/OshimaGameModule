@@ -1,4 +1,5 @@
-﻿using Milimoe.FunGame.Core.Library.Common.Addon;
+﻿using Milimoe.FunGame.Core.Interface.Base;
+using Milimoe.FunGame.Core.Library.Common.Addon;
 using Oshima.Core.Constant;
 
 namespace Oshima.FunGame.OshimaMaps
@@ -20,5 +21,12 @@ namespace Oshima.FunGame.OshimaMaps
         public override int Height => 3;
 
         public override float Size => 6;
+
+        public override GameMap InitGamingQueue(IGamingQueue queue)
+        {
+            GameMap map = new AnonymousMap();
+            map.Load();
+            return map;
+        }
     }
 }
