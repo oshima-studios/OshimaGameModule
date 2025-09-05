@@ -301,6 +301,20 @@ namespace Oshima.FunGame.OshimaModules.Models
                 }
             },
             {
+                EffectID.AccelerationCoefficient,
+                new()
+                {
+                    { "exacc", 1 }
+                }
+            },
+            {
+                EffectID.IgnoreEvade,
+                new()
+                {
+                    { "p", 1 }
+                }
+            },
+            {
                 EffectID.RecoverHP,
                 new()
                 {
