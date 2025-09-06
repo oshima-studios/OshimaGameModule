@@ -10,7 +10,7 @@ namespace Oshima.FunGame.OshimaModules.Skills
         public override string Description => Effects.Count > 0 ? Effects.First().Description : "";
         public override double EPCost => 100;
         public override double CD => 100 - 4 * (Level - 1);
-        public override double HardnessTime { get; set; } = 18;
+        public override double HardnessTime { get; set; } = 12;
         public override string Slogan => "从深渊引爆力量，世界将为之颤抖！！！！";
         public override bool CanSelectSelf => false;
         public override bool CanSelectEnemy => true;
