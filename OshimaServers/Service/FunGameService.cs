@@ -1743,7 +1743,7 @@ namespace Oshima.FunGame.OshimaServers.Service
             }
 
             // 伤害贡献
-            double damageContribution = Math.Log(1 + Math.Min(2, (stats.TotalDamage / (stats.TotalTakenDamage + 1.75))));
+            double damageContribution = Math.Log(1 + Math.Min(2, (stats.TotalDamage / (stats.TotalTakenDamage + 1))));
             if (team != null && teammateStats != null)
             {
                 // 考虑团队伤害排名，优先高伤害的
