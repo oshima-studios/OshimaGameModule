@@ -22,7 +22,9 @@ namespace Oshima.FunGame.OshimaModules.Models
         public static List<Character> Characters { get; } = [];
         public static List<Skill> Skills { get; } = [];
         public static List<Skill> PassiveSkills { get; } = [];
+        public static List<Skill> CommonPassiveSkills { get; } = [];
         public static List<Skill> SuperSkills { get; } = [];
+        public static List<Skill> CommonSuperSkills { get; } = [];
         public static List<Skill> Magics { get; } = [];
         public static List<Item> Equipment { get; } = [];
         public static List<Item> Items { get; } = [];
@@ -47,7 +49,6 @@ namespace Oshima.FunGame.OshimaModules.Models
         public static Dictionary<long, double> UserCreditsRanking { get; } = [];
         public static Dictionary<long, double> UserMaterialsRanking { get; } = [];
         public static Dictionary<long, double> UserEXPRanking { get; } = [];
-        public static Dictionary<long, double> UserSkillRanking { get; } = [];
         public static Dictionary<long, Club> ClubIdAndClub { get; } = [];
         public static DateTime RankingUpdateTime { get; set; } = DateTime.Now;
         public static char[] SplitChars => [',', ' ', '，', '；', ';'];
@@ -298,6 +299,13 @@ namespace Oshima.FunGame.OshimaModules.Models
                 new()
                 {
                     { "exatk", Math.Clamp(Random.Shared.NextDouble(), 0.15, 0.3) }
+                }
+            },
+            {
+                EffectID.ExMaxMP2,
+                new()
+                {
+                    { "exmp", 5 }
                 }
             },
             {

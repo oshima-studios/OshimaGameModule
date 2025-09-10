@@ -166,6 +166,7 @@ namespace Oshima.FunGame.OshimaModules.Items
             _canSelectTeammate = canSelectTeammate;
             _canSelectEnemy = canSelectEnemy;
             _canSelectCount = canSelectCount;
+            SelectTargetPredicates.Add(c => c.HP >= 0 && c.HP < c.MaxHP);
             Effects.Add(new 强驱散特效(this));
             if (!isPercentage)
             {

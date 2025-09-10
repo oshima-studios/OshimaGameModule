@@ -1,7 +1,6 @@
 ﻿using Milimoe.FunGame.Core.Entity;
 using Milimoe.FunGame.Core.Library.Constant;
 using Oshima.FunGame.OshimaModules.Effects.OpenEffects;
-using Oshima.FunGame.OshimaModules.Effects.SkillEffects;
 
 namespace Oshima.FunGame.OshimaModules.Skills
 {
@@ -10,10 +9,10 @@ namespace Oshima.FunGame.OshimaModules.Skills
         public override long Id => (long)MagicID.时间加速改;
         public override string Name => "时间加速·改";
         public override string Description => Effects.Count > 0 ? Effects.First().Description : "";
-        public override double MPCost => Level > 0 ? 80 + (85 * (Level - 1)) : 80;
+        public override double MPCost => Level > 0 ? 120 + (115 * (Level - 1)) : 120;
         public override double CD => Level > 0 ? 65 - (0.5 * (Level - 1)) : 65;
-        public override double CastTime => Level > 0 ? 6 + (1 * (Level - 1)) : 6;
-        public override double HardnessTime { get; set; } = 7;
+        public override double CastTime => 3;
+        public override double HardnessTime { get; set; } = 9;
         public override bool CanSelectSelf => true;
         public override bool CanSelectTeammate => true;
         public override bool CanSelectEnemy => false;
@@ -93,7 +92,7 @@ namespace Oshima.FunGame.OshimaModules.Skills
                 target.Effects.Add(e2);
                 e2.OnEffectGained(target);
                 e2.IsDebuff = false;
-                GamingQueue?.LastRound.ApplyEffects.TryAdd(target, [EffectType.Haste]);
+                RecordCharacterApplyEffects(target, EffectType.Haste);
             }
         }
     }

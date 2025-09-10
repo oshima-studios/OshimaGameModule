@@ -8690,12 +8690,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
                                     {
                                         currentTop = index + 1;
                                     }
-                                    double score = kv.Value;
-                                    if (FunGameConstant.UserSkillRanking.TryGetValue(kv.Key, out double value2))
-                                    {
-                                        score += value2;
-                                    }
-                                    return $"{index + 1}. UID：{kv.Key}，昵称：{username}，总得分：{score:0.##}";
+                                    return $"{index + 1}. UID：{kv.Key}，昵称：{username}，总得分：{kv.Value:0.##}";
                                 })) : "暂无任何数据。")}\r\n\r\n本榜单统计角色的经验值总额，并根据其普通攻击和技能的等级计算总得分。\r\n仅显示前 {showTop} 位{(currentTop > 0 ? $"，你目前排在第 {currentTop} 位。" : "")}",
                         3 => $"【赛马积分排行榜】\r\n" +
                                 $"数据每分钟更新一次，上次更新：{FunGameConstant.RankingUpdateTime.ToString(General.GeneralDateTimeFormatChinese)}\r\n" +

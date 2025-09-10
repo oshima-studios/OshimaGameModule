@@ -582,6 +582,36 @@ namespace Oshima.FunGame.OshimaModules.Effects.OpenEffects
                             Descriptions.Add($"{(exls >= 0 ? "增加" : "减少")}角色 {Math.Abs(exls) * 100:0.##}% 生命偷取。");
                         }
                         break;
+                    case "exatr":
+                        if (int.TryParse(value, out int exatr))
+                        {
+                            if (!remove)
+                            {
+                                character.ExATR += exatr;
+                            }
+                            else if (RealDynamicsValues.TryGetValue("exatr", out double current))
+                            {
+                                character.ExATR -= (int)current;
+                            }
+                            RealDynamicsValues["exatr"] = exatr;
+                            Descriptions.Add($"{(exatr >= 0 ? "增加" : "减少")}角色 {Math.Abs(exatr)} 格攻击距离。");
+                        }
+                        break;
+                    case "exmov":
+                        if (int.TryParse(value, out int exmov))
+                        {
+                            if (!remove)
+                            {
+                                character.ExMOV += exmov;
+                            }
+                            else if (RealDynamicsValues.TryGetValue("exmov", out double current))
+                            {
+                                character.ExMOV -= (int)current;
+                            }
+                            RealDynamicsValues["exmov"] = exmov;
+                            Descriptions.Add($"{(exmov >= 0 ? "增加" : "减少")}角色 {Math.Abs(exmov)} 格移动距离。");
+                        }
+                        break;
                 }
             }
         }

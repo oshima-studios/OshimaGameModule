@@ -1,7 +1,6 @@
 ﻿using Milimoe.FunGame.Core.Entity;
 using Milimoe.FunGame.Core.Library.Constant;
 using Oshima.FunGame.OshimaModules.Effects.OpenEffects;
-using Oshima.FunGame.OshimaModules.Effects.SkillEffects;
 
 namespace Oshima.FunGame.OshimaModules.Skills
 {
@@ -109,7 +108,7 @@ namespace Oshima.FunGame.OshimaModules.Skills
                 target.Effects.Add(e2);
                 e2.OnEffectGained(target);
                 e2.IsDebuff = false;
-                GamingQueue?.LastRound.ApplyEffects.TryAdd(target, [EffectType.Haste]);
+                RecordCharacterApplyEffects(target, EffectType.Haste);
             }
         }
     }

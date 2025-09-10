@@ -51,6 +51,8 @@ namespace Oshima.FunGame.OshimaServers.Service
             FunGameConstant.SuperSkills.AddRange([new 嗜血本能(), new 平衡强化(), new 绝对领域(), new 精准打击(), new 三重叠加(), new 变幻之心(), new 力量爆发(), new 能量毁灭(), new 血之狂欢(), new 迅捷之势(), new 天赐之力(), new 魔法涌流()]);
 
             FunGameConstant.PassiveSkills.AddRange([new META马(), new 心灵之火(), new 魔法震荡(), new 灵能反射(), new 智慧与力量(), new 致命打击(), new 毁灭之势(), new 枯竭打击(), new 破釜沉舟(), new 累积之压(), new 敏捷之刃(), new 弱者猎手()]);
+            
+            FunGameConstant.CommonPassiveSkills.AddRange([new 征服者(), new 致命节奏()]);
 
             FunGameConstant.Magics.AddRange([new 冰霜攻击(), new 火之矢(), new 水之矢(), new 风之轮(), new 石之锤(), new 心灵之霞(), new 次元上升(), new 暗物质(),
                 new 回复术(), new 治愈术(), new 复苏术(), new 圣灵术(), new 时间加速(), new 时间减速(), new 反魔法领域(), new 沉默十字(), new 虚弱领域(), new 混沌烙印(), new 凝胶稠絮(),
@@ -126,8 +128,10 @@ namespace Oshima.FunGame.OshimaServers.Service
             FunGameConstant.AllSkills.AddRange(FunGameConstant.Magics);
             FunGameConstant.AllSkills.AddRange(FunGameConstant.Skills);
             FunGameConstant.AllSkills.AddRange(FunGameConstant.PassiveSkills);
+            FunGameConstant.AllSkills.AddRange(FunGameConstant.CommonPassiveSkills);
             FunGameConstant.AllSkills.AddRange(FunGameConstant.ItemSkills);
             FunGameConstant.AllSkills.AddRange(FunGameConstant.SuperSkills);
+            FunGameConstant.AllSkills.AddRange(FunGameConstant.CommonSuperSkills);
         }
 
         public static List<Item> GenerateMagicCards(int count, QualityType? qualityType = null, long[]? magicIds = null, (int str, int agi, int intelligence)[]? values = null)
@@ -460,7 +464,9 @@ namespace Oshima.FunGame.OshimaServers.Service
             FunGameConstant.Equipment.Clear();
             FunGameConstant.Skills.Clear();
             FunGameConstant.SuperSkills.Clear();
+            FunGameConstant.CommonSuperSkills.Clear();
             FunGameConstant.PassiveSkills.Clear();
+            FunGameConstant.CommonPassiveSkills.Clear();
             FunGameConstant.Magics.Clear();
             FunGameConstant.DrawCardItems.Clear();
             FunGameConstant.ExploreItems.Clear();
@@ -1751,7 +1757,7 @@ namespace Oshima.FunGame.OshimaServers.Service
             }
 
             // 存活时间贡献
-            double liveTimeContribution = Math.Log(1 + (stats.LiveTime / (stats.TotalTakenDamage + 0.01) * 100));
+            double liveTimeContribution = Math.Log(1 + (stats.LiveTime / (stats.TotalTakenDamage + 1) * 100));
 
             // 团队模式参团率加成
             double teamContribution = 0;
@@ -4588,8 +4594,7 @@ namespace Oshima.FunGame.OshimaServers.Service
                         // 排行榜更新
                         FunGameConstant.UserCreditsRanking[user.Id] = user.Inventory.Credits;
                         FunGameConstant.UserMaterialsRanking[user.Id] = user.Inventory.Materials;
-                        FunGameConstant.UserEXPRanking[user.Id] = user.Inventory.Characters.Select(c => FunGameConstant.PrecomputeTotalExperience[c.Level] + c.EXP).Sum();
-                        FunGameConstant.UserSkillRanking[user.Id] = user.Inventory.Characters.Select(c => (c.NormalAttack.Level - 1) * 50000 + c.Skills.Select(s => s.Level * 40000).Sum()).Sum();
+                        FunGameConstant.UserEXPRanking[user.Id] = user.Inventory.Characters.Select(c => FunGameConstant.PrecomputeTotalExperience[c.Level] + c.EXP + (c.NormalAttack.Level - 1) * 50000 + c.Skills.Select(s => s.Level * 40000).Sum()).Sum();
                         if (pc.TryGetValue("horseRacingPoints", out object? value3) && int.TryParse(value3.ToString(), out int horseRacingPoints))
                         {
                             FunGameConstant.UserHorseRacingRanking[user.Id] = horseRacingPoints;

@@ -170,6 +170,7 @@ namespace Oshima.FunGame.OshimaModules.Items
         {
             Level = 1;
             Item = item;
+            SelectTargetPredicates.Add(c => c.HP > 0 && c.HP < c.MaxHP);
             if (!isPercentage)
             {
                 Effects.Add(new RecoverHP(this, new()

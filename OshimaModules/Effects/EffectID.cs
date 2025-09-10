@@ -176,6 +176,21 @@
         IgnoreEvade = 8033,
 
         /// <summary>
+        /// 数值攻击距离，参数：exatr
+        /// </summary>
+        ExATR = 8034,
+        
+        /// <summary>
+        /// 数值移动距离，参数：exmov
+        /// </summary>
+        ExMOV = 8035,
+        
+        /// <summary>
+        /// 生命偷取%，参数：exls
+        /// </summary>
+        ExLifesteal = 8038,
+
+        /// <summary>
         /// 被动特效终点
         /// </summary>
         Passive_End = 8699,
