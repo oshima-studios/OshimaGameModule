@@ -126,6 +126,8 @@ namespace Oshima.FunGame.OshimaModules
                     (long)PassiveID.弱者猎手 => new 弱者猎手(),
                     (long)PassiveID.征服者 => new 征服者(),
                     (long)PassiveID.致命节奏 => new 致命节奏(),
+                    (long)PassiveID.强攻 => new 强攻(),
+                    (long)PassiveID.电刑 => new 电刑(),
                     (long)ItemPassiveID.攻击之爪 => new 攻击之爪技能(),
                     (long)ItemActiveID.经验书 => new 经验书技能(),
                     (long)ItemActiveID.礼包 => new 礼包技能(),

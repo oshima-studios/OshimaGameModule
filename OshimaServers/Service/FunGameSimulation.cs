@@ -126,6 +126,13 @@ namespace Oshima.FunGame.OshimaServers.Service
                             Level = slevel
                         };
                         c.Skills.Add(疾风步);
+                        foreach (Skill skillLoop in FunGameConstant.CommonPassiveSkills)
+                        {
+                            Skill passive = skillLoop.Copy();
+                            passive.Character = c;
+                            passive.Level = 1;
+                            c.Skills.Add(passive);
+                        }
                         foreach (Effect e in c.Effects)
                         {
                             e.OnEffectLost(c);

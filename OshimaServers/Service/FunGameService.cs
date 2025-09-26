@@ -52,7 +52,7 @@ namespace Oshima.FunGame.OshimaServers.Service
 
             FunGameConstant.PassiveSkills.AddRange([new META马(), new 心灵之火(), new 魔法震荡(), new 灵能反射(), new 智慧与力量(), new 致命打击(), new 毁灭之势(), new 枯竭打击(), new 破釜沉舟(), new 累积之压(), new 敏捷之刃(), new 弱者猎手()]);
             
-            FunGameConstant.CommonPassiveSkills.AddRange([new 征服者(), new 致命节奏()]);
+            FunGameConstant.CommonPassiveSkills.AddRange([new 征服者(), new 致命节奏(), new 强攻(), new 电刑()]);
 
             FunGameConstant.Magics.AddRange([new 冰霜攻击(), new 火之矢(), new 水之矢(), new 风之轮(), new 石之锤(), new 心灵之霞(), new 次元上升(), new 暗物质(),
                 new 回复术(), new 治愈术(), new 复苏术(), new 圣灵术(), new 时间加速(), new 时间减速(), new 反魔法领域(), new 沉默十字(), new 虚弱领域(), new 混沌烙印(), new 凝胶稠絮(),
@@ -1739,11 +1739,11 @@ namespace Oshima.FunGame.OshimaServers.Service
             }
             else
             {
-                baseScore = baseScore * 0.6 + 0.4 * (stats.Kills / (stats.Kills + stats.Deaths + 0.01));
+                baseScore = baseScore * 0.7 + 0.4 * (stats.Kills / (stats.Kills + stats.Deaths + 0.01));
             }
 
             // 伤害贡献
-            double damageContribution = Math.Log(1 + Math.Min(2, (stats.TotalDamage / (stats.TotalTakenDamage + 1))));
+            double damageContribution = Math.Log(1 + Math.Min(2, (stats.TotalDamage / (stats.TotalTakenDamage + 1.45))));
             if (team != null && teammateStats != null)
             {
                 // 考虑团队伤害排名，优先高伤害的

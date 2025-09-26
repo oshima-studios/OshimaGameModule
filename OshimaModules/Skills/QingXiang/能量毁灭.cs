@@ -14,6 +14,7 @@ namespace Oshima.FunGame.OshimaModules.Skills
         public override string Slogan => "从深渊引爆力量，世界将为之颤抖！！！！";
         public override bool CanSelectSelf => false;
         public override bool CanSelectEnemy => true;
+        public override bool CastAnywhere => true;
 
         public 能量毁灭(Character? character = null) : base(SkillType.SuperSkill, character)
         {

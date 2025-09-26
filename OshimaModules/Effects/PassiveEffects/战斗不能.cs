@@ -8,7 +8,7 @@ namespace Oshima.FunGame.OshimaModules.Effects.PassiveEffects
     {
         public override long Id => (long)PassiveEffectID.战斗不能;
         public override string Name => "战斗不能";
-        public override string Description => $"此角色处于战斗不能状态，无法普通攻击和使用技能（魔法、战技和爆发技）。来自：[ {Source} ] 的 [ {Skill.Name} ]";
+        public override string Description => $"此角色处于战斗不能状态，无法普通攻击和使用技能（魔法、战技和爆发技），无法对敌人或者队友使用物品。来自：[ {Source} ] 的 [ {Skill.Name} ]";
         public override EffectType EffectType => EffectType.Cripple;
         public override DispelledType DispelledType => DispelledType.Strong;
         public override bool IsDebuff => true;

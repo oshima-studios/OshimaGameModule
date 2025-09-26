@@ -42,11 +42,11 @@ namespace Oshima.FunGame.OshimaModules.Skills
             if (character == Skill.Character && actualDamage > 0 && (damageResult == DamageResult.Normal || damageResult == DamageResult.Critical) && !是否是嵌套伤害 && enemy.HP > 0)
             {
                 // 叠标记
-                IEnumerable<Effect> effects = enemy.Effects.Where(e => e is 累积之压标记);
-                if (effects.Any() && effects.First() is 累积之压标记 e)
+                IEnumerable<Effect> effects = enemy.Effects.Where(e => e is 累积之压标记 && e.Source == character);
+                if (effects.FirstOrDefault() is 累积之压标记 e)
                 {
                     IEnumerable<Effect> effects2 = character.Effects.Where(e => e is 嗜血本能特效);
-                    if (effects2.Any() && effects2.First() is 嗜血本能特效 e2)
+                    if (effects2.FirstOrDefault() is 嗜血本能特效 e2)
                     {
                         // 嗜血本能生效状态下，不会移除标记
                     }
