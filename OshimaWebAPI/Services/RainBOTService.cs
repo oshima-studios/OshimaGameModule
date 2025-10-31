@@ -624,7 +624,7 @@ namespace Oshima.FunGame.WebAPI.Services
                 if (e.Detail == "创建存档")
 				{
 					e.UseNotice = false;
-					string msg = Controller.CreateSaved(name: openid);
+					string msg = Controller.CreateSaved(uid, openid);
                     if (msg != "")
                     {
                         await SendAsync(e, "创建存档", "\r\n" + msg);
@@ -1455,7 +1455,7 @@ namespace Oshima.FunGame.WebAPI.Services
                             string itemIdsString = match.Groups["itemIds"].Value;
                             string characterId = match.Groups["characterId"].Value;
                             int[] characterIds = characterId != "" ? [int.Parse(characterId)] : [1];
-                            int[] itemIds = itemIdsString.Split(FunGameConstant.SplitChars, StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries).Select(int.Parse).ToArray();
+                            int[] itemIds = [.. itemIdsString.Split(FunGameConstant.SplitChars, StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries).Select(int.Parse)];
                             if (itemIds.Length > 0)
                             {
                                 string msg = Controller.UseItem4(uid, (itemIds, characterIds));
@@ -3646,6 +3646,15 @@ namespace Oshima.FunGame.WebAPI.Services
             }
 
             return false;
+        }
+
+        public async Task<bool> HandlerByConsole(IBotMessage e)
+        {
+            if (MemoryCache.Get(e.AuthorOpenId) is null)
+            {
+                MemoryCache.Set(e.AuthorOpenId, 1L, TimeSpan.FromMinutes(10));
+            }
+            return await Handler(e);
         }
 
         public List<string> MergeMessages(List<string> msgs)

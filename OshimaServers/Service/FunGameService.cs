@@ -52,7 +52,7 @@ namespace Oshima.FunGame.OshimaServers.Service
 
             FunGameConstant.PassiveSkills.AddRange([new META马(), new 心灵之火(), new 魔法震荡(), new 灵能反射(), new 智慧与力量(), new 致命打击(), new 毁灭之势(), new 枯竭打击(), new 破釜沉舟(), new 累积之压(), new 敏捷之刃(), new 弱者猎手()]);
             
-            FunGameConstant.CommonPassiveSkills.AddRange([new 征服者(), new 致命节奏(), new 强攻(), new 电刑()]);
+            FunGameConstant.CommonPassiveSkills.AddRange([new 征服者(), new 致命节奏(), new 强攻(), new 电刑(), new 黑暗收割()]);
 
             FunGameConstant.Magics.AddRange([new 冰霜攻击(), new 火之矢(), new 水之矢(), new 风之轮(), new 石之锤(), new 心灵之霞(), new 次元上升(), new 暗物质(),
                 new 回复术(), new 治愈术(), new 复苏术(), new 圣灵术(), new 时间加速(), new 时间减速(), new 反魔法领域(), new 沉默十字(), new 虚弱领域(), new 混沌烙印(), new 凝胶稠絮(),
@@ -3594,7 +3594,7 @@ namespace Oshima.FunGame.OshimaServers.Service
             if (toActivitiesCache) ActivitiesItemCache.Add(item.Name);
         }
 
-        public static async Task<string> FightInstance(InstanceType type, int difficulty, User user, Character[] squad)
+        public static async Task<(bool, string)> FightInstance(InstanceType type, int difficulty, User user, Character[] squad)
         {
             if (difficulty <= 0) difficulty = 1;
             else if (difficulty > 5) difficulty = 5;
@@ -3736,7 +3736,8 @@ namespace Oshima.FunGame.OshimaServers.Service
             int characterCount = squad.Length;
             builder.AppendLine($"☆--- {team2.Name}挑战 ---☆");
             builder.AppendLine(string.Join("\r\n", msgs));
-            if (enemys.All(c => c.HP <= 0))
+            bool result = enemys.All(c => c.HP <= 0);
+            if (result)
             {
                 builder.Append($"小队战胜了敌人！获得了：");
                 switch (type)
@@ -4112,7 +4113,7 @@ namespace Oshima.FunGame.OshimaServers.Service
                 }
             }
 
-            return builder.ToString().Trim();
+            return (result, builder.ToString().Trim());
         }
 
         public static Store? GetRegionStore(EntityModuleConfig<Store> stores, User user, string storeRegion, string storeName)

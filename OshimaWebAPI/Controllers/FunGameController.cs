@@ -16,6 +16,7 @@ using Oshima.FunGame.OshimaModules.Models;
 using Oshima.FunGame.OshimaModules.Regions;
 using Oshima.FunGame.OshimaServers.Model;
 using Oshima.FunGame.OshimaServers.Service;
+using ProjectRedbud.FunGame.SQLQueryExtension;
 
 namespace Oshima.FunGame.WebAPI.Controllers
 {
@@ -440,53 +441,74 @@ namespace Oshima.FunGame.WebAPI.Controllers
         }
 
         [HttpPost("createsaved")]
-        public string CreateSaved([FromQuery] long? uid = null, [FromQuery] string? name = null)
+        public string CreateSaved([FromQuery] long? uid = null, [FromQuery] string? openid = null)
         {
-            string username = FunGameService.GenerateRandomChineseUserName();
             using SQLHelper? sqlHelper = Factory.OpenFactory.GetSQLHelper();
 
-            if (name != null && sqlHelper != null)
+            if (openid is null || openid.Trim() == "")
+            {
+                return "创建存档失败，未提供接入ID！";
+            }
+
+            if (sqlHelper != null)
             {
                 try
                 {
-                    if (name.Trim() == "")
-                    {
-                        return "未提供接入ID！";
-                    }
-                    Logger.LogInformation("[Reg] 接入ID：{name}", name);
-                    sqlHelper.ExecuteDataSet(FunGameService.Select_CheckAutoKey(sqlHelper, name));
+                    Logger.LogInformation("[Reg] 接入ID：{openid}", openid);
+                    sqlHelper.ExecuteDataSet(FunGameService.Select_CheckAutoKey(sqlHelper, openid));
                     if (sqlHelper.Success)
                     {
-                        return "你已经创建过存档！";
+                        return "你已经创建过存档！请使用【还原存档】指令或联系管理员处理。";
                     }
-                    string password = name.Encrypt(name);
                     sqlHelper.NewTransaction();
-                    sqlHelper.Execute(UserQuery.Insert_Register(sqlHelper, username, password, "", "", name));
-                    if (sqlHelper.Result == SQLResult.Success)
+                    // 检查UID的用户在数据库中是否存在，如果已经存在则将OpenID（对应AutoKey字段）绑定到此用户上而不是创建新用户
+                    User? user = sqlHelper.GetUserById(uid ?? 0);
+                    string username = "";
+                    if (user is null)
                     {
-                        sqlHelper.ExecuteDataSet(FunGameService.Select_CheckAutoKey(sqlHelper, name));
-                        if (sqlHelper.Success)
+                        bool exist = true;
+                        do
                         {
-                            User user = Factory.GetUser(sqlHelper.DataSet);
-                            sqlHelper.Commit();
-                            user.Inventory.Credits = 5000;
-                            Character character = new CustomCharacter(FunGameConstant.CustomCharacterId, username, nickname: username);
-                            character.Recovery();
-                            user.Inventory.Characters.Add(character);
-                            FunGameConstant.UserIdAndUsername[user.Id] = user;
-                            PluginConfig pc = FunGameService.GetUserConfig(user.Id, out _);
-                            FunGameService.SetUserConfigAndReleaseSemaphoreSlim(user.Id, pc, user);
-                            return $"创建存档成功！你的昵称是【{username}】。";
+                            username = "FunOsm-" + Verification.CreateVerifyCode(VerifyCodeType.MixVerifyCode, 8);
+                            if (sqlHelper.ExecuteDataRow(UserQuery.Select_IsExistUsername(sqlHelper, username)) is null)
+                            {
+                                exist = false;
+                            }
+                        } while (exist);
+                        // 使用这种方法注册的用户，没有邮箱和UserKey，因此无法通过常规方式登录FunGame标准系统
+                        string password = Verification.CreateVerifyCode(VerifyCodeType.MixVerifyCode, 6).Encrypt(openid);
+                        sqlHelper.RegisterUser(username, password, "", "", openid);
+                        if (sqlHelper.Result == SQLResult.Success)
+                        {
+                            sqlHelper.ExecuteDataSet(FunGameService.Select_CheckAutoKey(sqlHelper, openid));
+                            if (sqlHelper.Success)
+                            {
+                                user = Factory.GetUser(sqlHelper.DataSet);
+                            }
+                            else
+                            {
+                                sqlHelper.Rollback();
+                                return "无法处理注册，创建存档失败！";
+                            }
                         }
                         else
                         {
+                            sqlHelper.Rollback();
                             return "无法处理注册，创建存档失败！";
                         }
                     }
-                    else
-                    {
-                        sqlHelper.Rollback();
-                    }
+                    username = user.Username;
+                    user.AutoKey = openid;
+                    user.Inventory.Credits = 5000;
+                    Character character = new CustomCharacter(FunGameConstant.CustomCharacterId, username, nickname: username);
+                    character.Recovery();
+                    user.Inventory.Characters.Add(character);
+                    FunGameConstant.UserIdAndUsername[user.Id] = user;
+                    sqlHelper.UpdateUser(user);
+                    sqlHelper.Commit();
+                    PluginConfig pc = FunGameService.GetUserConfig(user.Id, out _);
+                    FunGameService.SetUserConfigAndReleaseSemaphoreSlim(user.Id, pc, user);
+                    return $"创建存档成功！你的昵称是【{username}】。";
                 }
                 catch (Exception e)
                 {
@@ -495,26 +517,8 @@ namespace Oshima.FunGame.WebAPI.Controllers
                 }
                 return "无法处理注册，创建存档失败！";
             }
-            else if (uid != null && uid != 0)
-            {
-                PluginConfig pc = FunGameService.GetUserConfig(uid.Value, out _);
 
-                if (pc.Count == 0)
-                {
-                    User user = Factory.GetUser(uid.Value, username, DateTime.Now, DateTime.Now, uid + "@qq.com", username);
-                    user.Inventory.Credits = 5000;
-                    user.Inventory.Characters.Add(new CustomCharacter(uid.Value, username));
-                    FunGameConstant.UserIdAndUsername[uid.Value] = user;
-                    FunGameService.SetUserConfigAndReleaseSemaphoreSlim(uid.Value, pc, user);
-                    return $"创建存档成功！你的昵称是【{username}】。";
-                }
-                else
-                {
-                    FunGameService.ReleaseUserSemaphoreSlim(uid.Value);
-                    return "你已经创建过存档！";
-                }
-            }
-            return "创建存档失败！";
+            return "创建存档失败，SQL 服务不可用！";
         }
 
         [HttpPost("restoresaved")]
@@ -7685,6 +7689,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
             {
                 PluginConfig pc = FunGameService.GetUserConfig(userid, out _);
 
+                bool result = false;
                 string msg = "";
                 if (pc.Count > 0)
                 {
@@ -7732,10 +7737,17 @@ namespace Oshima.FunGame.WebAPI.Controllers
 
                             if (msg == "")
                             {
-                                exploreTimes -= reduce;
-                                msg = await FunGameService.FightInstance((InstanceType)type, difficulty, user, squad);
+                                (result, msg) = await FunGameService.FightInstance((InstanceType)type, difficulty, user, squad);
                                 if (msg != "") msg += "\r\n";
-                                msg += $"本次秘境挑战消耗探索许可 {reduce} 个，你的剩余探索许可：{exploreTimes} 个。";
+                                if (result)
+                                {
+                                    exploreTimes -= reduce;
+                                    msg += $"本次秘境挑战消耗探索许可 {reduce} 个，你的剩余探索许可：{exploreTimes} 个。";
+                                }
+                                else
+                                {
+                                    msg += $"本次秘境挑战失败，不消耗任何探索许可，请继续加油！你的剩余探索许可：{exploreTimes} 个。";
+                                }
                             }
 
                             pc.Add("exploreTimes", exploreTimes);
@@ -8234,8 +8246,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
                                 }
                             }
 
-                            double points = 0;
-                            if (pc.TryGetValue("forgepoints", out object? value) && double.TryParse(value.ToString(), out points))
+                            if (pc.TryGetValue("forgepoints", out object? value) && double.TryParse(value.ToString(), out double points))
                             {
                                 points += model.ResultPoints;
                             }

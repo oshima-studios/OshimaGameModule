@@ -58,7 +58,7 @@ namespace Oshima.FunGame.WebAPI
                                 Timestamp = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")
                             };
 
-                            bool result = bot.Handler(message).GetAwaiter().GetResult();
+                            bool result = bot.HandlerByConsole(message).GetAwaiter().GetResult();
 
                             if (!result || message.IsCompleted)
                             {

@@ -26,7 +26,7 @@ namespace Oshima.FunGame.OshimaModules.Skills
     {
         public override long Id => Skill.Id;
         public override string Name => Skill.Name;
-        public override string Description => $"连续3次普通攻击同一目标时，造成额外的 {额外伤害系数 * 100:0.##}% 伤害并使其进入易损状态，后续承受伤害提升 {易损伤害提升百分比 * 100:0.##}%，持续 {易损持续时间:0.##} {GameplayEquilibriumConstant.InGameTime}。";
+        public override string Description => $"连续 3 次普通攻击同一目标时，造成额外的 {额外伤害系数 * 100:0.##}% 伤害并使其进入易损状态，后续承受伤害提升 {易损伤害提升百分比 * 100:0.##}%，持续 {易损持续时间:0.##} {GameplayEquilibriumConstant.InGameTime}。";
 
         private double 易损伤害提升百分比 => Skill.Character != null ? 0.15 + Skill.Character.Level * 0.004 : 0.15;
         private double 额外伤害系数 => Skill.Character != null ? 0.06 + Skill.Character.Level * 0.005 : 0.06;
