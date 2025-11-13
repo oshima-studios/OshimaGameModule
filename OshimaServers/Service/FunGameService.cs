@@ -361,7 +361,7 @@ namespace Oshima.FunGame.OshimaServers.Service
         {
             if (magicCards.Any())
             {
-                List<Skill> magics = [.. magicCards.Where(i => i.Skills.Active != null).Select(i => i.Skills.Active)];
+                List<Skill> magics = [.. magicCards.Where(i => i.Skills.Active != null).Select(i => i.Skills.Active!)];
                 List<Skill> passives = [.. magicCards.SelectMany(i => i.Skills.Passives)];
                 Item item = Factory.GetItem();
                 item.Id = Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 8));
