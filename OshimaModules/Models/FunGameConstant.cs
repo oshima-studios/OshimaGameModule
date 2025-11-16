@@ -32,6 +32,7 @@ namespace Oshima.FunGame.OshimaModules.Models
         public static List<Item> CharacterLevelBreakItems { get; } = [];
         public static List<Item> SkillLevelUpItems { get; } = [];
         public static Dictionary<OshimaRegion, List<Item>> ExploreItems { get; } = [];
+        public static List<Item> UserDailyItems { get; } = [];
         public static List<Skill> ItemSkills { get; } = [];
         public static List<Item> AllItems { get; } = [];
         public static List<Skill> AllSkills { get; } = [];

@@ -84,6 +84,7 @@ namespace Oshima.FunGame.WebAPI.Models
         public string AuthorOpenId { get; }
         public long FunGameUID { get; set; }
         public bool UseNotice { get; set; }
+        public string ImageUrl { get; set; }
     }
 
     public class ThirdPartyMessage : IBotMessage
@@ -120,6 +121,9 @@ namespace Oshima.FunGame.WebAPI.Models
 
         [JsonIgnore]
         public bool UseNotice { get; set; } = true;
+
+        [JsonIgnore]
+        public string ImageUrl { get; set; } = "";
     }
 
     public class C2CMessage : IBotMessage
@@ -144,6 +148,9 @@ namespace Oshima.FunGame.WebAPI.Models
 
         [JsonIgnore]
         public bool UseNotice { get; set; } = true;
+
+        [JsonIgnore]
+        public string ImageUrl { get; set; } = "";
 
         public string Detail
         {
@@ -181,6 +188,9 @@ namespace Oshima.FunGame.WebAPI.Models
         [JsonIgnore]
         public bool UseNotice { get; set; } = true;
 
+        [JsonIgnore]
+        public string ImageUrl { get; set; } = "";
+
         public string Detail
         {
             get => Content;
@@ -210,5 +220,10 @@ namespace Oshima.FunGame.WebAPI.Models
 
         [JsonPropertyName("expires_in")]
         public string ExpiresIn { get; set; } = "";
+    }
+
+    public class OtherData
+    {
+        public string RequestUrl { get; set; } = "";
     }
 }

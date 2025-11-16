@@ -70,8 +70,13 @@ namespace Oshima.FunGame.OshimaServers.Service
                 new 复苏药1(), new 复苏药2(), new 复苏药3(), new 全回复药(), new 魔法卡礼包(), new 奖券(), new 十连奖券(), new 改名卡(), new 原初之印(), new 创生之印(), new 法则精粹(), new 大师锻造券()
             ]);
 
+            FunGameConstant.UserDailyItems.AddRange([new 青松(), new 流星石(), new 向日葵(), new 金铃花(), new 琉璃珠(), new 鸣草(), new 马尾(), new 鬼兜虫(), new 烈焰花花蕊(), new 堇瓜(), new 水晶球(), new 薰衣草(),
+                new 青石(), new 莲花(), new 陶罐(), new 海灵芝(), new 四叶草(), new 露珠(), new 茉莉花(), new 绿萝(), new 檀木扇(), new 鸟蛋(), new 竹笋(), new 晶核(), new 手工围巾(), new 柳条篮(), new 风筝(), new 羽毛(), new 发光髓(),
+                new 紫罗兰(), new 松果(), new 电气水晶(), new 薄荷(), new 竹节(), new 铁砧(), new 冰雾花(), new 海草(), new 磐石(), new 砂砾(), new 铁甲贝壳(), new 蜥蜴尾巴(), new 古老钟摆(), new 枯藤()]);
+
             FunGameConstant.AllItems.AddRange(FunGameConstant.Equipment);
             FunGameConstant.AllItems.AddRange(FunGameConstant.Items);
+            FunGameConstant.AllItems.AddRange(FunGameConstant.UserDailyItems);
 
             foreach (OshimaRegion region in FunGameConstant.Regions)
             {
@@ -79,7 +84,8 @@ namespace Oshima.FunGame.OshimaServers.Service
                 FunGameConstant.ExploreItems.Add(region, items);
             }
 
-            FunGameConstant.DrawCardItems.AddRange(FunGameConstant.AllItems.Where(i => !FunGameConstant.ItemCanNotDrawCard.Contains(i.ItemType)));
+            long[] userDailyItemIds = [.. FunGameConstant.UserDailyItems.Select(i => i.Id)];
+            FunGameConstant.DrawCardItems.AddRange(FunGameConstant.AllItems.Where(i => !FunGameConstant.ItemCanNotDrawCard.Contains(i.ItemType) && !userDailyItemIds.Contains(i.Id)));
             FunGameConstant.CharacterLevelBreakItems.AddRange([new 升华之印(), new 流光之印(), new 永恒之印(), new 原初之印(), new 创生之印()]);
             FunGameConstant.SkillLevelUpItems.AddRange([new 技能卷轴(), new 智慧之果(), new 奥术符文(), new 混沌之核(), new 法则精粹()]);
 
@@ -176,6 +182,7 @@ namespace Oshima.FunGame.OshimaServers.Service
                 if (qualityType != null)
                 {
                     item.QualityType = qualityType.Value;
+                    if (item.QualityType > QualityType.Gold) item.QualityType = QualityType.Gold;
                     total = item.QualityType switch
                     {
                         QualityType.Green => Random.Shared.Next(7, 13),
@@ -299,7 +306,7 @@ namespace Oshima.FunGame.OshimaServers.Service
             }
             item.Skills.Active = magic;
 
-            Skill skill = Factory.OpenFactory.GetInstance<Skill>(item.Id, item.Name, []);
+            Skill skill = Factory.OpenFactory.GetInstance<Skill>(item.Id, "自适应超频模块", []);
             GenerateAndAddEffectsToMagicCard(skill, str, agi, intelligence);
 
             skill.Level = 1;
@@ -3639,11 +3646,11 @@ namespace Oshima.FunGame.OshimaServers.Service
             switch (difficulty)
             {
                 case 5:
-                    rW[4] = 30;
+                    rW[4] = 40;
                     rW[3] = 30;
                     rW[2] = 15;
-                    rW[1] = 15;
-                    rW[0] = 10;
+                    rW[1] = 10;
+                    rW[0] = 5;
                     break;
                 case 4:
                     rW[4] = 10;
@@ -3698,6 +3705,17 @@ namespace Oshima.FunGame.OshimaServers.Service
                     }
                 }
             }
+            totalWeight = FunGameConstant.Regions.Sum(r => rW[(int)r.Difficulty]);
+            foreach (OshimaRegion region in FunGameConstant.Regions)
+            {
+                if (rW.TryGetValue((int)region.Difficulty, out double weight))
+                {
+                    foreach (Item item in region.Crops)
+                    {
+                        pRegionItem[item] = weight / totalWeight;
+                    }
+                }
+            }
 
             Item[] weapons = [.. FunGameConstant.Equipment.Where(i => i.Id.ToString().StartsWith("11") && (int)i.QualityType == 5)];
             Item[] armors = [.. FunGameConstant.Equipment.Where(i => i.Id.ToString().StartsWith("12") && (int)i.QualityType == 5)];
@@ -3723,6 +3741,7 @@ namespace Oshima.FunGame.OshimaServers.Service
                 InstanceType.RegionItem => "地区锻造材料",
                 InstanceType.CharacterLevelBreak => "角色等阶突破材料",
                 InstanceType.SkillLevelUp => "技能等级升级材料",
+                InstanceType.MagicCard => "魔法卡",
                 _ => ""
             } + "秘境";
             Team team2 = new(team2Name, enemys);
@@ -3919,6 +3938,43 @@ namespace Oshima.FunGame.OshimaServers.Service
                         }
                         builder.AppendLine($"{string.Join("、", skillLevelUpItems)}！");
                         break;
+                    case InstanceType.MagicCard:
+                        Dictionary<string, int> magicCards = [];
+                        // 根据(敌人数量-1)产出，每多个一个角色多一张
+                        for (int i = 0; i < characterCount + enemyCount - 1; i++)
+                        {
+                            int roll = Random.Shared.Next(100);
+                            double cumulativeProbability = 0.0;
+                            RarityType rarityType = RarityType.OneStar;
+                            foreach (int loop in rW.Keys)
+                            {
+                                cumulativeProbability += rW[loop];
+                                if (roll < cumulativeProbability)
+                                {
+                                    rarityType = (RarityType)loop;
+                                    break;
+                                }
+                            }
+                            // 从优秀开始
+                            QualityType qualityType = (QualityType)((int)rarityType + 1);
+                            if (Random.Shared.NextDouble() < 0.09)
+                            {
+                                // 9%概率提升一个稀有度（可达到不朽）
+                                qualityType++;
+                            }
+                            Item item = GenerateMagicCard(qualityType);
+                            AddItemToUserInventory(user, item, copyLevel: true);
+                            if (magicCards.TryGetValue(ItemSet.GetQualityTypeName(item.QualityType), out int count))
+                            {
+                                magicCards[ItemSet.GetQualityTypeName(item.QualityType)] = count + 1;
+                            }
+                            else
+                            {
+                                magicCards[ItemSet.GetQualityTypeName(item.QualityType)] = 1;
+                            }
+                        }
+                        builder.AppendLine($"{string.Join("、", magicCards.Select(kv => $"{kv.Value} 张{kv.Key}魔法卡"))}！");
+                        break;
                     default:
                         break;
                 }
@@ -4106,6 +4162,37 @@ namespace Oshima.FunGame.OshimaServers.Service
                                 }
                             }
                             builder.AppendLine($"{string.Join("、", skillLevelUpItems)}！");
+                            break;
+                        case InstanceType.MagicCard:
+                            Dictionary<string, int> magicCards = [];
+                            for (int i = 0; i < count; i++)
+                            {
+                                int roll = Random.Shared.Next(100);
+                                double cumulativeProbability = 0.0;
+                                RarityType rarityType = RarityType.OneStar;
+                                foreach (int loop in rW.Keys)
+                                {
+                                    cumulativeProbability += rW[loop];
+                                    if (roll < cumulativeProbability)
+                                    {
+                                        rarityType = (RarityType)loop;
+                                        break;
+                                    }
+                                }
+                                // 从优秀开始
+                                QualityType qualityType = (QualityType)((int)rarityType + 1);
+                                Item item = GenerateMagicCard(qualityType);
+                                AddItemToUserInventory(user, item, copyLevel: true);
+                                if (magicCards.TryGetValue(ItemSet.GetQualityTypeName(item.QualityType), out int qCount))
+                                {
+                                    magicCards[ItemSet.GetQualityTypeName(item.QualityType)] = qCount + 1;
+                                }
+                                else
+                                {
+                                    magicCards[ItemSet.GetQualityTypeName(item.QualityType)] = 1;
+                                }
+                            }
+                            builder.AppendLine($"{string.Join("、", magicCards.Select(kv => $"{kv.Value} 张{kv.Key}魔法卡"))}！");
                             break;
                         default:
                             break;
@@ -4346,9 +4433,11 @@ namespace Oshima.FunGame.OshimaServers.Service
         public static string GetMarketInfo(Market market, User? user = null, int page = 1, bool simply = false, bool showListed = true)
         {
             if (page <= 0) page = 1;
+            IEnumerable<MarketItem> marketItems = market.MarketItems.Values;
+            if (showListed) marketItems = marketItems.Where(g => g.Status == MarketItemState.Listed);
             int maxPage = market.MarketItems.Values.MaxPage(8);
             if (page > maxPage) page = maxPage;
-            IEnumerable<MarketItem> marketItems = market.MarketItems.Values.GetPage(page, 8);
+            marketItems = market.MarketItems.Values.GetPage(page, 8);
 
             StringBuilder builder = new();
 
@@ -4403,15 +4492,13 @@ namespace Oshima.FunGame.OshimaServers.Service
                 builder.AppendLine($"市场现在不在交易时间内。");
             }
             builder.AppendLine($"☆--- 市场商品列表 ---☆");
-            MarketItem[] MarketItemsValid = [.. market.MarketItems.Values];
-            if (showListed) MarketItemsValid = [.. MarketItemsValid.Where(g => g.Status == MarketItemState.Listed)];
-            if (MarketItemsValid.Length == 0)
+            if (!marketItems.Any())
             {
                 builder.AppendLine("当前没有商品可供购买，过一段时间再来吧。");
             }
             else
             {
-                foreach (MarketItem marketItem in MarketItemsValid)
+                foreach (MarketItem marketItem in marketItems)
                 {
                     builder.AppendLine(GetMarketItemInfo(marketItem, simply, user ?? General.UnknownUserInstance));
                 }

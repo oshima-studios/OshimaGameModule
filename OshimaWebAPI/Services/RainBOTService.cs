@@ -48,7 +48,7 @@ namespace Oshima.FunGame.WebAPI.Services
             if (msg.UseNotice && msg.FunGameUID > 0 && FunGameService.UserNotice.TryGetValue(msg.FunGameUID, out HashSet<string>? msgs) && msgs != null)
             {
                 FunGameService.UserNotice.Remove(msg.FunGameUID);
-                await SendAsync(msg, "离线未读信箱", $"☆--- 离线未读信箱 ---☆\r\n{string.Join("\r\n", msgs)}", msgType, media, 5);
+                await SendAsync(msg, "离线未读信箱", $"☆--- 离线未读信箱 ---☆\r\n{string.Join("\r\n", msgs)}", msgType, null, 5);
             }
         }
 
@@ -75,7 +75,7 @@ namespace Oshima.FunGame.WebAPI.Services
             await SendAsync(e, "筽祀牻", result.ToString());
         }
 
-        public async Task<bool> Handler(IBotMessage e)
+        public async Task<bool> Handler(IBotMessage e, OtherData data)
         {
             bool result = true;
             try
@@ -151,6 +151,51 @@ namespace Oshima.FunGame.WebAPI.Services
                     e.UseNotice = false;
 					await SendAsync(e, "获取接入码", $"你的接入码为 {openid}，请妥善保存！");
                     return true;
+                }
+
+                if (e.Detail == "我的运势")
+                {
+                    OpenUserDaily daily = new(openid, 0, "今日运势列表为空，请联系管理员设定");
+                    if (QQOpenID.QQAndOpenID.TryGetValue(openid, out long qq) && qq != 0)
+                    {
+                        UserDaily qqDaily = UserDailyService.GetUserDaily(qq);
+                        daily.type = qqDaily.type;
+                        daily.daily = qqDaily.daily;
+                    }
+                    else
+                    {
+                        daily = UserDailyService.GetOpenUserDaily(openid);
+                    }
+
+                    if (daily.type != 0)
+                    {
+                        // 上传图片
+                        string img = $@"{GeneralSettings.DailyImageServerUrl}/images/zi/";
+                        img += daily.type switch
+                        {
+                            1 => "dj" + (new Random().Next(3) + 1) + ".png",
+                            2 => "zj" + (new Random().Next(2) + 1) + ".png",
+                            3 => "j" + (new Random().Next(4) + 1) + ".png",
+                            4 => "mj" + (new Random().Next(2) + 1) + ".png",
+                            5 => "x" + (new Random().Next(2) + 1) + ".png",
+                            6 => "dx" + (new Random().Next(2) + 1) + ".png",
+                            _ => ""
+                        };
+
+                        var (fileUuid, fileInfo, ttl, error) = e.IsGroup && e is GroupAtMessage ge ? await Service.UploadGroupMediaAsync(ge.GroupOpenId, 1, img) : await Service.UploadC2CMediaAsync(e.OpenId, 1, img);
+                        if (string.IsNullOrEmpty(error))
+                        {
+                            await SendAsync(e, "每日运势", daily.daily, 7, new { file_info = fileInfo });
+                        }
+                        else
+                        {
+                            if (Logger.IsEnabled(Microsoft.Extensions.Logging.LogLevel.Error)) Logger.LogError("上传图片失败：{error}", error);
+                        }
+                    }
+                    else
+                    {
+                        await SendAsync(e, "每日运势", daily.daily);
+                    }
                 }
 
                 if (e.Detail == "公告")
@@ -2814,6 +2859,21 @@ namespace Oshima.FunGame.WebAPI.Services
                     }
                     return result;
                 }
+                
+                if (e.Detail.StartsWith("挑战魔法卡秘境"))
+                {
+                    string detail = e.Detail.Replace("挑战魔法卡秘境", "").Trim();
+                    string msg = "";
+                    if (int.TryParse(detail, out int diff))
+                    {
+                        msg = await Controller.FightInstance(uid, (int)InstanceType.MagicCard, diff);
+                        if (msg.Trim() != "")
+                        {
+                            await SendAsync(e, "挑战魔法卡秘境", msg);
+                        }
+                    }
+                    return result;
+                }
 
                 if (e.Detail == "后勤部")
                 {
@@ -3642,19 +3702,19 @@ namespace Oshima.FunGame.WebAPI.Services
             }
             catch (Exception ex)
             {
-                Logger.LogError("Error: {ex}", ex);
+                if (Logger.IsEnabled(Microsoft.Extensions.Logging.LogLevel.Error)) Logger.LogError("Error: {ex}", ex);
             }
 
             return false;
         }
 
-        public async Task<bool> HandlerByConsole(IBotMessage e)
+        public async Task<bool> HandlerByConsole(IBotMessage e, OtherData data)
         {
             if (MemoryCache.Get(e.AuthorOpenId) is null)
             {
                 MemoryCache.Set(e.AuthorOpenId, 1L, TimeSpan.FromMinutes(10));
             }
-            return await Handler(e);
+            return await Handler(e, data);
         }
 
         public List<string> MergeMessages(List<string> msgs)

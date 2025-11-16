@@ -18,6 +18,8 @@ namespace Oshima.Core.Configs
 
         public static List<string> TokenList { get; set; } = [];
 
+        public static string DailyImageServerUrl { get; set; } = "";
+
         public static PluginConfig Configs { get; set; } = new("rainbot", "config");
 
         public static void LoadSetting()
@@ -44,6 +46,10 @@ namespace Oshima.Core.Configs
             {
                 TokenList = (List<string>)value;
             }
+            if (configs.TryGetValue("DailyImageServerUrl", out value) && value != null)
+            {
+                DailyImageServerUrl = (string)value;
+            }
         }
 
         public static void SaveConfig()
@@ -53,6 +59,7 @@ namespace Oshima.Core.Configs
             Configs.Add("BlackTimes", BlackTimes);
             Configs.Add("BlackFrozenTime", BlackFrozenTime);
             Configs.Add("TokenList", TokenList);
+            Configs.Add("DailyImageServerUrl", DailyImageServerUrl);
             Configs.SaveConfig();
         }
     }

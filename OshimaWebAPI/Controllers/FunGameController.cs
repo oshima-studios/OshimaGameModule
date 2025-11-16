@@ -454,7 +454,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
             {
                 try
                 {
-                    Logger.LogInformation("[Reg] 接入ID：{openid}", openid);
+                    if (Logger.IsEnabled(Microsoft.Extensions.Logging.LogLevel.Information)) Logger.LogInformation("[Reg] 接入ID：{openid}", openid);
                     sqlHelper.ExecuteDataSet(FunGameService.Select_CheckAutoKey(sqlHelper, openid));
                     if (sqlHelper.Success)
                     {
@@ -513,7 +513,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
                 catch (Exception e)
                 {
                     sqlHelper.Rollback();
-                    Logger.LogError(e, "Error: {e}", e);
+                    if (Logger.IsEnabled(Microsoft.Extensions.Logging.LogLevel.Error)) Logger.LogError(e, "Error: {e}", e);
                 }
                 return "无法处理注册，创建存档失败！";
             }
@@ -693,7 +693,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
                     catch (Exception e)
                     {
                         FunGameService.ReleaseUserSemaphoreSlim(userid);
-                        Logger.LogError(e, "Error: {e}", e);
+                        if (Logger.IsEnabled(Microsoft.Extensions.Logging.LogLevel.Error)) Logger.LogError(e, "Error: {e}", e);
                         return busy;
                     }
                 }
@@ -1492,7 +1492,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
             }
             catch (Exception e)
             {
-                Logger.LogError(e, "Error: {e}", e);
+                if (Logger.IsEnabled(Microsoft.Extensions.Logging.LogLevel.Error)) Logger.LogError(e, "Error: {e}", e);
                 return busy;
             }
         }
@@ -1536,7 +1536,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
             }
             catch (Exception e)
             {
-                Logger.LogError(e, "Error: {e}", e);
+                if (Logger.IsEnabled(Microsoft.Extensions.Logging.LogLevel.Error)) Logger.LogError(e, "Error: {e}", e);
                 return busy;
             }
         }
@@ -1580,7 +1580,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
             }
             catch (Exception e)
             {
-                Logger.LogError(e, "Error: {e}", e);
+                if (Logger.IsEnabled(Microsoft.Extensions.Logging.LogLevel.Error)) Logger.LogError(e, "Error: {e}", e);
                 return busy;
             }
         }
@@ -1617,7 +1617,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
             }
             catch (Exception e)
             {
-                Logger.LogError(e, "Error: {e}", e);
+                if (Logger.IsEnabled(Microsoft.Extensions.Logging.LogLevel.Error)) Logger.LogError(e, "Error: {e}", e);
                 return busy;
             }
         }
@@ -1729,7 +1729,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
             }
             catch (Exception e)
             {
-                Logger.LogError(e, "Error: {e}", e);
+                if (Logger.IsEnabled(Microsoft.Extensions.Logging.LogLevel.Error)) Logger.LogError(e, "Error: {e}", e);
                 return busy;
             }
         }
@@ -1786,7 +1786,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
                         catch (Exception e)
                         {
                             FunGameService.ReleaseUserSemaphoreSlim(userid);
-                            Logger.LogError(e, "Error: {e}", e);
+                            if (Logger.IsEnabled(Microsoft.Extensions.Logging.LogLevel.Error)) Logger.LogError(e, "Error: {e}", e);
                             return busy;
                         }
                     }
@@ -1816,7 +1816,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
             catch (Exception e)
             {
                 FunGameService.ReleaseUserSemaphoreSlim(uid.ToString() ?? "");
-                Logger.LogError(e, "Error: {e}", e);
+                if (Logger.IsEnabled(Microsoft.Extensions.Logging.LogLevel.Error)) Logger.LogError(e, "Error: {e}", e);
                 return busy;
             }
         }
@@ -1868,7 +1868,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
             catch (Exception e)
             {
                 FunGameService.ReleaseUserSemaphoreSlim(uid.ToString() ?? "");
-                Logger.LogError(e, "Error: {e}", e);
+                if (Logger.IsEnabled(Microsoft.Extensions.Logging.LogLevel.Error)) Logger.LogError(e, "Error: {e}", e);
                 return busy;
             }
         }
@@ -1924,7 +1924,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
             {
                 FunGameService.ReleaseUserSemaphoreSlim(uid.ToString() ?? "");
                 FunGameService.ReleaseUserSemaphoreSlim(eqq.ToString() ?? "");
-                Logger.LogError(e, "Error: {e}", e);
+                if (Logger.IsEnabled(Microsoft.Extensions.Logging.LogLevel.Error)) Logger.LogError(e, "Error: {e}", e);
                 return [busy];
             }
         }
@@ -1947,7 +1947,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
             }
             catch (Exception e)
             {
-                Logger.LogError(e, "Error: {e}", e);
+                if (Logger.IsEnabled(Microsoft.Extensions.Logging.LogLevel.Error)) Logger.LogError(e, "Error: {e}", e);
                 return [busy];
             }
         }
@@ -2020,7 +2020,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
             {
                 FunGameService.ReleaseUserSemaphoreSlim(uid.ToString() ?? "");
                 FunGameService.ReleaseUserSemaphoreSlim(eqq.ToString() ?? "");
-                Logger.LogError(e, "Error: {e}", e);
+                if (Logger.IsEnabled(Microsoft.Extensions.Logging.LogLevel.Error)) Logger.LogError(e, "Error: {e}", e);
                 return [busy];
             }
         }
@@ -2043,7 +2043,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
             }
             catch (Exception e)
             {
-                Logger.LogError(e, "Error: {e}", e);
+                if (Logger.IsEnabled(Microsoft.Extensions.Logging.LogLevel.Error)) Logger.LogError(e, "Error: {e}", e);
                 return [busy];
             }
         }
@@ -2115,7 +2115,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
                             catch (Exception e)
                             {
                                 FunGameService.ReleaseUserSemaphoreSlim(userid);
-                                Logger.LogError(e, "Error: {e}", e);
+                                if (Logger.IsEnabled(Microsoft.Extensions.Logging.LogLevel.Error)) Logger.LogError(e, "Error: {e}", e);
                                 return busy;
                             }
 
@@ -2160,7 +2160,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
             catch (Exception e)
             {
                 FunGameService.ReleaseUserSemaphoreSlim(uid.ToString() ?? "");
-                Logger.LogError(e, "Error: {e}", e);
+                if (Logger.IsEnabled(Microsoft.Extensions.Logging.LogLevel.Error)) Logger.LogError(e, "Error: {e}", e);
                 return busy;
             }
         }
@@ -2253,7 +2253,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
             catch (Exception e)
             {
                 FunGameService.ReleaseUserSemaphoreSlim(uid.ToString() ?? "");
-                Logger.LogError(e, "Error: {e}", e);
+                if (Logger.IsEnabled(Microsoft.Extensions.Logging.LogLevel.Error)) Logger.LogError(e, "Error: {e}", e);
                 return busy;
             }
         }
@@ -2312,7 +2312,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
                             catch (Exception e)
                             {
                                 FunGameService.ReleaseUserSemaphoreSlim(userid);
-                                Logger.LogError(e, "Error: {e}", e);
+                                if (Logger.IsEnabled(Microsoft.Extensions.Logging.LogLevel.Error)) Logger.LogError(e, "Error: {e}", e);
                                 return busy;
                             }
 
@@ -2394,7 +2394,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
             catch (Exception e)
             {
                 FunGameService.ReleaseUserSemaphoreSlim(uid.ToString() ?? "");
-                Logger.LogError(e, "Error: {e}", e);
+                if (Logger.IsEnabled(Microsoft.Extensions.Logging.LogLevel.Error)) Logger.LogError(e, "Error: {e}", e);
                 return busy;
             }
         }
@@ -2490,7 +2490,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
                                 catch (Exception e)
                                 {
                                     FunGameService.ReleaseUserSemaphoreSlim(uid);
-                                    Logger.LogError(e, "Error: {e}", e);
+                                    if (Logger.IsEnabled(Microsoft.Extensions.Logging.LogLevel.Error)) Logger.LogError(e, "Error: {e}", e);
                                     return busy;
                                 }
 
@@ -2552,7 +2552,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
             catch (Exception e)
             {
                 FunGameService.ReleaseUserSemaphoreSlim(uid);
-                Logger.LogError(e, "Error: {e}", e);
+                if (Logger.IsEnabled(Microsoft.Extensions.Logging.LogLevel.Error)) Logger.LogError(e, "Error: {e}", e);
                 return busy;
             }
         }
@@ -2623,7 +2623,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
             catch (Exception e)
             {
                 FunGameService.ReleaseUserSemaphoreSlim(uid.ToString() ?? "");
-                Logger.LogError(e, "Error: {e}", e);
+                if (Logger.IsEnabled(Microsoft.Extensions.Logging.LogLevel.Error)) Logger.LogError(e, "Error: {e}", e);
                 return busy;
             }
         }
@@ -2763,7 +2763,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
             catch (Exception e)
             {
                 FunGameService.ReleaseUserSemaphoreSlim(uid.ToString() ?? "");
-                Logger.LogError(e, "Error: {e}", e);
+                if (Logger.IsEnabled(Microsoft.Extensions.Logging.LogLevel.Error)) Logger.LogError(e, "Error: {e}", e);
                 return busy;
             }
         }
@@ -3073,7 +3073,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
             catch (Exception e)
             {
                 FunGameService.ReleaseUserSemaphoreSlim(uid.ToString() ?? "");
-                Logger.LogError(e, "Error: {e}", e);
+                if (Logger.IsEnabled(Microsoft.Extensions.Logging.LogLevel.Error)) Logger.LogError(e, "Error: {e}", e);
                 return busy;
             }
         }
@@ -3148,7 +3148,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
             catch (Exception e)
             {
                 FunGameService.ReleaseUserSemaphoreSlim(uid.ToString() ?? "");
-                Logger.LogError(e, "Error: {e}", e);
+                if (Logger.IsEnabled(Microsoft.Extensions.Logging.LogLevel.Error)) Logger.LogError(e, "Error: {e}", e);
                 return busy;
             }
         }
@@ -3216,7 +3216,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
             catch (Exception e)
             {
                 FunGameService.ReleaseUserSemaphoreSlim(uid.ToString() ?? "");
-                Logger.LogError(e, "Error: {e}", e);
+                if (Logger.IsEnabled(Microsoft.Extensions.Logging.LogLevel.Error)) Logger.LogError(e, "Error: {e}", e);
                 return busy;
             }
         }
@@ -3298,7 +3298,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
             catch (Exception e)
             {
                 FunGameService.ReleaseUserSemaphoreSlim(uid.ToString() ?? "");
-                Logger.LogError(e, "Error: {e}", e);
+                if (Logger.IsEnabled(Microsoft.Extensions.Logging.LogLevel.Error)) Logger.LogError(e, "Error: {e}", e);
                 return busy;
             }
         }
@@ -3341,7 +3341,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
             catch (Exception e)
             {
                 FunGameService.ReleaseUserSemaphoreSlim(uid.ToString() ?? "");
-                Logger.LogError(e, "Error: {e}", e);
+                if (Logger.IsEnabled(Microsoft.Extensions.Logging.LogLevel.Error)) Logger.LogError(e, "Error: {e}", e);
                 return busy;
             }
         }
@@ -3390,7 +3390,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
             catch (Exception e)
             {
                 FunGameService.ReleaseUserSemaphoreSlim(uid.ToString() ?? "");
-                Logger.LogError(e, "Error: {e}", e);
+                if (Logger.IsEnabled(Microsoft.Extensions.Logging.LogLevel.Error)) Logger.LogError(e, "Error: {e}", e);
                 return busy;
             }
         }
@@ -3468,7 +3468,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
             catch (Exception e)
             {
                 FunGameService.ReleaseUserSemaphoreSlim(uid.ToString() ?? "");
-                Logger.LogError(e, "Error: {e}", e);
+                if (Logger.IsEnabled(Microsoft.Extensions.Logging.LogLevel.Error)) Logger.LogError(e, "Error: {e}", e);
                 return busy;
             }
         }
@@ -3515,7 +3515,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
             }
             catch (Exception e)
             {
-                Logger.LogError(e, "Error: {e}", e);
+                if (Logger.IsEnabled(Microsoft.Extensions.Logging.LogLevel.Error)) Logger.LogError(e, "Error: {e}", e);
                 return busy;
             }
         }
@@ -3714,7 +3714,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
             catch (Exception e)
             {
                 FunGameService.ReleaseUserSemaphoreSlim(uid.ToString() ?? "");
-                Logger.LogError(e, "Error: {e}", e);
+                if (Logger.IsEnabled(Microsoft.Extensions.Logging.LogLevel.Error)) Logger.LogError(e, "Error: {e}", e);
                 return busy;
             }
         }
@@ -3887,7 +3887,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
             catch (Exception e)
             {
                 FunGameService.ReleaseUserSemaphoreSlim(uid.ToString() ?? "");
-                Logger.LogError(e, "Error: {e}", e);
+                if (Logger.IsEnabled(Microsoft.Extensions.Logging.LogLevel.Error)) Logger.LogError(e, "Error: {e}", e);
                 return busy;
             }
         }
@@ -4028,7 +4028,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
             catch (Exception e)
             {
                 FunGameService.ReleaseUserSemaphoreSlim(uid.ToString() ?? "");
-                Logger.LogError(e, "Error: {e}", e);
+                if (Logger.IsEnabled(Microsoft.Extensions.Logging.LogLevel.Error)) Logger.LogError(e, "Error: {e}", e);
                 return busy;
             }
         }
@@ -4077,7 +4077,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
             catch (Exception e)
             {
                 FunGameService.ReleaseUserSemaphoreSlim(uid.ToString() ?? "");
-                Logger.LogError(e, "Error: {e}", e);
+                if (Logger.IsEnabled(Microsoft.Extensions.Logging.LogLevel.Error)) Logger.LogError(e, "Error: {e}", e);
                 return busy;
             }
         }
@@ -4124,7 +4124,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
             catch (Exception e)
             {
                 FunGameService.ReleaseUserSemaphoreSlim(uid.ToString() ?? "");
-                Logger.LogError(e, "Error: {e}", e);
+                if (Logger.IsEnabled(Microsoft.Extensions.Logging.LogLevel.Error)) Logger.LogError(e, "Error: {e}", e);
                 return busy;
             }
         }
@@ -4156,7 +4156,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
             catch (Exception e)
             {
                 FunGameService.ReleaseUserSemaphoreSlim(uid.ToString() ?? "");
-                Logger.LogError(e, "Error: {e}", e);
+                if (Logger.IsEnabled(Microsoft.Extensions.Logging.LogLevel.Error)) Logger.LogError(e, "Error: {e}", e);
                 return busy;
             }
         }
@@ -4183,7 +4183,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
             }
             catch (Exception e)
             {
-                Logger.LogError(e, "Error: {e}", e);
+                if (Logger.IsEnabled(Microsoft.Extensions.Logging.LogLevel.Error)) Logger.LogError(e, "Error: {e}", e);
                 return busy;
             }
         }
@@ -5621,7 +5621,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
             }
             catch (Exception e)
             {
-                Logger.LogError(e, "Error: {e}", e);
+                if (Logger.IsEnabled(Microsoft.Extensions.Logging.LogLevel.Error)) Logger.LogError(e, "Error: {e}", e);
                 return busy;
             }
             finally
@@ -6064,7 +6064,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
             catch (Exception e)
             {
                 FunGameService.ReleaseUserSemaphoreSlim(uid.ToString() ?? "");
-                Logger.LogError(e, "Error: {e}", e);
+                if (Logger.IsEnabled(Microsoft.Extensions.Logging.LogLevel.Error)) Logger.LogError(e, "Error: {e}", e);
                 return (busy, exploreId);
             }
         }
@@ -6389,7 +6389,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
                             catch (Exception e)
                             {
                                 FunGameService.ReleaseUserSemaphoreSlim(userid);
-                                Logger.LogError(e, "Error: {e}", e);
+                                if (Logger.IsEnabled(Microsoft.Extensions.Logging.LogLevel.Error)) Logger.LogError(e, "Error: {e}", e);
                                 return busy;
                             }
 
@@ -6442,7 +6442,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
             catch (Exception e)
             {
                 FunGameService.ReleaseUserSemaphoreSlim(uid.ToString() ?? "");
-                Logger.LogError(e, "Error: {e}", e);
+                if (Logger.IsEnabled(Microsoft.Extensions.Logging.LogLevel.Error)) Logger.LogError(e, "Error: {e}", e);
                 return busy;
             }
         }
@@ -6536,7 +6536,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
             catch (Exception e)
             {
                 FunGameService.ReleaseUserSemaphoreSlim(uid.ToString() ?? "");
-                Logger.LogError(e, "Error: {e}", e);
+                if (Logger.IsEnabled(Microsoft.Extensions.Logging.LogLevel.Error)) Logger.LogError(e, "Error: {e}", e);
                 return busy;
             }
         }
@@ -6585,7 +6585,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
             catch (Exception e)
             {
                 FunGameService.ReleaseUserSemaphoreSlim(userid);
-                Logger.LogError(e, "Error: {e}", e);
+                if (Logger.IsEnabled(Microsoft.Extensions.Logging.LogLevel.Error)) Logger.LogError(e, "Error: {e}", e);
                 return busy;
             }
         }
@@ -6628,7 +6628,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
             catch (Exception e)
             {
                 FunGameService.ReleaseUserSemaphoreSlim(userid);
-                Logger.LogError(e, "Error: {e}", e);
+                if (Logger.IsEnabled(Microsoft.Extensions.Logging.LogLevel.Error)) Logger.LogError(e, "Error: {e}", e);
                 return busy;
             }
         }
@@ -6661,7 +6661,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
             catch (Exception e)
             {
                 FunGameService.ReleaseUserSemaphoreSlim(userid);
-                Logger.LogError(e, "Error: {e}", e);
+                if (Logger.IsEnabled(Microsoft.Extensions.Logging.LogLevel.Error)) Logger.LogError(e, "Error: {e}", e);
                 return busy;
             }
         }
@@ -6702,7 +6702,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
             catch (Exception e)
             {
                 FunGameService.ReleaseUserSemaphoreSlim(userid);
-                Logger.LogError(e, "Error: {e}", e);
+                if (Logger.IsEnabled(Microsoft.Extensions.Logging.LogLevel.Error)) Logger.LogError(e, "Error: {e}", e);
                 return busy;
             }
         }
@@ -6825,7 +6825,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
             }
             catch (Exception e)
             {
-                Logger.LogError(e, "Error: {e}", e);
+                if (Logger.IsEnabled(Microsoft.Extensions.Logging.LogLevel.Error)) Logger.LogError(e, "Error: {e}", e);
                 return busy;
             }
         }
@@ -6867,7 +6867,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
             catch (Exception e)
             {
                 FunGameService.ReleaseUserSemaphoreSlim(userid);
-                Logger.LogError(e, "Error: {e}", e);
+                if (Logger.IsEnabled(Microsoft.Extensions.Logging.LogLevel.Error)) Logger.LogError(e, "Error: {e}", e);
                 return busy;
             }
         }
@@ -6900,7 +6900,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
             catch (Exception e)
             {
                 FunGameService.ReleaseUserSemaphoreSlim(userid);
-                Logger.LogError(e, "Error: {e}", e);
+                if (Logger.IsEnabled(Microsoft.Extensions.Logging.LogLevel.Error)) Logger.LogError(e, "Error: {e}", e);
                 return busy;
             }
         }
@@ -6990,7 +6990,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
             catch (Exception e)
             {
                 FunGameService.ReleaseUserSemaphoreSlim(uid.ToString() ?? "");
-                Logger.LogError(e, "Error: {e}", e);
+                if (Logger.IsEnabled(Microsoft.Extensions.Logging.LogLevel.Error)) Logger.LogError(e, "Error: {e}", e);
                 return busy;
             }
         }
@@ -7052,7 +7052,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
             }
             catch (Exception e)
             {
-                Logger.LogError(e, "Error: {e}", e);
+                if (Logger.IsEnabled(Microsoft.Extensions.Logging.LogLevel.Error)) Logger.LogError(e, "Error: {e}", e);
                 return busy;
             }
         }
@@ -7149,7 +7149,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
             }
             catch (Exception e)
             {
-                Logger.LogError(e, "Error: {e}", e);
+                if (Logger.IsEnabled(Microsoft.Extensions.Logging.LogLevel.Error)) Logger.LogError(e, "Error: {e}", e);
                 return busy;
             }
         }
@@ -7303,7 +7303,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
             catch (Exception e)
             {
                 FunGameService.ReleaseUserSemaphoreSlim(target);
-                Logger.LogError(e, "Error: {e}", e);
+                if (Logger.IsEnabled(Microsoft.Extensions.Logging.LogLevel.Error)) Logger.LogError(e, "Error: {e}", e);
                 return busy;
             }
         }
@@ -7415,7 +7415,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
             {
                 FunGameService.ReleaseMarketSemaphoreSlim();
                 FunGameService.ReleaseUserSemaphoreSlim(userid);
-                Logger.LogError(e, "Error: {e}", e);
+                if (Logger.IsEnabled(Microsoft.Extensions.Logging.LogLevel.Error)) Logger.LogError(e, "Error: {e}", e);
                 return busy;
             }
         }
@@ -7453,7 +7453,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
             {
                 FunGameService.ReleaseMarketSemaphoreSlim();
                 FunGameService.ReleaseUserSemaphoreSlim(userid);
-                Logger.LogError(e, "Error: {e}", e);
+                if (Logger.IsEnabled(Microsoft.Extensions.Logging.LogLevel.Error)) Logger.LogError(e, "Error: {e}", e);
                 return busy;
             }
         }
@@ -7479,9 +7479,9 @@ namespace Oshima.FunGame.WebAPI.Controllers
                     if (marketItems.Length > 0)
                     {
                         if (page <= 0) page = 1;
-                        int maxPage = market.MarketItems.Values.MaxPage(8);
+                        int maxPage = marketItems.MaxPage(8);
                         if (page > maxPage) page = maxPage;
-                        marketItems = [.. market.MarketItems.Values.GetPage(page, 8)];
+                        marketItems = [.. marketItems.GetPage(page, 8)];
                         foreach (MarketItem marketItem in marketItems)
                         {
                             msg += FunGameService.GetMarketItemInfo(marketItem, true, user) + "\r\n";
@@ -7505,7 +7505,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
             {
                 FunGameService.ReleaseMarketSemaphoreSlim();
                 FunGameService.ReleaseUserSemaphoreSlim(userid);
-                Logger.LogError(e, "Error: {e}", e);
+                if (Logger.IsEnabled(Microsoft.Extensions.Logging.LogLevel.Error)) Logger.LogError(e, "Error: {e}", e);
                 return busy;
             }
         }
@@ -7551,7 +7551,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
             {
                 FunGameService.ReleaseMarketSemaphoreSlim();
                 FunGameService.ReleaseUserSemaphoreSlim(userid);
-                Logger.LogError(e, "Error: {e}", e);
+                if (Logger.IsEnabled(Microsoft.Extensions.Logging.LogLevel.Error)) Logger.LogError(e, "Error: {e}", e);
                 return busy;
             }
         }
@@ -7598,7 +7598,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
                             catch (Exception e)
                             {
                                 FunGameService.ReleaseUserSemaphoreSlim(userid2);
-                                Logger.LogError(e, "Error: {e}", e);
+                                if (Logger.IsEnabled(Microsoft.Extensions.Logging.LogLevel.Error)) Logger.LogError(e, "Error: {e}", e);
                                 throw;
                             }
                         }
@@ -7621,7 +7621,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
             {
                 FunGameService.ReleaseMarketSemaphoreSlim();
                 FunGameService.ReleaseUserSemaphoreSlim(userid);
-                Logger.LogError(e, "Error: {e}", e);
+                if (Logger.IsEnabled(Microsoft.Extensions.Logging.LogLevel.Error)) Logger.LogError(e, "Error: {e}", e);
                 return busy;
             }
         }
@@ -7675,7 +7675,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
             {
                 FunGameService.ReleaseMarketSemaphoreSlim();
                 FunGameService.ReleaseUserSemaphoreSlim(userid);
-                Logger.LogError(e, "Error: {e}", e);
+                if (Logger.IsEnabled(Microsoft.Extensions.Logging.LogLevel.Error)) Logger.LogError(e, "Error: {e}", e);
                 return busy;
             }
         }
@@ -7696,7 +7696,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
                     User user = FunGameService.GetUser(pc);
                     int exploreTimes = 0;
 
-                    int[] supportedInstanceType = [(int)InstanceType.Currency, (int)InstanceType.Material, (int)InstanceType.EXP, (int)InstanceType.RegionItem, (int)InstanceType.CharacterLevelBreak, (int)InstanceType.SkillLevelUp];
+                    int[] supportedInstanceType = [(int)InstanceType.Currency, (int)InstanceType.Material, (int)InstanceType.EXP, (int)InstanceType.RegionItem, (int)InstanceType.CharacterLevelBreak, (int)InstanceType.SkillLevelUp, (int)InstanceType.MagicCard];
                     if (!supportedInstanceType.Contains(type))
                     {
                         msg = $"秘境类型无效。";
@@ -7767,7 +7767,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
             catch (Exception e)
             {
                 FunGameService.ReleaseUserSemaphoreSlim(userid);
-                Logger.LogError(e, "Error: {e}", e);
+                if (Logger.IsEnabled(Microsoft.Extensions.Logging.LogLevel.Error)) Logger.LogError(e, "Error: {e}", e);
                 return busy;
             }
         }
@@ -7958,7 +7958,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
             }
             catch (Exception e)
             {
-                Logger.LogError(e, "Error: {e}", e);
+                if (Logger.IsEnabled(Microsoft.Extensions.Logging.LogLevel.Error)) Logger.LogError(e, "Error: {e}", e);
                 return busy;
             }
             finally
@@ -8025,7 +8025,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
             }
             catch (Exception e)
             {
-                Logger.LogError(e, "Error: {e}", e);
+                if (Logger.IsEnabled(Microsoft.Extensions.Logging.LogLevel.Error)) Logger.LogError(e, "Error: {e}", e);
                 return busy;
             }
             finally
@@ -8081,7 +8081,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
             }
             catch (Exception e)
             {
-                Logger.LogError(e, "Error: {e}", e);
+                if (Logger.IsEnabled(Microsoft.Extensions.Logging.LogLevel.Error)) Logger.LogError(e, "Error: {e}", e);
                 return busy;
             }
             finally
@@ -8130,7 +8130,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
             }
             catch (Exception e)
             {
-                Logger.LogError(e, "Error: {e}", e);
+                if (Logger.IsEnabled(Microsoft.Extensions.Logging.LogLevel.Error)) Logger.LogError(e, "Error: {e}", e);
                 return busy;
             }
             finally
@@ -8178,7 +8178,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
             }
             catch (Exception e)
             {
-                Logger.LogError(e, "Error: {e}", e);
+                if (Logger.IsEnabled(Microsoft.Extensions.Logging.LogLevel.Error)) Logger.LogError(e, "Error: {e}", e);
                 return busy;
             }
             finally
@@ -8268,7 +8268,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
             }
             catch (Exception e)
             {
-                Logger.LogError(e, "Error: {e}", e);
+                if (Logger.IsEnabled(Microsoft.Extensions.Logging.LogLevel.Error)) Logger.LogError(e, "Error: {e}", e);
                 return busy;
             }
             finally
@@ -8327,7 +8327,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
             }
             catch (Exception e)
             {
-                Logger.LogError(e, "Error: {e}", e);
+                if (Logger.IsEnabled(Microsoft.Extensions.Logging.LogLevel.Error)) Logger.LogError(e, "Error: {e}", e);
                 return busy;
             }
             finally
@@ -8392,7 +8392,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
             }
             catch (Exception e)
             {
-                Logger.LogError(e, "Error: {e}", e);
+                if (Logger.IsEnabled(Microsoft.Extensions.Logging.LogLevel.Error)) Logger.LogError(e, "Error: {e}", e);
                 return busy;
             }
             finally
@@ -8436,7 +8436,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
             }
             catch (Exception e)
             {
-                Logger.LogError(e, "Error: {e}", e);
+                if (Logger.IsEnabled(Microsoft.Extensions.Logging.LogLevel.Error)) Logger.LogError(e, "Error: {e}", e);
                 return busy;
             }
             finally
@@ -8473,7 +8473,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
             }
             catch (Exception e)
             {
-                Logger.LogError(e, "Error: {e}", e);
+                if (Logger.IsEnabled(Microsoft.Extensions.Logging.LogLevel.Error)) Logger.LogError(e, "Error: {e}", e);
                 return busy;
             }
             finally
@@ -8510,7 +8510,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
             }
             catch (Exception e)
             {
-                Logger.LogError(e, "Error: {e}", e);
+                if (Logger.IsEnabled(Microsoft.Extensions.Logging.LogLevel.Error)) Logger.LogError(e, "Error: {e}", e);
                 return busy;
             }
             finally
@@ -8547,7 +8547,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
             }
             catch (Exception e)
             {
-                Logger.LogError(e, "Error: {e}", e);
+                if (Logger.IsEnabled(Microsoft.Extensions.Logging.LogLevel.Error)) Logger.LogError(e, "Error: {e}", e);
                 return busy;
             }
             finally
@@ -8588,7 +8588,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
             }
             catch (Exception e)
             {
-                Logger.LogError(e, "Error: {e}", e);
+                if (Logger.IsEnabled(Microsoft.Extensions.Logging.LogLevel.Error)) Logger.LogError(e, "Error: {e}", e);
                 return busy;
             }
             finally
@@ -8626,7 +8626,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
             }
             catch (Exception e)
             {
-                Logger.LogError(e, "Error: {e}", e);
+                if (Logger.IsEnabled(Microsoft.Extensions.Logging.LogLevel.Error)) Logger.LogError(e, "Error: {e}", e);
                 return (room, [busy]);
             }
             finally
@@ -8763,7 +8763,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
             }
             catch (Exception e)
             {
-                Logger.LogError(e, "Error: {e}", e);
+                if (Logger.IsEnabled(Microsoft.Extensions.Logging.LogLevel.Error)) Logger.LogError(e, "Error: {e}", e);
                 return busy;
             }
             finally
@@ -8864,7 +8864,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
             }
             catch (Exception e)
             {
-                Logger.LogError(e, "Error: {e}", e);
+                if (Logger.IsEnabled(Microsoft.Extensions.Logging.LogLevel.Error)) Logger.LogError(e, "Error: {e}", e);
                 return busy;
             }
             finally
@@ -8945,7 +8945,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
             }
             catch (Exception e)
             {
-                Logger.LogError(e, "Error: {e}", e);
+                if (Logger.IsEnabled(Microsoft.Extensions.Logging.LogLevel.Error)) Logger.LogError(e, "Error: {e}", e);
                 return busy;
             }
             finally
@@ -8980,7 +8980,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
             }
             catch (Exception e)
             {
-                Logger.LogError(e, "Error: {e}", e);
+                if (Logger.IsEnabled(Microsoft.Extensions.Logging.LogLevel.Error)) Logger.LogError(e, "Error: {e}", e);
                 return busy;
             }
             finally

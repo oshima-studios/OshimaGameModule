@@ -25,13 +25,17 @@ namespace Oshima.FunGame.WebAPI.Controllers
         }
 
         [HttpPost("open/{open_id}", Name = "GetOpenUserDaily")]
-        public UserDaily Open(string open_id)
+        public OpenUserDaily Open(string open_id)
         {
             if (QQOpenID.QQAndOpenID.TryGetValue(open_id, out long qq) && qq != 0)
             {
-                return UserDailyService.GetUserDaily(qq);
+                UserDaily daily = UserDailyService.GetUserDaily(qq);
+                return new(open_id, daily.type, daily.daily);
             }
-            return new(0, 0, "你似乎没有绑定QQ呢，请先发送【绑定+QQ号】（如：绑定123456789）再使用哦！");
+            else
+            {
+                return UserDailyService.GetOpenUserDaily(open_id);
+            }
         }
 
         [HttpPost("remove/{user_id}", Name = "RemoveUserDaily")]

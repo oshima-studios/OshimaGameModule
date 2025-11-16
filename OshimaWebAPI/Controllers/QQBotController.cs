@@ -29,7 +29,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
                 return BadRequest("Payload 格式无效");
             }
 
-            Logger.LogDebug("收到 Webhook 请求：{payload.Op}", payload.Op);
+            if (Logger.IsEnabled(LogLevel.Debug)) Logger.LogDebug("收到 Webhook 请求：{payload.Op}", payload.Op);
 
             try
             {
@@ -44,13 +44,13 @@ namespace Oshima.FunGame.WebAPI.Controllers
                 }
                 else
                 {
-                    Logger.LogWarning("未处理操作码：{payload.Op}", payload.Op);
+                    if (Logger.IsEnabled(LogLevel.Warning)) Logger.LogWarning("未处理操作码：{payload.Op}", payload.Op);
                     return Ok();
                 }
             }
             catch (Exception e)
             {
-                Logger.LogError("Error: {e}", e);
+                if (Logger.IsEnabled(LogLevel.Error)) Logger.LogError("Error: {e}", e);
                 return StatusCode(500, "服务器内部错误");
             }
         }
@@ -60,7 +60,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
             ValidationRequest? validationPayload = JsonSerializer.Deserialize<ValidationRequest>(payload.Data.ToString() ?? "");
             if (validationPayload is null)
             {
-                Logger.LogError("反序列化验证 Payload 失败");
+                if (Logger.IsEnabled(LogLevel.Error)) Logger.LogError("反序列化验证 Payload 失败");
                 return BadRequest("无效的验证 Payload 格式");
             }
             string seed = BotConfig.Secret;
@@ -91,16 +91,21 @@ namespace Oshima.FunGame.WebAPI.Controllers
                 Signature = signature
             };
             string responseJson = JsonSerializer.Serialize(response);
-            Logger.LogDebug("验证相应：{responseJson}", responseJson);
+            if (Logger.IsEnabled(LogLevel.Debug)) Logger.LogDebug("验证相应：{responseJson}", responseJson);
             return Ok(response);
         }
 
         private IActionResult HandleEventAsync(Payload payload)
         {
-            Logger.LogDebug("处理事件：{EventType}, 数据：{Data}", payload.EventType, payload.Data);
+            if (Logger.IsEnabled(LogLevel.Debug)) Logger.LogDebug("处理事件：{EventType}, 数据：{Data}", payload.EventType, payload.Data);
 
             try
             {
+                OtherData data = new()
+                {
+                    RequestUrl = $"{Request.Scheme}://{Request.Host}{Request.PathBase}"
+                };
+
                 switch (payload.EventType)
                 {
                     case "C2C_MESSAGE_CREATE":
@@ -113,11 +118,11 @@ namespace Oshima.FunGame.WebAPI.Controllers
                                 c2cMessage.Detail = c2cMessage.Detail[1..];
                             }
                             // TODO
-                            Logger.LogInformation("收到来自用户 {c2cMessage.Author.UserOpenId} 的消息：{c2cMessage.Content}", c2cMessage.Author.UserOpenId, c2cMessage.Content);
+                            if (Logger.IsEnabled(LogLevel.Information)) Logger.LogInformation("收到来自用户 {c2cMessage.Author.UserOpenId} 的消息：{c2cMessage.Content}", c2cMessage.Author.UserOpenId, c2cMessage.Content);
                             //// 上传图片
                             //string url = $"{Request.Scheme}://{Request.Host}{Request.PathBase}/images/zi/dj1.png";
                             //var (fileUuid, fileInfo, ttl, error) = await _service.UploadC2CMediaAsync(c2cMessage.Author.UserOpenId, 1, url);
-                            //_logger.LogDebug("发送的图片地址：{url}", url);
+                            //_if (Logger.IsEnabled(LogLevel.Debug)) Logger.LogDebug("发送的图片地址：{url}", url);
                             //if (string.IsNullOrEmpty(error))
                             //{
                             //    // 回复消息
@@ -127,13 +132,13 @@ namespace Oshima.FunGame.WebAPI.Controllers
                             //}
                             //else
                             //{
-                            //    _logger.LogError("上传图片失败：{error}", error);
+                            //    _if (Logger.IsEnabled(LogLevel.Error)) Logger.LogError("上传图片失败：{error}", error);
                             //}
-                            TaskUtility.NewTask(async () => await FungameService.Handler(c2cMessage));
+                            TaskUtility.NewTask(async () => await FungameService.Handler(c2cMessage, data));
                         }
                         else
                         {
-                            Logger.LogError("反序列化 C2C 消息数据失败");
+                            if (Logger.IsEnabled(LogLevel.Error)) Logger.LogError("反序列化 C2C 消息数据失败");
                             return BadRequest("无效的 C2C 消息数据格式");
                         }
                         break;
@@ -147,31 +152,31 @@ namespace Oshima.FunGame.WebAPI.Controllers
                                 groupAtMessage.Detail = groupAtMessage.Detail[1..];
                             }
                             // TODO
-                            Logger.LogInformation("收到来自群组 {groupAtMessage.GroupOpenId} 的消息：{groupAtMessage.Content}", groupAtMessage.GroupOpenId, groupAtMessage.Content);
+                            if (Logger.IsEnabled(LogLevel.Information)) Logger.LogInformation("收到来自群组 {groupAtMessage.GroupOpenId} 的消息：{groupAtMessage.Content}", groupAtMessage.GroupOpenId, groupAtMessage.Content);
                             // 回复消息
                             //await _service.SendGroupMessageAsync(groupAtMessage.GroupOpenId, $"你发送的消息是：{groupAtMessage.Content}", msgId: groupAtMessage.Id);
-                            TaskUtility.NewTask(async () => await FungameService.Handler(groupAtMessage));
+                            TaskUtility.NewTask(async () => await FungameService.Handler(groupAtMessage, data));
                         }
                         else
                         {
-                            Logger.LogError("反序列化群聊消息数据失败");
+                            if (Logger.IsEnabled(LogLevel.Error)) Logger.LogError("反序列化群聊消息数据失败");
                             return BadRequest("无效的群聊消息数据格式");
                         }
                         break;
                     default:
-                        Logger.LogWarning("未定义事件：{EventType}", payload.EventType);
+                        if (Logger.IsEnabled(LogLevel.Warning)) Logger.LogWarning("未定义事件：{EventType}", payload.EventType);
                         break;
                 }
                 return Ok();
             }
             catch (JsonException e)
             {
-                Logger.LogError("反序列化过程遇到错误：{e}", e);
+                if (Logger.IsEnabled(LogLevel.Error)) Logger.LogError("反序列化过程遇到错误：{e}", e);
                 return BadRequest("Invalid JSON format");
             }
             catch (Exception e)
             {
-                Logger.LogError("Error: {e}", e);
+                if (Logger.IsEnabled(LogLevel.Error)) Logger.LogError("Error: {e}", e);
                 return StatusCode(500, "服务器内部错误");
             }
         }
@@ -182,7 +187,12 @@ namespace Oshima.FunGame.WebAPI.Controllers
         {
             if (msg is null) return Ok("");
 
-            bool result = await FungameService.Handler(msg);
+            OtherData data = new()
+            {
+                RequestUrl = $"{Request.Scheme}://{Request.Host}{Request.PathBase}"
+            };
+
+            bool result = await FungameService.Handler(msg, data);
 
             if (!result || msg.IsCompleted)
             {
@@ -208,7 +218,12 @@ namespace Oshima.FunGame.WebAPI.Controllers
                 Timestamp = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")
             };
 
-            bool result = await FungameService.Handler(message);
+            OtherData data = new()
+            {
+                RequestUrl = $"{Request.Scheme}://{Request.Host}{Request.PathBase}"
+            };
+
+            bool result = await FungameService.Handler(message, data);
 
             if (!result || message.IsCompleted)
             {

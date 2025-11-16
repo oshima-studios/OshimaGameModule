@@ -11,6 +11,8 @@ namespace Oshima.Core.Configs
 
         public static Dictionary<long, string> UserDailys { get; } = [];
 
+        public static Dictionary<string, string> OpenUserDailys { get; } = [];
+
         public static List<string> GreatFortune { get; set; } = [];
 
         public static List<string> ModerateFortune { get; set; } = [];
@@ -28,6 +30,8 @@ namespace Oshima.Core.Configs
         public static PluginConfig DailyContent { get; set; } = new("rainbot", "daily");
 
         public static PluginConfig Configs { get; set; } = new("rainbot", "userdaliys");
+
+        public static PluginConfig OpenConfigs { get; set; } = new("rainbot", "openuserdaliys");
 
         public static void InitDaily()
         {
@@ -93,6 +97,16 @@ namespace Oshima.Core.Configs
                 }
             }
             SaveDaily();
+            OpenConfigs.LoadConfig();
+            foreach (string str in OpenConfigs.Keys)
+            {
+                if (OpenConfigs.TryGetValue(str, out object? value2) && value2 != null && !OpenUserDailys.ContainsKey(str))
+                {
+                    OpenUserDailys.Add(str, value2.ToString() ?? "");
+                    if (OpenUserDailys[str] == "") OpenUserDailys.Remove(str);
+                }
+            }
+            SaveOpenDaily();
         }
 
         public static void SaveDaily()
@@ -108,10 +122,25 @@ namespace Oshima.Core.Configs
             }
         }
 
+        public static void SaveOpenDaily()
+        {
+            lock (OpenConfigs)
+            {
+                OpenConfigs.Clear();
+                foreach (string openid in OpenUserDailys.Keys)
+                {
+                    OpenConfigs.Add(openid.ToString(), OpenUserDailys[openid]);
+                }
+                OpenConfigs.SaveConfig();
+            }
+        }
+
         public static void ClearDaily()
         {
             UserDailys.Clear();
+            OpenUserDailys.Clear();
             SaveDaily();
+            SaveOpenDaily();
         }
     }
 }
