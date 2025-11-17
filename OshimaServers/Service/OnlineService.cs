@@ -25,7 +25,7 @@ namespace Oshima.FunGame.OshimaServers.Service
                 RoomSemaphoreSlim.Release();
             }
         }
-        
+
         public static void GetHorseRacingSettleSemaphoreSlim()
         {
             HorseRacingSettleSemaphoreSlim.Wait(FunGameConstant.SemaphoreSlimTimeout);
@@ -263,7 +263,7 @@ namespace Oshima.FunGame.OshimaServers.Service
                 ReleaseRoomSemaphoreSlim();
             }
         }
-        
+
         public static string RoomInfo(User user)
         {
             string msg = "";
@@ -291,7 +291,7 @@ namespace Oshima.FunGame.OshimaServers.Service
             }
             return msg;
         }
-        
+
         public static string RoomInfo(Room room)
         {
             string username = "";
@@ -332,7 +332,7 @@ namespace Oshima.FunGame.OshimaServers.Service
                 ReleaseRoomSemaphoreSlim();
             }
         }
-        
+
         public static void ReSetRoomState(string roomid)
         {
             try

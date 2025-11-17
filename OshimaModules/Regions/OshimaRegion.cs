@@ -26,18 +26,18 @@ namespace Oshima.FunGame.OshimaModules.Regions
         {
             return null;
         }
-        
+
 
         public virtual string GetCurrencyInfo(PluginConfig pc, User user, string storeName)
         {
             return "";
         }
-        
+
         public virtual void SaveGlobalStore(Store store, string storeName)
         {
 
         }
-        
+
         public virtual void UpdateNextRefreshGoods()
         {
 

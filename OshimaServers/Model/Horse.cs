@@ -74,7 +74,7 @@ namespace Oshima.FunGame.OshimaServers.Model
         /// 马匹当前正在生效的技能效果列表
         /// </summary>
         public List<ActiveSkillEffect> ActiveEffects { get; set; } = [];
-        
+
         public override string ToString()
         {
             return Name;

@@ -26,7 +26,7 @@ namespace Oshima.FunGame.WebAPI.Services
                 return new UserDaily(0, 0, "今日运势列表为空，请联系管理员设定。");
             }
         }
-        
+
         public static OpenUserDaily GetOpenUserDaily(string user_id)
         {
             if (Daily.OpenUserDailys.TryGetValue(user_id, out string? value) && value != null && value.Trim() != "")

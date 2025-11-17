@@ -71,11 +71,11 @@ namespace Oshima.FunGame.OshimaServers.Service
             }
             return itemGuids;
         }
-        
+
         public static List<Guid> GetUserItemGuids(SQLHelper helper, long userId)
         {
             helper.Parameters["UserId"] = userId;
-            DataSet ds = helper.ExecuteDataSet($"select {OfferItemsQuery.TableName}.{OfferItemsQuery.Column_ItemGuid} from {OffersQuery.TableName}\r\n" + 
+            DataSet ds = helper.ExecuteDataSet($"select {OfferItemsQuery.TableName}.{OfferItemsQuery.Column_ItemGuid} from {OffersQuery.TableName}\r\n" +
                 $"left join {OfferItemsQuery.TableName} on {OfferItemsQuery.TableName}.{OfferItemsQuery.Column_OfferId} = {OffersQuery.TableName}.{OffersQuery.Column_Id}\r\n" +
                 $"where {OfferItemsQuery.Column_UserId} = @UserId and {OffersQuery.Column_Status} not in ({(int)OfferState.Cancelled}, {(int)OfferState.Rejected}, {(int)OfferState.Completed})");
             List<Guid> list = [];
@@ -85,11 +85,11 @@ namespace Oshima.FunGame.OshimaServers.Service
             }
             return list;
         }
-        
+
         public static bool IsItemInOffers(SQLHelper helper, Guid itemGuid)
         {
             helper.Parameters["ItemGuid"] = itemGuid.ToString();
-            helper.ExecuteDataSet($"select {OffersQuery.TableName}.{OffersQuery.Column_Id} from {OffersQuery.TableName}\r\n" + 
+            helper.ExecuteDataSet($"select {OffersQuery.TableName}.{OffersQuery.Column_Id} from {OffersQuery.TableName}\r\n" +
                 $"left join {OfferItemsQuery.TableName} on {OfferItemsQuery.TableName}.{OfferItemsQuery.Column_OfferId} = {OffersQuery.TableName}.{OffersQuery.Column_Id}\r\n" +
                 $"where {OfferItemsQuery.Column_ItemGuid} = @ItemGuid and {OffersQuery.Column_Status} not in ({(int)OfferState.Cancelled}, {(int)OfferState.Rejected}, {(int)OfferState.Completed})");
             return helper.Success;
@@ -227,7 +227,7 @@ namespace Oshima.FunGame.OshimaServers.Service
                 throw;
             }
         }
-        
+
         public static void DeleteOfferItemsByOfferIdAndItemGuid(SQLHelper helper, long offerId, Guid itemGuid)
         {
             bool hasTransaction = helper.Transaction != null;

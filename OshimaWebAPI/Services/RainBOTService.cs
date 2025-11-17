@@ -53,9 +53,9 @@ namespace Oshima.FunGame.WebAPI.Services
         }
 
         private async Task SendHelp(IBotMessage e, Dictionary<string, string> helpDict, string helpName, int currentPage)
-		{
-			e.UseNotice = false;
-			int pageSize = 15;
+        {
+            e.UseNotice = false;
+            int pageSize = 15;
             int totalPages = (helpDict.Count + pageSize - 1) / pageSize;
 
             StringBuilder result = new($"《筽祀牻》{helpName}指令（第 {currentPage}/{totalPages} 页）\n");
@@ -149,7 +149,7 @@ namespace Oshima.FunGame.WebAPI.Services
                 if (!e.IsGroup && e.Detail == "获取接入码")
                 {
                     e.UseNotice = false;
-					await SendAsync(e, "获取接入码", $"你的接入码为 {openid}，请妥善保存！");
+                    await SendAsync(e, "获取接入码", $"你的接入码为 {openid}，请妥善保存！");
                     return true;
                 }
 
@@ -199,8 +199,8 @@ namespace Oshima.FunGame.WebAPI.Services
                 }
 
                 if (e.Detail == "公告")
-				{
-					e.UseNotice = false;
+                {
+                    e.UseNotice = false;
                     FunGameService.RefreshNotice();
                     if (FunGameService.Notices.Count > 0)
                     {
@@ -221,17 +221,17 @@ namespace Oshima.FunGame.WebAPI.Services
                     }
                     return true;
                 }
-                
+
                 if (e.Detail == "刷新公告")
-				{
-					e.UseNotice = false;
-					FunGameService.RefreshNotice();
+                {
+                    e.UseNotice = false;
+                    FunGameService.RefreshNotice();
                     return true;
                 }
-                
+
                 if (e.Detail.StartsWith("添加公告"))
-				{
-					e.UseNotice = false;
+                {
+                    e.UseNotice = false;
                     string author = "FunGame";
                     FunGameConstant.UserIdAndUsername.TryGetValue(uid, out User? user);
                     if (user is null || (!user.IsAdmin && !user.IsOperator))
@@ -279,28 +279,28 @@ namespace Oshima.FunGame.WebAPI.Services
                     await SendAsync(e, "添加公告", $"添加完毕，请查看【公告】列表！");
                     return true;
                 }
-                
+
                 if (e.Detail == "查询服务器启动时间")
-				{
-					e.UseNotice = false;
-					string msg = TestController.GetLastLoginTime();
+                {
+                    e.UseNotice = false;
+                    string msg = TestController.GetLastLoginTime();
                     await SendAsync(e, "查询服务器启动时间", msg);
                     return true;
                 }
 
                 if (e.Detail.StartsWith("查询任务计划"))
-				{
-					e.UseNotice = false;
-					string msg = TestController.GetTaskScheduler(e.Detail.Replace("查询任务计划", ""));
+                {
+                    e.UseNotice = false;
+                    string msg = TestController.GetTaskScheduler(e.Detail.Replace("查询任务计划", ""));
                     await SendAsync(e, "查询任务计划", msg);
                     return true;
                 }
 
                 // 指令处理
                 if (e.Detail == "帮助")
-				{
-					e.UseNotice = false;
-					await SendAsync(e, "筽祀牻", @$"欢迎使用《筽祀牻》游戏指令帮助系统！
+                {
+                    e.UseNotice = false;
+                    await SendAsync(e, "筽祀牻", @$"欢迎使用《筽祀牻》游戏指令帮助系统！
 核心库版本号：{FunGameInfo.FunGame_Version}
 《筽祀牻》是一款奇幻冒险回合制角色扮演游戏。
 在游戏中，你可以和其他角色组成小队，收集物品，在数十个独具风格的地区中冒险并战斗。
@@ -358,9 +358,9 @@ namespace Oshima.FunGame.WebAPI.Services
                 }
 
                 if (e.Detail.StartsWith("FunGame模拟", StringComparison.CurrentCultureIgnoreCase))
-				{
-					e.UseNotice = false;
-					if (!FunGameSimulation)
+                {
+                    e.UseNotice = false;
+                    if (!FunGameSimulation)
                     {
                         FunGameSimulation = true;
                         List<string> msgs = await Controller.GetTest(false, maxRespawnTimesMix: 0);
@@ -381,9 +381,9 @@ namespace Oshima.FunGame.WebAPI.Services
                 }
 
                 if (e.Detail.StartsWith("混战模拟"))
-				{
-					e.UseNotice = false;
-					int maxRespawnTimesMix = 1;
+                {
+                    e.UseNotice = false;
+                    int maxRespawnTimesMix = 1;
                     string detail = e.Detail.Replace("混战模拟", "").Trim();
                     if (int.TryParse(detail, out int times))
                     {
@@ -410,16 +410,16 @@ namespace Oshima.FunGame.WebAPI.Services
                 }
 
                 if (e.Detail == "上次的完整日志")
-				{
-					e.UseNotice = false;
-					await SendAsync(e, "筽祀牻", string.Join("\r\n", Controller.GetLast()));
+                {
+                    e.UseNotice = false;
+                    await SendAsync(e, "筽祀牻", string.Join("\r\n", Controller.GetLast()));
                     return result;
                 }
 
                 if (e.Detail.StartsWith("FunGame团队模拟", StringComparison.CurrentCultureIgnoreCase))
-				{
-					e.UseNotice = false;
-					if (!FunGameSimulation)
+                {
+                    e.UseNotice = false;
+                    if (!FunGameSimulation)
                     {
                         FunGameSimulation = true;
                         List<string> msgs = await Controller.GetTest(false, true);
@@ -440,9 +440,9 @@ namespace Oshima.FunGame.WebAPI.Services
                 }
 
                 if (e.Detail.StartsWith("查数据", StringComparison.CurrentCultureIgnoreCase))
-				{
-					e.UseNotice = false;
-					string detail = e.Detail.Replace("查数据", "").Trim();
+                {
+                    e.UseNotice = false;
+                    string detail = e.Detail.Replace("查数据", "").Trim();
                     if (int.TryParse(detail, out int id))
                     {
                         string msg = Controller.GetStats(id);
@@ -455,9 +455,9 @@ namespace Oshima.FunGame.WebAPI.Services
                 }
 
                 if (e.Detail.StartsWith("查团队数据", StringComparison.CurrentCultureIgnoreCase))
-				{
-					e.UseNotice = false;
-					string detail = e.Detail.Replace("查团队数据", "").Trim();
+                {
+                    e.UseNotice = false;
+                    string detail = e.Detail.Replace("查团队数据", "").Trim();
                     if (int.TryParse(detail, out int id))
                     {
                         string msg = Controller.GetTeamStats(id);
@@ -470,9 +470,9 @@ namespace Oshima.FunGame.WebAPI.Services
                 }
 
                 if (e.Detail.StartsWith("查个人胜率", StringComparison.CurrentCultureIgnoreCase))
-				{
-					e.UseNotice = false;
-					List<string> msgs = Controller.GetWinrateRank();
+                {
+                    e.UseNotice = false;
+                    List<string> msgs = Controller.GetWinrateRank();
                     if (msgs.Count > 0)
                     {
                         await SendAsync(e, "查个人胜率", string.Join("\r\n\r\n", msgs));
@@ -481,9 +481,9 @@ namespace Oshima.FunGame.WebAPI.Services
                 }
 
                 if (e.Detail.StartsWith("查团队胜率", StringComparison.CurrentCultureIgnoreCase))
-				{
-					e.UseNotice = false;
-					List<string> msgs = Controller.GetWinrateRank(true);
+                {
+                    e.UseNotice = false;
+                    List<string> msgs = Controller.GetWinrateRank(true);
                     if (msgs.Count > 0)
                     {
                         await SendAsync(e, "查团队胜率", string.Join("\r\n\r\n", msgs));
@@ -492,9 +492,9 @@ namespace Oshima.FunGame.WebAPI.Services
                 }
 
                 if (e.Detail.StartsWith("查角色", StringComparison.CurrentCultureIgnoreCase))
-				{
-					e.UseNotice = false;
-					string detail = e.Detail.Replace("查角色", "").Trim();
+                {
+                    e.UseNotice = false;
+                    string detail = e.Detail.Replace("查角色", "").Trim();
                     if (int.TryParse(detail, out int id))
                     {
                         string msg = Controller.GetCharacterInfo(id);
@@ -507,9 +507,9 @@ namespace Oshima.FunGame.WebAPI.Services
                 }
 
                 if (e.Detail.StartsWith("查技能", StringComparison.CurrentCultureIgnoreCase))
-				{
-					e.UseNotice = false;
-					string detail = e.Detail.Replace("查技能", "").Trim();
+                {
+                    e.UseNotice = false;
+                    string detail = e.Detail.Replace("查技能", "").Trim();
                     if (int.TryParse(detail, out int id))
                     {
                         string msg = Controller.GetSkillInfo(uid, id);
@@ -530,9 +530,9 @@ namespace Oshima.FunGame.WebAPI.Services
                 }
 
                 if (e.Detail.StartsWith("查物品", StringComparison.CurrentCultureIgnoreCase))
-				{
-					e.UseNotice = false;
-					string detail = e.Detail.Replace("查物品", "").Trim();
+                {
+                    e.UseNotice = false;
+                    string detail = e.Detail.Replace("查物品", "").Trim();
                     if (int.TryParse(detail, out int id))
                     {
                         string msg = Controller.GetItemInfo(uid, id);
@@ -646,9 +646,9 @@ namespace Oshima.FunGame.WebAPI.Services
                 }
 
                 if (e.Detail == "预览魔法卡包")
-				{
-					e.UseNotice = false;
-					string msg = Controller.GenerateMagicCardPack();
+                {
+                    e.UseNotice = false;
+                    string msg = Controller.GenerateMagicCardPack();
                     if (msg != "")
                     {
                         await SendAsync(e, "预览魔法卡包", msg);
@@ -656,9 +656,9 @@ namespace Oshima.FunGame.WebAPI.Services
                     return result;
                 }
                 else if (e.Detail == "预览魔法卡")
-				{
-					e.UseNotice = false;
-					string msg = Controller.GenerateMagicCard();
+                {
+                    e.UseNotice = false;
+                    string msg = Controller.GenerateMagicCard();
                     if (msg != "")
                     {
                         await SendAsync(e, "预览魔法卡", msg);
@@ -667,9 +667,9 @@ namespace Oshima.FunGame.WebAPI.Services
                 }
 
                 if (e.Detail == "创建存档")
-				{
-					e.UseNotice = false;
-					string msg = Controller.CreateSaved(uid, openid);
+                {
+                    e.UseNotice = false;
+                    string msg = Controller.CreateSaved(uid, openid);
                     if (msg != "")
                     {
                         await SendAsync(e, "创建存档", "\r\n" + msg);
@@ -688,9 +688,9 @@ namespace Oshima.FunGame.WebAPI.Services
                 }
 
                 if (e.Detail == "我的主战")
-				{
-					e.UseNotice = false;
-					string msg = Controller.GetCharacterInfoFromInventory(uid, 0);
+                {
+                    e.UseNotice = false;
+                    string msg = Controller.GetCharacterInfoFromInventory(uid, 0);
                     if (msg != "")
                     {
                         await SendAsync(e, "我的主战", "\r\n" + msg);
@@ -699,9 +699,9 @@ namespace Oshima.FunGame.WebAPI.Services
                 }
 
                 if (e.Detail == "我的状态")
-				{
-					e.UseNotice = false;
-					string msg = Controller.ShowMainCharacterOrSquadStatus(uid);
+                {
+                    e.UseNotice = false;
+                    string msg = Controller.ShowMainCharacterOrSquadStatus(uid);
                     if (msg != "")
                     {
                         await SendAsync(e, "我的状态", "\r\n" + msg);
@@ -710,9 +710,9 @@ namespace Oshima.FunGame.WebAPI.Services
                 }
 
                 if (e.Detail == "小队状态" || e.Detail == "我的小队状态")
-				{
-					e.UseNotice = false;
-					string msg = Controller.ShowMainCharacterOrSquadStatus(uid, true);
+                {
+                    e.UseNotice = false;
+                    string msg = Controller.ShowMainCharacterOrSquadStatus(uid, true);
                     if (msg != "")
                     {
                         await SendAsync(e, "我的小队状态", "\r\n" + msg);
@@ -721,9 +721,9 @@ namespace Oshima.FunGame.WebAPI.Services
                 }
 
                 if (e.Detail == "我的小队")
-				{
-					e.UseNotice = false;
-					string msg = Controller.ShowSquad(uid);
+                {
+                    e.UseNotice = false;
+                    string msg = Controller.ShowSquad(uid);
                     if (msg != "")
                     {
                         await SendAsync(e, "我的小队", "\r\n" + msg);
@@ -747,7 +747,7 @@ namespace Oshima.FunGame.WebAPI.Services
                     await SendAsync(e, "还原存档", "\r\n请在该指令前添加【确认】二字，即使用【确认还原存档】指令。");
                     return result;
                 }
-                
+
                 if (e.Detail == "确认还原存档")
                 {
                     string msg = Controller.RestoreSaved(uid);
@@ -774,7 +774,7 @@ namespace Oshima.FunGame.WebAPI.Services
                     await SendAsync(e, "改名", "\r\n为防止玩家手误更改自己的昵称，请在该指令前添加【确认】二字，即使用【确认角色改名】指令。");
                     return result;
                 }
-                
+
                 if (e.Detail == "确认角色改名")
                 {
                     string msg = Controller.ReName(uid);
@@ -784,7 +784,7 @@ namespace Oshima.FunGame.WebAPI.Services
                     }
                     return result;
                 }
-                
+
                 if (e.Detail == "查询改名")
                 {
                     string msg = Controller.GetReNameInfo(uid);
@@ -813,7 +813,7 @@ namespace Oshima.FunGame.WebAPI.Services
                     }
                     return result;
                 }
-                
+
                 if (e.Detail.StartsWith("改名拒绝"))
                 {
                     string detail = e.Detail.Replace("改名拒绝", "").Trim();
@@ -837,7 +837,7 @@ namespace Oshima.FunGame.WebAPI.Services
                     }
                     return result;
                 }
-                
+
                 if (e.Detail.StartsWith("改名批准"))
                 {
                     string detail = e.Detail.Replace("改名批准", "").Trim();
@@ -899,7 +899,7 @@ namespace Oshima.FunGame.WebAPI.Services
                         "在审核期间，改名卡将会被系统锁定，无法取消、重复提交申请，也不能解锁、分解、交易、出售该改名卡。如已知悉请在该指令前添加【确认】二字，即使用【确认自定义改名】指令。");
                     return result;
                 }
-                
+
                 if (e.Detail.StartsWith("确认自定义改名"))
                 {
                     e.UseNotice = false;
@@ -1567,7 +1567,7 @@ namespace Oshima.FunGame.WebAPI.Services
                                     await SendAsync(e, "使用", msg);
                                 }
                             }
-                            else if(!string.IsNullOrEmpty(itemPart))
+                            else if (!string.IsNullOrEmpty(itemPart))
                             {
                                 string msg = Controller.UseItem2(uid, itemPart, count, characterIds);
                                 if (msg != "")
@@ -1877,7 +1877,7 @@ namespace Oshima.FunGame.WebAPI.Services
                     }
                     return result;
                 }
-                
+
                 if (e.Detail.StartsWith("邀请加入", StringComparison.CurrentCultureIgnoreCase))
                 {
                     string detail = e.Detail.Replace("邀请加入", "").Trim();
@@ -1891,7 +1891,7 @@ namespace Oshima.FunGame.WebAPI.Services
                     }
                     return result;
                 }
-                
+
                 if (e.Detail.StartsWith("取消邀请加入", StringComparison.CurrentCultureIgnoreCase))
                 {
                     string detail = e.Detail.Replace("取消邀请加入", "").Trim();
@@ -2037,7 +2037,7 @@ namespace Oshima.FunGame.WebAPI.Services
                     }
                     return result;
                 }
-                
+
                 if (e.Detail.StartsWith("查看受邀人列表"))
                 {
                     string detail = e.Detail.Replace("查看受邀人列表", "").Trim();
@@ -2266,7 +2266,7 @@ namespace Oshima.FunGame.WebAPI.Services
                     }
                     return result;
                 }
-                
+
                 if (e.Detail == "世界地图")
                 {
                     List<string> msgs = Controller.GetRegion();
@@ -2338,7 +2338,7 @@ namespace Oshima.FunGame.WebAPI.Services
                     }
                     return result;
                 }
-                
+
                 if (e.Detail.StartsWith("小队探索"))
                 {
                     string detail = e.Detail.Replace("小队探索", "").Trim();
@@ -2504,7 +2504,7 @@ namespace Oshima.FunGame.WebAPI.Services
                     }
                     return result;
                 }
-                
+
                 if (e.Detail.StartsWith("解锁"))
                 {
                     string detail = e.Detail.Replace("解锁", "").Trim();
@@ -2543,7 +2543,7 @@ namespace Oshima.FunGame.WebAPI.Services
                     }
                     return result;
                 }
-                
+
                 if (e.Detail.StartsWith(value: "我的报价"))
                 {
                     string detail = e.Detail.Replace("我的报价", "").Trim();
@@ -2562,7 +2562,7 @@ namespace Oshima.FunGame.WebAPI.Services
                     }
                     return result;
                 }
-                
+
                 if (e.Detail.StartsWith(value: "查报价"))
                 {
                     string detail = e.Detail.Replace("查报价", "").Trim();
@@ -2577,7 +2577,7 @@ namespace Oshima.FunGame.WebAPI.Services
                     }
                     return result;
                 }
-                
+
                 if (e.Detail.StartsWith(value: "发送报价"))
                 {
                     string detail = e.Detail.Replace("发送报价", "").Trim();
@@ -2592,7 +2592,7 @@ namespace Oshima.FunGame.WebAPI.Services
                     }
                     return result;
                 }
-                
+
                 if (e.Detail.StartsWith(value: "取消报价"))
                 {
                     string detail = e.Detail.Replace("取消报价", "").Trim();
@@ -2607,7 +2607,7 @@ namespace Oshima.FunGame.WebAPI.Services
                     }
                     return result;
                 }
-                
+
                 if (e.Detail.StartsWith(value: "接受报价"))
                 {
                     string detail = e.Detail.Replace("接受报价", "").Trim();
@@ -2622,7 +2622,7 @@ namespace Oshima.FunGame.WebAPI.Services
                     }
                     return result;
                 }
-                
+
                 if (e.Detail.StartsWith(value: "拒绝报价"))
                 {
                     string detail = e.Detail.Replace("拒绝报价", "").Trim();
@@ -2637,7 +2637,7 @@ namespace Oshima.FunGame.WebAPI.Services
                     }
                     return result;
                 }
-                
+
                 if (e.Detail.StartsWith(value: "报价添加物品"))
                 {
                     string detail = e.Detail.Replace("报价添加物品", "").Trim();
@@ -2665,7 +2665,7 @@ namespace Oshima.FunGame.WebAPI.Services
                     }
                     return result;
                 }
-                
+
                 if (e.Detail.StartsWith(value: "报价添加对方物品"))
                 {
                     string detail = e.Detail.Replace("报价添加对方物品", "").Trim();
@@ -2693,7 +2693,7 @@ namespace Oshima.FunGame.WebAPI.Services
                     }
                     return result;
                 }
-                
+
                 if (e.Detail.StartsWith(value: "报价移除物品"))
                 {
                     string detail = e.Detail.Replace("报价移除物品", "").Trim();
@@ -2721,7 +2721,7 @@ namespace Oshima.FunGame.WebAPI.Services
                     }
                     return result;
                 }
-                
+
                 if (e.Detail.StartsWith(value: "报价移除对方物品"))
                 {
                     string detail = e.Detail.Replace("报价移除对方物品", "").Trim();
@@ -2784,7 +2784,7 @@ namespace Oshima.FunGame.WebAPI.Services
                     }
                     return result;
                 }
-                
+
                 if (e.Detail.StartsWith("挑战钻石秘境"))
                 {
                     string detail = e.Detail.Replace("挑战钻石秘境", "").Trim();
@@ -2799,7 +2799,7 @@ namespace Oshima.FunGame.WebAPI.Services
                     }
                     return result;
                 }
-                
+
                 if (e.Detail.StartsWith("挑战经验秘境"))
                 {
                     string detail = e.Detail.Replace("挑战经验秘境", "").Trim();
@@ -2814,7 +2814,7 @@ namespace Oshima.FunGame.WebAPI.Services
                     }
                     return result;
                 }
-                
+
                 if (e.Detail.StartsWith("挑战地区秘境"))
                 {
                     string detail = e.Detail.Replace("挑战地区秘境", "").Trim();
@@ -2829,7 +2829,7 @@ namespace Oshima.FunGame.WebAPI.Services
                     }
                     return result;
                 }
-                
+
                 if (e.Detail.StartsWith("挑战突破秘境"))
                 {
                     string detail = e.Detail.Replace("挑战突破秘境", "").Trim();
@@ -2844,7 +2844,7 @@ namespace Oshima.FunGame.WebAPI.Services
                     }
                     return result;
                 }
-                
+
                 if (e.Detail.StartsWith("挑战技能秘境"))
                 {
                     string detail = e.Detail.Replace("挑战技能秘境", "").Trim();
@@ -2859,7 +2859,7 @@ namespace Oshima.FunGame.WebAPI.Services
                     }
                     return result;
                 }
-                
+
                 if (e.Detail.StartsWith("挑战魔法卡秘境"))
                 {
                     string detail = e.Detail.Replace("挑战魔法卡秘境", "").Trim();
@@ -2884,7 +2884,7 @@ namespace Oshima.FunGame.WebAPI.Services
                     }
                     return result;
                 }
-                
+
                 if (e.Detail == "武器商会")
                 {
                     string msg = Controller.ShowSystemStore(uid, "铎京城", "dokyo_weapons");
@@ -2894,7 +2894,7 @@ namespace Oshima.FunGame.WebAPI.Services
                     }
                     return result;
                 }
-                
+
                 if (e.Detail == "杂货铺")
                 {
                     string msg = Controller.ShowSystemStore(uid, "铎京城", "dokyo_yuki");
@@ -2904,7 +2904,7 @@ namespace Oshima.FunGame.WebAPI.Services
                     }
                     return result;
                 }
-                
+
                 if (e.Detail == "基金会")
                 {
                     string msg = Controller.ShowSystemStore(uid, "铎京城", "dokyo_welfare");
@@ -2914,7 +2914,7 @@ namespace Oshima.FunGame.WebAPI.Services
                     }
                     return result;
                 }
-                
+
                 if (e.Detail == "锻造商店")
                 {
                     string msg = Controller.ShowSystemStore(uid, "铎京城", "dokyo_forge");
@@ -2934,7 +2934,7 @@ namespace Oshima.FunGame.WebAPI.Services
                     }
                     return result;
                 }
-                
+
                 if (e.Detail == "共斗商店")
                 {
                     string msg = Controller.ShowSystemStore(uid, "铎京城", "dokyo_cooperative");
@@ -3019,7 +3019,7 @@ namespace Oshima.FunGame.WebAPI.Services
                     }
                     return result;
                 }
-                
+
                 if (e.Detail.StartsWith("锻造配方"))
                 {
                     string pattern = @"锻造配方\s*(?:(?<itemName>[^\d]+?)\s*(?<count>\d+)\s*)+";
@@ -3048,7 +3048,7 @@ namespace Oshima.FunGame.WebAPI.Services
                     }
                     return result;
                 }
-                
+
                 if (e.Detail.StartsWith("模拟锻造"))
                 {
                     string msg = Controller.ForgeItem_Simulate(uid);
@@ -3058,7 +3058,7 @@ namespace Oshima.FunGame.WebAPI.Services
                     }
                     return result;
                 }
-                
+
                 if (e.Detail.StartsWith("取消锻造"))
                 {
                     string msg = Controller.ForgeItem_Cancel(uid);
@@ -3068,7 +3068,7 @@ namespace Oshima.FunGame.WebAPI.Services
                     }
                     return result;
                 }
-                
+
                 if (e.Detail.StartsWith("确认开始锻造"))
                 {
                     string msg = Controller.ForgeItem_Complete(uid);
@@ -3078,7 +3078,7 @@ namespace Oshima.FunGame.WebAPI.Services
                     }
                     return result;
                 }
-                
+
                 if (e.Detail.StartsWith("锻造信息"))
                 {
                     string msg = Controller.ForgeItem_Info(uid);
@@ -3169,7 +3169,7 @@ namespace Oshima.FunGame.WebAPI.Services
                     }
                     return result;
                 }
-                
+
                 if (e.Detail.StartsWith("市场下架"))
                 {
                     string detail = e.Detail.Replace("市场下架", "").Trim();
@@ -3184,7 +3184,7 @@ namespace Oshima.FunGame.WebAPI.Services
                     }
                     return result;
                 }
-                
+
                 if (e.Detail.StartsWith("我的市场"))
                 {
                     string detail = e.Detail.Replace("我的市场", "").Trim();
@@ -3229,7 +3229,7 @@ namespace Oshima.FunGame.WebAPI.Services
                     string[] strings = detail.Split(" ", StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
                     long id = -1;
                     string name = "";
-                    bool useId = false; 
+                    bool useId = false;
                     if (strings.Length > 0)
                     {
                         if (long.TryParse(strings[0].Trim(), out id))
@@ -3289,7 +3289,7 @@ namespace Oshima.FunGame.WebAPI.Services
                     }
                     return result;
                 }
-                
+
                 if (e.Detail == "创建共斗")
                 {
                     string groupId = "";
@@ -3315,7 +3315,7 @@ namespace Oshima.FunGame.WebAPI.Services
                     }
                     return result;
                 }
-                
+
                 if (e.Detail == "创建混战")
                 {
                     string groupId = "";
@@ -3341,7 +3341,7 @@ namespace Oshima.FunGame.WebAPI.Services
                     }
                     return result;
                 }
-                
+
                 if (e.Detail == "创建团战")
                 {
                     string groupId = "";
@@ -3367,7 +3367,7 @@ namespace Oshima.FunGame.WebAPI.Services
                     }
                     return result;
                 }
-                
+
                 if (e.Detail == "加入赛马")
                 {
                     string groupId = "";
@@ -3438,7 +3438,7 @@ namespace Oshima.FunGame.WebAPI.Services
                     }
                     return result;
                 }
-                
+
                 if (e.Detail.StartsWith("加入房间"))
                 {
                     string groupId = "";
@@ -3511,7 +3511,7 @@ namespace Oshima.FunGame.WebAPI.Services
                     }
                     return result;
                 }
-                
+
                 if (e.Detail == "退出房间")
                 {
                     string groupId = "";
@@ -3537,7 +3537,7 @@ namespace Oshima.FunGame.WebAPI.Services
                     }
                     return result;
                 }
-                
+
                 if (e.Detail == "房间列表")
                 {
                     string groupId = "";
@@ -3563,7 +3563,7 @@ namespace Oshima.FunGame.WebAPI.Services
                     }
                     return result;
                 }
-                
+
                 if (e.Detail == "房间信息")
                 {
                     string msg = Controller.RoomInfo(uid);
@@ -3573,7 +3573,7 @@ namespace Oshima.FunGame.WebAPI.Services
                     }
                     return result;
                 }
-                
+
                 if (e.Detail == "排行榜" || e.Detail == "养成排行榜")
                 {
                     string msg = Controller.GetRanking(uid, 2);
@@ -3583,7 +3583,7 @@ namespace Oshima.FunGame.WebAPI.Services
                     }
                     return result;
                 }
-                
+
                 if (e.Detail == $"{General.GameplayEquilibriumConstant.InGameCurrency}排行榜")
                 {
                     string msg = Controller.GetRanking(uid, 0);
@@ -3593,7 +3593,7 @@ namespace Oshima.FunGame.WebAPI.Services
                     }
                     return result;
                 }
-                
+
                 if (e.Detail == $"{General.GameplayEquilibriumConstant.InGameMaterial}排行榜")
                 {
                     string msg = Controller.GetRanking(uid, 1);
@@ -3603,7 +3603,7 @@ namespace Oshima.FunGame.WebAPI.Services
                     }
                     return result;
                 }
-                
+
                 if (e.Detail == $"赛马排行榜")
                 {
                     string msg = Controller.GetRanking(uid, 3);
@@ -3613,7 +3613,7 @@ namespace Oshima.FunGame.WebAPI.Services
                     }
                     return result;
                 }
-                
+
                 if (e.Detail == $"共斗排行榜")
                 {
                     string msg = Controller.GetRanking(uid, 4);
@@ -3623,7 +3623,7 @@ namespace Oshima.FunGame.WebAPI.Services
                     }
                     return result;
                 }
-                
+
                 if (e.Detail == $"锻造排行榜")
                 {
                     string msg = Controller.GetRanking(uid, 5);
@@ -3661,7 +3661,7 @@ namespace Oshima.FunGame.WebAPI.Services
 
                     return result;
                 }
-                
+
                 if (e.Detail.StartsWith("减物") || e.Detail.StartsWith("移除背包物品"))
                 {
                     string detail = e.Detail.Replace("减物", "").Replace("移除背包物品", "").Trim();

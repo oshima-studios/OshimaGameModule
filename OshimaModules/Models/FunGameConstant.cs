@@ -364,7 +364,7 @@ namespace Oshima.FunGame.OshimaModules.Models
             new 银辉城(), new 瑟兰薇歌林海(), new 永燃坩埚(), new 永霜裂痕(), new 齿轮坟场(), new 千瞳镜湖(),
             new 时之荒漠(), new 谵妄海市(), new 腐萤沼渊(), new 双生月崖(), new 棱镜骨桥(), new 泰坦遗迹()
         ];
-        
+
         public static List<OshimaRegion> PlayerRegions { get; } = [
             new 铎京城()
         ];
@@ -493,7 +493,7 @@ namespace Oshima.FunGame.OshimaModules.Models
             { QualityType.Green, 3 },
             { QualityType.White, 1 }
         };
-        
+
         public static Dictionary<QualityType, double> ForgeNeedy { get; } = new()
         {
             { QualityType.Red, 230 },
@@ -503,7 +503,7 @@ namespace Oshima.FunGame.OshimaModules.Models
             { QualityType.Green, 50 },
             { QualityType.White, 30 }
         };
-        
+
         public static Dictionary<RarityType, double> ForgeRegionCoefficient { get; } = new()
         {
             { RarityType.OneStar, 0.5 },

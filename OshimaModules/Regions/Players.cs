@@ -170,7 +170,7 @@ namespace Oshima.FunGame.OshimaModules.Regions
                 store.CopyGoodsToNextRefreshGoods(newStore.Goods);
             }
             storeTemplate.Add("dokyo_horseracing", store);
-            
+
             store = storeTemplate.Get("dokyo_cooperative");
             if (store is null)
             {

@@ -21,7 +21,7 @@ namespace Oshima.FunGame.OshimaModules.Characters
             int reduceGrowth = 0;
             if (primaryAttribute != PrimaryAttribute.None)
             {
-                int attribute= Random.Shared.Next(15, 31);
+                int attribute = Random.Shared.Next(15, 31);
                 int growth = Random.Shared.Next(15, 31);
                 switch (primaryAttribute)
                 {

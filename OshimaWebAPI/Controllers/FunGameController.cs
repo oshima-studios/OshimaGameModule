@@ -470,7 +470,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
                         do
                         {
                             username = "FunOsm-" + Verification.CreateVerifyCode(VerifyCodeType.MixVerifyCode, 8);
-                            if (sqlHelper.ExecuteDataRow(UserQuery.Select_IsExistUsername(sqlHelper, username)) is null)
+                            if (sqlHelper.ExecuteDataRow(UserQuery.Select_UserByUsername(sqlHelper, username)) is null)
                             {
                                 exist = false;
                             }
@@ -7834,8 +7834,8 @@ namespace Oshima.FunGame.WebAPI.Controllers
                 }
                 else
                 {
-                    string msg2 = FunGameService.CheckRegionStore(stores, pc, user, storeRegion, storeName, out bool exist);
-                    msg = exist ? $"正在获取最新商店数据，请稍后查看。" : msg2;
+                    string msg2 = FunGameService.CheckRegionStore(stores, pc, user, storeRegion, storeName, out bool exists);
+                    msg = exists ? $"正在获取最新商店数据，请稍后查看。" : msg2;
                 }
 
                 FunGameService.SetUserConfigAndReleaseSemaphoreSlim(userid, pc, user);

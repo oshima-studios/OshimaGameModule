@@ -60,7 +60,7 @@ namespace Oshima.FunGame.OshimaModules.Items
             Skills.Passives.Add(new 攻击之爪技能(character, this, 55));
         }
     }
-    
+
     public class 攻击之爪70 : Item
     {
         public override long Id => (long)AccessoryID.攻击之爪70;
@@ -74,7 +74,7 @@ namespace Oshima.FunGame.OshimaModules.Items
             Skills.Passives.Add(new 攻击之爪技能(character, this, 70));
         }
     }
-    
+
     public class 攻击之爪85 : Item
     {
         public override long Id => (long)AccessoryID.攻击之爪85;
@@ -88,7 +88,7 @@ namespace Oshima.FunGame.OshimaModules.Items
             Skills.Passives.Add(new 攻击之爪技能(character, this, 85));
         }
     }
-    
+
     public class 攻击之爪100 : Item
     {
         public override long Id => (long)AccessoryID.攻击之爪100;

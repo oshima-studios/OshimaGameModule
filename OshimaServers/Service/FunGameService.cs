@@ -51,7 +51,7 @@ namespace Oshima.FunGame.OshimaServers.Service
             FunGameConstant.SuperSkills.AddRange([new 嗜血本能(), new 平衡强化(), new 绝对领域(), new 精准打击(), new 三重叠加(), new 变幻之心(), new 力量爆发(), new 能量毁灭(), new 血之狂欢(), new 迅捷之势(), new 天赐之力(), new 魔法涌流()]);
 
             FunGameConstant.PassiveSkills.AddRange([new META马(), new 心灵之火(), new 魔法震荡(), new 灵能反射(), new 智慧与力量(), new 致命打击(), new 毁灭之势(), new 枯竭打击(), new 破釜沉舟(), new 累积之压(), new 敏捷之刃(), new 弱者猎手()]);
-            
+
             FunGameConstant.CommonPassiveSkills.AddRange([new 征服者(), new 致命节奏(), new 强攻(), new 电刑(), new 黑暗收割()]);
 
             FunGameConstant.Magics.AddRange([new 冰霜攻击(), new 火之矢(), new 水之矢(), new 风之轮(), new 石之锤(), new 心灵之霞(), new 次元上升(), new 暗物质(),
@@ -2260,7 +2260,7 @@ namespace Oshima.FunGame.OshimaServers.Service
 
             return msg;
         }
-        
+
         public static string MarketBuyItem(Market market, MarketItem item, PluginConfig pc, User user, int count, out bool result)
         {
             result = false;
@@ -2276,12 +2276,12 @@ namespace Oshima.FunGame.OshimaServers.Service
             {
                 return $"无法购买此商品，原因：该商品的状态是：{CommonSet.GetMarketItemStatus(item.Status)}。";
             }
-            
+
             if (item.User == user.Id)
             {
                 return $"不能购买自己上架的商品！如需下架，请使用【市场下架+序号】指令。";
             }
-            
+
             if (item.Stock != -1 && item.Stock - count < 0)
             {
                 return $"此商品【{item.Name}】库存不足，无法购买！\r\n你想要购买 {count} 件，但库存只有 {item.Stock} 件。";
@@ -3730,7 +3730,7 @@ namespace Oshima.FunGame.OshimaServers.Service
             {
                 EnhanceBoss(enemy_loop, weapons, armors, shoes, accessory, consumables, cLevel, sLevel, mLevel, naLevel, false, false, true);
             }
-            
+
             // 开始战斗
             Team team1 = new($"{user.Username}的小队", squad);
             string team2Name = type switch
@@ -4215,7 +4215,7 @@ namespace Oshima.FunGame.OshimaServers.Service
 
             return store;
         }
-        
+
         public static void SaveRegionStore(Store store, string storeRegion, string storeName)
         {
             if (FunGameConstant.PlayerRegions.FirstOrDefault(r => r.Name == storeRegion) is OshimaRegion value)
@@ -4223,7 +4223,7 @@ namespace Oshima.FunGame.OshimaServers.Service
                 value.SaveGlobalStore(store, storeName);
             }
         }
-        
+
         public static string CheckRegionStore(EntityModuleConfig<Store> stores, PluginConfig pc, User user, string storeRegion, string storeName, out bool exist)
         {
             string msg = "";
@@ -4721,7 +4721,7 @@ namespace Oshima.FunGame.OshimaServers.Service
                 }
             }
         }
-        
+
         public static void RefreshDailyQuest()
         {
             string directoryPath = $@"{AppDomain.CurrentDomain.BaseDirectory}configs/quests";
@@ -4820,7 +4820,7 @@ namespace Oshima.FunGame.OshimaServers.Service
                 }
             }
         }
-        
+
         public static void RefreshMarketData()
         {
             // 刷新市场
@@ -4936,7 +4936,7 @@ namespace Oshima.FunGame.OshimaServers.Service
         }
 
         public static void SetUserConfigAndReleaseSemaphoreSlim(long uid, PluginConfig pc, User user, bool updateLastTime = true) => SetUserConfig(uid.ToString(), pc, user, updateLastTime);
-        
+
         public static void SetUserConfigButNotRelease(long uid, PluginConfig pc, User user, bool updateLastTime = true) => SetUserConfig(uid.ToString(), pc, user, updateLastTime, false);
 
         public static PluginConfig GetUserConfig(string key, out bool isTimeout)

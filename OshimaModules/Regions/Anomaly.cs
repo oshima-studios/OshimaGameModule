@@ -1,5 +1,4 @@
 ﻿using Milimoe.FunGame.Core.Library.Constant;
-using Oshima.Core.Constant;
 
 namespace Oshima.FunGame.OshimaModules.Regions
 {

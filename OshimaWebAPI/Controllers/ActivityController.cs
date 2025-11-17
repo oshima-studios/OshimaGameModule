@@ -30,7 +30,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
                 return StatusCode(500, "获取活动信息时发生错误，请检查日志。");
             }
         }
-        
+
         [HttpGet("{id}")]
         public IActionResult GetActivity(long id)
         {
