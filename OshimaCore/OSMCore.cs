@@ -6,10 +6,10 @@ namespace Oshima.Core
 {
     public class OSMCore
     {
-        public const string version = "v1.0";
-        public const string version2 = "Rebirth";
+        public const string version = "v2.0";
+        public const string version2 = "Release";
 
-        public static string Info => $"OSM Core {version} {version2}\r\nAuthor: Milimoe\r\nBuilt on {GetBuiltTime(Assembly.GetExecutingAssembly().Location)}\r\nSee: https://github.com/milimoe";
+        public static string Info => $"OSM Core {version} {version2}\r\nAuthor: Milimoe\r\nBuilt at {GetBuiltTime(Assembly.GetExecutingAssembly().Location)}\r\nSee: https://github.com/milimoe";
 
         public static string GetBuiltTime(string dll_name)
         {

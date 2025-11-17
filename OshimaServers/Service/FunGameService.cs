@@ -1331,7 +1331,7 @@ namespace Oshima.FunGame.OshimaServers.Service
                         {
                             for (int i = 0; i < box.Gifts[name]; i++)
                             {
-                                AddItemToUserInventory(user, currentItem, toExploreCache: false, toActivitiesCache: false);
+                                AddItemToUserInventory(user, currentItem, copyLevel: item.ItemType == ItemType.MagicCard, toExploreCache: false, toActivitiesCache: false);
                             }
                         }
                     }
@@ -2006,7 +2006,7 @@ namespace Oshima.FunGame.OshimaServers.Service
                         {
                             if (FunGameConstant.AllItems.FirstOrDefault(i => i.Name == item.Name) != null)
                             {
-                                AddItemToUserInventory(user, item);
+                                AddItemToUserInventory(user, item, copyLevel: item.ItemType == ItemType.MagicCard);
                             }
                         }
                     }
@@ -2984,7 +2984,7 @@ namespace Oshima.FunGame.OshimaServers.Service
                     {
                         for (int i = 0; i < model.Awards[name]; i++)
                         {
-                            AddItemToUserInventory(user, item);
+                            AddItemToUserInventory(user, item, copyLevel: item.ItemType == ItemType.MagicCard);
                         }
                     }
                 }
@@ -3879,7 +3879,7 @@ namespace Oshima.FunGame.OshimaServers.Service
                             regionItems.Add($"{award} 个{item.Name}（来自{region.Name}）");
                             for (int j = 0; j < award; j++)
                             {
-                                AddItemToUserInventory(user, item);
+                                AddItemToUserInventory(user, item, copyLevel: item.ItemType == ItemType.MagicCard);
                             }
                         }
                         builder.AppendLine($"{string.Join("、", regionItems)}！");
@@ -3906,7 +3906,7 @@ namespace Oshima.FunGame.OshimaServers.Service
                             characterLevelBreakItems.Add($"{award} 个{item.Name}");
                             for (int j = 0; j < award; j++)
                             {
-                                AddItemToUserInventory(user, item);
+                                AddItemToUserInventory(user, item, copyLevel: item.ItemType == ItemType.MagicCard);
                             }
                         }
                         builder.AppendLine($"{string.Join("、", characterLevelBreakItems)}！");
@@ -3933,7 +3933,7 @@ namespace Oshima.FunGame.OshimaServers.Service
                             skillLevelUpItems.Add($"{award} 个{item.Name}");
                             for (int j = 0; j < award; j++)
                             {
-                                AddItemToUserInventory(user, item);
+                                AddItemToUserInventory(user, item, copyLevel: item.ItemType == ItemType.MagicCard);
                             }
                         }
                         builder.AppendLine($"{string.Join("、", skillLevelUpItems)}！");
@@ -4104,7 +4104,7 @@ namespace Oshima.FunGame.OshimaServers.Service
                                 regionItems.Add($"{award} 个{item.Name}（来自{region.Name}）");
                                 for (int j = 0; j < award; j++)
                                 {
-                                    AddItemToUserInventory(user, item);
+                                    AddItemToUserInventory(user, item, copyLevel: item.ItemType == ItemType.MagicCard);
                                 }
                             }
                             builder.AppendLine($"{string.Join("、", regionItems)}！");
@@ -4131,7 +4131,7 @@ namespace Oshima.FunGame.OshimaServers.Service
                                 characterLevelBreakItems.Add($"{award} 个{item.Name}");
                                 for (int j = 0; j < award; j++)
                                 {
-                                    AddItemToUserInventory(user, item);
+                                    AddItemToUserInventory(user, item, copyLevel: item.ItemType == ItemType.MagicCard);
                                 }
                             }
                             builder.AppendLine($"{string.Join("、", characterLevelBreakItems)}！");
@@ -4158,7 +4158,7 @@ namespace Oshima.FunGame.OshimaServers.Service
                                 skillLevelUpItems.Add($"{award} 个{item.Name}");
                                 for (int j = 0; j < award; j++)
                                 {
-                                    AddItemToUserInventory(user, item);
+                                    AddItemToUserInventory(user, item, copyLevel: item.ItemType == ItemType.MagicCard);
                                 }
                             }
                             builder.AppendLine($"{string.Join("、", skillLevelUpItems)}！");
@@ -4435,9 +4435,9 @@ namespace Oshima.FunGame.OshimaServers.Service
             if (page <= 0) page = 1;
             IEnumerable<MarketItem> marketItems = market.MarketItems.Values;
             if (showListed) marketItems = marketItems.Where(g => g.Status == MarketItemState.Listed);
-            int maxPage = market.MarketItems.Values.MaxPage(8);
+            int maxPage = marketItems.MaxPage(8);
             if (page > maxPage) page = maxPage;
-            marketItems = market.MarketItems.Values.GetPage(page, 8);
+            marketItems = marketItems.GetPage(page, 8);
 
             StringBuilder builder = new();
 

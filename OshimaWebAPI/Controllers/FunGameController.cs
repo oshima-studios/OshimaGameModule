@@ -7486,9 +7486,61 @@ namespace Oshima.FunGame.WebAPI.Controllers
                         {
                             msg += FunGameService.GetMarketItemInfo(marketItem, true, user) + "\r\n";
                         }
-                        msg += $"页数：{page} / {maxPage}，使用【市场+页码】快速跳转指定页面。";
+                        msg += $"页数：{page} / {maxPage}，使用【我的市场+页码】快速跳转指定页面。";
                     }
-                    else msg += "你还没有上架过任何物品。";
+                    else msg += "你在近三天内还未上架过任何物品。";
+
+                    FunGameService.ReleaseMarketSemaphoreSlim();
+                    FunGameService.SetUserConfigAndReleaseSemaphoreSlim(userid, pc, user);
+
+                    return msg.Trim();
+                }
+                else
+                {
+                    FunGameService.ReleaseUserSemaphoreSlim(userid);
+                    return noSaved;
+                }
+            }
+            catch (Exception e)
+            {
+                FunGameService.ReleaseMarketSemaphoreSlim();
+                FunGameService.ReleaseUserSemaphoreSlim(userid);
+                if (Logger.IsEnabled(Microsoft.Extensions.Logging.LogLevel.Error)) Logger.LogError(e, "Error: {e}", e);
+                return busy;
+            }
+        }
+
+        [HttpPost("marketshowlistmybuys")]
+        public string MarketShowListMyBuys([FromQuery] long userid = -1, [FromQuery] int page = 0)
+        {
+            try
+            {
+                PluginConfig pc = FunGameService.GetUserConfig(userid, out _);
+
+                if (pc.Count > 0)
+                {
+                    User user = FunGameService.GetUser(pc);
+
+                    FunGameService.GetMarketSemaphoreSlim();
+
+                    EntityModuleConfig<Market> emc = new("markets", "general");
+                    emc.LoadConfig();
+                    Market market = emc.Get("dokyo") ?? new("铎京集市");
+                    string msg = "☆--- 我的市场购买记录 ---☆\r\n";
+                    MarketItem[] marketItems = [.. market.MarketItems.Values.Where(m => m.Buyers.Contains(userid))];
+                    if (marketItems.Length > 0)
+                    {
+                        if (page <= 0) page = 1;
+                        int maxPage = marketItems.MaxPage(8);
+                        if (page > maxPage) page = maxPage;
+                        marketItems = [.. marketItems.GetPage(page, 8)];
+                        foreach (MarketItem marketItem in marketItems)
+                        {
+                            msg += FunGameService.GetMarketItemInfo(marketItem, true, user) + "\r\n";
+                        }
+                        msg += $"页数：{page} / {maxPage}，使用【我的购买+页码】快速跳转指定页面。";
+                    }
+                    else msg += "你在近三天内还未购买过任何物品。";
 
                     FunGameService.ReleaseMarketSemaphoreSlim();
                     FunGameService.SetUserConfigAndReleaseSemaphoreSlim(userid, pc, user);
@@ -7590,7 +7642,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
                                     double fee = amount * 0.15;
                                     double net = amount - fee;
                                     user2.Inventory.Credits += net;
-                                    FunGameService.AddNotice(userid2, $"【市场通知】你售出了 {count} 件{item.Name}！净收入 {net:0.##} {General.GameplayEquilibriumConstant.InGameCurrency}；市场收取手续费 {fee:0.##} {General.GameplayEquilibriumConstant.InGameCurrency}。");
+                                    FunGameService.AddNotice(userid2, $"【市场通知】你售出了 {count} 件{item.Name}（[{ItemSet.GetQualityTypeName(item.Item.QualityType)}|{ItemSet.GetItemTypeName(item.Item.ItemType)}] {item.Item.Name}）！净收入 {net:0.##} {General.GameplayEquilibriumConstant.InGameCurrency}；市场收取手续费 {fee:0.##} {General.GameplayEquilibriumConstant.InGameCurrency}。");
                                     FunGameService.SetUserConfigButNotRelease(userid2, pc2, user2, false);
                                 }
                                 FunGameService.ReleaseUserSemaphoreSlim(userid2);

@@ -2782,6 +2782,10 @@ namespace Oshima.FunGame.WebAPI.Services
                             await SendAsync(e, "挑战金币秘境", msg);
                         }
                     }
+                    else
+                    {
+                        await SendAsync(e, "挑战秘境", "请在指令后面输入难度系数（1-5）");
+                    }
                     return result;
                 }
 
@@ -2796,6 +2800,10 @@ namespace Oshima.FunGame.WebAPI.Services
                         {
                             await SendAsync(e, "挑战钻石秘境", msg);
                         }
+                    }
+                    else
+                    {
+                        await SendAsync(e, "挑战秘境", "请在指令后面输入难度系数（1-5）");
                     }
                     return result;
                 }
@@ -2812,6 +2820,10 @@ namespace Oshima.FunGame.WebAPI.Services
                             await SendAsync(e, "挑战经验秘境", msg);
                         }
                     }
+                    else
+                    {
+                        await SendAsync(e, "挑战秘境", "请在指令后面输入难度系数（1-5）");
+                    }
                     return result;
                 }
 
@@ -2826,6 +2838,10 @@ namespace Oshima.FunGame.WebAPI.Services
                         {
                             await SendAsync(e, "挑战地区秘境", msg);
                         }
+                    }
+                    else
+                    {
+                        await SendAsync(e, "挑战秘境", "请在指令后面输入难度系数（1-5）");
                     }
                     return result;
                 }
@@ -2842,6 +2858,10 @@ namespace Oshima.FunGame.WebAPI.Services
                             await SendAsync(e, "挑战突破秘境", msg);
                         }
                     }
+                    else
+                    {
+                        await SendAsync(e, "挑战秘境", "请在指令后面输入难度系数（1-5）");
+                    }
                     return result;
                 }
 
@@ -2857,6 +2877,10 @@ namespace Oshima.FunGame.WebAPI.Services
                             await SendAsync(e, "挑战技能秘境", msg);
                         }
                     }
+                    else
+                    {
+                        await SendAsync(e, "挑战秘境", "请在指令后面输入难度系数（1-5）");
+                    }
                     return result;
                 }
 
@@ -2871,6 +2895,10 @@ namespace Oshima.FunGame.WebAPI.Services
                         {
                             await SendAsync(e, "挑战魔法卡秘境", msg);
                         }
+                    }
+                    else
+                    {
+                        await SendAsync(e, "挑战秘境", "请在指令后面输入难度系数（1-5）");
                     }
                     return result;
                 }
@@ -3200,6 +3228,25 @@ namespace Oshima.FunGame.WebAPI.Services
                     if (msg.Trim() != "")
                     {
                         await SendAsync(e, "我的市场", msg);
+                    }
+                    return result;
+                }
+
+                if (e.Detail.StartsWith("我的购买"))
+                {
+                    string detail = e.Detail.Replace("我的购买", "").Trim();
+                    string msg = "";
+                    if (int.TryParse(detail, out int page))
+                    {
+                        msg = Controller.MarketShowListMyBuys(uid, page);
+                    }
+                    else
+                    {
+                        msg = Controller.MarketShowListMyBuys(uid, 1);
+                    }
+                    if (msg.Trim() != "")
+                    {
+                        await SendAsync(e, "我的购买", msg);
                     }
                     return result;
                 }
