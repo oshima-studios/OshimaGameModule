@@ -9006,6 +9006,54 @@ namespace Oshima.FunGame.WebAPI.Controllers
             }
         }
 
+        [HttpPost("getuserdailyitem")]
+        public string GetUserDailyItem([FromQuery] long uid = -1, [FromQuery] string daily = "")
+        {
+            try
+            {
+                PluginConfig pc = FunGameService.GetUserConfig(uid, out bool isTimeout);
+                if (isTimeout)
+                {
+                    return busy;
+                }
+
+                string msg = "";
+                if (pc.Count > 0)
+                {
+                    User user = FunGameService.GetUser(pc);
+
+                    string pattern = @"今天的幸运物是：.*?「(.*?)」";
+                    Regex regex = new(pattern, RegexOptions.IgnoreCase);
+                    Match match = regex.Match(daily);
+                    if (match.Success)
+                    {
+                        string itemName = match.Groups[1].Value;
+                        if (FunGameConstant.UserDailyItems.FirstOrDefault(i => i.Name == itemName) is Item item)
+                        {
+                            msg = $"恭喜你获得了幸运物【{itemName}】，已发放至库存～";
+                            FunGameService.AddItemToUserInventory(user, item);
+                        }
+                    }
+
+                    FunGameService.SetUserConfigButNotRelease(uid, pc, user);
+                    return msg;
+                }
+                else
+                {
+                    return $"温馨提醒：【创建存档】后可领取同款幸运物的收藏品，全部收集可兑换强大装备哦～";
+                }
+            }
+            catch (Exception e)
+            {
+                if (Logger.IsEnabled(Microsoft.Extensions.Logging.LogLevel.Error)) Logger.LogError(e, "Error: {e}", e);
+                return busy;
+            }
+            finally
+            {
+                FunGameService.ReleaseUserSemaphoreSlim(uid);
+            }
+        }
+
         [HttpPost("template")]
         public string Template([FromQuery] long uid = -1)
         {

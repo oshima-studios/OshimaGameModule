@@ -3571,6 +3571,7 @@ namespace Oshima.FunGame.OshimaServers.Service
             newItem.User = user;
             if (hasLock && (newItem.QualityType >= QualityType.Orange ||
                 FunGameConstant.ExploreItems.Values.SelectMany(i => i).Any(c => c.Id == item.Id) ||
+                FunGameConstant.UserDailyItems.Any(c => c.Id == item.Id) ||
                 FunGameConstant.CharacterLevelBreakItems.Any(c => c.Id == item.Id) ||
                 FunGameConstant.SkillLevelUpItems.Any(c => c.Id == item.Id))) newItem.IsLock = true;
             if (hasSellAndTradeTime) SetSellAndTradeTime(newItem);

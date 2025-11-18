@@ -182,14 +182,31 @@ namespace Oshima.FunGame.WebAPI.Services
                             _ => ""
                         };
 
-                        var (fileUuid, fileInfo, ttl, error) = e.IsGroup && e is GroupAtMessage ge ? await Service.UploadGroupMediaAsync(ge.GroupOpenId, 1, img) : await Service.UploadC2CMediaAsync(e.OpenId, 1, img);
-                        if (string.IsNullOrEmpty(error))
+                        string? fi = "";
+                        string? err = "";
+                        try
                         {
-                            await SendAsync(e, "每日运势", daily.daily, 7, new { file_info = fileInfo });
+                            var (fileUuid, fileInfo, ttl, error) = e.IsGroup ? await Service.UploadGroupMediaAsync(e.OpenId, 1, img) : await Service.UploadC2CMediaAsync(e.OpenId, 1, img);
+                            fi = fileInfo;
+                            err = error;
+                        }
+                        catch (Exception ex)
+                        {
+                            err = ex.ToString();
+                        }
+                        if (string.IsNullOrEmpty(err))
+                        {
+                            await SendAsync(e, "每日运势", daily.daily, 7, new { file_info = fi });
                         }
                         else
                         {
-                            if (Logger.IsEnabled(Microsoft.Extensions.Logging.LogLevel.Error)) Logger.LogError("上传图片失败：{error}", error);
+                            if (Logger.IsEnabled(Microsoft.Extensions.Logging.LogLevel.Error)) Logger.LogError("上传图片失败：{error}", err);
+                            await SendAsync(e, "每日运势", daily.daily);
+                        }
+                        string msg = Controller.GetUserDailyItem(uid, daily.daily);
+                        if (msg != "")
+                        {
+                            await SendAsync(e, "运势幸运物发放", msg, msgSeq: 3);
                         }
                     }
                     else
