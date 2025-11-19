@@ -1,5 +1,6 @@
 using System.Text;
 using System.Text.RegularExpressions;
+using System.Xml.Linq;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
@@ -1287,6 +1288,115 @@ namespace Oshima.FunGame.WebAPI.Controllers
                 else
                 {
                     list.Add($"没有这么多页！当前总页数为 {maxPage}，但你请求的是第 {showPage} 页。");
+                }
+            }
+            else
+            {
+                list.Add(noSaved);
+            }
+            return list;
+        }
+
+        [HttpGet("inventoryinfo6")]
+        public List<string> GetInventoryInfo6([FromQuery] long uid = 0, [FromQuery] int page = 1, [FromQuery] string name = "", [FromForm] bool containsDescription = false)
+        {
+            if (page <= 0) page = 1;
+
+            PluginConfig pc = FunGameService.GetUserConfig(uid, out _);
+            FunGameService.ReleaseUserSemaphoreSlim(uid);
+
+            List<string> list = [];
+            if (pc.Count > 0)
+            {
+                if (name == "")
+                {
+                    return ["搜索关键词为空！"];
+                }
+
+                User user = FunGameService.GetUser(pc);
+                list.Add($"☆★☆ {user.Inventory.Name} ☆★☆");
+                list.Add($"{General.GameplayEquilibriumConstant.InGameCurrency}：{user.Inventory.Credits:0.00}");
+                list.Add($"{General.GameplayEquilibriumConstant.InGameMaterial}：{user.Inventory.Materials:0.00}");
+                List<Item> items = [.. user.Inventory.Items];
+
+                Dictionary<string, List<Item>> itemCategory = [];
+                foreach (Item item in items)
+                {
+                    if (!itemCategory.TryAdd(item.GetIdName(), [item]))
+                    {
+                        itemCategory[item.GetIdName()].Add(item);
+                    }
+                }
+
+                // 按品质倒序、数量倒序排序
+                itemCategory = itemCategory.OrderByDescending(kv => kv.Value.FirstOrDefault()?.QualityType ?? 0).ThenByDescending(kv => kv.Value.Count).ToDictionary();
+
+                // 移除所有非指定类型的物品
+                foreach (List<Item> listTemp in itemCategory.Values)
+                {
+                    if (listTemp.First() is Item item && (!item.Name.Contains(name) && (!containsDescription || (containsDescription && !item.Description.Contains(name)))))
+                    {
+                        itemCategory.Remove(item.GetIdName());
+                    }
+                }
+
+                int maxPage = (int)Math.Ceiling((double)itemCategory.Count / FunGameConstant.ItemsPerPage1);
+                if (maxPage < 1) maxPage = 1;
+                if (page <= maxPage)
+                {
+                    List<string> keys = [.. FunGameService.GetPage(itemCategory.Keys, page, FunGameConstant.ItemsPerPage1)];
+                    int itemCount = 0;
+                    list.Add($"=== 包含【{name}】的物品 ===");
+                    using SQLHelper? sql = Factory.OpenFactory.GetSQLHelper();
+                    List<Guid> itemTrading = [];
+                    if (sql != null)
+                    {
+                        itemTrading = SQLService.GetUserItemGuids(sql, uid);
+                    }
+                    foreach (string key in keys)
+                    {
+                        itemCount++;
+                        List<Item> objs = itemCategory[key];
+                        Item first = objs[0];
+                        string str = $"{itemCount}. [{ItemSet.GetQualityTypeName(first.QualityType)}|{ItemSet.GetItemTypeName(first.ItemType)}] {first.Name}\r\n";
+                        str += $"物品描述：{first.Description}\r\n";
+                        string itemsIndex = string.Join("，", objs.Select(i => items.IndexOf(i) + 1));
+                        if (objs.Count > 10)
+                        {
+                            itemsIndex = string.Join("，", objs.Take(10).Select(i => items.IndexOf(i) + 1)) + "，...";
+                        }
+                        IEnumerable<Item> itemsEquipable = objs.Where(i => i.IsEquipment && i.Character is null);
+                        string itemsEquipableIndex = string.Join("，", itemsEquipable.Select(i => items.IndexOf(i) + 1));
+                        if (itemsEquipable.Count() > 10)
+                        {
+                            itemsEquipableIndex = string.Join("，", itemsEquipable.Take(10).Select(i => items.IndexOf(i) + 1)) + "，...";
+                        }
+                        IEnumerable<Item> itemsSellable = objs.Where(i => i.IsSellable && !i.IsLock && !itemTrading.Contains(i.Guid));
+                        string itemsSellableIndex = string.Join("，", itemsSellable.Select(i => items.IndexOf(i) + 1));
+                        if (itemsSellable.Count() > 10)
+                        {
+                            itemsSellableIndex = string.Join("，", itemsSellable.Take(10).Select(i => items.IndexOf(i) + 1)) + "，...";
+                        }
+                        IEnumerable<Item> itemsTradable = objs.Where(i => i.IsTradable && !i.IsLock && !itemTrading.Contains(i.Guid));
+                        string itemsTradableIndex = string.Join("，", itemsTradable.Select(i => items.IndexOf(i) + 1));
+                        if (itemsTradable.Count() > 10)
+                        {
+                            itemsTradableIndex = string.Join("，", itemsTradable.Take(10).Select(i => items.IndexOf(i) + 1)) + "，...";
+                        }
+                        str += $"物品序号：{itemsIndex}\r\n";
+                        if (itemsEquipableIndex != "") str += $"可装备序号：{itemsEquipableIndex}\r\n";
+                        if (itemsSellableIndex != "") str += $"可出售序号：{itemsSellableIndex}\r\n";
+                        if (itemsTradableIndex != "") str += $"可交易序号：{itemsTradableIndex}\r\n";
+                        str += $"拥有数量：{objs.Count}（" + (first.IsEquipment ? $"可装备数量：{itemsEquipable.Count()}，" : "") +
+                            (FunGameConstant.ItemCanUsed.Contains(first.ItemType) ? $"可使用数量：{objs.Count(i => i.RemainUseTimes > 0 && !i.IsLock && !itemTrading.Contains(i.Guid))}，" : "") +
+                            $"可出售数量：{itemsSellable.Count()}，可交易数量：{itemsTradable.Count()}）";
+                        list.Add(str);
+                    }
+                    list.Add($"页数：{page} / {maxPage}");
+                }
+                else
+                {
+                    list.Add($"没有这么多页！当前总页数为 {maxPage}，但你请求的是第 {page} 页。");
                 }
             }
             else

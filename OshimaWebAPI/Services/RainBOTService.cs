@@ -1093,6 +1093,42 @@ namespace Oshima.FunGame.WebAPI.Services
                     return result;
                 }
 
+                if (e.Detail.StartsWith("库存搜索2", StringComparison.CurrentCultureIgnoreCase) || e.Detail.StartsWith("库存查询2", StringComparison.CurrentCultureIgnoreCase))
+                {
+                    string detail = e.Detail.Replace("库存搜索2", "").Replace("库存查询2", "").Trim();
+                    string[] strings = detail.Split(" ", StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
+                    string search = strings[0];
+                    int page = 1;
+                    if (strings.Length > 1 && int.TryParse(strings[1], out int p))
+                    {
+                        page = p;
+                    }
+                    List<string> msgs = Controller.GetInventoryInfo6(uid, page, search, true);
+                    if (msgs.Count > 0)
+                    {
+                        await SendAsync(e, "搜索库存物品（带描述）", "\r\n" + string.Join("\r\n", msgs));
+                    }
+                    return result;
+                }
+
+                if (e.Detail.StartsWith("库存搜索", StringComparison.CurrentCultureIgnoreCase) || e.Detail.StartsWith("库存查询", StringComparison.CurrentCultureIgnoreCase))
+                {
+                    string detail = e.Detail.Replace("库存搜索", "").Replace("库存查询", "").Trim();
+                    string[] strings = detail.Split(" ", StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
+                    string search = strings[0];
+                    int page = 1;
+                    if (strings.Length > 1 && int.TryParse(strings[1], out int p))
+                    {
+                        page = p;
+                    }
+                    List<string> msgs = Controller.GetInventoryInfo6(uid, page, search, false);
+                    if (msgs.Count > 0)
+                    {
+                        await SendAsync(e, "搜索库存物品", "\r\n" + string.Join("\r\n", msgs));
+                    }
+                    return result;
+                }
+
                 if (e.Detail.StartsWith("我角色", StringComparison.CurrentCultureIgnoreCase))
                 {
                     string detail = e.Detail.Replace("我角色", "").Trim();
