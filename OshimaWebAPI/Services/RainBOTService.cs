@@ -1103,7 +1103,7 @@ namespace Oshima.FunGame.WebAPI.Services
                     {
                         page = p;
                     }
-                    List<string> msgs = Controller.GetInventoryInfo6(uid, page, search, true);
+                    List<string> msgs = Controller.GetInventoryInfo6(uid, page, search, false);
                     if (msgs.Count > 0)
                     {
                         await SendAsync(e, "搜索库存物品（带描述）", "\r\n" + string.Join("\r\n", msgs));
@@ -1121,7 +1121,7 @@ namespace Oshima.FunGame.WebAPI.Services
                     {
                         page = p;
                     }
-                    List<string> msgs = Controller.GetInventoryInfo6(uid, page, search, false);
+                    List<string> msgs = Controller.GetInventoryInfo6(uid, page, search, true);
                     if (msgs.Count > 0)
                     {
                         await SendAsync(e, "搜索库存物品", "\r\n" + string.Join("\r\n", msgs));
