@@ -7879,6 +7879,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
                         {
                             // 检查探索许可
                             int reduce = difficulty * squad.Length;
+                            if (type == (int)InstanceType.MagicCard) reduce *= 3;
                             if (pc.TryGetValue("exploreTimes", out object? value) && int.TryParse(value.ToString(), out exploreTimes))
                             {
                                 if (exploreTimes <= 0)
@@ -7889,7 +7890,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
                                 else if (reduce > exploreTimes)
                                 {
                                     msg = $"本次秘境挑战需要消耗 {reduce} 个探索许可，超过了你的剩余探索许可数量（{exploreTimes} 个），请减少小队的角色数量或更改难度系数。" +
-                                        $"\r\n需要注意：难度系数一比一兑换探索许可，并且参与挑战的角色，都需要消耗相同数量的探索许可。";
+                                        $"\r\n需要注意：难度系数一比一兑换探索许可，并且参与挑战的角色，都需要消耗相同数量的探索许可。特殊地，魔法卡秘境额外 3 倍探索许可消耗。";
                                 }
                             }
                             else

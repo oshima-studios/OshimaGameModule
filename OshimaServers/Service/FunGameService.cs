@@ -3984,7 +3984,7 @@ namespace Oshima.FunGame.OshimaServers.Service
             {
                 builder.Append($"小队未能战胜敌人，");
                 IEnumerable<Character> deadEnemys = enemys.Where(c => c.HP <= 0);
-                if (!deadEnemys.Any())
+                if (type == InstanceType.MagicCard || !deadEnemys.Any())
                 {
                     builder.AppendLine("无法获取秘境奖励！");
                 }
@@ -4165,35 +4165,6 @@ namespace Oshima.FunGame.OshimaServers.Service
                             builder.AppendLine($"{string.Join("、", skillLevelUpItems)}！");
                             break;
                         case InstanceType.MagicCard:
-                            Dictionary<string, int> magicCards = [];
-                            for (int i = 0; i < count; i++)
-                            {
-                                int roll = Random.Shared.Next(100);
-                                double cumulativeProbability = 0.0;
-                                RarityType rarityType = RarityType.OneStar;
-                                foreach (int loop in rW.Keys)
-                                {
-                                    cumulativeProbability += rW[loop];
-                                    if (roll < cumulativeProbability)
-                                    {
-                                        rarityType = (RarityType)loop;
-                                        break;
-                                    }
-                                }
-                                // 从优秀开始
-                                QualityType qualityType = (QualityType)((int)rarityType + 1);
-                                Item item = GenerateMagicCard(qualityType);
-                                AddItemToUserInventory(user, item, copyLevel: true);
-                                if (magicCards.TryGetValue(ItemSet.GetQualityTypeName(item.QualityType), out int qCount))
-                                {
-                                    magicCards[ItemSet.GetQualityTypeName(item.QualityType)] = qCount + 1;
-                                }
-                                else
-                                {
-                                    magicCards[ItemSet.GetQualityTypeName(item.QualityType)] = 1;
-                                }
-                            }
-                            builder.AppendLine($"{string.Join("、", magicCards.Select(kv => $"{kv.Value} 张{kv.Key}魔法卡"))}！");
                             break;
                         default:
                             break;
