@@ -237,7 +237,7 @@ namespace Oshima.FunGame.WebAPI
             if (objs.Length > 0 && objs[0] is WebApplication app)
             {
                 _serviceScopeFactory = app.Services.GetRequiredService<IServiceScopeFactory>();
-                Controller.WriteLine("获取到：IServiceScopeFactory");
+                if (_serviceScopeFactory != null) Controller.WriteLine("获取到：IServiceScopeFactory");
             }
         }
 
