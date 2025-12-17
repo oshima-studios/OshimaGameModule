@@ -9145,12 +9145,25 @@ namespace Oshima.FunGame.WebAPI.Controllers
                         }
                     }
 
+                    if (FunGameService.Activities.FirstOrDefault(a => a.Name == "双旦活动") is Activity activity && activity.Status == ActivityState.InProgress)
+                    {
+                        // 双旦活动签到可获得十连奖券一张
+                        Item item = new 十连奖券()
+                        {
+                            IsSellable = false,
+                            IsTradable = false,
+                            Price = 0
+                        };
+                        user.Inventory.Items.Add(item);
+                        msg += "\r\n圣诞温暖相伴，元旦好运相随，在节日的钟声里收获惊喜！成功参加【双旦活动】，你获得了一张【十连奖券】！";
+                    }
+
                     FunGameService.SetUserConfigButNotRelease(uid, pc, user);
                     return msg;
                 }
                 else
                 {
-                    return $"温馨提醒：【创建存档】后可领取同款幸运物的收藏品，全部收集可兑换强大装备哦～";
+                    return $"温馨提醒：【创建存档】后获取运势可领取同款幸运物的收藏品，全部收集可兑换强大装备哦～";
                 }
             }
             catch (Exception e)

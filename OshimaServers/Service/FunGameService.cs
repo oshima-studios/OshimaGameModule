@@ -954,6 +954,20 @@ namespace Oshima.FunGame.OshimaServers.Service
                     }
                     break;
             }
+
+            if (Activities.FirstOrDefault(a => a.Name == "双旦活动") is Activity activity && activity.Status == ActivityState.InProgress)
+            {
+                // 双旦活动签到可获得十连奖券一张
+                Item item = new 十连奖券()
+                {
+                    IsSellable = false,
+                    IsTradable = false,
+                    Price = 0
+                };
+                user.Inventory.Items.Add(item);
+                msg += "\r\n圣诞温暖相伴，元旦好运相随，在节日的钟声里收获惊喜！成功参加【双旦活动】，你获得了一张【十连奖券】！";
+            }
+
             return msg;
         }
 
@@ -2147,7 +2161,12 @@ namespace Oshima.FunGame.OshimaServers.Service
             {
                 if (needy == General.GameplayEquilibriumConstant.InGameCurrency)
                 {
-                    double reduce = Calculation.Round2Digits(goods.Prices[needy] * count);
+                    double reduce = 0;
+                    if (Activities.FirstOrDefault(a => a.Name == "双旦活动") is Activity activity && activity.Status == ActivityState.InProgress)
+                    {
+                        reduce = Calculation.Round2Digits(goods.Prices[needy] / 2 * count);
+                    }
+                    else reduce = Calculation.Round2Digits(goods.Prices[needy] * count);
                     if (user.Inventory.Credits >= reduce)
                     {
                         user.Inventory.Credits -= reduce;
@@ -2159,7 +2178,12 @@ namespace Oshima.FunGame.OshimaServers.Service
                 }
                 else if (needy == General.GameplayEquilibriumConstant.InGameMaterial)
                 {
-                    double reduce = Calculation.Round2Digits(goods.Prices[needy] * count);
+                    double reduce = 0;
+                    if (Activities.FirstOrDefault(a => a.Name == "双旦活动") is Activity activity && activity.Status == ActivityState.InProgress)
+                    {
+                        reduce = Calculation.Round2Digits(goods.Prices[needy] / 2 * count);
+                    }
+                    else reduce = Calculation.Round2Digits(goods.Prices[needy] * count);
                     if (user.Inventory.Materials >= reduce)
                     {
                         user.Inventory.Materials -= reduce;
@@ -4206,7 +4230,14 @@ namespace Oshima.FunGame.OshimaServers.Service
             {
                 Store? store = value.VisitStore(stores, user, storeName);
                 exist = store != null;
-                msg = store?.ToString(user) ?? "";
+                if (Activities.FirstOrDefault(a => a.Name == "双旦活动") is Activity activity && activity.Status == ActivityState.InProgress)
+                {
+                    msg = GetStoreString(store, user, "双旦活动");
+                }
+                else
+                {
+                    msg = store?.ToString(user) ?? "";
+                }
                 if (exist && msg != "")
                 {
                     string currencyInfo = $"☆--- {user.Inventory.Name} ---☆\r\n现有{General.GameplayEquilibriumConstant.InGameCurrency}：{user.Inventory.Credits:0.##}\r\n现有{General.GameplayEquilibriumConstant.InGameMaterial}：{user.Inventory.Materials:0.##}";
@@ -4229,6 +4260,145 @@ namespace Oshima.FunGame.OshimaServers.Service
             }
 
             return msg;
+        }
+
+
+        private static string GetStoreString(Store? store, User? user = null, string activity = "")
+        {
+            if (store is null) return "";
+
+            StringBuilder builder = new();
+
+            builder.AppendLine($"☆★☆ {store.Name} ☆★☆");
+            if (store.Description != "") builder.AppendLine($"{store.Description}");
+
+            if (activity != "")
+            {
+                switch (activity)
+                {
+                    case "双旦活动":
+                        builder.AppendLine(">>> 双旦活动全场 50% OFF 正在火热进行中！ <<<");
+                        break;
+                    default:
+                        break;
+                }
+            }
+
+            if (store.StartTime.HasValue && store.EndTime.HasValue)
+            {
+                builder.AppendLine($"开放时间：{store.StartTime.Value.ToString(General.GeneralDateTimeFormatChinese)} 至 {store.EndTime.Value.ToString(General.GeneralDateTimeFormatChinese)}");
+            }
+            else if (store.StartTime.HasValue && !store.EndTime.HasValue)
+            {
+                builder.AppendLine($"开始开放时间：{store.StartTime.Value.ToString(General.GeneralDateTimeFormatChinese)}");
+            }
+            else if (!store.StartTime.HasValue && store.EndTime.HasValue)
+            {
+                builder.AppendLine($"停止开放时间：{store.EndTime.Value.ToString(General.GeneralDateTimeFormatChinese)}");
+            }
+            else
+            {
+                builder.AppendLine($"开放时间：全年无休，永久开放");
+            }
+            if (store.StartTimeOfDay.HasValue && store.EndTimeOfDay.HasValue)
+            {
+                builder.AppendLine($"每日营业时间：{store.StartTimeOfDay.Value.ToString(General.GeneralDateTimeFormatTimeOnly)} 至 {store.EndTimeOfDay.Value.ToString(General.GeneralDateTimeFormatTimeOnly)}");
+            }
+            else
+            {
+                builder.AppendLine($"[ 24H ] 全天营业");
+            }
+            DateTime now = DateTime.Now;
+            TimeSpan nowTimeOfDay = now.TimeOfDay;
+            bool isStoreOpen = true;
+            bool isStoreOpenInDate = true;
+            if (store.StartTime.HasValue && store.StartTime.Value > now || store.EndTime.HasValue && store.EndTime.Value < now)
+            {
+                isStoreOpen = false;
+                isStoreOpenInDate = false;
+            }
+            if (isStoreOpen && store.StartTimeOfDay.HasValue && store.EndTimeOfDay.HasValue)
+            {
+                TimeSpan startTimeSpan = store.StartTimeOfDay.Value.TimeOfDay;
+                TimeSpan endTimeSpan = store.EndTimeOfDay.Value.TimeOfDay;
+                if (startTimeSpan <= endTimeSpan)
+                {
+                    isStoreOpen = nowTimeOfDay >= startTimeSpan && nowTimeOfDay <= endTimeSpan;
+                }
+                else
+                {
+                    isStoreOpen = nowTimeOfDay >= startTimeSpan || nowTimeOfDay <= endTimeSpan;
+                }
+            }
+            if (!isStoreOpen)
+            {
+                builder.AppendLine($"商店现在不在营业时间内。");
+            }
+            builder.AppendLine($"☆--- 商品列表 ---☆");
+            Goods[] goodsValid = [.. store.Goods.Values.Where(g => !g.ExpireTime.HasValue || g.ExpireTime.Value > DateTime.Now)];
+            if (!isStoreOpen || goodsValid.Length == 0)
+            {
+                builder.AppendLine("当前没有商品可供购买，过一段时间再来吧。");
+            }
+            else
+            {
+                foreach (Goods goods in goodsValid)
+                {
+                    builder.AppendLine(GetGoodsString(goods, user, activity));
+                }
+                builder.AppendLine("提示：使用【商店查看+序号】查看商品详细信息，使用【商店购买+序号】购买商品（指令在 2 分钟内可用）。");
+            }
+            if (isStoreOpenInDate && store.AutoRefresh)
+            {
+                builder.AppendLine($"商品将在 {store.NextRefreshDate.ToString(General.GeneralDateTimeFormatChinese)} 刷新。");
+            }
+
+            return builder.ToString().Trim();
+        }
+
+        private static string GetGoodsString(Goods goods, User? user = null, string activity = "")
+        {
+            StringBuilder builder = new();
+            builder.AppendLine($"{goods.Id}. {goods.Name}");
+            if (goods.ExpireTime.HasValue) builder.AppendLine($"限时购买：{goods.ExpireTime.Value.ToString(General.GeneralDateTimeFormatChinese)} 截止");
+            builder.AppendLine($"商品描述：{goods.Description}");
+
+            if (activity != null)
+            {
+                builder.Append("商品售价：");
+                bool add = false;
+                foreach (string price in goods.Prices.Keys)
+                {
+                    if (add) builder.Append('、');
+                    switch (activity)
+                    {
+                        case "双旦活动":
+                            builder.Append($"{goods.Prices[price] / 2:0.##} {price}（-50%，原价：{goods.Prices[price]:0.##} {price}）");
+                            break;
+                        default:
+                            break;
+                    }
+                    if (!add) add = true;
+                }
+                builder.AppendLine();
+            }
+            else
+            {
+                builder.AppendLine($"商品售价：{(goods.Prices.Count > 0 ? string.Join("、", goods.Prices.Select(kv => $"{kv.Value:0.##} {kv.Key}")) : "免费")}");
+            }
+
+            builder.AppendLine($"包含物品：{string.Join("、", goods.Items.Select(i => $"[{ItemSet.GetQualityTypeName(i.QualityType)}|{ItemSet.GetItemTypeName(i.ItemType)}] {i.Name}"))}");
+            int buyCount = 0;
+            if (user != null)
+            {
+                goods.UsersBuyCount.TryGetValue(user.Id, out buyCount);
+            }
+            builder.AppendLine($"剩余库存：{(goods.Stock == -1 ? "不限" : goods.Stock)}（已购：{buyCount}）");
+            if (goods.Quota > 0)
+            {
+                builder.AppendLine($"限购数量：{goods.Quota}");
+            }
+            return builder.ToString().Trim();
         }
 
         public static void GenerateForgeResult(User user, ForgeModel model, bool simulate = false)
