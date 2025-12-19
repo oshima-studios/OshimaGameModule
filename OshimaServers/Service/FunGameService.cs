@@ -74,9 +74,12 @@ namespace Oshima.FunGame.OshimaServers.Service
                 new 青石(), new 莲花(), new 陶罐(), new 海灵芝(), new 四叶草(), new 露珠(), new 茉莉花(), new 绿萝(), new 檀木扇(), new 鸟蛋(), new 竹笋(), new 晶核(), new 手工围巾(), new 柳条篮(), new 风筝(), new 羽毛(), new 发光髓(),
                 new 紫罗兰(), new 松果(), new 电气水晶(), new 薄荷(), new 竹节(), new 铁砧(), new 冰雾花(), new 海草(), new 磐石(), new 砂砾(), new 铁甲贝壳(), new 蜥蜴尾巴(), new 古老钟摆(), new 枯藤()]);
 
+            FunGameConstant.NotForSaleItems.AddRange([]);
+
             FunGameConstant.AllItems.AddRange(FunGameConstant.Equipment);
             FunGameConstant.AllItems.AddRange(FunGameConstant.Items);
             FunGameConstant.AllItems.AddRange(FunGameConstant.UserDailyItems);
+            FunGameConstant.AllItems.AddRange(FunGameConstant.NotForSaleItems);
 
             foreach (OshimaRegion region in FunGameConstant.Regions)
             {
@@ -84,8 +87,8 @@ namespace Oshima.FunGame.OshimaServers.Service
                 FunGameConstant.ExploreItems.Add(region, items);
             }
 
-            long[] userDailyItemIds = [.. FunGameConstant.UserDailyItems.Select(i => i.Id)];
-            FunGameConstant.DrawCardItems.AddRange(FunGameConstant.AllItems.Where(i => !FunGameConstant.ItemCanNotDrawCard.Contains(i.ItemType) && !userDailyItemIds.Contains(i.Id)));
+            long[] notDrawIds = [.. FunGameConstant.UserDailyItems.Union(FunGameConstant.NotForSaleItems).Select(i => i.Id)];
+            FunGameConstant.DrawCardItems.AddRange(FunGameConstant.AllItems.Where(i => !FunGameConstant.ItemCanNotDrawCard.Contains(i.ItemType) && !notDrawIds.Contains(i.Id)));
             FunGameConstant.CharacterLevelBreakItems.AddRange([new 升华之印(), new 流光之印(), new 永恒之印(), new 原初之印(), new 创生之印()]);
             FunGameConstant.SkillLevelUpItems.AddRange([new 技能卷轴(), new 智慧之果(), new 奥术符文(), new 混沌之核(), new 法则精粹()]);
 
@@ -2072,8 +2075,8 @@ namespace Oshima.FunGame.OshimaServers.Service
                     }
                     else
                     {
-                        int index = Random.Shared.Next(FunGameConstant.AllItems.Count);
-                        item = FunGameConstant.AllItems[index].Copy();
+                        int index = Random.Shared.Next(FunGameConstant.DrawCardItems.Count);
+                        item = FunGameConstant.DrawCardItems[index].Copy();
                     }
                     item.Character = null;
                     (int min, int max) = (0, 0);
@@ -2157,6 +2160,7 @@ namespace Oshima.FunGame.OshimaServers.Service
                 return $"此商品【{goods.Name}】限量购买 {goods.Quota} 件！\r\n你已经购买了 {buyCount} 件，想要购买 {count} 件，超过了购买限制。";
             }
 
+            List<string> buyCost = [];
             foreach (string needy in goods.Prices.Keys)
             {
                 if (needy == General.GameplayEquilibriumConstant.InGameCurrency)
@@ -2170,6 +2174,7 @@ namespace Oshima.FunGame.OshimaServers.Service
                     if (user.Inventory.Credits >= reduce)
                     {
                         user.Inventory.Credits -= reduce;
+                        buyCost.Add($"{reduce} {needy}");
                     }
                     else
                     {
@@ -2187,6 +2192,7 @@ namespace Oshima.FunGame.OshimaServers.Service
                     if (user.Inventory.Materials >= reduce)
                     {
                         user.Inventory.Materials -= reduce;
+                        buyCost.Add($"{reduce} {needy}");
                     }
                     else
                     {
@@ -2200,6 +2206,7 @@ namespace Oshima.FunGame.OshimaServers.Service
                     {
                         points -= reduce;
                         pc.Add("forgepoints", points);
+                        buyCost.Add($"{reduce} {needy}");
                     }
                     else
                     {
@@ -2213,6 +2220,7 @@ namespace Oshima.FunGame.OshimaServers.Service
                     {
                         points -= reduce;
                         pc.Add("horseRacingPoints", points);
+                        buyCost.Add($"{reduce} {needy}");
                     }
                     else
                     {
@@ -2226,6 +2234,7 @@ namespace Oshima.FunGame.OshimaServers.Service
                     {
                         points -= reduce;
                         pc.Add("cooperativePoints", points);
+                        buyCost.Add($"{reduce} {needy}");
                     }
                     else
                     {
@@ -2278,7 +2287,7 @@ namespace Oshima.FunGame.OshimaServers.Service
             }
 
             msg += $"恭喜你成功购买 {count} 件【{goods.Name}】！\r\n" + (goods.Quota > 0 ? $"此商品限购 {goods.Quota} 件，你还可以再购买 {goods.Quota - count - buyCount} 件。\r\n" : "") +
-                $"总计消费：{(goods.Prices.Count > 0 ? string.Join("、", goods.Prices.Select(kv => $"{kv.Value * count:0.##} {kv.Key}")) : "免单")}\r\n" +
+                $"总计消费：{(goods.Prices.Count > 0 ? string.Join("、", buyCost) : "免单")}\r\n" +
                 $"包含物品：{string.Join("、", goods.Items.Select(i => $"[{ItemSet.GetQualityTypeName(i.QualityType)}|{ItemSet.GetItemTypeName(i.ItemType)}] {i.Name} * {count}"))}\r\n" +
                 $"{store.Name}期待你的下次光临。";
 
@@ -4366,19 +4375,27 @@ namespace Oshima.FunGame.OshimaServers.Service
             if (activity != null)
             {
                 builder.Append("商品售价：");
-                bool add = false;
-                foreach (string price in goods.Prices.Keys)
+                if (goods.Prices.Count > 0)
                 {
-                    if (add) builder.Append('、');
-                    switch (activity)
+                    bool add = false;
+                    foreach (string price in goods.Prices.Keys)
                     {
-                        case "双旦活动":
-                            builder.Append($"{goods.Prices[price] / 2:0.##} {price}（-50%，原价：{goods.Prices[price]:0.##} {price}）");
-                            break;
-                        default:
-                            break;
+                        if (add) builder.Append('、');
+                        switch (activity)
+                        {
+                            case "双旦活动":
+                                builder.Append($"{goods.Prices[price] / 2:0.##} {price}（-50%，原价：{goods.Prices[price]:0.##} {price}）");
+                                break;
+                            default:
+                                builder.Append($"{goods.Prices[price]:0.##} {price}");
+                                break;
+                        }
+                        if (!add) add = true;
                     }
-                    if (!add) add = true;
+                }
+                else
+                {
+                    builder.Append("免费");
                 }
                 builder.AppendLine();
             }

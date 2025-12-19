@@ -92,9 +92,9 @@ namespace Oshima.FunGame.WebAPI.Controllers
                     List<string> names = [.. FunGameSimulation.CharacterStatistics.OrderByDescending(kv => kv.Value.MVPs).Select(kv => kv.Key.GetName())];
                     builder.AppendLine($"MVP次数：{stats.MVPs}（#{names.IndexOf(character.GetName()) + 1}）");
 
-                    names = [.. FunGameSimulation.CharacterStatistics.OrderByDescending(kv => kv.Value.Winrates).Select(kv => kv.Key.GetName())];
-                    builder.AppendLine($"胜率：{stats.Winrates * 100:0.##}%（#{names.IndexOf(character.GetName()) + 1}）");
-                    builder.AppendLine($"前三率：{stats.Top3rates * 100:0.##}%");
+                    names = [.. FunGameSimulation.CharacterStatistics.OrderByDescending(kv => kv.Value.Winrate).Select(kv => kv.Key.GetName())];
+                    builder.AppendLine($"胜率：{stats.Winrate * 100:0.##}%（#{names.IndexOf(character.GetName()) + 1}）");
+                    builder.AppendLine($"前三率：{stats.Top3rate * 100:0.##}%");
 
                     names = [.. FunGameSimulation.CharacterStatistics.OrderByDescending(kv => kv.Value.Rating).Select(kv => kv.Key.GetName())];
                     builder.AppendLine($"技术得分：{stats.Rating:0.0#}（#{names.IndexOf(character.GetName()) + 1}）");
@@ -149,8 +149,8 @@ namespace Oshima.FunGame.WebAPI.Controllers
 
                     List<string> names = [.. FunGameSimulation.TeamCharacterStatistics.OrderByDescending(kv => kv.Value.MVPs).Select(kv => kv.Key.GetName())];
                     builder.AppendLine($"MVP次数：{stats.MVPs}（#{names.IndexOf(character.GetName()) + 1}）");
-                    names = [.. FunGameSimulation.TeamCharacterStatistics.OrderByDescending(kv => kv.Value.Winrates).Select(kv => kv.Key.GetName())];
-                    builder.AppendLine($"胜率：{stats.Winrates * 100:0.##}%（#{names.IndexOf(character.GetName()) + 1}）");
+                    names = [.. FunGameSimulation.TeamCharacterStatistics.OrderByDescending(kv => kv.Value.Winrate).Select(kv => kv.Key.GetName())];
+                    builder.AppendLine($"胜率：{stats.Winrate * 100:0.##}%（#{names.IndexOf(character.GetName()) + 1}）");
                     names = [.. FunGameSimulation.TeamCharacterStatistics.OrderByDescending(kv => kv.Value.Rating).Select(kv => kv.Key.GetName())];
                     builder.AppendLine($"技术得分：{stats.Rating:0.0#}（#{names.IndexOf(character.GetName()) + 1}）");
 
@@ -168,7 +168,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
             if (team)
             {
                 List<string> strings = [];
-                IEnumerable<Character> ratings = FunGameSimulation.TeamCharacterStatistics.OrderByDescending(kv => kv.Value.Winrates).Select(kv => kv.Key);
+                IEnumerable<Character> ratings = FunGameSimulation.TeamCharacterStatistics.OrderByDescending(kv => kv.Value.Winrate).Select(kv => kv.Key);
                 foreach (Character character in ratings)
                 {
                     StringBuilder builder = new();
@@ -176,7 +176,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
                     builder.AppendLine(character.ToStringWithOutUser());
                     builder.AppendLine($"总计参赛数：{stats.Plays}");
                     builder.AppendLine($"总计冠军数：{stats.Wins}");
-                    builder.AppendLine($"胜率：{stats.Winrates * 100:0.##}%");
+                    builder.AppendLine($"胜率：{stats.Winrate * 100:0.##}%");
                     builder.AppendLine($"技术得分：{stats.Rating:0.0#}");
                     builder.AppendLine($"MVP次数：{stats.MVPs}");
                     strings.Add(builder.ToString());
@@ -186,7 +186,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
             else
             {
                 List<string> strings = [];
-                IEnumerable<Character> ratings = FunGameSimulation.CharacterStatistics.OrderByDescending(kv => kv.Value.Winrates).Select(kv => kv.Key);
+                IEnumerable<Character> ratings = FunGameSimulation.CharacterStatistics.OrderByDescending(kv => kv.Value.Winrate).Select(kv => kv.Key);
                 foreach (Character character in ratings)
                 {
                     StringBuilder builder = new();
@@ -194,8 +194,8 @@ namespace Oshima.FunGame.WebAPI.Controllers
                     builder.AppendLine(character.ToStringWithOutUser());
                     builder.AppendLine($"总计参赛数：{stats.Plays}");
                     builder.AppendLine($"总计冠军数：{stats.Wins}");
-                    builder.AppendLine($"胜率：{stats.Winrates * 100:0.##}%");
-                    builder.AppendLine($"前三率：{stats.Top3rates * 100:0.##}%");
+                    builder.AppendLine($"胜率：{stats.Winrate * 100:0.##}%");
+                    builder.AppendLine($"前三率：{stats.Top3rate * 100:0.##}%");
                     builder.AppendLine($"技术得分：{stats.Rating:0.0#}");
                     builder.AppendLine($"上次排名：{stats.LastRank} / 场均名次：{stats.AvgRank:0.##}");
                     builder.AppendLine($"MVP次数：{stats.MVPs}");
@@ -221,7 +221,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
                     builder.AppendLine(character.ToStringWithOutUser());
                     builder.AppendLine($"总计参赛数：{stats.Plays}");
                     builder.AppendLine($"总计冠军数：{stats.Wins}");
-                    builder.AppendLine($"胜率：{stats.Winrates * 100:0.##}%");
+                    builder.AppendLine($"胜率：{stats.Winrate * 100:0.##}%");
                     builder.AppendLine($"技术得分：{stats.Rating:0.0#}");
                     builder.AppendLine($"MVP次数：{stats.MVPs}");
                     strings.Add(builder.ToString());
@@ -239,8 +239,8 @@ namespace Oshima.FunGame.WebAPI.Controllers
                     builder.AppendLine(character.ToStringWithOutUser());
                     builder.AppendLine($"总计参赛数：{stats.Plays}");
                     builder.AppendLine($"总计冠军数：{stats.Wins}");
-                    builder.AppendLine($"胜率：{stats.Winrates * 100:0.##}%");
-                    builder.AppendLine($"前三率：{stats.Top3rates * 100:0.##}%");
+                    builder.AppendLine($"胜率：{stats.Winrate * 100:0.##}%");
+                    builder.AppendLine($"前三率：{stats.Top3rate * 100:0.##}%");
                     builder.AppendLine($"技术得分：{stats.Rating:0.0#}");
                     builder.AppendLine($"上次排名：{stats.LastRank} / 场均名次：{stats.AvgRank:0.##}");
                     builder.AppendLine($"MVP次数：{stats.MVPs}");
@@ -9164,6 +9164,71 @@ namespace Oshima.FunGame.WebAPI.Controllers
                 else
                 {
                     return $"温馨提醒：【创建存档】后获取运势可领取同款幸运物的收藏品，全部收集可兑换强大装备哦～";
+                }
+            }
+            catch (Exception e)
+            {
+                if (Logger.IsEnabled(Microsoft.Extensions.Logging.LogLevel.Error)) Logger.LogError(e, "Error: {e}", e);
+                return busy;
+            }
+            finally
+            {
+                FunGameService.ReleaseUserSemaphoreSlim(uid);
+            }
+        }
+
+        [HttpPost("receiveactivityawards")]
+        public string ReceiveActivityAwards([FromQuery] long uid = -1, [FromQuery] long aid = -1, [FromQuery] long qid = -1)
+        {
+            try
+            {
+                PluginConfig pc = FunGameService.GetUserConfig(uid, out bool isTimeout);
+                if (isTimeout)
+                {
+                    return busy;
+                }
+
+                string msg = "";
+                if (pc.Count > 0)
+                {
+                    User user = FunGameService.GetUser(pc);
+
+                    if (FunGameService.Activities.FirstOrDefault(a => a.Id == aid) is Activity activity)
+                    {
+                        if (activity.Status == ActivityState.InProgress || activity.Status == ActivityState.Ended)
+                        {
+                            if (activity.Quests.FirstOrDefault(q => q.Id == qid) is Quest quest)
+                            {
+                                if (quest.Status == QuestState.Completed)
+                                {
+                                    msg = "该任务未完成！";
+                                }
+                                else
+                                {
+
+                                }
+                            }
+                            else
+                            {
+                                msg = "没有指定的任务。";
+                            }
+                        }
+                        else
+                        {
+                            msg = "该活动不在可领取奖励的时间内。";
+                        }
+                    }
+                    else
+                    {
+                        msg = "没有指定的活动。";
+                    }
+
+                    FunGameService.SetUserConfigButNotRelease(uid, pc, user);
+                    return msg;
+                }
+                else
+                {
+                    return noSaved;
                 }
             }
             catch (Exception e)
