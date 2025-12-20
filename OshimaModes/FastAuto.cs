@@ -27,7 +27,7 @@ namespace Oshima.FunGame.OshimaModes
             try
             {
                 DataRequest request = Controller.NewDataRequest(GamingType.Connect);
-                request.AddRequestData("un", Session.LoginUserName);
+                request.AddRequestData("un", _session.LoginUserName);
                 request.SendRequest();
             }
             catch (Exception e)
