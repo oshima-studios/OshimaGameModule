@@ -1,7 +1,9 @@
 using System.Text;
+using System.Xml.Linq;
 using Milimoe.FunGame.Core.Api.Transmittal;
 using Milimoe.FunGame.Core.Api.Utility;
 using Milimoe.FunGame.Core.Entity;
+using Milimoe.FunGame.Core.Interface.Entity;
 using Milimoe.FunGame.Core.Library.Constant;
 using Oshima.Core.Constant;
 using Oshima.FunGame.OshimaModules.Characters;
@@ -67,14 +69,15 @@ namespace Oshima.FunGame.OshimaServers.Service
             FunGameConstant.Items.AddRange(exItems.Values.Where(i => (int)i.ItemType > 4));
             FunGameConstant.Items.AddRange([new 小经验书(), new 中经验书(), new 大经验书(), new 升华之印(), new 流光之印(), new 永恒之印(), new 技能卷轴(), new 智慧之果(), new 奥术符文(), new 混沌之核(),
                 new 小回复药(), new 中回复药(), new 大回复药(), new 魔力填充剂1(), new 魔力填充剂2(), new 魔力填充剂3(), new 能量饮料1(), new 能量饮料2(), new 能量饮料3(), new 年夜饭(), new 蛇年大吉(), new 新春快乐(), new 毕业礼包(),
-                new 复苏药1(), new 复苏药2(), new 复苏药3(), new 全回复药(), new 魔法卡礼包(), new 奖券(), new 十连奖券(), new 改名卡(), new 原初之印(), new 创生之印(), new 法则精粹(), new 大师锻造券()
+                new 复苏药1(), new 复苏药2(), new 复苏药3(), new 全回复药(), new 魔法卡礼包(), new 奖券(), new 十连奖券(), new 改名卡(), new 原初之印(), new 创生之印(), new 法则精粹(), new 大师锻造券(),
+                new 一周年纪念礼包(), new 一周年纪念套装(), new 冬至快乐(), new 圣诞礼包(), new 元旦快乐()
             ]);
 
             FunGameConstant.UserDailyItems.AddRange([new 青松(), new 流星石(), new 向日葵(), new 金铃花(), new 琉璃珠(), new 鸣草(), new 马尾(), new 鬼兜虫(), new 烈焰花花蕊(), new 堇瓜(), new 水晶球(), new 薰衣草(),
                 new 青石(), new 莲花(), new 陶罐(), new 海灵芝(), new 四叶草(), new 露珠(), new 茉莉花(), new 绿萝(), new 檀木扇(), new 鸟蛋(), new 竹笋(), new 晶核(), new 手工围巾(), new 柳条篮(), new 风筝(), new 羽毛(), new 发光髓(),
                 new 紫罗兰(), new 松果(), new 电气水晶(), new 薄荷(), new 竹节(), new 铁砧(), new 冰雾花(), new 海草(), new 磐石(), new 砂砾(), new 铁甲贝壳(), new 蜥蜴尾巴(), new 古老钟摆(), new 枯藤()]);
 
-            FunGameConstant.NotForSaleItems.AddRange([]);
+            FunGameConstant.NotForSaleItems.AddRange([new 一周年纪念礼包(), new 一周年纪念套装(), new 毕业礼包()]);
 
             FunGameConstant.AllItems.AddRange(FunGameConstant.Equipment);
             FunGameConstant.AllItems.AddRange(FunGameConstant.Items);
@@ -4271,8 +4274,7 @@ namespace Oshima.FunGame.OshimaServers.Service
             return msg;
         }
 
-
-        private static string GetStoreString(Store? store, User? user = null, string activity = "")
+        public static string GetStoreString(Store? store, User? user = null, string activity = "")
         {
             if (store is null) return "";
 
@@ -4365,7 +4367,7 @@ namespace Oshima.FunGame.OshimaServers.Service
             return builder.ToString().Trim();
         }
 
-        private static string GetGoodsString(Goods goods, User? user = null, string activity = "")
+        public static string GetGoodsString(Goods goods, User? user = null, string activity = "")
         {
             StringBuilder builder = new();
             builder.AppendLine($"{goods.Id}. {goods.Name}");
@@ -4416,6 +4418,135 @@ namespace Oshima.FunGame.OshimaServers.Service
                 builder.AppendLine($"限购数量：{goods.Quota}");
             }
             return builder.ToString().Trim();
+        }
+
+        public static string GetItemString(Item item, bool isShowGeneralDescription, bool isShowInStore = false, string activity = "")
+        {
+            StringBuilder builder = new();
+
+            builder.AppendLine($"【{item.Name}】{(item.IsLock ? " [锁定]" : "")}");
+
+            string itemquality = ItemSet.GetQualityTypeName(item.QualityType);
+            string itemtype = ItemSet.GetItemTypeName(item.ItemType) + (item.ItemType == ItemType.Weapon && item.WeaponType != WeaponType.None ? "-" + ItemSet.GetWeaponTypeName(item.WeaponType) : "");
+            if (itemtype != "") itemtype = $" {itemtype}";
+
+            builder.AppendLine($"{itemquality + itemtype}");
+
+            if (isShowInStore && item.Price > 0)
+            {
+                if (activity != null)
+                {
+                    builder.Append("售价：");
+                    switch (activity)
+                    {
+                        case "双旦活动":
+                            builder.AppendLine($"{item.Price / 2:0.##} {item.GameplayEquilibriumConstant.InGameCurrency}（-50%，原价：{item.Price:0.##} {item.GameplayEquilibriumConstant.InGameCurrency}）");
+                            break;
+                        default:
+                            builder.AppendLine($"{item.Price:0.##} {item.GameplayEquilibriumConstant.InGameCurrency}");
+                            break;
+                    }
+                }
+                else builder.AppendLine($"售价：{item.Price:0.##} {item.GameplayEquilibriumConstant.InGameCurrency}");
+            }
+            else if (item.Price > 0)
+            {
+                builder.AppendLine($"回收价：{item.Price:0.##} {item.GameplayEquilibriumConstant.InGameCurrency}");
+            }
+
+            if (item.RemainUseTimes > 0)
+            {
+                builder.AppendLine($"{(isShowInStore ? "" : "剩余")}可用次数：{item.RemainUseTimes}");
+            }
+
+            if (isShowInStore)
+            {
+                if (item.IsSellable)
+                {
+                    builder.AppendLine($"购买此物品后可立即出售");
+                }
+                if (item.IsTradable)
+                {
+                    DateTime date = DateTimeUtility.GetTradableTime();
+                    builder.AppendLine($"购买此物品后将在 {date.ToString(General.GeneralDateTimeFormatChinese)} 后可交易");
+                }
+            }
+            else
+            {
+                List<string> sellandtrade = [];
+                bool useRN = false;
+
+                if (item.IsLock)
+                {
+                    sellandtrade.Add("不可出售");
+                    sellandtrade.Add("不可交易");
+                }
+                else
+                {
+                    if (item.IsSellable)
+                    {
+                        sellandtrade.Add("可出售");
+                    }
+
+                    if (!item.IsSellable && item.NextSellableTime != DateTime.MinValue)
+                    {
+                        useRN = true;
+                        sellandtrade.Add($"此物品将在 {item.NextSellableTime.ToString(General.GeneralDateTimeFormatChinese)} 后可出售");
+                    }
+                    else if (!item.IsSellable)
+                    {
+                        sellandtrade.Add("不可出售");
+                    }
+
+                    if (item.IsTradable)
+                    {
+                        sellandtrade.Add("可交易");
+                    }
+
+                    if (!item.IsTradable && item.NextTradableTime != DateTime.MinValue)
+                    {
+                        useRN = true;
+                        sellandtrade.Add($"此物品将在 {item.NextTradableTime.ToString(General.GeneralDateTimeFormatChinese)} 后可交易");
+                    }
+                    else if (!item.IsTradable)
+                    {
+                        sellandtrade.Add("不可交易");
+                    }
+                }
+
+                if (sellandtrade.Count > 0) builder.AppendLine(string.Join(useRN ? "\r\n" : " ", sellandtrade).Trim());
+            }
+
+            if (isShowGeneralDescription && item.GeneralDescription != "")
+            {
+                builder.AppendLine("物品描述：" + item.GeneralDescription);
+            }
+            else if (item.Description != "")
+            {
+                builder.AppendLine("物品描述：" + item.Description);
+            }
+            if (item.ItemType == ItemType.MagicCardPack && item.Skills.Magics.Count > 0)
+            {
+                builder.AppendLine("== 魔法卡 ==\r\n" + string.Join("\r\n", item.Skills.Magics.Select(m => m.ToString().Trim())));
+            }
+
+            if (item.Skills.Active != null || item.Skills.Passives.Count > 0)
+            {
+                builder.AppendLine("== 物品技能 ==");
+
+                if (item.Skills.Active != null) builder.AppendLine($"{item.Skills.Active.ToString().Trim()}");
+                foreach (Skill skill in item.Skills.Passives)
+                {
+                    builder.AppendLine($"{skill.ToString().Trim()}");
+                }
+            }
+
+            if (item.BackgroundStory != "")
+            {
+                builder.AppendLine($"\"{item.BackgroundStory}\"");
+            }
+
+            return builder.ToString();
         }
 
         public static void GenerateForgeResult(User user, ForgeModel model, bool simulate = false)

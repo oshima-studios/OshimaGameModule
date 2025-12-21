@@ -8034,15 +8034,20 @@ namespace Oshima.FunGame.WebAPI.Controllers
                     {
                         int count = 0;
                         string itemMsg = "";
+                        string activityName = "";
+                        if (FunGameService.Activities.FirstOrDefault(a => a.Name == "双旦活动") is Activity activity && activity.Status == ActivityState.InProgress)
+                        {
+                            activityName = "双旦活动";
+                        }
                         foreach (Item item in good.Items)
                         {
                             count++;
                             Item newItem = item.Copy(true);
                             newItem.Character = user.Inventory.MainCharacter;
                             if (newItem.ItemType != ItemType.MagicCard) newItem.SetLevel(1);
-                            itemMsg += $"[ {count} ] {newItem.ToString(false, true)}".Trim();
+                            itemMsg += $"[ {count} ] {FunGameService.GetItemString(newItem, false, true, activityName)}".Trim();
                         }
-                        msg = good.ToString(user).Split("包含物品：")[0].Trim();
+                        msg = FunGameService.GetGoodsString(good, user, activityName).Split("包含物品：")[0].Trim();
                         int buyCount = 0;
                         if (user != null)
                         {

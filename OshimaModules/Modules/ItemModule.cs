@@ -123,6 +123,11 @@ namespace Oshima.FunGame.OshimaModules
                     (long)GiftBoxID.毕业礼包 => new 毕业礼包(),
                     (long)GiftBoxID.魔法卡礼包 => new 魔法卡礼包(),
                     (long)GiftBoxID.探索助力礼包 => new 探索助力礼包(),
+                    (long)GiftBoxID.一周年纪念礼包 => new 一周年纪念礼包(),
+                    (long)GiftBoxID.一周年纪念套装 => new 一周年纪念套装(),
+                    (long)GiftBoxID.冬至快乐 => new 冬至快乐(),
+                    (long)GiftBoxID.圣诞礼包 => new 圣诞礼包(),
+                    (long)GiftBoxID.元旦快乐 => new 元旦快乐(),
                     _ => null,
                 };
             };

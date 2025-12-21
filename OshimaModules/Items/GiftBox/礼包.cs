@@ -1,4 +1,5 @@
-﻿using Milimoe.FunGame.Core.Entity;
+﻿using Milimoe.FunGame.Core.Api.Utility;
+using Milimoe.FunGame.Core.Entity;
 using Milimoe.FunGame.Core.Library.Constant;
 using Oshima.FunGame.OshimaModules.Skills;
 
@@ -163,7 +164,7 @@ namespace Oshima.FunGame.OshimaModules.Items
     public class 魔法卡礼包 : Item, 礼包.GiftBox
     {
         public override long Id => (long)GiftBoxID.魔法卡礼包;
-        public override string Name => "魔法卡礼包";
+        public override string Name => $"{ItemSet.GetQualityTypeName(QualityType)}魔法卡礼包";
         public override string Description => Skills.Active?.Description ?? "";
         public int Count { get; set; } = 1;
         public Dictionary<string, int> Gifts { get; set; } = [];
@@ -201,7 +202,7 @@ namespace Oshima.FunGame.OshimaModules.Items
         public override long Id => (long)GiftBoxID.探索助力礼包;
         public override string Name => "探索助力礼包";
         public override string Description => Skills.Active?.Description ?? "";
-        public override QualityType QualityType => QualityType.Red;
+        public override QualityType QualityType => QualityType.White;
         public Dictionary<string, int> Gifts { get; set; } = [];
 
         public 探索助力礼包(User? user = null, int remainUseTimes = 1) : base(ItemType.GiftBox)
@@ -214,6 +215,115 @@ namespace Oshima.FunGame.OshimaModules.Items
                 { new 升华之印().Name, 20 },
                 { new 技能卷轴().Name, 20 },
             }, remainUseTimes);
+        }
+    }
+
+    public class 一周年纪念礼包 : Item, 礼包.GiftBox
+    {
+        public override long Id => (long)GiftBoxID.一周年纪念礼包;
+        public override string Name => "一周年纪念礼包";
+        public override string Description => Skills.Active?.Description ?? "";
+        public override QualityType QualityType => QualityType.White;
+        public Dictionary<string, int> Gifts { get; set; } = [];
+
+        public 一周年纪念礼包(User? user = null, int remainUseTimes = 1) : base(ItemType.GiftBox)
+        {
+            User = user;
+            礼包.Init(this, new()
+            {
+                { General.GameplayEquilibriumConstant.InGameCurrency, 50000 },
+                { General.GameplayEquilibriumConstant.InGameMaterial, 100 },
+                { new 一周年纪念套装().Name, 1 }
+            }, remainUseTimes);
+        }
+    }
+
+    public class 一周年纪念套装 : Item, 礼包.GiftBox
+    {
+        public override long Id => (long)GiftBoxID.一周年纪念套装;
+        public override string Name => "一周年纪念套装";
+        public override string Description => Skills.Active?.Description ?? "";
+        public override QualityType QualityType => QualityType.White;
+        public Dictionary<string, int> Gifts { get; set; } = [];
+
+        public 一周年纪念套装(User? user = null, int remainUseTimes = 1) : base(ItemType.GiftBox)
+        {
+            User = user;
+            礼包.Init(this, new()
+            {
+                { General.GameplayEquilibriumConstant.InGameCurrency, 50000 }
+            }, remainUseTimes);
+        }
+    }
+
+    public class 冬至快乐 : Item, 礼包.GiftBox
+    {
+        public override long Id => (long)GiftBoxID.冬至快乐;
+        public override string Name => "冬至快乐";
+        public override string Description => Skills.Active?.Description ?? "";
+        public override QualityType QualityType => QualityType.White;
+        public Dictionary<string, int> Gifts { get; set; } = [];
+
+        public 冬至快乐(User? user = null, int remainUseTimes = 1) : base(ItemType.GiftBox)
+        {
+            User = user;
+            礼包.Init(this, new()
+            {
+                { General.GameplayEquilibriumConstant.InGameCurrency, 40000 },
+                { General.GameplayEquilibriumConstant.InGameMaterial, 500 },
+                { new 魔法卡礼包(QualityType.Orange, 5).Name, 5 }
+            }, remainUseTimes);
+        }
+    }
+
+    public class 圣诞礼包 : Item, 礼包.GiftBox
+    {
+        public override long Id => (long)GiftBoxID.圣诞礼包;
+        public override string Name => "圣诞礼包";
+        public override string Description => Skills.Active?.Description ?? "";
+        public override QualityType QualityType => QualityType.White;
+        public Dictionary<string, int> Gifts { get; set; } = [];
+
+        public 圣诞礼包(User? user = null, int remainUseTimes = 1) : base(ItemType.GiftBox)
+        {
+            User = user;
+            礼包.Init(this, new()
+            {
+                { General.GameplayEquilibriumConstant.InGameCurrency, 10000 },
+                { General.GameplayEquilibriumConstant.InGameMaterial, 100 },
+                { Factory.OpenFactory.GetInstance<Item>(14515, "", []).Name, 1 }
+            }, remainUseTimes);
+        }
+
+        protected override bool OnItemUsed(User user, int times, Dictionary<string, object> args)
+        {
+            return 礼包.OnItemUsed(user, this, times, args);
+        }
+    }
+
+    public class 元旦快乐 : Item, 礼包.GiftBox
+    {
+        public override long Id => (long)GiftBoxID.元旦快乐;
+        public override string Name => "元旦快乐";
+        public override string Description => Skills.Active?.Description ?? "";
+        public override QualityType QualityType => QualityType.White;
+        public Dictionary<string, int> Gifts { get; set; } = [];
+
+        public 元旦快乐(User? user = null, int remainUseTimes = 1) : base(ItemType.GiftBox)
+        {
+            User = user;
+            礼包.Init(this, new()
+            {
+                { General.GameplayEquilibriumConstant.InGameCurrency, 40000 },
+                { General.GameplayEquilibriumConstant.InGameMaterial, 500 },
+                { new 魔法卡礼包(QualityType.Orange, 5).Name, 5 },
+                { new 魔法卡礼包(QualityType.Red, 2).Name, 2 }
+            }, remainUseTimes);
+        }
+
+        protected override bool OnItemUsed(User user, int times, Dictionary<string, object> args)
+        {
+            return 礼包.OnItemUsed(user, this, times, args);
         }
     }
 
