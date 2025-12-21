@@ -1343,15 +1343,38 @@ namespace Oshima.FunGame.OshimaServers.Service
                         {
                             user.Inventory.Credits += box.Gifts[name];
                         }
-                        if (name == General.GameplayEquilibriumConstant.InGameMaterial)
+                        else if (name == General.GameplayEquilibriumConstant.InGameMaterial)
                         {
                             user.Inventory.Materials += box.Gifts[name];
                         }
-                        if (FunGameConstant.AllItems.FirstOrDefault(i => i.Name == name) is Item currentItem)
+                        else if (FunGameConstant.AllItems.FirstOrDefault(i => i.Name == name) is Item currentItem)
                         {
                             for (int i = 0; i < box.Gifts[name]; i++)
                             {
                                 AddItemToUserInventory(user, currentItem, copyLevel: item.ItemType == ItemType.MagicCard, toExploreCache: false, toActivitiesCache: false);
+                            }
+                        }
+                        else if (name.Contains("魔法卡礼包"))
+                        {
+                            Dictionary<string, QualityType> magicCards = new() {
+                                { "普通魔法卡礼包", QualityType.White },
+                                { "优秀魔法卡礼包", QualityType.Green },
+                                { "稀有魔法卡礼包", QualityType.Blue },
+                                { "史诗魔法卡礼包", QualityType.Purple },
+                                { "传说魔法卡礼包", QualityType.Orange },
+                                { "神话魔法卡礼包", QualityType.Red },
+                                { "不朽魔法卡礼包", QualityType.Gold }
+                            };
+                            foreach (string key in magicCards.Keys)
+                            {
+                                if (name == key)
+                                {
+                                    for (int i = 0; i < box.Gifts[name]; i++)
+                                    {
+                                        Item newItem = new 魔法卡礼包(magicCards[key], box.Gifts[name]);
+                                        AddItemToUserInventory(user, newItem, false, true);
+                                    }
+                                }
                             }
                         }
                     }
