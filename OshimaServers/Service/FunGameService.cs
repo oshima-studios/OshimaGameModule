@@ -1365,16 +1365,14 @@ namespace Oshima.FunGame.OshimaServers.Service
                                 { "神话魔法卡礼包", QualityType.Red },
                                 { "不朽魔法卡礼包", QualityType.Gold }
                             };
-                            foreach (string key in magicCards.Keys)
+                            if (magicCards.Where(kv => kv.Key == name).Select(kv => kv.Value).FirstOrDefault() is QualityType type)
                             {
-                                if (name == key)
+                                for (int i = 0; i < box.Gifts[name]; i++)
                                 {
-                                    for (int i = 0; i < box.Gifts[name]; i++)
-                                    {
-                                        Item newItem = new 魔法卡礼包(magicCards[key], box.Gifts[name]);
-                                        AddItemToUserInventory(user, newItem, false, true);
-                                    }
+                                    Item newItem = new 魔法卡礼包(type, box.Gifts[name]);
+                                    AddItemToUserInventory(user, newItem, false, true);
                                 }
+                                break;
                             }
                         }
                     }
