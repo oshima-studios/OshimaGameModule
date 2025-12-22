@@ -291,7 +291,7 @@ namespace Oshima.FunGame.OshimaModules.Items
             {
                 { General.GameplayEquilibriumConstant.InGameCurrency, 10000 },
                 { General.GameplayEquilibriumConstant.InGameMaterial, 100 },
-                { Factory.OpenFactory.GetInstance<Item>(14515, "", []).Name, 1 }
+                { "YukiのCalfSocks-圣诞限定", 1 }
             }, remainUseTimes);
         }
 

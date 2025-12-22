@@ -28,8 +28,8 @@
 
     public enum CardPackModuleType
     {
-        魔法组,
-        自适应超频模块,
+        魔法技能组,
+        动态矩阵,
         同频共振,
         神经校准,
         勇气指令,

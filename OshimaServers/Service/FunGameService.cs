@@ -312,7 +312,7 @@ namespace Oshima.FunGame.OshimaServers.Service
             }
             item.Skills.Active = magic;
 
-            Skill skill = Factory.OpenFactory.GetInstance<Skill>(item.Id, "自适应超频模块", []);
+            Skill skill = Factory.OpenFactory.GetInstance<Skill>(item.Id, "动态矩阵", []);
             GenerateAndAddEffectsToMagicCard(skill, str, agi, intelligence);
 
             skill.Level = 1;
