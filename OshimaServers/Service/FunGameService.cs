@@ -2456,13 +2456,17 @@ namespace Oshima.FunGame.OshimaServers.Service
             lock (Activities)
             {
                 Activities.Clear();
+                bool update = false;
                 foreach (Activity activity in activities.Values)
                 {
                     activity.UpdateState();
                     Activities.Add(activity);
-                    if (user != null) AddEventActivity(user.Id, activity, userActivities);
+                    if (user != null)
+                    {
+                        AddEventActivity(activity, userActivities);
+                        update = true;
+                    }
                 }
-                bool update = false;
                 if (ActivitiesCharacterCache.Count > 0)
                 {
                     List<string> willRemove = [];
@@ -4929,7 +4933,7 @@ namespace Oshima.FunGame.OshimaServers.Service
             return builder.ToString().Trim();
         }
 
-        public static void AddEventActivity(long uid, Activity activity, EntityModuleConfig<Activity> userActivities)
+        public static void AddEventActivity(Activity activity, EntityModuleConfig<Activity> userActivities)
         {
             if (activity.Id == 7 && activity.Status == ActivityState.InProgress)
             {

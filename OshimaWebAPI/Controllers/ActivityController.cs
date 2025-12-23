@@ -214,7 +214,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
                 {
                     EntityModuleConfig<Activity> userActivities = new("activities", uid.ToString());
                     userActivities.LoadConfig();
-                    FunGameService.AddEventActivity(uid, activity, userActivities);
+                    FunGameService.AddEventActivity(activity, userActivities);
                     userActivities.SaveConfig();
                     return Ok($"{activity}");
                 }
@@ -241,7 +241,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
                     {
                         EntityModuleConfig<Activity> userActivities = new("activities", uid.ToString());
                         userActivities.LoadConfig();
-                        FunGameService.AddEventActivity(uid, activity, userActivities);
+                        FunGameService.AddEventActivity(activity, userActivities);
                         userActivities.SaveConfig();
                     }
                 }
