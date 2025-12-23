@@ -1,7 +1,12 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Milimoe.FunGame.Core.Api.Utility;
 using Milimoe.FunGame.Core.Entity;
+using Milimoe.FunGame.Core.Library.Constant;
+using Oshima.FunGame.OshimaModules.Items;
+using Oshima.FunGame.OshimaModules.Models;
+using Oshima.FunGame.OshimaServers.Service;
 
 namespace Oshima.FunGame.WebAPI.Controllers
 {
@@ -75,6 +80,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
         //    }
         //}
 
+        [Authorize(AuthenticationSchemes = "CustomBearer")]
         [HttpDelete("{id}")]
         public IActionResult RemoveActivity(long id)
         {
@@ -159,6 +165,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
         //    }
         //}
 
+        [Authorize(AuthenticationSchemes = "CustomBearer")]
         [HttpDelete("{id}/{questId}")]
         public IActionResult RemoveQuest(long id, long questId)
         {
@@ -188,6 +195,62 @@ namespace Oshima.FunGame.WebAPI.Controllers
             {
                 _logger.LogError(e, "Error: ");
                 return StatusCode(500, "删除任务时发生错误，请检查日志。");
+            }
+        }
+
+        [Authorize(AuthenticationSchemes = "CustomBearer")]
+        [HttpPut("{id}/user_{uid}")]
+        public IActionResult AddToUser(long id, long uid)
+        {
+            try
+            {
+                if (uid <= 0)
+                {
+                    return BadRequest("无效的用户编号。");
+                }
+                EntityModuleConfig<Activity> activities = new("activities", "activities");
+                activities.LoadConfig();
+                if (activities.Get(id.ToString()) is Activity activity)
+                {
+                    EntityModuleConfig<Activity> userActivities = new("activities", uid.ToString());
+                    userActivities.LoadConfig();
+                    FunGameService.AddEventActivity(uid, activity, userActivities);
+                    userActivities.SaveConfig();
+                    return Ok($"{activity}");
+                }
+                return NotFound($"活动编号 {id} 不存在。");
+            }
+            catch (Exception e)
+            {
+                _logger.LogError(e, "Error: ");
+                return StatusCode(500, "获取活动信息时发生错误，请检查日志。");
+            }
+        }
+
+        [Authorize(AuthenticationSchemes = "CustomBearer")]
+        [HttpPost("{id}/addusers")]
+        public IActionResult AddToUsers(long id)
+        {
+            try
+            {
+                EntityModuleConfig<Activity> activities = new("activities", "activities");
+                activities.LoadConfig();
+                foreach (long uid in FunGameConstant.UserIdAndUsername.Keys)
+                {
+                    if (activities.Get(id.ToString()) is Activity activity)
+                    {
+                        EntityModuleConfig<Activity> userActivities = new("activities", uid.ToString());
+                        userActivities.LoadConfig();
+                        FunGameService.AddEventActivity(uid, activity, userActivities);
+                        userActivities.SaveConfig();
+                    }
+                }
+                return Ok();
+            }
+            catch (Exception e)
+            {
+                _logger.LogError(e, "Error: ");
+                return StatusCode(500, "获取活动信息时发生错误，请检查日志。");
             }
         }
     }

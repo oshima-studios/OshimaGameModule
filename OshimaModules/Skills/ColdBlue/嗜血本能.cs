@@ -25,7 +25,7 @@ namespace Oshima.FunGame.OshimaModules.Skills
     {
         public override long Id => Skill.Id;
         public override string Name => Skill.Name;
-        public override string Description => $"{Duration} {GameplayEquilibriumConstant.InGameTime}内，攻击拥有标记的角色将不会回收标记，增强 [ 累积之压 ] 的最大生命值伤害 {最大生命值伤害 * 100:0.##}%，并获得 {吸血 * 100:0.##}% 吸血。";
+        public override string Description => $"{Duration} {GameplayEquilibriumConstant.InGameTime}内，增强 [ 累积之压 ] 的最大生命值伤害 {最大生命值伤害 * 100:0.##}%，并获得 {吸血 * 100:0.##}% 吸血。";
         public override bool Durative => true;
         public override double Duration => 25;
         public override DispelledType DispelledType => DispelledType.CannotBeDispelled;

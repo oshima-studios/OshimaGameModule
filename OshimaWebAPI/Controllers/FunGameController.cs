@@ -4505,7 +4505,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
 
                 EntityModuleConfig<Quest> quests = new("quests", userid.ToString());
                 quests.LoadConfig();
-                if (quests.Count > 0 && FunGameService.SettleQuest(user, quests))
+                if (quests.Count > 0 && FunGameService.SettleQuest(user, quests.Values))
                 {
                     quests.SaveConfig();
                 }
@@ -6160,6 +6160,10 @@ namespace Oshima.FunGame.WebAPI.Controllers
                     }
 
                     pc.Add("exploreTimes", exploreTimes);
+                    for (int useCount = 0; useCount < reduce; useCount++)
+                    {
+                        FunGameService.ActivitiesEventCache.Add("消耗探索许可");
+                    }
                     FunGameService.SetUserConfigAndReleaseSemaphoreSlim(userid, pc, user);
 
                     return (msg, exploreId);
@@ -6426,15 +6430,46 @@ namespace Oshima.FunGame.WebAPI.Controllers
         }
 
         [HttpGet("getevents")]
-        public string GetEvents([FromQuery] long? id = null)
+        public string GetEvents([FromQuery] long uid, [FromQuery] long? id = null)
         {
-            if (id != null)
+            try
             {
-                return FunGameService.GetEvent(id.Value);
+                PluginConfig pc = FunGameService.GetUserConfig(uid, out bool isTimeout);
+                if (isTimeout)
+                {
+                    return busy;
+                }
+
+                if (pc.Count > 0)
+                {
+                    User user = FunGameService.GetUser(pc);
+
+                    string msg = "";
+                    if (id != null)
+                    {
+                        msg = FunGameService.GetEvent(user, id.Value);
+                    }
+                    else
+                    {
+                        msg = FunGameService.GetEventCenter(user);
+                    }
+
+                    FunGameService.SetUserConfigButNotRelease(uid, pc, user);
+                    return msg;
+                }
+                else
+                {
+                    return noSaved;
+                }
             }
-            else
+            catch (Exception e)
             {
-                return FunGameService.GetEventCenter();
+                if (Logger.IsEnabled(Microsoft.Extensions.Logging.LogLevel.Error)) Logger.LogError(e, "Error: {e}", e);
+                return busy;
+            }
+            finally
+            {
+                FunGameService.ReleaseUserSemaphoreSlim(uid);
             }
         }
 
@@ -7913,6 +7948,10 @@ namespace Oshima.FunGame.WebAPI.Controllers
                             }
 
                             pc.Add("exploreTimes", exploreTimes);
+                            for (int useCount = 0; useCount < reduce; useCount++)
+                            {
+                                FunGameService.ActivitiesEventCache.Add("消耗探索许可");
+                            }
                         }
                     }
 
@@ -9169,71 +9208,6 @@ namespace Oshima.FunGame.WebAPI.Controllers
                 else
                 {
                     return $"温馨提醒：【创建存档】后获取运势可领取同款幸运物的收藏品，全部收集可兑换强大装备哦～";
-                }
-            }
-            catch (Exception e)
-            {
-                if (Logger.IsEnabled(Microsoft.Extensions.Logging.LogLevel.Error)) Logger.LogError(e, "Error: {e}", e);
-                return busy;
-            }
-            finally
-            {
-                FunGameService.ReleaseUserSemaphoreSlim(uid);
-            }
-        }
-
-        [HttpPost("receiveactivityawards")]
-        public string ReceiveActivityAwards([FromQuery] long uid = -1, [FromQuery] long aid = -1, [FromQuery] long qid = -1)
-        {
-            try
-            {
-                PluginConfig pc = FunGameService.GetUserConfig(uid, out bool isTimeout);
-                if (isTimeout)
-                {
-                    return busy;
-                }
-
-                string msg = "";
-                if (pc.Count > 0)
-                {
-                    User user = FunGameService.GetUser(pc);
-
-                    if (FunGameService.Activities.FirstOrDefault(a => a.Id == aid) is Activity activity)
-                    {
-                        if (activity.Status == ActivityState.InProgress || activity.Status == ActivityState.Ended)
-                        {
-                            if (activity.Quests.FirstOrDefault(q => q.Id == qid) is Quest quest)
-                            {
-                                if (quest.Status == QuestState.Completed)
-                                {
-                                    msg = "该任务未完成！";
-                                }
-                                else
-                                {
-
-                                }
-                            }
-                            else
-                            {
-                                msg = "没有指定的任务。";
-                            }
-                        }
-                        else
-                        {
-                            msg = "该活动不在可领取奖励的时间内。";
-                        }
-                    }
-                    else
-                    {
-                        msg = "没有指定的活动。";
-                    }
-
-                    FunGameService.SetUserConfigButNotRelease(uid, pc, user);
-                    return msg;
-                }
-                else
-                {
-                    return noSaved;
                 }
             }
             catch (Exception e)

@@ -48,10 +48,6 @@ namespace Oshima.FunGame.OshimaModules.Skills
                     IEnumerable<Effect> effects2 = character.Effects.Where(e => e is 嗜血本能特效);
                     if (effects2.FirstOrDefault() is 嗜血本能特效 e2)
                     {
-                        // 嗜血本能生效状态下，不会移除标记
-                    }
-                    else
-                    {
                         // 移除标记
                         enemy.Effects.Remove(e);
                     }

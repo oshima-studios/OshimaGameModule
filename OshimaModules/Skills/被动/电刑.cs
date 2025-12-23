@@ -27,7 +27,7 @@ namespace Oshima.FunGame.OshimaModules.Skills
         public override long Id => Skill.Id;
         public override string Name => Skill.Name;
         public override string Description => $"造成伤害时，标记目标 25 {GameplayEquilibriumConstant.InGameTime}并叠加 1 层数，当目标身上的电刑标记达到 3 层时，此次伤害提升 {伤害百分比 * 100:0.##}%。";
-        private double 伤害百分比 => Skill.Character != null ? 0.4 + Skill.Character.Level * 0.01 : 0;
+        private double 伤害百分比 => Skill.Character != null ? 0.3 + Skill.Character.Level * 0.005 : 0;
 
         public override double AlterActualDamageAfterCalculation(Character character, Character enemy, double damage, bool isNormalAttack, DamageType damageType, MagicType magicType, DamageResult damageResult, ref bool isEvaded, Dictionary<Effect, double> totalDamageBonus)
         {

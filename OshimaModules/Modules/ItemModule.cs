@@ -35,6 +35,9 @@ namespace Oshima.FunGame.OshimaModules
             {
                 return id switch
                 {
+                    (long)WeaponID.糖糖一周年纪念武器 => new 糖糖一周年纪念武器(),
+                    (long)ArmorID.糖糖一周年纪念防具 => new 糖糖一周年纪念防具(),
+                    (long)ShoesID.糖糖一周年纪念鞋子 => new 糖糖一周年纪念鞋子(),
                     (long)AccessoryID.攻击之爪10 => new 攻击之爪10(),
                     (long)AccessoryID.攻击之爪25 => new 攻击之爪25(),
                     (long)AccessoryID.攻击之爪40 => new 攻击之爪40(),
@@ -42,6 +45,8 @@ namespace Oshima.FunGame.OshimaModules
                     (long)AccessoryID.攻击之爪70 => new 攻击之爪70(),
                     (long)AccessoryID.攻击之爪85 => new 攻击之爪85(),
                     (long)AccessoryID.攻击之爪100 => new 攻击之爪100(),
+                    (long)AccessoryID.糖糖一周年纪念饰品1 => new 糖糖一周年纪念饰品1(),
+                    (long)AccessoryID.糖糖一周年纪念饰品2 => new 糖糖一周年纪念饰品2(),
                     (long)ConsumableID.小经验书 => new 小经验书(),
                     (long)ConsumableID.中经验书 => new 中经验书(),
                     (long)ConsumableID.大经验书 => new 大经验书(),

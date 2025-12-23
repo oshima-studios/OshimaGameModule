@@ -116,7 +116,7 @@ namespace Oshima.FunGame.OshimaServers
                 Controller.WriteLine("已重置所有人的今日运势");
                 Daily.ClearDaily();
                 // 刷新活动缓存
-                FunGameService.GetEventCenter();
+                FunGameService.GetEventCenter(null);
                 FunGameService.RefreshNotice();
                 FunGameService.PreRefreshStore();
             });
@@ -164,7 +164,7 @@ namespace Oshima.FunGame.OshimaServers
                     Controller.WriteLine("刷新市场");
                 });
                 // 刷新活动缓存
-                FunGameService.GetEventCenter();
+                FunGameService.GetEventCenter(null);
                 FunGameService.RefreshNotice();
             });
             TaskScheduler.Shared.AddRecurringTask("刷新boss", TimeSpan.FromHours(1), () =>
@@ -174,7 +174,7 @@ namespace Oshima.FunGame.OshimaServers
             }, true);
             TaskScheduler.Shared.AddRecurringTask("刷新活动缓存", TimeSpan.FromHours(4), () =>
             {
-                FunGameService.GetEventCenter();
+                FunGameService.GetEventCenter(null);
                 Controller.WriteLine("刷新活动缓存");
             }, true);
         }

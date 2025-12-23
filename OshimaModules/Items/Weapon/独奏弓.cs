@@ -7,7 +7,7 @@ namespace Oshima.FunGame.OshimaModules.Items
     [Obsolete("测试物品请勿使用")]
     public class 独奏弓 : Item
     {
-        public override long Id => 11999;
+        public override long Id => (long)WeaponID.独奏弓;
         public override string Name => "独奏弓";
         public override string Description => Skills.Passives.Count > 0 ? Skills.Passives.First().Description : "";
 
@@ -20,9 +20,9 @@ namespace Oshima.FunGame.OshimaModules.Items
 
     public class 独奏弓技能 : Skill
     {
-        public override long Id => 5999;
+        public override long Id => (long)WeaponID.独奏弓;
         public override string Name => "独奏弓";
-        public override string Description => $"增加角色 {攻击力加成:0.##} 点攻击力，减少普通攻击 {硬直时间减少:0.##} {GameplayEquilibriumConstant.InGameTime}硬直时间。";
+        public override string Description => string.Join("\r\n", Effects.Select(e => e.Description));
 
         private readonly double 攻击力加成 = 80;
         private readonly double 硬直时间减少 = 2;

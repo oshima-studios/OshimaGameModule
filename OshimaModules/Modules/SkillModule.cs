@@ -130,6 +130,11 @@ namespace Oshima.FunGame.OshimaModules
                     (long)PassiveID.电刑 => new 电刑(),
                     (long)PassiveID.黑暗收割 => new 黑暗收割(),
                     (long)ItemPassiveID.攻击之爪 => new 攻击之爪技能(),
+                    (long)ItemPassiveID.糖糖一周年纪念武器 => new 糖糖一周年纪念武器技能(),
+                    (long)ItemPassiveID.糖糖一周年纪念防具 => new 糖糖一周年纪念防具技能(),
+                    (long)ItemPassiveID.糖糖一周年纪念鞋子 => new 糖糖一周年纪念鞋子技能(),
+                    (long)ItemPassiveID.糖糖一周年纪念饰品1 => new 糖糖一周年纪念饰品技能1(),
+                    (long)ItemPassiveID.糖糖一周年纪念饰品2 => new 糖糖一周年纪念饰品技能2(),
                     (long)ItemActiveID.经验书 => new 经验书技能(),
                     (long)ItemActiveID.礼包 => new 礼包技能(),
                     _ => null

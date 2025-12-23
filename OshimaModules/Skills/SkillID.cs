@@ -419,6 +419,11 @@ namespace Oshima.FunGame.OshimaModules.Skills
     public enum ItemPassiveID : long
     {
         攻击之爪 = 5001,
+        糖糖一周年纪念武器 = 5002,
+        糖糖一周年纪念防具 = 5003,
+        糖糖一周年纪念鞋子 = 5004,
+        糖糖一周年纪念饰品1 = 5005,
+        糖糖一周年纪念饰品2 = 5006,
     }
 
     public enum ItemActiveID : long

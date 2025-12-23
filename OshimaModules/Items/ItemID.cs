@@ -1,5 +1,21 @@
 ﻿namespace Oshima.FunGame.OshimaModules.Items
 {
+    public enum WeaponID : long
+    {
+        糖糖一周年纪念武器 = 11001,
+        独奏弓 = 11002
+    }
+
+    public enum ArmorID : long
+    {
+        糖糖一周年纪念防具 = 12001
+    }
+
+    public enum ShoesID : long
+    {
+        糖糖一周年纪念鞋子 = 13001
+    }
+
     public enum AccessoryID : long
     {
         攻击之爪10 = 14001,
@@ -9,6 +25,8 @@
         攻击之爪70 = 14005,
         攻击之爪85 = 14006,
         攻击之爪100 = 14007,
+        糖糖一周年纪念饰品1 = 14008,
+        糖糖一周年纪念饰品2 = 14009
     }
 
     public enum ConsumableID : long

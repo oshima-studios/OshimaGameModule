@@ -2469,7 +2469,7 @@ namespace Oshima.FunGame.WebAPI.Services
 
                 if (e.Detail == "活动" || e.Detail == "活动中心")
                 {
-                    string msg = Controller.GetEvents();
+                    string msg = Controller.GetEvents(uid);
                     if (msg != "")
                     {
                         await SendAsync(e, "活动中心", string.Join("\r\n", msg));
@@ -2483,7 +2483,7 @@ namespace Oshima.FunGame.WebAPI.Services
                     string msg = "";
                     if (int.TryParse(detail, out int eid))
                     {
-                        msg = Controller.GetEvents(eid);
+                        msg = Controller.GetEvents(uid, eid);
                         if (msg.Trim() != "")
                         {
                             await SendAsync(e, "查活动", msg);

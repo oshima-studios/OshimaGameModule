@@ -1,9 +1,7 @@
 using System.Text;
-using System.Xml.Linq;
 using Milimoe.FunGame.Core.Api.Transmittal;
 using Milimoe.FunGame.Core.Api.Utility;
 using Milimoe.FunGame.Core.Entity;
-using Milimoe.FunGame.Core.Interface.Entity;
 using Milimoe.FunGame.Core.Library.Constant;
 using Oshima.Core.Constant;
 using Oshima.FunGame.OshimaModules.Characters;
@@ -64,7 +62,8 @@ namespace Oshima.FunGame.OshimaServers.Service
 
             Dictionary<string, Item> exItems = Factory.GetGameModuleInstances<Item>(OshimaGameModuleConstant.General, OshimaGameModuleConstant.Item);
             FunGameConstant.Equipment.AddRange(exItems.Values.Where(i => (int)i.ItemType >= 0 && (int)i.ItemType < 5));
-            FunGameConstant.Equipment.AddRange([new 攻击之爪10(), new 攻击之爪25(), new 攻击之爪40(), new 攻击之爪55(), new 攻击之爪70(), new 攻击之爪85()]);
+            FunGameConstant.Equipment.AddRange([new 攻击之爪10(), new 攻击之爪25(), new 攻击之爪40(), new 攻击之爪55(), new 攻击之爪70(), new 攻击之爪85(), new 糖糖一周年纪念武器(),
+                new 糖糖一周年纪念防具(), new 糖糖一周年纪念鞋子(), new 糖糖一周年纪念饰品1(), new 糖糖一周年纪念饰品2()]);
 
             FunGameConstant.Items.AddRange(exItems.Values.Where(i => (int)i.ItemType > 4));
             FunGameConstant.Items.AddRange([new 小经验书(), new 中经验书(), new 大经验书(), new 升华之印(), new 流光之印(), new 永恒之印(), new 技能卷轴(), new 智慧之果(), new 奥术符文(), new 混沌之核(),
@@ -77,7 +76,8 @@ namespace Oshima.FunGame.OshimaServers.Service
                 new 青石(), new 莲花(), new 陶罐(), new 海灵芝(), new 四叶草(), new 露珠(), new 茉莉花(), new 绿萝(), new 檀木扇(), new 鸟蛋(), new 竹笋(), new 晶核(), new 手工围巾(), new 柳条篮(), new 风筝(), new 羽毛(), new 发光髓(),
                 new 紫罗兰(), new 松果(), new 电气水晶(), new 薄荷(), new 竹节(), new 铁砧(), new 冰雾花(), new 海草(), new 磐石(), new 砂砾(), new 铁甲贝壳(), new 蜥蜴尾巴(), new 古老钟摆(), new 枯藤()]);
 
-            FunGameConstant.NotForSaleItems.AddRange([new 一周年纪念礼包(), new 一周年纪念套装(), new 毕业礼包()]);
+            FunGameConstant.NotForSaleItems.AddRange([new 一周年纪念礼包(), new 一周年纪念套装(), new 毕业礼包(), new 糖糖一周年纪念武器(), new 糖糖一周年纪念防具(), new 糖糖一周年纪念鞋子(),
+                new 糖糖一周年纪念饰品1(), new 糖糖一周年纪念饰品2()]);
 
             FunGameConstant.AllItems.AddRange(FunGameConstant.Equipment);
             FunGameConstant.AllItems.AddRange(FunGameConstant.Items);
@@ -981,13 +981,19 @@ namespace Oshima.FunGame.OshimaServers.Service
         {
             if (sell)
             {
-                item.IsSellable = false;
-                item.NextSellableTime = DateTimeUtility.GetTradableTime(nextSell);
+                if (item.IsSellable || (!item.IsSellable && item.NextSellableTime != DateTime.MinValue))
+                {
+                    item.IsSellable = false;
+                    item.NextSellableTime = DateTimeUtility.GetTradableTime(nextSell);
+                }
             }
             if (trade)
             {
-                item.IsTradable = false;
-                item.NextTradableTime = DateTimeUtility.GetTradableTime(nextTrade);
+                if (item.IsTradable || (!item.IsTradable && item.NextTradableTime != DateTime.MinValue))
+                {
+                    item.IsTradable = false;
+                    item.NextTradableTime = DateTimeUtility.GetTradableTime(nextTrade);
+                }
             }
         }
 
@@ -1988,10 +1994,10 @@ namespace Oshima.FunGame.OshimaServers.Service
             }
         }
 
-        public static bool SettleQuest(User user, EntityModuleConfig<Quest> quests)
+        public static bool SettleQuest(User user, IEnumerable<Quest> quests, Activity? activity = null)
         {
             bool result = false;
-            IEnumerable<Quest> workingQuests = quests.Values.Where(q => q.QuestType == QuestType.Continuous && q.Status == QuestState.InProgress);
+            IEnumerable<Quest> workingQuests = quests.Where(q => q.QuestType == QuestType.Continuous && q.Status == QuestState.InProgress);
             foreach (Quest quest in workingQuests)
             {
                 if (quest.StartTime.HasValue && quest.StartTime.Value.AddMinutes(quest.EstimatedMinutes) <= DateTime.Now)
@@ -2008,7 +2014,7 @@ namespace Oshima.FunGame.OshimaServers.Service
                 foreach (string item in itemsLoop)
                 {
                     IEnumerable<string> items = value.Where(str => str == item);
-                    IEnumerable<Quest> progressiveQuests = quests.Values.Where(q => q.QuestType == QuestType.Progressive && q.Status == QuestState.InProgress);
+                    IEnumerable<Quest> progressiveQuests = quests.Where(q => q.QuestType == QuestType.Progressive && q.Status == QuestState.InProgress);
                     foreach (Quest quest in progressiveQuests)
                     {
                         if (quest.NeedyExploreItemName == item)
@@ -2026,7 +2032,7 @@ namespace Oshima.FunGame.OshimaServers.Service
                 }
                 value.RemoveAll(willRemove.Contains);
             }
-            IEnumerable<Quest> finishQuests = quests.Values.Where(q => q.Status == QuestState.Completed);
+            IEnumerable<Quest> finishQuests = quests.Where(q => q.Status == QuestState.Completed && !q.Global);
             foreach (Quest quest in finishQuests)
             {
                 quest.Status = QuestState.Settled;
@@ -2052,8 +2058,10 @@ namespace Oshima.FunGame.OshimaServers.Service
                         }
                     }
                 }
-                TaskUtility.NewTask(async () => await AnonymousServer.PushMessageToClients(user.AutoKey, $"FunGame Web API 推送：你的任务【{quest.Name}】已结算，" +
-                    $"获得奖励：【{quest.AwardsString}】!"));
+                string notice = $"FunGame Web API 推送：你的任务【{quest.Name}】已结算，获得奖励：【{quest.AwardsString}】!";
+                TaskUtility.NewTask(async () => await AnonymousServer.PushMessageToClients(user.AutoKey, notice));
+                AddNotice(user.Id, notice);
+                activity?.RegisterAwardedUser(user.Id, quest.Id);
                 result = true;
             }
             return result;
@@ -2432,7 +2440,7 @@ namespace Oshima.FunGame.OshimaServers.Service
             await Task.CompletedTask;
         }
 
-        public static string GetEventCenter()
+        public static string GetEventCenter(User? user)
         {
             EntityModuleConfig<Activity> activities = new("activities", "activities");
             activities.LoadConfig();
@@ -2440,12 +2448,19 @@ namespace Oshima.FunGame.OshimaServers.Service
             {
                 return "当前没有任何活动，敬请期待。";
             }
+            EntityModuleConfig<Activity> userActivities = new("activities", user?.Id.ToString() ?? "");
+            if (user != null)
+            {
+                userActivities.LoadConfig();
+            }
             lock (Activities)
             {
                 Activities.Clear();
                 foreach (Activity activity in activities.Values)
                 {
+                    activity.UpdateState();
                     Activities.Add(activity);
+                    if (user != null) AddEventActivity(user.Id, activity, userActivities);
                 }
                 bool update = false;
                 if (ActivitiesCharacterCache.Count > 0)
@@ -2457,6 +2472,8 @@ namespace Oshima.FunGame.OshimaServers.Service
                     {
                         IEnumerable<string> items = ActivitiesCharacterCache.Where(str => str == item);
                         IEnumerable<Quest> quests = activityList.SelectMany(a => a.Quests).Where(q => q.Status == QuestState.InProgress);
+                        IEnumerable<Quest> userQuests = userActivities.Values.Where(a => a.Status == ActivityState.InProgress).SelectMany(a => a.Quests).Where(q => q.Status == QuestState.InProgress);
+                        quests = [.. quests, .. userQuests];
                         foreach (Quest quest in quests)
                         {
                             if (quest.NeedyExploreCharacterName == item)
@@ -2483,6 +2500,8 @@ namespace Oshima.FunGame.OshimaServers.Service
                     {
                         IEnumerable<string> items = ActivitiesItemCache.Where(str => str == item);
                         IEnumerable<Quest> quests = activityList.SelectMany(a => a.Quests).Where(q => q.Status == QuestState.InProgress);
+                        IEnumerable<Quest> userQuests = userActivities.Values.Where(a => a.Status == ActivityState.InProgress).SelectMany(a => a.Quests).Where(q => q.Status == QuestState.InProgress);
+                        quests = [.. quests, .. userQuests];
                         foreach (Quest quest in quests)
                         {
                             if (quest.NeedyExploreItemName == item)
@@ -2509,6 +2528,8 @@ namespace Oshima.FunGame.OshimaServers.Service
                     {
                         IEnumerable<string> items = ActivitiesEventCache.Where(str => str == item);
                         IEnumerable<Quest> quests = activityList.SelectMany(a => a.Quests).Where(q => q.Status == QuestState.InProgress);
+                        IEnumerable<Quest> userQuests = userActivities.Values.Where(a => a.Status == ActivityState.InProgress).SelectMany(a => a.Quests).Where(q => q.Status == QuestState.InProgress);
+                        quests = [.. quests, .. userQuests];
                         foreach (Quest quest in quests)
                         {
                             if (quest.NeedyExploreEventName == item)
@@ -2530,9 +2551,14 @@ namespace Oshima.FunGame.OshimaServers.Service
                 {
                     foreach (Activity activity in Activities)
                     {
+                        if (user != null && (activity.Status == ActivityState.InProgress || activity.Status == ActivityState.Ended))
+                        {
+                            SettleQuest(user, activity.Quests, activity);
+                        }
                         activities.Add(activity.Id.ToString(), activity);
                     }
                     activities.SaveConfig();
+                    userActivities.SaveConfig();
                 }
             }
             StringBuilder builder = new();
@@ -2554,9 +2580,9 @@ namespace Oshima.FunGame.OshimaServers.Service
             return builder.ToString().Trim();
         }
 
-        public static string GetEvents(ActivityState status = ActivityState.InProgress)
+        public static string GetEvents(User? user, ActivityState status = ActivityState.InProgress)
         {
-            GetEventCenter();
+            GetEventCenter(user);
             IEnumerable<Activity> filteredActivities = Activities.Where(a => a.Status == status);
             if (!filteredActivities.Any())
             {
@@ -2567,12 +2593,23 @@ namespace Oshima.FunGame.OshimaServers.Service
                 $"请使用【查活动+活动序号】指令查询活动详细信息。";
         }
 
-        public static string GetEvent(long id)
+        public static string GetEvent(User? user, long id)
         {
-            GetEventCenter();
+            GetEventCenter(user);
             if (Activities.FirstOrDefault(a => a.Id == id) is Activity activity)
             {
-                return $"{activity}";
+                string result = activity.ToString();
+                if (user != null)
+                {
+                    EntityModuleConfig<Activity> userActivities = new("activities", user.Id.ToString());
+                    userActivities.LoadConfig();
+                    if (userActivities.Values.FirstOrDefault(a => a.Id == id) is Activity userActivity)
+                    {
+                        if (result != "") result += "\r\n";
+                        result += userActivity.ToString(true, true);
+                    }
+                }
+                return result;
             }
             return "该活动不存在。";
         }
@@ -4892,6 +4929,47 @@ namespace Oshima.FunGame.OshimaServers.Service
             return builder.ToString().Trim();
         }
 
+        public static void AddEventActivity(long uid, Activity activity, EntityModuleConfig<Activity> userActivities)
+        {
+            if (activity.Id == 7 && activity.Status == ActivityState.InProgress)
+            {
+                // 为用户生成或更新活动专属任务
+                Activity newActivity;
+                if (userActivities.Values.FirstOrDefault(a => a.Id == activity.Id) is Activity userActivity)
+                {
+                    newActivity = userActivity;
+                }
+                else
+                {
+                    newActivity = new(activity.Id, "糖糖一周年纪念活动", new DateTime(2025, 12, 25, 4, 0, 0), new DateTime(2026, 1, 4, 3, 59, 59))
+                    {
+                        Description = "在活动期间，累计消耗 360 个探索许可即可领取【一周年纪念礼包】，打开后获得金币、钻石奖励以及【一周年纪念套装】（包含武器粉糖雾蝶 * 1，防具糖之誓约 * 1，鞋子蜜步流心 * 1，饰品回忆糖纸 * 1，饰品蜂糖蜜酿 * 1）！自2024年12月进入上线前的测试阶段起，糖糖已经陪我们走过了第一个年头，放眼未来，糖糖将为我们带来更多快乐。"
+                    };
+                }
+                if (!newActivity.Quests.Any(q => q.Id == 1))
+                {
+                    Quest newQuest = new()
+                    {
+                        Id = 1,
+                        Name = "糖糖一周年纪念",
+                        Description = "消耗 360 个探索许可（即参与探索玩法、秘境挑战）。",
+                        NeedyExploreEventName = "消耗探索许可",
+                        CreditsAward = 10000,
+                        Awards = [
+                            new 一周年纪念礼包()
+                        ],
+                        AwardsCount = new() {
+                            { "一周年纪念礼包", 1 }
+                        },
+                        QuestType = QuestType.Progressive,
+                        MaxProgress = 360
+                    };
+                    newActivity.Quests.Add(newQuest);
+                    userActivities.Add(newActivity.Id.ToString(), newActivity);
+                }
+            }
+        }
+
         public static void RefreshNotice()
         {
             Notices.LoadConfig();
@@ -4956,7 +5034,7 @@ namespace Oshima.FunGame.OshimaServers.Service
                         // 任务结算
                         EntityModuleConfig<Quest> quests = new("quests", user.Id.ToString());
                         quests.LoadConfig();
-                        if (quests.Count > 0 && SettleQuest(user, quests))
+                        if (quests.Count > 0 && SettleQuest(user, quests.Values))
                         {
                             quests.SaveConfig();
                             updateQuest = true;
@@ -5185,7 +5263,7 @@ namespace Oshima.FunGame.OshimaServers.Service
             {
                 pc.Add("logon", true);
                 AddNotice(user.Id, "欢迎回到筽祀牻大陆！请发送【帮助】获取更多玩法指令哦～");
-                AddNotice(user.Id, GetEvents());
+                AddNotice(user.Id, GetEvents(user));
                 foreach (NoticeModel notice in Notices.Values)
                 {
                     if (now >= notice.StartTime && now <= notice.EndTime)

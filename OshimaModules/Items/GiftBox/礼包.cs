@@ -228,6 +228,10 @@ namespace Oshima.FunGame.OshimaModules.Items
 
         public 一周年纪念礼包(User? user = null, int remainUseTimes = 1) : base(ItemType.GiftBox)
         {
+            Price = 0;
+            IsSellable = false;
+            IsTradable = false;
+            IsLock = true;
             User = user;
             礼包.Init(this, new()
             {
@@ -243,15 +247,23 @@ namespace Oshima.FunGame.OshimaModules.Items
         public override long Id => (long)GiftBoxID.一周年纪念套装;
         public override string Name => "一周年纪念套装";
         public override string Description => Skills.Active?.Description ?? "";
-        public override QualityType QualityType => QualityType.White;
+        public override QualityType QualityType => QualityType.Gold;
         public Dictionary<string, int> Gifts { get; set; } = [];
 
         public 一周年纪念套装(User? user = null, int remainUseTimes = 1) : base(ItemType.GiftBox)
         {
+            Price = 0;
+            IsSellable = false;
+            IsTradable = false;
+            IsLock = true;
             User = user;
             礼包.Init(this, new()
             {
-                { General.GameplayEquilibriumConstant.InGameCurrency, 50000 }
+                { new 糖糖一周年纪念武器().Name, 1 },
+                { new 糖糖一周年纪念防具().Name, 1 },
+                { new 糖糖一周年纪念鞋子().Name, 1 },
+                { new 糖糖一周年纪念饰品1().Name, 1 },
+                { new 糖糖一周年纪念饰品2().Name, 1 }
             }, remainUseTimes);
         }
     }
