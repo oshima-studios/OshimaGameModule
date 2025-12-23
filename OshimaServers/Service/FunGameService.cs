@@ -2463,8 +2463,7 @@ namespace Oshima.FunGame.OshimaServers.Service
                     Activities.Add(activity);
                     if (user != null)
                     {
-                        AddEventActivity(activity, userActivities);
-                        update = true;
+                        update = AddEventActivity(activity, userActivities);
                     }
                 }
                 if (ActivitiesCharacterCache.Count > 0)
@@ -4933,7 +4932,7 @@ namespace Oshima.FunGame.OshimaServers.Service
             return builder.ToString().Trim();
         }
 
-        public static void AddEventActivity(Activity activity, EntityModuleConfig<Activity> userActivities)
+        public static bool AddEventActivity(Activity activity, EntityModuleConfig<Activity> userActivities)
         {
             if (activity.Id == 7 && activity.Status == ActivityState.InProgress)
             {
@@ -4970,8 +4969,10 @@ namespace Oshima.FunGame.OshimaServers.Service
                     };
                     newActivity.Quests.Add(newQuest);
                     userActivities.Add(newActivity.Id.ToString(), newActivity);
+                    return true;
                 }
             }
+            return false;
         }
 
         public static void RefreshNotice()
