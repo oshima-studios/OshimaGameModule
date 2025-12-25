@@ -6162,6 +6162,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
                     pc.Add("exploreTimes", exploreTimes);
                     for (int useCount = 0; useCount < reduce; useCount++)
                     {
+                        FunGameService.AddExploreEventCache(user.Id, "消耗探索许可");
                         FunGameService.ActivitiesEventCache.Add("消耗探索许可");
                     }
                     FunGameService.SetUserConfigAndReleaseSemaphoreSlim(userid, pc, user);
@@ -7950,6 +7951,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
                             pc.Add("exploreTimes", exploreTimes);
                             for (int useCount = 0; useCount < reduce; useCount++)
                             {
+                                FunGameService.AddExploreEventCache(user.Id, "消耗探索许可");
                                 FunGameService.ActivitiesEventCache.Add("消耗探索许可");
                             }
                         }
