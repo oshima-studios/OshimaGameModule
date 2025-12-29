@@ -11,7 +11,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
 {
     [ApiController]
     [Route("[controller]")]
-    public class OshimaController : ControllerBase
+    public class OshimaController(SQLHelper sql) : ControllerBase
     {
         [HttpGet("saints")]
         public Dictionary<string, object> GetSaints(long group, bool reverse)
@@ -22,18 +22,14 @@ namespace Oshima.FunGame.WebAPI.Controllers
             {
                 try
                 {
-                    SQLHelper? sql = Statics.RunningPlugin.Controller.SQLHelper;
-                    if (sql != null)
+                    sql.Script = "select qq UID, '-' as Times, SC, Remark, Record from saints where `group` = @group order by sc" + (!reverse ? " desc" : "");
+                    sql.Parameters.Add("group", group);
+                    sql.ExecuteDataSet();
+                    if (sql.Success)
                     {
-                        sql.Script = "select qq UID, '-' as Times, SC, Remark, Record from saints where `group` = @group order by sc" + (!reverse ? " desc" : "");
-                        sql.Parameters.Add("group", group);
-                        sql.ExecuteDataSet();
-                        if (sql.Success)
-                        {
-                            List<Dictionary<string, object>> data = Utility.DataSetConverter.ConvertFirstTableToDictionary(sql.DataSet);
-                            dict["data"] = data;
-                            return dict;
-                        }
+                        List<Dictionary<string, object>> data = Utility.DataSetConverter.ConvertFirstTableToDictionary(sql.DataSet);
+                        dict["data"] = data;
+                        return dict;
                     }
                 }
                 catch (Exception e)
@@ -46,7 +42,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
             dict["msg"] = "无法调用此接口。原因：与 SQL 服务器通信失败。";
             return dict;
         }
-        
+
         [HttpGet("ratings")]
         public Dictionary<string, object> GetRatings()
         {

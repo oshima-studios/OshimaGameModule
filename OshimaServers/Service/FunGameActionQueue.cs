@@ -342,7 +342,7 @@ namespace Oshima.FunGame.OshimaServers.Service
                                         $"，击杀来自{actionQueue.GetTeam(actionQueue.LastRound.Actor)}\r\n" : "");
                                 if (showAllRound)
                                 {
-                                    Character[] showHPMP = [actionQueue.LastRound.Actor, .. actionQueue.LastRound.Targets];
+                                    Character[] showHPMP = [actionQueue.LastRound.Actor, .. actionQueue.LastRound.Targets.Values.SelectMany(c => c)];
                                     foreach (Character character in showHPMP)
                                     {
                                         roundMsg += $"[ {character} ] 生命值：{character.HP:0.##}/{character.MaxHP:0.##} / 魔法值：{character.MP:0.##}/{character.MaxMP:0.##}\r\n";

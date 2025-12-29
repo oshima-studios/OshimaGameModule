@@ -78,7 +78,7 @@ namespace Oshima.FunGame.OshimaModules.Skills
         {
             if (!caster.Effects.Contains(this))
             {
-                GamingQueue?.LastRound.ApplyEffects.Add(caster, [EffectType]);
+                GamingQueue?.LastRound.AddApplyEffects(caster, EffectType);
                 首次伤害 = true;
                 破隐一击 = false;
                 RemainDuration = Duration;

@@ -47,7 +47,7 @@ namespace Oshima.FunGame.OshimaModules.Effects.SkillEffects
                 e.OnEffectGained(target);
                 e.EffectType = EffectType.Slow;
                 e.IsDebuff = true;
-                GamingQueue?.LastRound.ApplyEffects.TryAdd(target, [e.EffectType]);
+                GamingQueue?.LastRound.AddApplyEffects(target, e.EffectType);
                 GamingQueue?.ChangeCharacterHardnessTime(target, 0.3, true, false);
             }
         }

@@ -98,7 +98,7 @@ namespace Oshima.FunGame.OshimaModules.Skills
                 e2.EffectType = EffectType.DefenseBoost;
                 e2.Source = caster;
                 e2.OnEffectGained(target);
-                GamingQueue?.LastRound.ApplyEffects.TryAdd(target, [EffectType.DefenseBoost]);
+                GamingQueue?.LastRound.AddApplyEffects(target, EffectType.DefenseBoost);
             }
         }
     }

@@ -44,7 +44,7 @@ namespace Oshima.FunGame.OshimaModules.Effects.SkillEffects
                 气绝 e = new(Skill, enemy, caster, _durative, _duration + _levelGrowth * (Level - 1), Convert.ToInt32(_durationTurn + _levelGrowth * (Level - 1)), _isPercentage, _durationDamage, _durationDamagePercent);
                 enemy.Effects.Add(e);
                 e.OnEffectGained(enemy);
-                GamingQueue?.LastRound.ApplyEffects.TryAdd(enemy, [e.EffectType]);
+                GamingQueue?.LastRound.AddApplyEffects(enemy, e.EffectType);
             }
         }
     }

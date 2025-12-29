@@ -82,7 +82,7 @@ namespace Oshima.FunGame.OshimaModules.Effects.SkillEffects
                             break;
                         }
                 }
-                GamingQueue?.LastRound.ApplyEffects.TryAdd(target, [EffectType]);
+                GamingQueue?.LastRound.AddApplyEffects(target, EffectType);
             }
         }
     }

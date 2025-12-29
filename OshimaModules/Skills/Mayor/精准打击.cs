@@ -66,7 +66,7 @@ namespace Oshima.FunGame.OshimaModules.Skills
                 caster.Effects.Add(this);
                 OnEffectGained(caster);
             }
-            GamingQueue?.LastRound.ApplyEffects.TryAdd(caster, [EffectType.CritBoost, EffectType.PenetrationBoost]);
+            GamingQueue?.LastRound.AddApplyEffects(caster, EffectType.CritBoost, EffectType.PenetrationBoost);
         }
     }
 }

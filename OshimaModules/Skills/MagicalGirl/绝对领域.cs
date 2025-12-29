@@ -82,7 +82,7 @@ namespace Oshima.FunGame.OshimaModules.Skills
                 caster.Effects.Add(this);
                 OnEffectGained(caster);
             }
-            GamingQueue?.LastRound.ApplyEffects.TryAdd(caster, [EffectType.Invulnerable]);
+            GamingQueue?.LastRound.AddApplyEffects(caster, EffectType.Invulnerable);
         }
     }
 }

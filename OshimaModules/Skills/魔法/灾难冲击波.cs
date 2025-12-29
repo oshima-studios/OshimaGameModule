@@ -92,7 +92,7 @@ namespace Oshima.FunGame.OshimaModules.Skills
                 e.EffectType = EffectType.MagicResistBreak;
                 e.Source = caster;
                 e.OnEffectGained(target);
-                GamingQueue?.LastRound.ApplyEffects.TryAdd(target, [e.EffectType]);
+                GamingQueue?.LastRound.AddApplyEffects(target, e.EffectType);
             }
         }
     }

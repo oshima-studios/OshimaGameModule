@@ -220,12 +220,6 @@ namespace Oshima.FunGame.WebAPI
                 builder.Services.AddScoped<FunGameController>();
                 builder.Services.AddScoped<QQController>();
                 builder.Services.AddScoped<TestController>();
-                builder.Services.AddTransient(provider =>
-                {
-                    SQLHelper? sql = Factory.OpenFactory.GetSQLHelper();
-                    if (sql != null) return sql;
-                    throw new Milimoe.FunGame.SQLServiceException();
-                });
                 // 使用 Configure<BotConfig> 从配置源绑定
                 builder.Services.Configure<BotConfig>(builder.Configuration.GetSection("Bot"));
             }

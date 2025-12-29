@@ -66,7 +66,7 @@ namespace Oshima.FunGame.OshimaModules.Effects.SkillEffects
                     e.DispelledType = DispelledType;
                     e.ParentEffect = ParentEffect;
                 }
-                GamingQueue?.LastRound.ApplyEffects.TryAdd(target, [e.EffectType]);
+                GamingQueue?.LastRound.AddApplyEffects(target, e.EffectType);
             }
         }
     }

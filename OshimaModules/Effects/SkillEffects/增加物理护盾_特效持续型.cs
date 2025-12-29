@@ -41,7 +41,7 @@ namespace Oshima.FunGame.OshimaModules.Effects.SkillEffects
                 target.Effects.Add(e);
                 e.OnEffectGained(target);
                 e.DispelledType = DispelledType;
-                GamingQueue?.LastRound.ApplyEffects.TryAdd(target, [EffectType.Shield]);
+                GamingQueue?.LastRound.AddApplyEffects(target, EffectType.Shield);
             }
         }
     }

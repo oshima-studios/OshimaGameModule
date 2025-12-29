@@ -158,11 +158,11 @@ namespace Oshima.FunGame.OshimaModules.Skills
                 {
                     double 回复的生命 = 生命值回复 * caster.MaxHP;
                     HealToTarget(caster, caster, 回复的生命);
-                    GamingQueue?.LastRound.ApplyEffects.TryAdd(caster, [EffectType.Lifesteal]);
+                    GamingQueue?.LastRound.AddApplyEffects(caster, EffectType.Lifesteal);
                 }
                 else if (caster.PrimaryAttribute == PrimaryAttribute.INT)
                 {
-                    GamingQueue?.LastRound.ApplyEffects.TryAdd(caster, [EffectType.DamageBoost]);
+                    GamingQueue?.LastRound.AddApplyEffects(caster, EffectType.DamageBoost);
                 }
             }
         }

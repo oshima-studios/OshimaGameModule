@@ -105,7 +105,7 @@ namespace Oshima.FunGame.OshimaModules.Skills
                 target.Effects.Add(e2);
                 e2.OnEffectGained(target);
                 e2.IsDebuff = true;
-                GamingQueue?.LastRound.ApplyEffects.TryAdd(target, [EffectType.Slow]);
+                GamingQueue?.LastRound.AddApplyEffects(target, EffectType.Slow);
             }
         }
     }

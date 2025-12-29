@@ -49,7 +49,7 @@ namespace Oshima.FunGame.OshimaModules.Skills
                 caster.Effects.Add(this);
                 OnEffectGained(caster);
             }
-            GamingQueue?.LastRound.ApplyEffects.TryAdd(caster, [EffectType.Lifesteal]);
+            GamingQueue?.LastRound.AddApplyEffects(caster, EffectType.Lifesteal);
         }
     }
 }

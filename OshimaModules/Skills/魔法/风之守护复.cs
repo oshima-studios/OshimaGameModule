@@ -112,7 +112,7 @@ namespace Oshima.FunGame.OshimaModules.Skills
                 e2.EffectType = EffectType.EvadeBoost;
                 e2.Source = caster;
                 e2.OnEffectGained(target);
-                GamingQueue?.LastRound.ApplyEffects.TryAdd(target, [EffectType.CritBoost, EffectType.EvadeBoost]);
+                GamingQueue?.LastRound.AddApplyEffects(target, EffectType.CritBoost, EffectType.EvadeBoost);
             }
         }
     }
