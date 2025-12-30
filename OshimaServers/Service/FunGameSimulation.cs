@@ -121,12 +121,14 @@ namespace Oshima.FunGame.OshimaServers.Service
                         c.Level = clevel;
                         c.NormalAttack.Level = mlevel;
                         FunGameService.AddCharacterSkills(c, 1, slevel, slevel);
-                        Skill 疾风步 = new 疾风步(c)
+                        foreach (Skill skillLoop in FunGameConstant.Skills.Where(s => s is not 疾走).OrderBy(o => Random.Shared.Next()).Take(3))
                         {
-                            Level = slevel
-                        };
-                        c.Skills.Add(疾风步);
-                        foreach (Skill skillLoop in FunGameConstant.CommonPassiveSkills)
+                            Skill skill = skillLoop.Copy();
+                            skill.Character = c;
+                            skill.Level = slevel;
+                            c.Skills.Add(skill);
+                        }
+                        foreach (Skill skillLoop in FunGameConstant.CommonPassiveSkills.OrderBy(o => Random.Shared.Next()).Take(3))
                         {
                             Skill passive = skillLoop.Copy();
                             passive.Character = c;
@@ -343,7 +345,7 @@ namespace Oshima.FunGame.OshimaServers.Service
                                 break;
                             }
 
-                            actionQueue.DisplayQueue();
+                            if (isWeb) actionQueue.DisplayQueue();
                             WriteLine("");
                         }
 
@@ -440,7 +442,6 @@ namespace Oshima.FunGame.OshimaServers.Service
                         mvpBuilder.AppendLine($"总承受伤害：{stats.TotalTakenDamage:0.##} / 总承受物理伤害：{stats.TotalTakenPhysicalDamage:0.##} / 总承受魔法伤害：{stats.TotalTakenMagicDamage:0.##}");
                         if (stats.TotalTrueDamage > 0 || stats.TotalTakenTrueDamage > 0) mvpBuilder.AppendLine($"总计真实伤害：{stats.TotalTrueDamage:0.##} / 总承受真实伤害：{stats.TotalTakenTrueDamage:0.##}");
                         mvpBuilder.AppendLine($"每秒伤害：{stats.DamagePerSecond:0.##} / 每回合伤害：{stats.DamagePerTurn:0.##}");
-                        mvpBuilder.Append($"{mvp.GetInfo()}");
                     }
 
                     int top = isWeb ? actionQueue.CharacterStatistics.Count : 0; // 回执多少个角色的统计信息

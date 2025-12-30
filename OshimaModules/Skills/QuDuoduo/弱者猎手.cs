@@ -41,7 +41,7 @@ namespace Oshima.FunGame.OshimaModules.Skills
         public override void AlterSelectListBeforeAction(Character character, List<Character> enemys, List<Character> teammates, List<Skill> skills, Dictionary<Character, int> continuousKilling, Dictionary<Character, int> earnedMoney)
         {
             猎手标记.Clear();
-            IEnumerable<Character> list = [.. enemys.OrderBy(e => e.HP / e.MaxHP)];
+            IEnumerable<Character> list = [.. enemys.Where(e => e.HP > 0).OrderBy(e => e.HP / e.MaxHP)];
             if (list.Any())
             {
                 Character first = list.First();
@@ -61,7 +61,7 @@ namespace Oshima.FunGame.OshimaModules.Skills
         {
             foreach (Character enemy in enemys)
             {
-                if (Skill.Character != null && ((enemy.HP / enemy.MaxHP) < (Skill.Character.HP / Skill.Character.MaxHP)))
+                if (Skill.Character != null && enemy.HP > 0 && (enemy.HP / enemy.MaxHP) < (Skill.Character.HP / Skill.Character.MaxHP))
                 {
                     猎手标记.Add(enemy);
                 }

@@ -57,7 +57,7 @@ namespace Oshima.FunGame.OshimaModules.Skills
                 RecordCharacterApplyEffects(character, EffectType.Haste);
 
                 // 检查是否达到阈值
-                if (character.ActionCoefficient * 100 >= 行动系数阈值)
+                if (character.ActionCoefficient * 100 >= 行动系数阈值 && !冷却中)
                 {
                     Skill.Enable = false;
                     Skill.CurrentCD = 冷却时间;

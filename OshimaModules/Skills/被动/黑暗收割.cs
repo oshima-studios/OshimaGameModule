@@ -58,8 +58,11 @@ namespace Oshima.FunGame.OshimaModules.Skills
             if (death == Skill.Character && 当前灵魂数量 > 0)
             {
                 int lost = 当前灵魂数量 / 2;
-                当前灵魂数量 -= lost;
-                WriteLine($"[ {death} ] 因死亡损失了 [ {lost} ] 个灵魂！");
+                if (lost > 0)
+                {
+                    当前灵魂数量 -= lost;
+                    WriteLine($"[ {death} ] 因死亡损失了 [ {lost} ] 个灵魂！");
+                }
             }
         }
 

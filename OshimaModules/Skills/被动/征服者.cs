@@ -47,21 +47,14 @@ namespace Oshima.FunGame.OshimaModules.Skills
                 {
                     是否是满层伤害 = true;
                     是否是叠加伤害 = true;
-                    WriteLine($"[ {character} ] 发动了征服者！");
-                    DamageToEnemy(character, enemy, DamageType.True, magicType, 真实伤害 * 层数);
                     WriteLine($"[ {character} ] 发动了征服者的满层效果！");
                     DamageToEnemy(character, enemy, DamageType.True, magicType, 满层伤害);
                     ClearExPrimaryAttribute(character);
                     层数 = 0;
+                    允许叠层 = false;
                 }
                 if (!是否是满层伤害 && !是否是叠加伤害 && 层数 < 4)
                 {
-                    if (层数 > 0 && enemy.HP > 0)
-                    {
-                        是否是叠加伤害 = true;
-                        WriteLine($"[ {character} ] 发动了征服者！");
-                        DamageToEnemy(character, enemy, DamageType.True, magicType, 真实伤害 * 层数);
-                    }
                     if (允许叠层)
                     {
                         允许叠层 = false;
@@ -82,6 +75,12 @@ namespace Oshima.FunGame.OshimaModules.Skills
                                 break;
                         }
                         WriteLine($"[ {character} ] 的征服者层数：{层数}，获得了 {累计增加:0.##} 点核心属性（{CharacterSet.GetPrimaryAttributeName(核心属性)}）加成。");
+                        if (层数 > 0 && enemy.HP > 0)
+                        {
+                            是否是叠加伤害 = true;
+                            WriteLine($"[ {character} ] 发动了征服者！");
+                            DamageToEnemy(character, enemy, DamageType.True, magicType, 真实伤害 * 层数);
+                        }
                     }
                 }
             }
