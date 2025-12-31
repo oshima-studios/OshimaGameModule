@@ -1,5 +1,6 @@
 ﻿using Milimoe.FunGame.Core.Entity;
 using Milimoe.FunGame.Core.Library.Constant;
+using Milimoe.FunGame.Core.Model;
 
 namespace Oshima.FunGame.OshimaModules.Skills
 {
@@ -25,7 +26,7 @@ namespace Oshima.FunGame.OshimaModules.Skills
     {
         public override long Id => Skill.Id;
         public override string Name => Skill.Name;
-        public override string Description => $"本回合内大幅提升移动距离。";
+        public override string Description => $"本回合内大幅提升移动距离，并附赠一次战技的决策点配额。移动距离提升：{移动距离提升} 格。";
         public override string DispelDescription => "";
         public override EffectType EffectType => EffectType.Haste;
         public override bool Durative => false;
@@ -45,27 +46,34 @@ namespace Oshima.FunGame.OshimaModules.Skills
                 };
             }
         }
+        private int 本次提升 = 0;
 
         public override void OnEffectGained(Character character)
         {
             Skill.IsInEffect = true;
-            character.ExMOV += 移动距离提升;
+            本次提升 = 移动距离提升;
+            character.ExMOV += 本次提升;
         }
 
         public override void OnEffectLost(Character character)
         {
             Skill.IsInEffect = false;
-            character.ExMOV -= 移动距离提升;
+            character.ExMOV -= 本次提升;
         }
 
         public override void OnSkillCasted(Character caster, List<Character> targets, Dictionary<string, object> others)
         {
+            本次提升 = 0;
             if (!caster.Effects.Contains(this))
             {
                 GamingQueue?.LastRound.AddApplyEffects(caster, EffectType);
                 RemainDurationTurn = DurationTurn;
                 caster.Effects.Add(this);
                 OnEffectGained(caster);
+            }
+            if (GamingQueue != null && GamingQueue.CharacterDecisionPoints.TryGetValue(caster, out DecisionPoints? dp) && dp != null)
+            {
+                dp.AddTempActionQuota(CharacterActionType.CastSkill);
             }
         }
     }

@@ -1378,7 +1378,6 @@ namespace Oshima.FunGame.OshimaServers.Service
                                     Item newItem = new 魔法卡礼包(type, box.Gifts[name]);
                                     AddItemToUserInventory(user, newItem, false, true);
                                 }
-                                break;
                             }
                         }
                     }

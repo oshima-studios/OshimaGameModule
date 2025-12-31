@@ -26,8 +26,8 @@ namespace Oshima.FunGame.OshimaModules.Skills
     {
         public override long Id => Skill.Id;
         public override string Name => Skill.Name;
-        public override string Description => $"造成伤害时会标记目标，攻击具有标记的敌人将对其造成眩晕 1 回合，并回收标记，额外对该角色造成 {系数 * 100:0.##}% 最大生命值的物理伤害。";
-        public override string DispelDescription => "被驱散性：眩晕需强驱散，标记可弱驱散";
+        public override string Description => $"造成伤害时会标记目标，攻击具有标记的敌人将对其造成战斗不能 1 回合，并回收标记，额外对该角色造成 {系数 * 100:0.##}% 最大生命值的物理伤害。";
+        public override string DispelDescription => "被驱散性：战斗不能需强驱散，标记可弱驱散";
 
         public double 系数 { get; set; } = 0.12;
         private bool 是否是嵌套伤害 = false;
@@ -45,23 +45,19 @@ namespace Oshima.FunGame.OshimaModules.Skills
                 IEnumerable<Effect> effects = enemy.Effects.Where(e => e is 累积之压标记 && e.Source == character);
                 if (effects.FirstOrDefault() is 累积之压标记 e)
                 {
-                    IEnumerable<Effect> effects2 = character.Effects.Where(e => e is 嗜血本能特效);
-                    if (effects2.FirstOrDefault() is 嗜血本能特效 e2)
-                    {
-                        // 移除标记
-                        enemy.Effects.Remove(e);
-                    }
+                    // 移除标记
+                    enemy.Effects.Remove(e);
                     double 额外伤害 = enemy.MaxHP * 系数;
-                    WriteLine($"[ {character} ] 发动了累积之压！将对 [ {enemy} ] 造成眩晕和额外伤害！");
-                    // 眩晕
-                    IEnumerable<Effect> effects3 = enemy.Effects.Where(e => e is 眩晕 && e.Skill == Skill);
+                    WriteLine($"[ {character} ] 发动了累积之压！将对 [ {enemy} ] 造成战斗不能和额外伤害！");
+                    // 战斗不能
+                    IEnumerable<Effect> effects3 = enemy.Effects.Where(e => e is 战斗不能 && e.Skill == Skill);
                     if (effects3.Any())
                     {
                         effects3.First().RemainDurationTurn++;
                     }
                     else
                     {
-                        眩晕 e3 = new(Skill, character, false, 0, 1);
+                        战斗不能 e3 = new(Skill, character, false, 0, 1);
                         enemy.Effects.Add(e3);
                         e3.OnEffectGained(enemy);
                     }

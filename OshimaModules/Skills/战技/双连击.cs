@@ -28,7 +28,7 @@ namespace Oshima.FunGame.OshimaModules.Skills
     {
         public override long Id => Skill.Id;
         public override string Name => Skill.Name;
-        public override string Description => $"基于普通攻击的目标选择器对目标发起 2 次普通攻击。若该回合已使用过普通攻击，则只会发起 1 次普通攻击；使用该技能后，该回合不再允许普通攻击。伤害特效可叠加；不受 [ 攻击受限 ] 状态的限制。";
+        public override string Description => $"基于普通攻击的目标选择器对目标发起 2 次普通攻击。双连击会占用 1 次普通攻击的决策点配额，当配额不足时，仅能发起 1 次普通攻击。伤害特效可叠加；不受 [ 攻击受限 ] 状态的限制。";
 
         public 双连击特效(Skill skill) : base(skill)
         {
@@ -39,14 +39,14 @@ namespace Oshima.FunGame.OshimaModules.Skills
         {
             if (GamingQueue != null)
             {
-                bool hasAttacked = false;
+                bool checkQuota = true;
                 if (GamingQueue.CharacterDecisionPoints.TryGetValue(caster, out DecisionPoints? dp) && dp != null)
                 {
-                    hasAttacked = dp.ActionTypes.Contains(CharacterActionType.NormalAttack);
-                    dp.ActionTypes.Add(CharacterActionType.NormalAttack);
+                    checkQuota = dp.CheckActionTypeQuota(CharacterActionType.NormalAttack);
+                    dp.AddActionType(CharacterActionType.NormalAttack, false);
                 }
                 caster.NormalAttack.Attack(GamingQueue, caster, targets);
-                if (!hasAttacked)
+                if (checkQuota)
                 {
                     caster.NormalAttack.Attack(GamingQueue, caster, targets);
                 }

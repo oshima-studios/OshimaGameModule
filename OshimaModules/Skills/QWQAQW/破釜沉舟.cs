@@ -34,8 +34,9 @@ namespace Oshima.FunGame.OshimaModules.Skills
         public override long Id => Skill.Id;
         public override string Name => Skill.Name;
         public override string Description => $"最大生命值减少 20%。破釜沉舟：生命值高于 40% 时，受到额外的 [ {高于40额外伤害下限}～{高于40额外伤害上限}% ] 伤害，获得 [ 累计所受伤害的 {高于40的加成下限}～{高于40的加成上限}%  ] 伤害加成；生命值低于等于 40% 时，不会受到额外的伤害，并且获得 [ 累计受到的伤害 {低于40的加成下限}～{低于40的加成上限}% ] 的伤害加成。" +
-            $"在没有受到任何伤害的时候，将获得 {常规伤害加成 * 100:0.##}% 伤害加成。" + (累计受到的伤害 > 0 ? $"（当前累计受到伤害：{累计受到的伤害:0.##}）" : "");
+            $"在没有受到任何伤害的时候，将获得 {常规伤害加成 * 100:0.##}% 伤害加成。通过累计受到伤害发动破釜沉舟时，目标的闪避检定获得 40% 的减值。" + (累计受到的伤害 > 0 ? $"（当前累计受到伤害：{累计受到的伤害:0.##}）" : "");
 
+        private bool 已通过累计受到伤害发动破釜沉舟 = false;
         private double 累计受到的伤害 = 0;
         private double 这次的伤害加成 = 0;
         private double 受到伤害之前的HP = 0;
@@ -71,6 +72,7 @@ namespace Oshima.FunGame.OshimaModules.Skills
         {
             if (character == Skill.Character)
             {
+                已通过累计受到伤害发动破釜沉舟 = 累计受到的伤害 != 0;
                 这次的伤害加成 = 伤害加成(damage);
                 WriteLine($"[ {character} ] 发动了破釜沉舟，获得了 {这次的伤害加成:0.##} 点伤害加成！");
                 累计受到的伤害 = 0;
@@ -105,6 +107,21 @@ namespace Oshima.FunGame.OshimaModules.Skills
                     WriteLine($"[ {enemy} ] 的破釜沉舟触发，保护了自己不进入死亡！！");
                 }
             }
+        }
+
+        public override bool BeforeEvadeCheck(Character actor, Character enemy, ref double throwingBonus)
+        {
+            if (已通过累计受到伤害发动破釜沉舟 && actor == Skill.Character)
+            {
+                已通过累计受到伤害发动破釜沉舟 = false;
+                throwingBonus -= 0.4;
+            }
+            return true;
+        }
+
+        public override void OnTurnEnd(Character character)
+        {
+            已通过累计受到伤害发动破釜沉舟 = false;
         }
     }
 }
