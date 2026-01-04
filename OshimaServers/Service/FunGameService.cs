@@ -46,7 +46,7 @@ namespace Oshima.FunGame.OshimaServers.Service
             FunGameConstant.Characters.Add(new dddovo());
             FunGameConstant.Characters.Add(new Quduoduo());
 
-            FunGameConstant.Skills.AddRange([new 疾风步(), new 疾走(), new 助威(), new 挑拨(), new 绞丝棍(), new 金刚击(), new 旋风轮(), new 双连击()]);
+            FunGameConstant.Skills.AddRange([new 疾风步(), new 疾走(), new 助威(), new 挑拨(), new 绞丝棍(), new 金刚击(), new 旋风轮(), new 双连击(), new 绝影(), new 胧(), new 魔眼()]);
 
             FunGameConstant.SuperSkills.AddRange([new 嗜血本能(), new 平衡强化(), new 绝对领域(), new 精准打击(), new 三重叠加(), new 变幻之心(), new 力量爆发(), new 能量毁灭(), new 血之狂欢(), new 迅捷之势(), new 天赐之力(), new 魔法涌流()]);
 

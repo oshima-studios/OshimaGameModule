@@ -33,9 +33,9 @@ namespace Oshima.FunGame.WebAPI.Controllers
 
         [AllowAnonymous]
         [HttpGet("test")]
-        public async Task<List<string>> GetTest([FromQuery] bool? isweb = null, [FromQuery] bool? isteam = null, [FromQuery] bool? showall = null, [FromQuery] int? maxRespawnTimesMix = null)
+        public async Task<List<string>> GetTest([FromQuery] bool? isweb = null, [FromQuery] bool? isteam = null, [FromQuery] bool? showall = null, [FromQuery] int? maxRespawnTimesMix = null, [FromQuery] bool? hasMap = null)
         {
-            return await FunGameSimulation.StartSimulationGame(false, isweb ?? true, isteam ?? false, showall ?? false, maxRespawnTimesMix ?? 1);
+            return await FunGameSimulation.StartSimulationGame(false, isweb ?? true, isteam ?? false, showall ?? false, maxRespawnTimesMix ?? 1, false, hasMap ?? false);
         }
 
         [AllowAnonymous]

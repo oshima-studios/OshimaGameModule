@@ -397,6 +397,29 @@ namespace Oshima.FunGame.WebAPI.Services
                     return result;
                 }
 
+                if (e.Detail.StartsWith("个人地图模拟", StringComparison.CurrentCultureIgnoreCase))
+                {
+                    e.UseNotice = false;
+                    if (!FunGameSimulation)
+                    {
+                        FunGameSimulation = true;
+                        List<string> msgs = await Controller.GetTest(false, maxRespawnTimesMix: 0, hasMap: true);
+                        List<string> real = MergeMessages(msgs);
+                        int count = 1;
+                        foreach (string msg in real)
+                        {
+                            await SendAsync(e, "筽祀牻", msg.Trim(), msgSeq: count++);
+                            if (count != real.Count) await Task.Delay(5500);
+                        }
+                        FunGameSimulation = false;
+                    }
+                    else
+                    {
+                        await SendAsync(e, "筽祀牻", "游戏正在模拟中，请勿重复请求！");
+                    }
+                    return result;
+                }
+
                 if (e.Detail.StartsWith("混战模拟"))
                 {
                     e.UseNotice = false;
@@ -440,6 +463,29 @@ namespace Oshima.FunGame.WebAPI.Services
                     {
                         FunGameSimulation = true;
                         List<string> msgs = await Controller.GetTest(false, true);
+                        List<string> real = MergeMessages(msgs);
+                        int count = 1;
+                        foreach (string msg in real)
+                        {
+                            await SendAsync(e, "筽祀牻", msg.Trim(), msgSeq: count++);
+                            if (count != real.Count) await Task.Delay(5500);
+                        }
+                        FunGameSimulation = false;
+                    }
+                    else
+                    {
+                        await SendAsync(e, "筽祀牻", "游戏正在模拟中，请勿重复请求！");
+                    }
+                    return result;
+                }
+
+                if (e.Detail.StartsWith("团队地图模拟", StringComparison.CurrentCultureIgnoreCase))
+                {
+                    e.UseNotice = false;
+                    if (!FunGameSimulation)
+                    {
+                        FunGameSimulation = true;
+                        List<string> msgs = await Controller.GetTest(false, true, hasMap: true);
                         List<string> real = MergeMessages(msgs);
                         int count = 1;
                         foreach (string msg in real)

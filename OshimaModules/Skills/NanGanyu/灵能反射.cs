@@ -1,5 +1,6 @@
 ﻿using Milimoe.FunGame.Core.Entity;
 using Milimoe.FunGame.Core.Library.Constant;
+using Milimoe.FunGame.Core.Model;
 
 namespace Oshima.FunGame.OshimaModules.Skills
 {
@@ -24,12 +25,12 @@ namespace Oshima.FunGame.OshimaModules.Skills
     {
         public override long Id => Skill.Id;
         public override string Name => Skill.Name;
-        public override string Description => $"每释放 {触发硬直次数:0.##} 次魔法才会触发硬直时间，且魔法伤害命中时基于 15% 智力 [ {获得额外能量值:0.##} ] 获得额外能量值，并减少所有技能 2 {GameplayEquilibriumConstant.InGameTime}冷却时间。";
+        public override string Description => $"每释放 {触发硬直次数:0.##} 次魔法才会触发硬直时间，且魔法伤害命中时基于 8% 智力 [ {获得额外能量值:0.##} ] 获得额外能量值，并减少所有技能 2 {GameplayEquilibriumConstant.InGameTime}冷却时间。";
 
         public bool 是否支持普攻 { get; set; } = false;
         public int 触发硬直次数 { get; set; } = 2;
         public int 释放次数 { get; set; } = 0;
-        public double 获得额外能量值 => 0.15 * Skill.Character?.INT ?? 0;
+        public double 获得额外能量值 => 0.08 * Skill.Character?.INT ?? 0;
 
         public override void AfterDamageCalculation(Character character, Character enemy, double damage, double actualDamage, bool isNormalAttack, DamageType damageType, MagicType magicType, DamageResult damageResult)
         {
@@ -81,6 +82,11 @@ namespace Oshima.FunGame.OshimaModules.Skills
                 baseHardnessTime = 0;
                 isCheckProtected = false;
                 WriteLine($"[ {character} ] 发动了灵能反射，消除了硬直时间！！");
+                if (GamingQueue != null && GamingQueue.CharacterDecisionPoints.TryGetValue(character, out DecisionPoints? dp) && dp != null)
+                {
+                    dp.ActionsTaken = 1;
+                    dp.ActionsHardnessTime.Clear();
+                }
             }
             else
             {
@@ -91,6 +97,11 @@ namespace Oshima.FunGame.OshimaModules.Skills
                     baseHardnessTime = 0;
                     isCheckProtected = false;
                     WriteLine($"[ {character} ] 发动了灵能反射，消除了硬直时间！！");
+                    if (GamingQueue != null && GamingQueue.CharacterDecisionPoints.TryGetValue(character, out DecisionPoints? dp) && dp != null)
+                    {
+                        dp.ActionsTaken = 1;
+                        dp.ActionsHardnessTime.Clear();
+                    }
                     e.剩余持续次数--;
                     if (e.剩余持续次数 == 0)
                     {

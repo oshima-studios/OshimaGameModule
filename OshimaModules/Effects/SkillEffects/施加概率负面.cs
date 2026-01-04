@@ -71,8 +71,13 @@ namespace Oshima.FunGame.OshimaModules.Effects.SkillEffects
                         e = new 愤怒(Skill, caster, target, _durative, duration, durationTurn);
                         break;
                     case EffectType.Delay:
-                        WriteLine($"[ {caster} ] 对 [ {target} ] 造成了迟滞！持续时间：{持续时间}！");
-                        e = new 迟滞(Skill, caster, _durative, duration, durationTurn);
+                        double healingReductionPercent = 0.3;
+                        if (_args.Length > 0 && _args[0] is double healingReduce)
+                        {
+                            healingReductionPercent = healingReduce;
+                        }
+                        WriteLine($"[ {caster} ] 对 [ {target} ] 造成了迟滞！普通攻击和技能的硬直时间、当前行动等待时间延长了 {healingReductionPercent * 100:0.##}%！持续时间：{持续时间}！");
+                        e = new 迟滞(Skill, caster, _durative, duration, durationTurn, healingReductionPercent);
                         break;
                     case EffectType.Stun:
                         WriteLine($"[ {caster} ] 对 [ {target} ] 造成了眩晕！持续时间：{持续时间}！");
@@ -166,8 +171,13 @@ namespace Oshima.FunGame.OshimaModules.Effects.SkillEffects
                     _description = "愤怒：进入行动受限状态，失控并随机行动，行动回合内仅能对嘲讽者发起普通攻击。";
                     break;
                 case EffectType.Delay:
+                    double healingReductionPercent = 0.3;
+                    if (_args.Length > 0 && _args[0] is double healingReduce)
+                    {
+                        healingReductionPercent = healingReduce;
+                    }
                     _dispelledType = DispelledType.Weak;
-                    _description = "迟滞：延长普通攻击和技能的硬直时间、当前行动等待时间。";
+                    _description = $"迟滞：普通攻击和技能的硬直时间、当前行动等待时间延长 {healingReductionPercent * 100:0.##}%。";
                     break;
                 case EffectType.Stun:
                     _dispelledType = DispelledType.Strong;

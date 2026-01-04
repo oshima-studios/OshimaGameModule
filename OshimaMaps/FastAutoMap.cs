@@ -1,5 +1,6 @@
 ﻿using Milimoe.FunGame.Core.Interface.Base;
 using Milimoe.FunGame.Core.Library.Common.Addon;
+using Milimoe.FunGame.Core.Model;
 using Oshima.Core.Constant;
 
 namespace Oshima.FunGame.OshimaMaps
@@ -14,11 +15,11 @@ namespace Oshima.FunGame.OshimaMaps
 
         public override string Author => OshimaGameModuleConstant.Author;
 
-        public override int Length => 6;
+        public override int Length => 9;
 
-        public override int Width => 6;
+        public override int Width => 9;
 
-        public override int Height => 3;
+        public override int Height => 1;
 
         public override float Size => 6;
 
@@ -26,7 +27,18 @@ namespace Oshima.FunGame.OshimaMaps
         {
             GameMap map = new FastAutoMap();
             map.Load();
+
+            if (queue is GamingQueue gq)
+            {
+                gq.WriteLine($"地图 {map.Name} 已加载。");
+            }
+
             return map;
+        }
+
+        protected override void AfterTimeElapsed(ref double timeToReduce)
+        {
+
         }
     }
 }
