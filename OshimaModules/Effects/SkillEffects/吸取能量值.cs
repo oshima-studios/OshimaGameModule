@@ -1,5 +1,6 @@
 ﻿using Milimoe.FunGame.Core.Api.Utility;
 using Milimoe.FunGame.Core.Entity;
+using Milimoe.FunGame.Core.Library.Common.Addon;
 using Oshima.FunGame.OshimaModules.Skills;
 
 namespace Oshima.FunGame.OshimaModules.Effects.SkillEffects
@@ -26,7 +27,7 @@ namespace Oshima.FunGame.OshimaModules.Effects.SkillEffects
             this.转化百分比 = Calculation.PercentageCheck(转化百分比);
         }
 
-        public override void OnSkillCasted(Character caster, List<Character> targets, Dictionary<string, object> others)
+        public override async Task OnSkillCasted(Character caster, List<Character> targets, List<Grid> grids, Dictionary<string, object> others)
         {
             double total = 0;
             foreach (Character target in targets)

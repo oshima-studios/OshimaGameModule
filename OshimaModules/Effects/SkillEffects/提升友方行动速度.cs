@@ -1,4 +1,5 @@
 ﻿using Milimoe.FunGame.Core.Entity;
+using Milimoe.FunGame.Core.Library.Common.Addon;
 using Milimoe.FunGame.Core.Library.Constant;
 using Oshima.FunGame.OshimaModules.Effects.OpenEffects;
 using Oshima.FunGame.OshimaModules.Skills;
@@ -29,7 +30,7 @@ namespace Oshima.FunGame.OshimaModules.Effects.SkillEffects
             _durationTurn = durationTurn;
         }
 
-        public override void OnSkillCasted(Character caster, List<Character> targets, Dictionary<string, object> others)
+        public override async Task OnSkillCasted(Character caster, List<Character> targets, List<Grid> grids, Dictionary<string, object> others)
         {
             foreach (Character target in targets)
             {

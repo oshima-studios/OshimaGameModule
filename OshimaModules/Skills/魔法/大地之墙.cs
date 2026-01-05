@@ -1,4 +1,5 @@
 ﻿using Milimoe.FunGame.Core.Entity;
+using Milimoe.FunGame.Core.Library.Common.Addon;
 using Milimoe.FunGame.Core.Library.Constant;
 using Oshima.FunGame.OshimaModules.Effects.PassiveEffects;
 using Oshima.FunGame.OshimaModules.Effects.SkillEffects;
@@ -111,7 +112,7 @@ namespace Oshima.FunGame.OshimaModules.Skills
             }
         }
 
-        public override void OnSkillCasted(Character caster, List<Character> targets, Dictionary<string, object> others)
+        public override async Task OnSkillCasted(Character caster, List<Character> targets, List<Grid> grids, Dictionary<string, object> others)
         {
             _targets = targets;
             foreach (Character target in targets)

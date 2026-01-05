@@ -1,4 +1,5 @@
 ﻿using Milimoe.FunGame.Core.Entity;
+using Milimoe.FunGame.Core.Library.Common.Addon;
 
 namespace Oshima.FunGame.OshimaModules.Effects.SkillEffects
 {
@@ -13,11 +14,11 @@ namespace Oshima.FunGame.OshimaModules.Effects.SkillEffects
             GamingQueue = skill.GamingQueue;
         }
 
-        public override void OnSkillCasted(Character caster, List<Character> targets, Dictionary<string, object> others)
+        public override async Task OnSkillCasted(Character caster, List<Character> targets, List<Grid> grids, Dictionary<string, object> others)
         {
             foreach (Character target in targets)
             {
-                GamingQueue?.InterruptCastingAsync(target, caster);
+                InterruptCasting(target, caster);
             }
         }
     }

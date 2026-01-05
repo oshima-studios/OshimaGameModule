@@ -1,4 +1,5 @@
 ﻿using Milimoe.FunGame.Core.Entity;
+using Milimoe.FunGame.Core.Library.Common.Addon;
 using Milimoe.FunGame.Core.Library.Constant;
 using Oshima.FunGame.OshimaModules.Skills;
 
@@ -21,7 +22,7 @@ namespace Oshima.FunGame.OshimaModules.Effects.SkillEffects
             this.基础护盾等级成长 = 基础护盾等级成长;
         }
 
-        public override void OnSkillCasted(Character caster, List<Character> targets, Dictionary<string, object> others)
+        public override async Task OnSkillCasted(Character caster, List<Character> targets, List<Grid> grids, Dictionary<string, object> others)
         {
             foreach (Character target in targets)
             {

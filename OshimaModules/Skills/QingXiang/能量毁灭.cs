@@ -1,4 +1,5 @@
 ﻿using Milimoe.FunGame.Core.Entity;
+using Milimoe.FunGame.Core.Library.Common.Addon;
 using Milimoe.FunGame.Core.Library.Constant;
 
 namespace Oshima.FunGame.OshimaModules.Skills
@@ -42,7 +43,7 @@ namespace Oshima.FunGame.OshimaModules.Skills
         private double 智力伤害 => 智力系数 * Skill.Character?.INT ?? 0;
         private double 能量系数 => 1 * Level;
 
-        public override void OnSkillCasted(Character caster, List<Character> targets, Dictionary<string, object> others)
+        public override async Task OnSkillCasted(Character caster, List<Character> targets, List<Grid> grids, Dictionary<string, object> others)
         {
             foreach (Character c in targets)
             {

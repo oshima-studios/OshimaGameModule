@@ -1,4 +1,5 @@
 ﻿using Milimoe.FunGame.Core.Entity;
+using Milimoe.FunGame.Core.Library.Common.Addon;
 using Milimoe.FunGame.Core.Library.Constant;
 using Oshima.FunGame.OshimaModules.Effects.SkillEffects;
 
@@ -40,12 +41,8 @@ namespace Oshima.FunGame.OshimaModules.Skills
             {
                 return Level switch
                 {
-                    3 => 2,
-                    4 => 2,
-                    5 => 2,
-                    6 => 3,
-                    7 => 3,
-                    8 => 3,
+                    3 or 4 or 5 => 2,
+                    6 or 7 or 8 => 3,
                     _ => 1
                 };
             }
@@ -56,12 +53,14 @@ namespace Oshima.FunGame.OshimaModules.Skills
             GamingQueue = skill.GamingQueue;
         }
 
-        public override void OnSkillCasted(Character caster, List<Character> targets, Dictionary<string, object> others)
+        public override async Task OnSkillCasted(Character caster, List<Character> targets, List<Grid> grids, Dictionary<string, object> others)
         {
-            new 施加免疫(Skill, ImmuneType.Magical, false, 0, 实际持续时间).OnSkillCasted(caster, targets, others);
+            Effect effect = new 施加免疫(Skill, ImmuneType.Magical, false, 0, 实际持续时间);
+            await effect.OnSkillCasted(caster, targets, grids, others);
             if (Level > 4)
             {
-                new 施加免疫(Skill, ImmuneType.Skilled, false, 0, 1).OnSkillCasted(caster, targets, others);
+                effect = new 施加免疫(Skill, ImmuneType.Skilled, false, 0, 1);
+                await effect.OnSkillCasted(caster, targets, grids, others);
             }
         }
     }

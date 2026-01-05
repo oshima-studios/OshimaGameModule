@@ -8,7 +8,7 @@ namespace Oshima.FunGame.OshimaModules.Effects.PassiveEffects
     {
         public override long Id => (long)PassiveEffectID.持续性强驱散;
         public override string Name => "持续性强驱散";
-        public override string Description => $"此角色正在被持续性强驱散。来自：[ {Source} ] 的 [ {Skill.Name} ]";
+        public override string Description => $"此角色正在被持续性强驱散。无法保护吟唱动作。来自：[ {Source} ] 的 [ {Skill.Name} ]";
         public override EffectType EffectType => EffectType.StrongDispelling;
         public override DispelType DispelType => DispelType.DurativeStrong;
         public override Character Source => _sourceCharacter;
