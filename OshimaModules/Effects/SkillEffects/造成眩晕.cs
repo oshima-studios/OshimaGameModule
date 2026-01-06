@@ -12,6 +12,8 @@ namespace Oshima.FunGame.OshimaModules.Effects.SkillEffects
         public override string Name => Skill.Name;
         public override string Description => $"对{Skill.TargetDescription()}造成眩晕 {眩晕时间}。";
         public override DispelledType DispelledType => DispelledType.Strong;
+        public override EffectType EffectType => EffectType.Stun;
+        public override bool ExemptDuration => true;
 
         private string 眩晕时间 => _durative && _duration > 0 ? 实际眩晕时间 + $" {GameplayEquilibriumConstant.InGameTime}" : (!_durative && _durationTurn > 0 ? 实际眩晕时间 + " 回合" : $"0 {GameplayEquilibriumConstant.InGameTime}");
         private double 实际眩晕时间 => _durative && _duration > 0 ? _duration + _levelGrowth * (Level - 1) : (!_durative && _durationTurn > 0 ? _durationTurn + _levelGrowth * (Level - 1) : 0);

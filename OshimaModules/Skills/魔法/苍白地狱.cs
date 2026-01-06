@@ -10,7 +10,7 @@ namespace Oshima.FunGame.OshimaModules.Skills
         public override string Name => "苍白地狱";
         public override string Description => Effects.Count > 0 ? Effects.First().Description : "";
         public override double MPCost => Level > 0 ? 45 + (55 * (Level - 1)) : 45;
-        public override double CD => 40;
+        public override double CD => 35;
         public override double CastTime => 9;
         public override double HardnessTime { get; set; } = 3;
         public override int CanSelectTargetCount => 3;

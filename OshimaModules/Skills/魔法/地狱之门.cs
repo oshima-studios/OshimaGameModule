@@ -10,8 +10,9 @@ namespace Oshima.FunGame.OshimaModules.Skills
         public override string Name => "地狱之门";
         public override string Description => string.Join("", Effects.Select(e => e.Description));
         public override string DispelDescription => Effects.Count > 0 ? Effects.First(e => e is 施加概率负面).DispelDescription : "";
+        public override string ExemptionDescription => Effects.Count > 0 ? Effects.First(e => e is 施加概率负面).ExemptionDescription : "";
         public override double MPCost => Level > 0 ? 75 + (60 * (Level - 1)) : 75;
-        public override double CD => Level > 0 ? 65 + (0.8 * (Level - 1)) : 65;
+        public override double CD => Level > 0 ? 30 + (0.8 * (Level - 1)) : 30;
         public override double CastTime => 3;
         public override double HardnessTime { get; set; } = 8;
         public override int CanSelectTargetCount

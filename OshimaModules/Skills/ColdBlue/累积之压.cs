@@ -14,6 +14,7 @@ namespace Oshima.FunGame.OshimaModules.Skills
         public 累积之压(Character? character = null) : base(SkillType.Passive, character)
         {
             Effects.Add(new 累积之压特效(this));
+            ExemptionDescription = SkillSet.GetExemptionDescription(EffectType.Cripple);
         }
 
         public override IEnumerable<Effect> AddPassiveEffectToCharacter()

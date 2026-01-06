@@ -10,6 +10,7 @@ namespace Oshima.FunGame.OshimaModules.Skills
         public override string Name => "反魔法领域";
         public override string Description => Effects.Count > 0 ? string.Join("\r\n", Effects.Select(e => e.Description)) : "";
         public override string DispelDescription => Effects.Count > 0 ? Effects.First().DispelDescription : "";
+        public override string ExemptionDescription => Effects.Count > 0 ? Effects.First().ExemptionDescription : "";
         public override double MPCost
         {
             get
@@ -26,7 +27,7 @@ namespace Oshima.FunGame.OshimaModules.Skills
                 };
             }
         }
-        public override double CD => Level > 0 ? 90 - (2 * (Level - 1)) : 75;
+        public override double CD => Level > 0 ? 55 - (2 * (Level - 1)) : 55;
         public override double CastTime => Level > 0 ? 5 + (0.5 * (Level - 1)) : 5;
         public override double HardnessTime { get; set; } = 5;
         public override int CanSelectTargetCount

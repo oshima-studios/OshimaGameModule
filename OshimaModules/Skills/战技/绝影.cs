@@ -10,9 +10,13 @@ namespace Oshima.FunGame.OshimaModules.Skills
         public override string Name => "绝影";
         public override string Description => string.Join("", Effects.Select(e => e.Description));
         public override string DispelDescription => Effects.Count > 0 ? Effects.First(e => e is 施加概率负面).DispelDescription : "";
+        public override string ExemptionDescription => Effects.Count > 0 ? Effects.First(e => e is 施加概率负面).ExemptionDescription : "";
         public override double EPCost => 60;
         public override double CD => 18;
         public override double HardnessTime { get; set; } = 7;
+        public override int CanSelectTargetRange => 4;
+        public override bool IsNonDirectional => true;
+        public override SkillRangeType SkillRangeType => SkillRangeType.LinePass;
 
         public 绝影(Character? character = null) : base(SkillType.Skill, character)
         {

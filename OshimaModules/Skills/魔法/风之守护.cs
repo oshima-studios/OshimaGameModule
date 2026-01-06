@@ -11,7 +11,7 @@ namespace Oshima.FunGame.OshimaModules.Skills
         public override string Name => "风之守护";
         public override string Description => Effects.Count > 0 ? Effects.First().Description : "";
         public override double MPCost => Level > 0 ? 75 + (80 * (Level - 1)) : 75;
-        public override double CD => Level > 0 ? 60 - (0.5 * (Level - 1)) : 60;
+        public override double CD => Level > 0 ? 30 - (0.5 * (Level - 1)) : 30;
         public override double CastTime => Level > 0 ? 4 + (1 * (Level - 1)) : 4;
         public override double HardnessTime { get; set; } = 3;
         public override bool CanSelectSelf => true;

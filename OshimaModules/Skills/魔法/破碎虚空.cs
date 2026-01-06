@@ -10,7 +10,7 @@ namespace Oshima.FunGame.OshimaModules.Skills
         public override string Name => "破碎虚空";
         public override string Description => Effects.Count > 0 ? Effects.First().Description : "";
         public override double MPCost => Level > 0 ? 80 + (80 * (Level - 1)) : 80;
-        public override double CD => 60;
+        public override double CD => 30;
         public override double CastTime => 10;
         public override double HardnessTime { get; set; } = 6;
         public override int CanSelectTargetCount => 3;

@@ -10,7 +10,7 @@ namespace Oshima.FunGame.OshimaModules.Skills
         public override string Name => "暗物质";
         public override string Description => Effects.Count > 0 ? Effects.First().Description : "";
         public override double MPCost => Level > 0 ? 70 + (80 * (Level - 1)) : 70;
-        public override double CD => 55;
+        public override double CD => 40;
         public override double CastTime => 10;
         public override double HardnessTime { get; set; } = 4;
 

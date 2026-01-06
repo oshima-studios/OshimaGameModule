@@ -28,7 +28,7 @@ namespace Oshima.FunGame.OshimaModules.Skills
                 };
             }
         }
-        public override double CD => Level > 0 ? 100 - (2 * (Level - 1)) : 100;
+        public override double CD => Level > 0 ? 48 - (2 * (Level - 1)) : 48;
         public override double CastTime
         {
             get

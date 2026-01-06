@@ -17,6 +17,7 @@ namespace Oshima.FunGame.OshimaModules.Effects.PassiveEffects
         public override bool Durative => _durative;
         public override double Duration => _duration;
         public override int DurationTurn => _durationTurn;
+        public override bool ExemptDuration => true;
 
         private readonly Character _sourceCharacter;
         private readonly Character _targetCharacter;

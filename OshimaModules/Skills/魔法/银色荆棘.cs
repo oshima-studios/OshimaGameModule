@@ -11,8 +11,9 @@ namespace Oshima.FunGame.OshimaModules.Skills
         public override string Name => "银色荆棘";
         public override string Description => Effects.Count > 0 ? Effects.First().Description : "";
         public override string DispelDescription => Effects.Count > 0 ? Effects.First().DispelDescription : "";
+        public override string ExemptionDescription => Effects.Count > 0 ? Effects.First().ExemptionDescription : "";
         public override double MPCost => Level > 0 ? 100 + (80 * (Level - 1)) : 100;
-        public override double CD => Level > 0 ? 100 - (1.5 * (Level - 1)) : 100;
+        public override double CD => Level > 0 ? 55 - (1.5 * (Level - 1)) : 55;
         public override double CastTime => 12;
         public override double HardnessTime { get; set; } = 5;
         public override int CanSelectTargetCount
@@ -45,6 +46,7 @@ namespace Oshima.FunGame.OshimaModules.Skills
             $"随后 {ActualConfusionProbability * 100:0.##}% 概率对目标施加混乱状态，持续 {持续时间}。混乱：进入行动受限状态，失控并随机行动，且在进行攻击指令时，可能会选取友方角色为目标。";
         public override DispelledType DispelledType => DispelledType.Strong;
         public override EffectType EffectType => EffectType.Confusion;
+        public override bool ExemptDuration => true;
 
         private string 持续时间 => _durative && _duration > 0 ? 实际持续时间 + $" {GameplayEquilibriumConstant.InGameTime}" : (!_durative && _durationTurn > 0 ? 实际持续时间 + " 回合" : $"0 {GameplayEquilibriumConstant.InGameTime}");
         private double 实际持续时间 => _durative && _duration > 0 ? _duration + _levelGrowth * (Level - 1) : (!_durative && _durationTurn > 0 ? _durationTurn + _levelGrowth * (Level - 1) : 0);

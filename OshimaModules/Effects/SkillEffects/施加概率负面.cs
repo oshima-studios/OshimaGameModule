@@ -20,6 +20,7 @@ namespace Oshima.FunGame.OshimaModules.Effects.SkillEffects
         }
         public override EffectType EffectType => _effectType;
         public override DispelledType DispelledType => _dispelledType;
+        public override bool ExemptDuration => true;
 
         private double ActualProbability => Level > 0 ? _probability + _probabilityLevelGrowth * (Level - 1) : _probability;
         private string 持续时间 => _durative && _duration > 0 ? $"{实际持续时间:0.##}" + $" {GameplayEquilibriumConstant.InGameTime}" : (!_durative && _durationTurn > 0 ? 实际持续时间 + " 回合" : $"0 {GameplayEquilibriumConstant.InGameTime}");

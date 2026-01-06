@@ -35,10 +35,5 @@ namespace Oshima.FunGame.OshimaMaps
 
             return map;
         }
-
-        protected override void AfterTimeElapsed(ref double timeToReduce)
-        {
-
-        }
     }
 }

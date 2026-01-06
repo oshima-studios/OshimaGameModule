@@ -10,8 +10,9 @@ namespace Oshima.FunGame.OshimaModules.Skills
         public override string Name => "混沌烙印";
         public override string Description => Effects.Count > 0 ? string.Join("\r\n", Effects.Select(e => e.Description)) : "";
         public override string DispelDescription => Effects.Count > 0 ? Effects.First(e => e is 造成气绝).DispelDescription : "";
+        public override string ExemptionDescription => Effects.Count > 0 ? Effects.First(e => e is 造成气绝).ExemptionDescription : "";
         public override double MPCost => Level > 0 ? 65 + (70 * (Level - 1)) : 65;
-        public override double CD => Level > 0 ? 65 - (1.5 * (Level - 1)) : 65;
+        public override double CD => Level > 0 ? 50 - (1.5 * (Level - 1)) : 50;
         public override double CastTime => 4;
         public override double HardnessTime { get; set; } = 5;
         public override int CanSelectTargetCount => 1;

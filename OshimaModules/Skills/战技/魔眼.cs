@@ -16,6 +16,7 @@ namespace Oshima.FunGame.OshimaModules.Skills
 
         public 魔眼(Character? character = null) : base(SkillType.Skill, character)
         {
+            ExemptionDescription = $"迟滞{SkillSet.GetExemptionDescription(EffectType.Delay)}\r\n混乱{SkillSet.GetExemptionDescription(EffectType.Confusion)}";
             CastRange = 2;
             Effects.Add(new 施加概率负面(this, EffectType.Delay, false, 0, 3, 0, 1, 0, 0.5));
             Effects.Add(new 施加概率负面(this, EffectType.Confusion, false, 0, 2, 0, 0.45, 0.05));

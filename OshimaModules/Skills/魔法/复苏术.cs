@@ -11,7 +11,7 @@ namespace Oshima.FunGame.OshimaModules.Skills
         public override string Description => string.Join("", Effects.Select(e => e.Description));
         public override string DispelDescription => Effects.FirstOrDefault(e => e is 弱驱散特效)?.DispelDescription ?? "";
         public override double MPCost => Level > 0 ? 95 + (85 * (Level - 1)) : 95;
-        public override double CD => 85;
+        public override double CD => 48;
         public override double CastTime => 6;
         public override double HardnessTime { get; set; } = 8;
         public override bool CanSelectSelf => true;

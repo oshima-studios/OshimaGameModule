@@ -10,8 +10,9 @@ namespace Oshima.FunGame.OshimaModules.Skills
         public override string Name => "次元上升";
         public override string Description => Effects.Count > 0 ? string.Join("\r\n", Effects.Select(e => e.Description)) : "";
         public override string DispelDescription => Effects.Count > 0 ? Effects.First(e => e is 造成眩晕).DispelDescription : "";
+        public override string ExemptionDescription => Effects.Count > 0 ? Effects.First(e => e is 造成眩晕).ExemptionDescription : "";
         public override double MPCost => Level > 0 ? 70 + (75 * (Level - 1)) : 70;
-        public override double CD => Level > 0 ? 100 - (1.5 * (Level - 1)) : 100;
+        public override double CD => Level > 0 ? 35 - (1.5 * (Level - 1)) : 35;
         public override double CastTime => 12;
         public override double HardnessTime { get; set; } = 5;
 

@@ -10,8 +10,9 @@ namespace Oshima.FunGame.OshimaModules.Skills
         public override long Id => (long)MagicID.时间减速改;
         public override string Name => "时间减速·改";
         public override string Description => Effects.Count > 0 ? Effects.First().Description : "";
+        public override string ExemptionDescription => Effects.Count > 0 ? Effects.First().ExemptionDescription : "";
         public override double MPCost => Level > 0 ? 75 + (85 * (Level - 1)) : 75;
-        public override double CD => Level > 0 ? 68 - (1 * (Level - 1)) : 60;
+        public override double CD => Level > 0 ? 38 - (1 * (Level - 1)) : 38;
         public override double CastTime => Level > 0 ? 7 + (1 * (Level - 1)) : 7;
         public override double HardnessTime { get; set; } = 4;
 
@@ -29,6 +30,7 @@ namespace Oshima.FunGame.OshimaModules.Skills
             $"{(!IsDebuff ? "增加" : "减少")}{Skill.TargetDescription()} {Math.Abs(ExACC) * 100:0.##}% 加速系数。持续 {持续时间}。";
         public override EffectType EffectType => EffectType.Slow;
         public override DispelledType DispelledType => DispelledType.Weak;
+        public override bool ExemptDuration => true;
         public override bool IsDebuff => true;
 
         private string 持续时间 => _durative && _duration > 0 ? 实际持续时间 + $" {GameplayEquilibriumConstant.InGameTime}" : (!_durative && _durationTurn > 0 ? 实际持续时间 + " 回合" : $"0 {GameplayEquilibriumConstant.InGameTime}");

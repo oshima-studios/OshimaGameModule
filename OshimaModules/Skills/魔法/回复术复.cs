@@ -10,7 +10,7 @@ namespace Oshima.FunGame.OshimaModules.Skills
         public override string Name => "回复术·复";
         public override string Description => Effects.Count > 0 ? Effects.First().Description : "";
         public override double MPCost => Level > 0 ? 95 + (105 * (Level - 1)) : 95;
-        public override double CD => 100;
+        public override double CD => 34;
         public override double CastTime => 6;
         public override double HardnessTime { get; set; } = 7;
         public override bool CanSelectSelf => true;

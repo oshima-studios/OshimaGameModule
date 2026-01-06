@@ -1,4 +1,5 @@
-﻿using Milimoe.FunGame.Core.Entity;
+﻿using System.Text;
+using Milimoe.FunGame.Core.Entity;
 using Milimoe.FunGame.Core.Library.Constant;
 
 namespace Oshima.FunGame.OshimaModules.Skills
@@ -22,9 +23,9 @@ namespace Oshima.FunGame.OshimaModules.Skills
             {
                 str = "敌方全体角色";
             }
-            if (skill.CanSelectTeammate && !skill.CanSelectEnemy)
+            else if (skill.CanSelectTeammate && !skill.CanSelectEnemy)
             {
-                str = $"目标{(skill.CanSelectTargetCount > 1 ? $"至多 {skill.CanSelectTargetCount} 个" : "")}友方角色{(!skill.CanSelectSelf ? "（不可选择自己）" : "")}";
+                str = $"目标{(skill.CanSelectTargetCount > 1 ? $"至多 {skill.CanSelectTargetCount} 个" : "")}友方角色{(!skill.CanSelectSelf ? "（不可选择自身）" : "")}";
             }
             else if (!skill.CanSelectTeammate && skill.CanSelectEnemy)
             {
@@ -70,10 +71,10 @@ namespace Oshima.FunGame.OshimaModules.Skills
                         str = "目标正方形区域";
                         break;
                     case SkillRangeType.Line:
-                        str = "与目标地点之间的直线区域";
+                        str = "自身与目标地点之间的直线区域";
                         break;
                     case SkillRangeType.LinePass:
-                        str = "贯穿目标地点直至地图边缘的直线区域";
+                        str = "自身与目标地点之间的直线区域以及贯穿该目标地点直至地图边缘的直线区域";
                         break;
                     case SkillRangeType.Sector:
                         str = "目标扇形区域";
@@ -85,11 +86,22 @@ namespace Oshima.FunGame.OshimaModules.Skills
 
             if (skill.SelectIncludeCharacterGrid)
             {
-                str = "可包含被角色占据的" + str;
+                if (skill.CanSelectTeammate && !skill.CanSelectEnemy)
+                {
+                    str = $"{str}中的所有友方角色{(!skill.CanSelectSelf ? "（包括自身）" : "")}";
+                }
+                else if (!skill.CanSelectTeammate && skill.CanSelectEnemy)
+                {
+                    str = $"{str}中的所有敌方角色";
+                }
+                else
+                {
+                    str = $"{str}中的所有角色";
+                }
             }
             else
             {
-                str = "不被角色占据的";
+                str = "一个不包含被角色占据的";
             }
 
             return str;

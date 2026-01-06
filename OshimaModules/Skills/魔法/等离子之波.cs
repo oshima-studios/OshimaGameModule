@@ -10,8 +10,9 @@ namespace Oshima.FunGame.OshimaModules.Skills
         public override string Name => "等离子之波";
         public override string Description => string.Join("", Effects.Select(e => e.Description));
         public override string DispelDescription => Effects.Count > 0 ? Effects.First(e => e is 施加概率负面).DispelDescription : "";
+        public override string ExemptionDescription => Effects.Count > 0 ? Effects.First(e => e is 施加概率负面).ExemptionDescription : "";
         public override double MPCost => Level > 0 ? 70 + (75 * (Level - 1)) : 70;
-        public override double CD => Level > 0 ? 60 + (1.5 * (Level - 1)) : 60;
+        public override double CD => Level > 0 ? 20 + (1.5 * (Level - 1)) : 20;
         public override double CastTime => 6;
         public override double HardnessTime { get; set; } = 6;
         public override int CanSelectTargetCount

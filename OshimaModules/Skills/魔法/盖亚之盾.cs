@@ -10,7 +10,7 @@ namespace Oshima.FunGame.OshimaModules.Skills
         public override string Name => "盖亚之盾";
         public override string Description => string.Join("", Effects.Select(e => e.Description));
         public override double MPCost => Level > 0 ? 魔法消耗基础 + (魔法消耗等级成长 * (Level - 1)) : 魔法消耗基础;
-        public override double CD => Level > 0 ? 120 - (3 * (Level - 1)) : 120;
+        public override double CD => Level > 0 ? 50 - (3 * (Level - 1)) : 50;
         public override double CastTime => 12;
         public override double HardnessTime { get; set; } = 4;
         private double 魔法消耗基础 { get; set; } = 100;

@@ -33,6 +33,7 @@ namespace Oshima.FunGame.OshimaModules.Skills
         public override string Description => $"对目标{(Skill.CanSelectTargetCount > 1 ? $"至多 {Skill.CanSelectTargetCount} 个" : "")}敌方角色施加愤怒状态。愤怒：行动受限且失控，行动回合中无法自主行动，仅能对施法者发起普通攻击。持续 {持续时间}。";
         public override EffectType EffectType => EffectType.Taunt;
         public override DispelledType DispelledType => DispelledType.Strong;
+        public override bool ExemptDuration => true;
 
         private string 持续时间 => _durative && _duration > 0 ? 实际持续时间 + $" {GameplayEquilibriumConstant.InGameTime}" : (!_durative && _durationTurn > 0 ? 实际持续时间 + " 回合" : $"0 {GameplayEquilibriumConstant.InGameTime}");
         private double 实际持续时间 => _durative && _duration > 0 ? _duration + _levelGrowth * (Level - 1) : (!_durative && _durationTurn > 0 ? _durationTurn + _levelGrowth * (Level - 1) : 0);

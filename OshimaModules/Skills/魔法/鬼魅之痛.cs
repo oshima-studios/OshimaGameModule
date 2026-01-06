@@ -10,8 +10,9 @@ namespace Oshima.FunGame.OshimaModules.Skills
         public override string Name => "鬼魅之痛";
         public override string Description => string.Join("", Effects.Select(e => e.Description));
         public override string DispelDescription => Effects.Count > 0 ? Effects.First(e => e is 施加概率负面).DispelDescription : "";
+        public override string ExemptionDescription => Effects.Count > 0 ? Effects.First(e => e is 施加概率负面).ExemptionDescription : "";
         public override double MPCost => Level > 0 ? 70 + (75 * (Level - 1)) : 70;
-        public override double CD => Level > 0 ? 55 + (1 * (Level - 1)) : 55;
+        public override double CD => Level > 0 ? 38 + (1 * (Level - 1)) : 38;
         public override double CastTime => 9;
         public override double HardnessTime { get; set; } = 7;
         public override int CanSelectTargetCount

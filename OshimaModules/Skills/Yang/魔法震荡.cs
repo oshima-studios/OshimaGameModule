@@ -13,6 +13,7 @@ namespace Oshima.FunGame.OshimaModules.Skills
 
         public 魔法震荡(Character? character = null) : base(SkillType.Passive, character)
         {
+            ExemptionDescription = SkillSet.GetExemptionDescription(EffectType.Stun);
             Effects.Add(new 魔法震荡特效(this));
         }
 

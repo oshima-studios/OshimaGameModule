@@ -12,8 +12,9 @@ namespace Oshima.FunGame.OshimaModules.Skills
         public override string Name => "灾难冲击波";
         public override string Description => string.Join("\r\n", Effects.Select(e => e.Description));
         public override string DispelDescription => Effects.Count > 0 ? Effects.First(e => e is 灾难冲击波特效).DispelDescription : "";
+        public override string ExemptionDescription => Effects.Count > 0 ? Effects.First(e => e is 灾难冲击波特效).ExemptionDescription : "";
         public override double MPCost => Level > 0 ? 95 + (75 * (Level - 1)) : 95;
-        public override double CD => Level > 0 ? 85 - (1.5 * (Level - 1)) : 85;
+        public override double CD => Level > 0 ? 35 - (1.5 * (Level - 1)) : 35;
         public override double CastTime => Level > 0 ? 6 + (0.5 * (Level - 1)) : 6;
         public override double HardnessTime { get; set; } = 5;
         public override int CanSelectTargetCount
@@ -45,7 +46,9 @@ namespace Oshima.FunGame.OshimaModules.Skills
         public override long Id => Skill.Id;
         public override string Name => Skill.Name;
         public override string Description => $"对{Skill.TargetDescription()}造成魔法抗性降低 {ActualMDFReductionPercent * 100:0.##}%，持续 {持续时间}。";
+        public override EffectType EffectType => EffectType.MagicResistBreak;
         public override DispelledType DispelledType => DispelledType.Weak;
+        public override bool ExemptDuration => true;
 
         private string 持续时间 => _durative && _duration > 0 ? 实际持续时间 + $" {GameplayEquilibriumConstant.InGameTime}" : (!_durative && _durationTurn > 0 ? 实际持续时间 + " 回合" : $"0 {GameplayEquilibriumConstant.InGameTime}");
         private double 实际持续时间 => _durative && _duration > 0 ? _duration + _levelGrowth * (Level - 1) : (!_durative && _durationTurn > 0 ? _durationTurn + _levelGrowth * (Level - 1) : 0);

@@ -11,7 +11,7 @@ namespace Oshima.FunGame.OshimaModules.Skills
         public override string Name => "结晶防护·复";
         public override string Description => Effects.Count > 0 ? Effects.First().Description : "";
         public override double MPCost => Level > 0 ? 90 + (95 * (Level - 1)) : 90;
-        public override double CD => Level > 0 ? 80 - (0.5 * (Level - 1)) : 75;
+        public override double CD => Level > 0 ? 35 - (0.5 * (Level - 1)) : 35;
         public override double CastTime => Level > 0 ? 4 + (1.5 * (Level - 1)) : 4;
         public override double HardnessTime { get; set; } = 5;
         public override bool CanSelectSelf => true;
