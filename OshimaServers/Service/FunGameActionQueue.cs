@@ -94,15 +94,15 @@ namespace Oshima.FunGame.OshimaServers.Service
                         foreach (Character c in characters.Where(c => c != winner && c.HP > 0))
                         {
                             WriteLine("[ " + winner + " ] 对 [ " + c + " ] 造成了 99999999999 点真实伤害。");
-                            await actionQueue.DeathCalculationAsync(winner, c);
+                            actionQueue.DeathCalculation(winner, c);
                         }
-                        await actionQueue.EndGameInfo(winner);
+                        actionQueue.EndGameInfo(winner);
                         Result.Add(_msg);
                         break;
                     }
 
                     // 检查是否有角色可以行动
-                    Character? characterToAct = await actionQueue.NextCharacterAsync();
+                    Character? characterToAct = actionQueue.NextCharacter();
 
                     // 处理回合
                     if (characterToAct != null)
@@ -110,7 +110,7 @@ namespace Oshima.FunGame.OshimaServers.Service
                         WriteLine($"=== Round {i++} ===");
                         WriteLine($"现在是 [ {characterToAct} ] 的回合！");
 
-                        bool isGameEnd = await actionQueue.ProcessTurnAsync(characterToAct);
+                        bool isGameEnd = actionQueue.ProcessTurn(characterToAct);
 
                         if (isGameEnd)
                         {
@@ -141,7 +141,7 @@ namespace Oshima.FunGame.OshimaServers.Service
                     }
 
                     // 模拟时间流逝
-                    double timeLapse = await actionQueue.TimeLapse();
+                    double timeLapse = actionQueue.TimeLapse();
                     totalTime += timeLapse;
 
                     if (roundMsg != "")
@@ -311,7 +311,7 @@ namespace Oshima.FunGame.OshimaServers.Service
                         }
 
                         // 检查是否有角色可以行动
-                        Character? characterToAct = await actionQueue.NextCharacterAsync();
+                        Character? characterToAct = actionQueue.NextCharacter();
 
                         // 处理回合
                         if (characterToAct != null)
@@ -319,7 +319,7 @@ namespace Oshima.FunGame.OshimaServers.Service
                             WriteLine($"=== Round {i++} ===");
                             WriteLine("现在是 [ " + characterToAct + "（" + (actionQueue.GetTeam(characterToAct)?.Name ?? "") + "）" + " ] 的回合！");
 
-                            bool isGameEnd = await actionQueue.ProcessTurnAsync(characterToAct);
+                            bool isGameEnd = actionQueue.ProcessTurn(characterToAct);
 
                             if (isGameEnd)
                             {
@@ -353,7 +353,7 @@ namespace Oshima.FunGame.OshimaServers.Service
                         }
 
                         // 模拟时间流逝
-                        double timeLapse = await actionQueue.TimeLapse();
+                        double timeLapse = actionQueue.TimeLapse();
                         totalTime += timeLapse;
 
                         if (roundMsg != "")

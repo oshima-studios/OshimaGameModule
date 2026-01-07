@@ -44,7 +44,7 @@ namespace Oshima.FunGame.OshimaModules.Skills
             AddEffectTypeToCharacter(character, [EffectType]);
             character.ExSPD += 100;
             character.ExCritRate += 0.08;
-            GamingQueue?.InterruptCastingAsync(character);
+            GamingQueue?.InterruptCasting(character);
         }
 
         public override void OnEffectLost(Character character)
@@ -75,7 +75,7 @@ namespace Oshima.FunGame.OshimaModules.Skills
             return 0;
         }
 
-        public override async Task OnSkillCasted(Character caster, List<Character> targets, List<Grid> grids, Dictionary<string, object> others)
+        public override void OnSkillCasted(Character caster, List<Character> targets, List<Grid> grids, Dictionary<string, object> others)
         {
             if (!caster.Effects.Contains(this))
             {

@@ -36,7 +36,7 @@ namespace Oshima.FunGame.OshimaModules.Skills
             GamingQueue = skill.GamingQueue;
         }
 
-        public override async Task OnSkillCasted(Character caster, List<Character> targets, List<Grid> grids, Dictionary<string, object> others)
+        public override void OnSkillCasted(Character caster, List<Character> targets, List<Grid> grids, Dictionary<string, object> others)
         {
             if (GamingQueue != null)
             {

@@ -30,7 +30,7 @@ namespace Oshima.FunGame.OshimaModules.Effects.SkillEffects
             _durationTurn = durationTurn;
         }
 
-        public override async Task OnSkillCasted(Character caster, List<Character> targets, List<Grid> grids, Dictionary<string, object> others)
+        public override void OnSkillCasted(Character caster, List<Character> targets, List<Grid> grids, Dictionary<string, object> others)
         {
             foreach (Character target in targets)
             {

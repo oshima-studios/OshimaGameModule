@@ -53,14 +53,14 @@ namespace Oshima.FunGame.OshimaModules.Skills
             GamingQueue = skill.GamingQueue;
         }
 
-        public override async Task OnSkillCasted(Character caster, List<Character> targets, List<Grid> grids, Dictionary<string, object> others)
+        public override void OnSkillCasted(Character caster, List<Character> targets, List<Grid> grids, Dictionary<string, object> others)
         {
             Effect effect = new 施加免疫(Skill, ImmuneType.Magical, false, 0, 实际持续时间);
-            await effect.OnSkillCasted(caster, targets, grids, others);
+            effect.OnSkillCasted(caster, targets, grids, others);
             if (Level > 4)
             {
                 effect = new 施加免疫(Skill, ImmuneType.Skilled, false, 0, 1);
-                await effect.OnSkillCasted(caster, targets, grids, others);
+                effect.OnSkillCasted(caster, targets, grids, others);
             }
         }
     }

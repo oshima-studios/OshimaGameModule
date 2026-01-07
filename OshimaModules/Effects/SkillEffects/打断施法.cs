@@ -1,5 +1,7 @@
 ﻿using Milimoe.FunGame.Core.Entity;
 using Milimoe.FunGame.Core.Library.Common.Addon;
+using Milimoe.FunGame.Core.Library.Constant;
+using Oshima.FunGame.OshimaModules.Skills;
 
 namespace Oshima.FunGame.OshimaModules.Effects.SkillEffects
 {
@@ -7,18 +9,22 @@ namespace Oshima.FunGame.OshimaModules.Effects.SkillEffects
     {
         public override long Id => Skill.Id;
         public override string Name => Skill.Name;
-        public override string Description => $"打断施法：中断目标正在进行的吟唱。";
+        public override string Description => $"对{Skill.TargetDescription()}施加打断施法效果：中断其正在进行的吟唱。";
+        public override EffectType EffectType => EffectType.InterruptCasting;
 
         public 打断施法(Skill skill) : base(skill)
         {
             GamingQueue = skill.GamingQueue;
         }
 
-        public override async Task OnSkillCasted(Character caster, List<Character> targets, List<Grid> grids, Dictionary<string, object> others)
+        public override void OnSkillCasted(Character caster, List<Character> targets, List<Grid> grids, Dictionary<string, object> others)
         {
             foreach (Character target in targets)
             {
-                InterruptCasting(target, caster);
+                if (!CheckExemption(caster, target, this))
+                {
+                    InterruptCasting(target, caster);
+                }
             }
         }
     }

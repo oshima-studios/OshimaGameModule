@@ -50,7 +50,7 @@ namespace Oshima.FunGame.OshimaModules.Effects.SkillEffects
             SetDescription();
         }
 
-        public override async Task OnSkillCasted(Character caster, List<Character> targets, List<Grid> grids, Dictionary<string, object> others)
+        public override void OnSkillCasted(Character caster, List<Character> targets, List<Grid> grids, Dictionary<string, object> others)
         {
             foreach (Character target in targets)
             {
@@ -58,18 +58,19 @@ namespace Oshima.FunGame.OshimaModules.Effects.SkillEffects
                 Effect? e = null;
                 double duration = _duration + _levelGrowth * (Level - 1);
                 int durationTurn = Convert.ToInt32(_durationTurn + _levelGrowth * (Level - 1));
+                string tip = "";
                 switch (_effectType)
                 {
                     case EffectType.Silence:
-                        WriteLine($"[ {caster} ] 对 [ {target} ] 造成了封技和施法解除！持续时间：{持续时间}！");
+                        tip = $"[ {caster} ] 对 [ {target} ] 造成了封技和施法解除！持续时间：{持续时间}！";
                         e = new 封技(Skill, caster, _durative, duration, durationTurn);
                         break;
                     case EffectType.Confusion:
-                        WriteLine($"[ {target} ] 陷入了混乱！！持续时间：{持续时间}！");
+                        tip = $"[ {target} ] 陷入了混乱！！持续时间：{持续时间}！";
                         e = new 混乱(Skill, caster, _durative, duration, durationTurn);
                         break;
                     case EffectType.Taunt:
-                        WriteLine($"[ {target} ] 被 [ {caster} ] 嘲讽了！持续时间：{持续时间}！");
+                        tip = $"[ {target} ] 被 [ {caster} ] 嘲讽了！持续时间：{持续时间}！";
                         e = new 愤怒(Skill, caster, target, _durative, duration, durationTurn);
                         break;
                     case EffectType.Delay:
@@ -78,19 +79,19 @@ namespace Oshima.FunGame.OshimaModules.Effects.SkillEffects
                         {
                             healingReductionPercent = healingReduce;
                         }
-                        WriteLine($"[ {caster} ] 对 [ {target} ] 造成了迟滞！普通攻击和技能的硬直时间、当前行动等待时间延长了 {healingReductionPercent * 100:0.##}%！持续时间：{持续时间}！");
+                        tip = $"[ {caster} ] 对 [ {target} ] 造成了迟滞！普通攻击和技能的硬直时间、当前行动等待时间延长了 {healingReductionPercent * 100:0.##}%！持续时间：{持续时间}！";
                         e = new 迟滞(Skill, caster, _durative, duration, durationTurn, healingReductionPercent);
                         break;
                     case EffectType.Stun:
-                        WriteLine($"[ {caster} ] 对 [ {target} ] 造成了眩晕！持续时间：{持续时间}！");
+                        tip = $"[ {caster} ] 对 [ {target} ] 造成了眩晕！持续时间：{持续时间}！";
                         e = new 眩晕(Skill, caster, _durative, duration, durationTurn);
                         break;
                     case EffectType.Freeze:
-                        WriteLine($"[ {caster} ] 对 [ {target} ] 造成了冻结！持续时间：{持续时间}！");
+                        tip = $"[ {caster} ] 对 [ {target} ] 造成了冻结！持续时间：{持续时间}！";
                         e = new 冻结(Skill, caster, _durative, duration, durationTurn);
                         break;
                     case EffectType.Petrify:
-                        WriteLine($"[ {caster} ] 对 [ {target} ] 造成了石化！持续时间：{持续时间}！");
+                        tip = $"[ {caster} ] 对 [ {target} ] 造成了石化！持续时间：{持续时间}！";
                         e = new 石化(Skill, caster, _durative, duration, durationTurn);
                         break;
                     case EffectType.Vulnerable:
@@ -106,7 +107,7 @@ namespace Oshima.FunGame.OshimaModules.Effects.SkillEffects
                         }
                         if (exDamagePercent > 0)
                         {
-                            WriteLine($"[ {caster} ] 对 [ {target} ] 造成了易伤，额外受到 {exDamagePercent * 100:0.##}% {CharacterSet.GetDamageTypeName(damageType)}！持续时间：{持续时间}！");
+                            tip = $"[ {caster} ] 对 [ {target} ] 造成了易伤，额外受到 {exDamagePercent * 100:0.##}% {CharacterSet.GetDamageTypeName(damageType)}！持续时间：{持续时间}！";
                             e = new 易伤(Skill, target, caster, _durative, duration, durationTurn, damageType, exDamagePercent);
                         }
                         break;
@@ -136,19 +137,20 @@ namespace Oshima.FunGame.OshimaModules.Effects.SkillEffects
                             if (Level > 0) durationDamage += durationDamageLevelGrowth * (Level - 1);
                             if (Level > 0) durationDamagePercent += durationDamageLevelGrowth * (Level - 1);
                             string damageString = isPercentage ? $"流失 {durationDamagePercent * 100:0.##}% 当前生命值" : $"流失 {durationDamage:0.##} 点生命值";
-                            WriteLine($"[ {caster} ] 对 [ {target} ] 造成了气绝！ [ {target} ] 进入行动受限状态且每{GameplayEquilibriumConstant.InGameTime}{damageString}！持续时间：{持续时间}！");
+                            tip = $"[ {caster} ] 对 [ {target} ] 造成了气绝！ [ {target} ] 进入行动受限状态且每{GameplayEquilibriumConstant.InGameTime}{damageString}！持续时间：{持续时间}！";
                             e = new 气绝(Skill, target, caster, _durative, duration, durationTurn, isPercentage, durationDamage, durationDamagePercent);
                         }
                         break;
                     case EffectType.Cripple:
-                        WriteLine($"[ {caster} ] 对 [ {target} ] 造成了战斗不能，禁止普通攻击和使用技能（魔法、战技和爆发技）！持续时间：{持续时间}！");
+                        tip = $"[ {caster} ] 对 [ {target} ] 造成了战斗不能，禁止普通攻击和使用技能（魔法、战技和爆发技）！持续时间：{持续时间}！";
                         e = new 战斗不能(Skill, caster, _durative, duration, durationTurn);
                         break;
                     default:
                         break;
                 }
-                if (e != null)
+                if (e != null && !CheckExemption(caster, target, e))
                 {
+                    WriteLine(tip);
                     target.Effects.Add(e);
                     e.OnEffectGained(target);
                     GamingQueue?.LastRound.AddApplyEffects(target, e.EffectType);

@@ -11,7 +11,7 @@ namespace Oshima.FunGame.OshimaModules.Skills
         public override string Description => Effects.Count > 0 ? Effects.First().Description : "";
         public override double MPCost => Level > 0 ? 70 + (80 * (Level - 1)) : 70;
         public override double CD => Level > 0 ? 25 - (1 * (Level - 1)) : 25;
-        public override double CastTime => Level > 0 ? 2 + (1.5 * (Level - 1)) : 2;
+        public override double CastTime => Level > 0 ? 2 + (1 * (Level - 1)) : 2;
         public override double HardnessTime { get; set; } = 4;
         public override bool CanSelectSelf => true;
         public override bool CanSelectEnemy => false;

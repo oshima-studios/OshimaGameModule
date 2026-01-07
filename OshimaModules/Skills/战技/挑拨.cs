@@ -12,7 +12,7 @@ namespace Oshima.FunGame.OshimaModules.Skills
         public override string Description => Effects.Count > 0 ? Effects.First().Description : "";
         public override string DispelDescription => Effects.Count > 0 ? Effects.First().DispelDescription : "";
         public override double EPCost => 65;
-        public override double CD => 55;
+        public override double CD => 40;
         public override double HardnessTime { get; set; } = 10;
         public override bool CanSelectSelf => false;
         public override bool CanSelectTeammate => false;
@@ -48,27 +48,30 @@ namespace Oshima.FunGame.OshimaModules.Skills
             GamingQueue = skill.GamingQueue;
         }
 
-        public override async Task OnSkillCasted(Character caster, List<Character> targets, List<Grid> grids, Dictionary<string, object> others)
+        public override void OnSkillCasted(Character caster, List<Character> targets, List<Grid> grids, Dictionary<string, object> others)
         {
             foreach (Character target in targets)
             {
-                WriteLine($"[ {caster} ] 嘲讽了 [ {target} ] ，[ {target} ] 愤怒了！！持续时间：{持续时间}！");
                 愤怒 e = new(Skill, caster, caster);
-                if (_durative && _duration > 0)
+                if (!CheckExemption(caster, target, e))
                 {
-                    e.Durative = true;
-                    e.Duration = 实际持续时间;
-                    e.RemainDuration = 实际持续时间;
+                    WriteLine($"[ {caster} ] 嘲讽了 [ {target} ] ，[ {target} ] 愤怒了！！持续时间：{持续时间}！");
+                    if (_durative && _duration > 0)
+                    {
+                        e.Durative = true;
+                        e.Duration = 实际持续时间;
+                        e.RemainDuration = 实际持续时间;
+                    }
+                    else if (!_durative && _durationTurn > 0)
+                    {
+                        e.Durative = false;
+                        e.DurationTurn = (int)实际持续时间;
+                        e.RemainDurationTurn = (int)实际持续时间;
+                    }
+                    target.Effects.Add(e);
+                    e.OnEffectGained(target);
+                    GamingQueue?.LastRound.AddApplyEffects(target, e.EffectType);
                 }
-                else if (!_durative && _durationTurn > 0)
-                {
-                    e.Durative = false;
-                    e.DurationTurn = (int)实际持续时间;
-                    e.RemainDurationTurn = (int)实际持续时间;
-                }
-                target.Effects.Add(e);
-                e.OnEffectGained(target);
-                GamingQueue?.LastRound.AddApplyEffects(target, e.EffectType);
             }
         }
     }

@@ -35,7 +35,7 @@ namespace Oshima.FunGame.OshimaModules.Effects.ItemEffects
             }
         }
 
-        public override async Task OnSkillCasted(Character caster, List<Character> targets, List<Grid> grids, Dictionary<string, object> others)
+        public override void OnSkillCasted(Character caster, List<Character> targets, List<Grid> grids, Dictionary<string, object> others)
         {
             foreach (Character target in targets)
             {
@@ -43,9 +43,9 @@ namespace Oshima.FunGame.OshimaModules.Effects.ItemEffects
             }
         }
 
-        public override async Task OnSkillCasted(User user, List<Character> targets, Dictionary<string, object> others)
+        public override void OnSkillCasted(User user, List<Character> targets, Dictionary<string, object> others)
         {
-            await base.OnSkillCasted(user, targets, others);
+            base.OnSkillCasted(user, targets, others);
             foreach (Character target in targets)
             {
                 target.HP += 回复比例 * (target?.MaxHP ?? 0);

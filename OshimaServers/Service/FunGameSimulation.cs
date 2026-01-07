@@ -273,7 +273,7 @@ namespace Oshima.FunGame.OshimaServers.Service
                     actionQueue.DisplayQueue();
                     if (PrintOut) Console.WriteLine();
 
-                    actionQueue.CharacterDeath += ActionQueue_CharacterDeath;
+                    actionQueue.CharacterDeathEvent += ActionQueue_CharacterDeath;
 
                     // 地图放置角色
                     if (actionQueue.Map != null)
@@ -365,7 +365,7 @@ namespace Oshima.FunGame.OshimaServers.Service
                                 foreach (Character c in characters.Where(c => c != winner && c.HP > 0))
                                 {
                                     WriteLine("[ " + winner + " ] 对 [ " + c + " ] 造成了 99999999999 点真实伤害。");
-                                    await actionQueue.DeathCalculationAsync(winner, c);
+                                    actionQueue.DeathCalculation(winner, c);
                                 }
                                 result.Add(Msg);
                                 mgq?.EndGameInfo(winner);
@@ -374,7 +374,7 @@ namespace Oshima.FunGame.OshimaServers.Service
                         }
 
                         // 检查是否有角色可以行动
-                        Character? characterToAct = await actionQueue.NextCharacterAsync();
+                        Character? characterToAct = actionQueue.NextCharacter();
 
                         // 处理回合
                         if (characterToAct != null)
@@ -382,7 +382,7 @@ namespace Oshima.FunGame.OshimaServers.Service
                             WriteLine($"=== Round {i++} [ Time: {totalTime} ] ===");
                             WriteLine("现在是 [ " + characterToAct + (tgq != null ? "（" + (tgq.GetTeam(characterToAct)?.Name ?? "") + "）" : "") + " ] 的回合！");
 
-                            bool isGameEnd = await actionQueue.ProcessTurnAsync(characterToAct);
+                            bool isGameEnd = actionQueue.ProcessTurn(characterToAct);
 
                             if (isGameEnd)
                             {
@@ -407,9 +407,10 @@ namespace Oshima.FunGame.OshimaServers.Service
                         }
 
                         // 模拟时间流逝
-                        double timeLapse = await actionQueue.TimeLapse();
+                        double timeLapse = actionQueue.TimeLapse();
                         totalTime = actionQueue.TotalTime;
                         nextDropTime -= timeLapse;
+                        Thread.Sleep(1);
 
                         if (roundMsg != "")
                         {
@@ -703,30 +704,10 @@ namespace Oshima.FunGame.OshimaServers.Service
             }
         }
 
-        private static async Task<bool> TeamQueue_GameEndTeam(TeamGamingQueue queue, Team winner)
-        {
-            foreach (Character character in winner.Members)
-            {
-                Item? i1 = character.UnEquip(EquipSlotType.MagicCardPack);
-                Item? i2 = character.UnEquip(EquipSlotType.Weapon);
-                Item? i3 = character.UnEquip(EquipSlotType.Armor);
-                Item? i4 = character.UnEquip(EquipSlotType.Shoes);
-                Item? i5 = character.UnEquip(EquipSlotType.Accessory1);
-                Item? i6 = character.UnEquip(EquipSlotType.Accessory2);
-                queue.WriteLine(character.GetInfo());
-            }
-            return await Task.FromResult(true);
-        }
-
-        private static async Task<bool> ActionQueue_GameEnd(GamingQueue queue, Character winner)
-        {
-            return await Task.FromResult(true);
-        }
-
-        private static async Task<bool> ActionQueue_CharacterDeath(GamingQueue queue, Character current, Character death)
+        private static bool ActionQueue_CharacterDeath(GamingQueue queue, Character current, Character death)
         {
             death.Items.Clear();
-            return await Task.FromResult(true);
+            return true;
         }
 
         /// <summary>

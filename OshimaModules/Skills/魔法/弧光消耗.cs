@@ -14,11 +14,14 @@ namespace Oshima.FunGame.OshimaModules.Skills
         public override double CastTime => 4;
         public override double HardnessTime { get; set; } = 5;
         public override int CanSelectTargetCount => 3;
+        public override bool IsNonDirectional => true;
+        public override SkillRangeType SkillRangeType => SkillRangeType.Circle;
+        public override int CanSelectTargetRange => 3;
 
         public 弧光消耗(Character? character = null) : base(SkillType.Magic, character)
         {
-            Effects.Add(new 吸取魔法值(this, 25, 20, false, 0.7));
-            Effects.Add(new 吸取能量值(this, 4, 2, false, 0.3));
+            Effects.Add(new 吸取魔法值(this, 35, 30, false, 0.7));
+            Effects.Add(new 吸取能量值(this, 4, 3, false, 0.3));
         }
     }
 }

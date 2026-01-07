@@ -12,12 +12,12 @@ namespace Oshima.FunGame.OshimaModules.Skills
         public override string ExemptionDescription => Effects.Count > 0 ? Effects.First().ExemptionDescription : "";
         public override double MPCost => Level > 0 ? 65 + (75 * (Level - 1)) : 65;
         public override double CD => Level > 0 ? 28 - (1 * (Level - 1)) : 28;
-        public override double CastTime => Level > 0 ? 3 + (1.5 * (Level - 1)) : 3;
+        public override double CastTime => Level > 0 ? 2 + (2 * (Level - 1)) : 2;
         public override double HardnessTime { get; set; } = 5;
 
         public 时间减速(Character? character = null) : base(SkillType.Magic, character)
         {
-            Effects.Add(new 降低敌方行动速度(this, 60, 30));
+            Effects.Add(new 降低敌方行动速度(this, 65, 35));
         }
     }
 }

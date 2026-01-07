@@ -68,6 +68,9 @@ namespace Oshima.FunGame.OshimaModules.Skills
                 };
             }
         }
+        public override bool IsNonDirectional => true;
+        public override SkillRangeType SkillRangeType => SkillRangeType.Circle;
+        public override int CanSelectTargetRange => 3;
 
         public 大地之墙(Character? character = null) : base(SkillType.Magic, character)
         {
@@ -112,7 +115,7 @@ namespace Oshima.FunGame.OshimaModules.Skills
             }
         }
 
-        public override async Task OnSkillCasted(Character caster, List<Character> targets, List<Grid> grids, Dictionary<string, object> others)
+        public override void OnSkillCasted(Character caster, List<Character> targets, List<Grid> grids, Dictionary<string, object> others)
         {
             _targets = targets;
             foreach (Character target in targets)

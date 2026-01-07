@@ -19,7 +19,7 @@ namespace Oshima.FunGame.OshimaModules.Skills
 
         public 虚弱领域(Character? character = null) : base(SkillType.Magic, character)
         {
-            Effects.Add(new 造成虚弱(this, true, 7, 0, 2, 0.1, 1, 0.1, 0.25));
+            Effects.Add(new 造成虚弱(this, true, 7, 0, 2, 0.1, 1, 0.1, 0.25, 0.001));
         }
     }
 }

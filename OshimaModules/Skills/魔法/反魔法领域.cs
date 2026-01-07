@@ -48,6 +48,9 @@ namespace Oshima.FunGame.OshimaModules.Skills
         }
         private double 魔法消耗基础 { get; set; } = 85;
         private double 魔法消耗等级成长 { get; set; } = 80;
+        public override bool IsNonDirectional => true;
+        public override SkillRangeType SkillRangeType => SkillRangeType.Circle;
+        public override int CanSelectTargetRange => 3;
 
         public 反魔法领域(Character? character = null) : base(SkillType.Magic, character)
         {

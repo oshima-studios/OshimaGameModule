@@ -37,7 +37,7 @@ namespace Oshima.FunGame.OshimaModules.Skills
         public 灾难冲击波(Character? character = null) : base(SkillType.Magic, character)
         {
             Effects.Add(new 基于攻击力的伤害_带基础伤害(this, 50, 15, 0.1, 0.04));
-            Effects.Add(new 灾难冲击波特效(this, false, 0, 2, 0, 0.03, 0.02));
+            Effects.Add(new 灾难冲击波特效(this, false, 0, 4, 0, 0.1, 0.025));
         }
     }
 
@@ -71,32 +71,35 @@ namespace Oshima.FunGame.OshimaModules.Skills
             _MDFReductionPercentLevelGrowth = MDFReductionPercentLevelGrowth;
         }
 
-        public override async Task OnSkillCasted(Character caster, List<Character> targets, List<Grid> grids, Dictionary<string, object> others)
+        public override void OnSkillCasted(Character caster, List<Character> targets, List<Grid> grids, Dictionary<string, object> others)
         {
             foreach (Character target in targets)
             {
-                WriteLine($"[ {target} ] 的魔法抗性降低了 {ActualMDFReductionPercent * 100:0.##}%！持续时间：{持续时间}！");
                 ExMDF e = new(Skill, new(){
                     { "mdftype", 0 },
                     { "mdfvalue", -ActualMDFReductionPercent }
                 }, caster);
-                target.Effects.Add(e);
-                if (_durative && _duration > 0)
+                if (!CheckExemption(caster, target, e))
                 {
-                    e.Durative = true;
-                    e.Duration = 实际持续时间;
-                    e.RemainDuration = 实际持续时间;
+                    WriteLine($"[ {target} ] 的魔法抗性降低了 {ActualMDFReductionPercent * 100:0.##}%！持续时间：{持续时间}！");
+                    target.Effects.Add(e);
+                    if (_durative && _duration > 0)
+                    {
+                        e.Durative = true;
+                        e.Duration = 实际持续时间;
+                        e.RemainDuration = 实际持续时间;
+                    }
+                    else if (!_durative && _durationTurn > 0)
+                    {
+                        e.Durative = false;
+                        e.DurationTurn = (int)实际持续时间;
+                        e.RemainDurationTurn = (int)实际持续时间;
+                    }
+                    e.EffectType = EffectType.MagicResistBreak;
+                    e.Source = caster;
+                    e.OnEffectGained(target);
+                    GamingQueue?.LastRound.AddApplyEffects(target, e.EffectType);
                 }
-                else if (!_durative && _durationTurn > 0)
-                {
-                    e.Durative = false;
-                    e.DurationTurn = (int)实际持续时间;
-                    e.RemainDurationTurn = (int)实际持续时间;
-                }
-                e.EffectType = EffectType.MagicResistBreak;
-                e.Source = caster;
-                e.OnEffectGained(target);
-                GamingQueue?.LastRound.AddApplyEffects(target, e.EffectType);
             }
         }
     }

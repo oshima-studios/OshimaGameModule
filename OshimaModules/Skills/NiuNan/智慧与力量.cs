@@ -71,7 +71,7 @@ namespace Oshima.FunGame.OshimaModules.Skills
         {
             if (actor == Skill.Character)
             {
-                throwingBonus += 100;
+                throwingBonus += 200;
             }
             return true;
         }

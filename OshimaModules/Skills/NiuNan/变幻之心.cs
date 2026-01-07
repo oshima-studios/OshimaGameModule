@@ -143,7 +143,7 @@ namespace Oshima.FunGame.OshimaModules.Skills
             }
         }
 
-        public override async Task OnSkillCasted(Character caster, List<Character> targets, List<Grid> grids, Dictionary<string, object> others)
+        public override void OnSkillCasted(Character caster, List<Character> targets, List<Grid> grids, Dictionary<string, object> others)
         {
             IEnumerable<Effect> effects = caster.Effects.Where(e => e is 智慧与力量特效);
             if (effects.Any())

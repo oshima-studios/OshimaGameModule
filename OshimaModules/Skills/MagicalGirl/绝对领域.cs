@@ -74,7 +74,7 @@ namespace Oshima.FunGame.OshimaModules.Skills
             释放时的能量值 = caster.EP;
         }
 
-        public override async Task OnSkillCasted(Character caster, List<Character> targets, List<Grid> grids, Dictionary<string, object> others)
+        public override void OnSkillCasted(Character caster, List<Character> targets, List<Grid> grids, Dictionary<string, object> others)
         {
             RemainDuration = Duration;
             if (!caster.Effects.Contains(this))

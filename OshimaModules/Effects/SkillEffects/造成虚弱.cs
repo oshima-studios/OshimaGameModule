@@ -54,17 +54,20 @@ namespace Oshima.FunGame.OshimaModules.Effects.SkillEffects
             _healingReductionPercentLevelGrowth = healingReductionPercentLevelGrowth;
         }
 
-        public override async Task OnSkillCasted(Character caster, List<Character> targets, List<Grid> grids, Dictionary<string, object> others)
+        public override void OnSkillCasted(Character caster, List<Character> targets, List<Grid> grids, Dictionary<string, object> others)
         {
             foreach (Character enemy in targets)
             {
-                WriteLine($"[ {caster} ] 对 [ {enemy} ] 造成了虚弱！伤害降低 {ActualDamageReductionPercent * 100:0.##}%，" +
-                    $"物理护甲降低 {ActualDEFReductionPercent * 100:0.##}%，魔法抗性降低 {ActualMDFReductionPercent * 100:0.##}%，" +
-                    $"治疗效果降低 {ActualHealingReductionPercent * 100:0.##}%！持续时间：{虚弱时间}！");
                 虚弱 e = new(Skill, enemy, caster, _durative, _duration + _levelGrowth * (Level - 1), Convert.ToInt32(_durationTurn + _levelGrowth * (Level - 1)), ActualDamageReductionPercent, ActualDEFReductionPercent, ActualMDFReductionPercent, ActualHealingReductionPercent);
-                enemy.Effects.Add(e);
-                e.OnEffectGained(enemy);
-                GamingQueue?.LastRound.AddApplyEffects(enemy, e.EffectType);
+                if (!CheckExemption(caster, enemy, e))
+                {
+                    WriteLine($"[ {caster} ] 对 [ {enemy} ] 造成了虚弱！伤害降低 {ActualDamageReductionPercent * 100:0.##}%，" +
+                        $"物理护甲降低 {ActualDEFReductionPercent * 100:0.##}%，魔法抗性降低 {ActualMDFReductionPercent * 100:0.##}%，" +
+                        $"治疗效果降低 {ActualHealingReductionPercent * 100:0.##}%！持续时间：{虚弱时间}！");
+                    enemy.Effects.Add(e);
+                    e.OnEffectGained(enemy);
+                    GamingQueue?.LastRound.AddApplyEffects(enemy, e.EffectType);
+                }
             }
         }
     }

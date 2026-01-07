@@ -62,22 +62,22 @@ namespace Oshima.FunGame.OshimaModules.Skills
                 switch (skill.SkillRangeType)
                 {
                     case SkillRangeType.Diamond:
-                        str = "目标菱形区域";
+                        str = $"目标半径为 {skill.CanSelectTargetRange} 格的菱形区域";
                         break;
                     case SkillRangeType.Circle:
-                        str = "目标圆形区域";
+                        str = $"目标半径为 {skill.CanSelectTargetRange} 格的圆形区域";
                         break;
                     case SkillRangeType.Square:
-                        str = "目标正方形区域";
+                        str = $"目标边长为 {skill.CanSelectTargetRange * 2 + 1} 格的正方形区域";
                         break;
                     case SkillRangeType.Line:
-                        str = "自身与目标地点之间的直线区域";
+                        str = $"自身与目标地点之间的、宽度为 {skill.CanSelectTargetRange} 格的直线区域";
                         break;
                     case SkillRangeType.LinePass:
-                        str = "自身与目标地点之间的直线区域以及贯穿该目标地点直至地图边缘的直线区域";
+                        str = $"自身与目标地点之间的、宽度为 {skill.CanSelectTargetRange} 格的直线区域以及贯穿该目标地点直至地图边缘的等宽直线区域";
                         break;
                     case SkillRangeType.Sector:
-                        str = "目标扇形区域";
+                        str = $"目标最大半径为 {skill.CanSelectTargetRange} 格的扇形区域";
                         break;
                     default:
                         break;

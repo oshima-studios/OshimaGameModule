@@ -32,6 +32,9 @@ namespace Oshima.FunGame.OshimaModules.Skills
                 };
             }
         }
+        public override bool IsNonDirectional => true;
+        public override SkillRangeType SkillRangeType => SkillRangeType.Circle;
+        public override int CanSelectTargetRange => 3;
 
         public 治愈术复(Character? character = null) : base(SkillType.Magic, character)
         {

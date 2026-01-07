@@ -12,7 +12,7 @@ namespace Oshima.FunGame.OshimaModules.Skills
         public override string Description => Effects.Count > 0 ? Effects.First().Description : "";
         public override double MPCost => Level > 0 ? 85 + (85 * (Level - 1)) : 85;
         public override double CD => Level > 0 ? 45 - (0.5 * (Level - 1)) : 45;
-        public override double CastTime => Level > 0 ? 6 + (0.5 * (Level - 1)) : 6;
+        public override double CastTime => Level > 0 ? 3 + (0.5 * (Level - 1)) : 3;
         public override double HardnessTime { get; set; } = 6;
         public override bool CanSelectSelf => true;
         public override bool CanSelectEnemy => false;
@@ -67,7 +67,7 @@ namespace Oshima.FunGame.OshimaModules.Skills
             _levelGrowth = levelGrowth;
         }
 
-        public override async Task OnSkillCasted(Character caster, List<Character> targets, List<Grid> grids, Dictionary<string, object> others)
+        public override void OnSkillCasted(Character caster, List<Character> targets, List<Grid> grids, Dictionary<string, object> others)
         {
             foreach (Character target in targets)
             {

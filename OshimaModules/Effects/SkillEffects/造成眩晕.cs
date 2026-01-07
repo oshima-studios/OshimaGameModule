@@ -31,16 +31,19 @@ namespace Oshima.FunGame.OshimaModules.Effects.SkillEffects
             _levelGrowth = levelGrowth;
         }
 
-        public override async Task OnSkillCasted(Character caster, List<Character> targets, List<Grid> grids, Dictionary<string, object> others)
+        public override void OnSkillCasted(Character caster, List<Character> targets, List<Grid> grids, Dictionary<string, object> others)
         {
             foreach (Character enemy in targets)
             {
                 if (enemy.HP <= 0) continue;
-                WriteLine($"[ {caster} ] 眩晕了 [ {enemy} ] ！持续时间：{眩晕时间}！");
                 眩晕 e = new(Skill, caster, _durative, _duration + _levelGrowth * (Level - 1), Convert.ToInt32(_durationTurn + _levelGrowth * (Level - 1)));
-                enemy.Effects.Add(e);
-                e.OnEffectGained(enemy);
-                GamingQueue?.LastRound.AddApplyEffects(enemy, e.EffectType);
+                if (!CheckExemption(caster, enemy, e))
+                {
+                    WriteLine($"[ {caster} ] 眩晕了 [ {enemy} ] ！持续时间：{眩晕时间}！");
+                    enemy.Effects.Add(e);
+                    e.OnEffectGained(enemy);
+                    GamingQueue?.LastRound.AddApplyEffects(enemy, e.EffectType);
+                }
             }
         }
     }

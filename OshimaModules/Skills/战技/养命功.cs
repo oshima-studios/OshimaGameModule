@@ -10,8 +10,8 @@ namespace Oshima.FunGame.OshimaModules.Skills
         public override string Name => "养命功";
         public override string Description => string.Join("", Effects.Select(e => e.Description));
         public override string DispelDescription => Effects.Count > 0 ? Effects.First(e => e is 施加持续性弱驱散).DispelDescription : "";
-        public override double EPCost => 55;
-        public override double CD => 45;
+        public override double EPCost => 40;
+        public override double CD => 35;
         public override double HardnessTime { get; set; } = 10;
         public override bool CanSelectSelf => true;
         public override bool CanSelectEnemy => false;

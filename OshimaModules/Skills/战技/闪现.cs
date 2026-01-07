@@ -1,6 +1,8 @@
 ﻿using Milimoe.FunGame.Core.Entity;
+using Milimoe.FunGame.Core.Interface.Entity;
 using Milimoe.FunGame.Core.Library.Common.Addon;
 using Milimoe.FunGame.Core.Library.Constant;
+using Milimoe.FunGame.Core.Model;
 
 namespace Oshima.FunGame.OshimaModules.Skills
 {
@@ -19,10 +21,11 @@ namespace Oshima.FunGame.OshimaModules.Skills
         public override bool CanSelectTeammate => false;
         public override int CanSelectTargetRange => 0;
         public override bool SelectIncludeCharacterGrid => false;
+        public override bool AllowSelectNoCharacterGrid => true;
 
         public 闪现(Character? character = null) : base(SkillType.Skill, character)
         {
-            CastRange = 7;
+            CastRange = 9;
             Effects.Add(new 闪现特效(this));
         }
     }
@@ -31,14 +34,18 @@ namespace Oshima.FunGame.OshimaModules.Skills
     {
         public override long Id => Skill.Id;
         public override string Name => Skill.Name;
-        public override string Description => $"立即将角色传送到范围内的任意一个没有被角色占据的指定地点。";
+        public override string Description => $"立即将角色传送到范围内的任意一个没有被角色占据的指定地点，并附赠一次战技的决策点配额。";
         public override string DispelDescription => "";
 
-        public override async Task OnSkillCasted(Character caster, List<Character> targets, List<Grid> grids, Dictionary<string, object> others)
+        public override void OnSkillCasted(Character caster, List<Character> targets, List<Grid> grids, Dictionary<string, object> others)
         {
             if (GamingQueue?.Map is GameMap map && grids.Count > 0)
             {
                 map.CharacterMove(caster, map.GetCharacterCurrentGrid(caster), grids[0]);
+            }
+            if (GamingQueue != null && GamingQueue.CharacterDecisionPoints.TryGetValue(caster, out DecisionPoints? dp) && dp != null)
+            {
+                dp.AddTempActionQuota(CharacterActionType.CastSkill);
             }
         }
     }

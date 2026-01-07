@@ -13,12 +13,12 @@ namespace Oshima.FunGame.OshimaModules.Skills
         public override string ExemptionDescription => Effects.Count > 0 ? Effects.First().ExemptionDescription : "";
         public override double MPCost => Level > 0 ? 75 + (85 * (Level - 1)) : 75;
         public override double CD => Level > 0 ? 38 - (1 * (Level - 1)) : 38;
-        public override double CastTime => Level > 0 ? 7 + (1 * (Level - 1)) : 7;
+        public override double CastTime => Level > 0 ? 4 + (0.5 * (Level - 1)) : 4;
         public override double HardnessTime { get; set; } = 4;
 
         public 时间减速改(Character? character = null) : base(SkillType.Magic, character)
         {
-            Effects.Add(new 时间减速改特效(this, false, 0, 4, 0, 40, 25, 0.1, 0.02));
+            Effects.Add(new 时间减速改特效(this, false, 0, 4, 0, 50, 40, 0.1, 0.02));
         }
     }
 
@@ -61,12 +61,10 @@ namespace Oshima.FunGame.OshimaModules.Skills
             _accLevelGrowth = accLevelGrowth;
         }
 
-        public override async Task OnSkillCasted(Character caster, List<Character> targets, List<Grid> grids, Dictionary<string, object> others)
+        public override void OnSkillCasted(Character caster, List<Character> targets, List<Grid> grids, Dictionary<string, object> others)
         {
             foreach (Character target in targets)
             {
-                WriteLine($"[ {target} ] 的行动速度降低了 {ExSPD:0.##} 点，行动等待时间（当前硬直时间）被延长了 30%！持续时间：{持续时间}！");
-                WriteLine($"[ {target} ] 的加速系数降低了 {ExACC * 100:0.##}%！持续时间：{持续时间}！");
                 Effect e1 = new ExSPD(Skill, new Dictionary<string, object>()
                 {
                     { "exspd", -ExSPD }
@@ -76,10 +74,14 @@ namespace Oshima.FunGame.OshimaModules.Skills
                     Duration = 实际持续时间,
                     DurationTurn = (int)实际持续时间
                 };
-                target.Effects.Add(e1);
-                e1.OnEffectGained(target);
-                e1.IsDebuff = true;
-                GamingQueue?.ChangeCharacterHardnessTime(target, 0.3, true, false);
+                if (!CheckExemption(caster, target, e1))
+                {
+                    WriteLine($"[ {target} ] 的行动速度降低了 {ExSPD:0.##} 点，行动等待时间（当前硬直时间）被延长了 30%！持续时间：{持续时间}！");
+                    target.Effects.Add(e1);
+                    e1.OnEffectGained(target);
+                    e1.IsDebuff = true;
+                    GamingQueue?.ChangeCharacterHardnessTime(target, 0.3, true, false);
+                }
                 Effect e2 = new AccelerationCoefficient(Skill, new()
                 {
                     { "exacc", -ExACC }
@@ -89,10 +91,14 @@ namespace Oshima.FunGame.OshimaModules.Skills
                     Duration = 实际持续时间,
                     DurationTurn = (int)实际持续时间
                 };
-                target.Effects.Add(e2);
-                e2.OnEffectGained(target);
-                e2.IsDebuff = true;
-                GamingQueue?.LastRound.AddApplyEffects(target, EffectType.Slow);
+                if (!CheckExemption(caster, target, e2))
+                {
+                    WriteLine($"[ {target} ] 的加速系数降低了 {ExACC * 100:0.##}%！持续时间：{持续时间}！");
+                    target.Effects.Add(e2);
+                    e2.OnEffectGained(target);
+                    e2.IsDebuff = true;
+                    GamingQueue?.LastRound.AddApplyEffects(target, EffectType.Slow);
+                }
             }
         }
     }

@@ -32,11 +32,10 @@ namespace Oshima.FunGame.OshimaModules.Effects.SkillEffects
             _durationTurn = durationTurn;
         }
 
-        public override async Task OnSkillCasted(Character caster, List<Character> targets, List<Grid> grids, Dictionary<string, object> others)
+        public override void OnSkillCasted(Character caster, List<Character> targets, List<Grid> grids, Dictionary<string, object> others)
         {
             foreach (Character target in targets)
             {
-                WriteLine($"[ {target} ] 的行动速度降低了 {-SPD:0.##} 点，行动等待时间（当前硬直时间）被延长了 30%！持续时间：{持续时间}！");
                 ExSPD e = new(Skill, new Dictionary<string, object>()
                 {
                     { "exspd", SPD }
@@ -46,12 +45,16 @@ namespace Oshima.FunGame.OshimaModules.Effects.SkillEffects
                     Duration = _duration,
                     DurationTurn = _durationTurn
                 };
-                target.Effects.Add(e);
-                e.OnEffectGained(target);
-                e.EffectType = EffectType.Slow;
-                e.IsDebuff = true;
-                GamingQueue?.LastRound.AddApplyEffects(target, e.EffectType);
-                GamingQueue?.ChangeCharacterHardnessTime(target, 0.3, true, false);
+                if (!CheckExemption(caster, target, e))
+                {
+                    target.Effects.Add(e);
+                    e.OnEffectGained(target);
+                    e.EffectType = EffectType.Slow;
+                    e.IsDebuff = true;
+                    WriteLine($"[ {target} ] 的行动速度降低了 {-SPD:0.##} 点，行动等待时间（当前硬直时间）被延长了 30%！持续时间：{持续时间}！");
+                    GamingQueue?.LastRound.AddApplyEffects(target, e.EffectType);
+                    GamingQueue?.ChangeCharacterHardnessTime(target, 0.3, true, false);
+                }
             }
         }
     }

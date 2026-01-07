@@ -72,30 +72,33 @@ namespace Oshima.FunGame.OshimaModules.Skills
             _confusionProbabilityLevelGrowth = confusionProbabilityLevelGrowth;
         }
 
-        public override async Task OnSkillCasted(Character caster, List<Character> targets, List<Grid> grids, Dictionary<string, object> others)
+        public override void OnSkillCasted(Character caster, List<Character> targets, List<Grid> grids, Dictionary<string, object> others)
         {
             foreach (Character target in targets)
             {
                 DamageToEnemy(caster, target, DamageType.Magical, MagicType, Damage);
                 if (target.HP > 0 && Random.Shared.NextDouble() < ActualConfusionProbability)
                 {
-                    WriteLine($"[ {target} ] 陷入了混乱！！持续时间：{持续时间}！");
                     混乱 e = new(Skill, caster);
-                    if (_durative && _duration > 0)
+                    if (!CheckExemption(caster, target, e))
                     {
-                        e.Durative = true;
-                        e.Duration = 实际持续时间;
-                        e.RemainDuration = 实际持续时间;
+                        WriteLine($"[ {target} ] 陷入了混乱！！持续时间：{持续时间}！");
+                        if (_durative && _duration > 0)
+                        {
+                            e.Durative = true;
+                            e.Duration = 实际持续时间;
+                            e.RemainDuration = 实际持续时间;
+                        }
+                        else if (!_durative && _durationTurn > 0)
+                        {
+                            e.Durative = false;
+                            e.DurationTurn = (int)实际持续时间;
+                            e.RemainDurationTurn = (int)实际持续时间;
+                        }
+                        target.Effects.Add(e);
+                        e.OnEffectGained(target);
+                        GamingQueue?.LastRound.AddApplyEffects(target, e.EffectType);
                     }
-                    else if (!_durative && _durationTurn > 0)
-                    {
-                        e.Durative = false;
-                        e.DurationTurn = (int)实际持续时间;
-                        e.RemainDurationTurn = (int)实际持续时间;
-                    }
-                    target.Effects.Add(e);
-                    e.OnEffectGained(target);
-                    GamingQueue?.LastRound.AddApplyEffects(target, e.EffectType);
                 }
             }
         }

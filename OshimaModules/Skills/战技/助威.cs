@@ -11,7 +11,7 @@ namespace Oshima.FunGame.OshimaModules.Skills
         public override string Name => "助威";
         public override string Description => Effects.Count > 0 ? Effects.First().Description : "";
         public override string DispelDescription => Effects.Count > 0 ? Effects.First().DispelDescription : "";
-        public override double EPCost => 75;
+        public override double EPCost => 60;
         public override double CD => 35;
         public override double HardnessTime { get; set; } = 7;
         public override bool CanSelectSelf => true;
@@ -49,7 +49,7 @@ namespace Oshima.FunGame.OshimaModules.Skills
             GamingQueue = skill.GamingQueue;
         }
 
-        public override async Task OnSkillCasted(Character caster, List<Character> targets, List<Grid> grids, Dictionary<string, object> others)
+        public override void OnSkillCasted(Character caster, List<Character> targets, List<Grid> grids, Dictionary<string, object> others)
         {
             foreach (Character target in targets)
             {

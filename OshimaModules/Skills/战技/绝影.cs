@@ -14,7 +14,7 @@ namespace Oshima.FunGame.OshimaModules.Skills
         public override double EPCost => 60;
         public override double CD => 18;
         public override double HardnessTime { get; set; } = 7;
-        public override int CanSelectTargetRange => 4;
+        public override int CanSelectTargetRange => 1;
         public override bool IsNonDirectional => true;
         public override SkillRangeType SkillRangeType => SkillRangeType.LinePass;
 

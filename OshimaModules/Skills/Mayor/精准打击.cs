@@ -56,7 +56,7 @@ namespace Oshima.FunGame.OshimaModules.Skills
             character.PhysicalPenetration -= 实际物理穿透提升;
         }
 
-        public override async Task OnSkillCasted(Character caster, List<Character> targets, List<Grid> grids, Dictionary<string, object> others)
+        public override void OnSkillCasted(Character caster, List<Character> targets, List<Grid> grids, Dictionary<string, object> others)
         {
             RemainDuration = Duration;
             if (!caster.Effects.Contains(this))

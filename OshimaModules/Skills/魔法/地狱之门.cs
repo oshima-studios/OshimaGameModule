@@ -30,6 +30,9 @@ namespace Oshima.FunGame.OshimaModules.Skills
                 };
             }
         }
+        public override bool IsNonDirectional => true;
+        public override SkillRangeType SkillRangeType => SkillRangeType.Sector;
+        public override int CanSelectTargetRange => 4;
 
         public 地狱之门(Character? character = null) : base(SkillType.Magic, character)
         {

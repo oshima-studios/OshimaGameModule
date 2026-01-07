@@ -32,5 +32,12 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Skills\ShiYu\" />
+    <Folder Include="Skills\TheGodK\" />
+    <Folder Include="Skills\Ryuko\" />
+    <Folder Include="Skills\CHAOS\" />
+  </ItemGroup>
 	
 </Project>
