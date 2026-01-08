@@ -148,6 +148,7 @@ namespace Oshima.FunGame.OshimaModules.Items
         public override bool CanSelectTeammate => _canSelectTeammate;
         public override bool CanSelectEnemy => _canSelectEnemy;
         public override int CanSelectTargetCount => _canSelectCount;
+        public override bool AllowSelectDead => true;
 
         private readonly bool _canSelectAllTeammates;
         private readonly bool _canSelectAllEnemies;

@@ -1,4 +1,5 @@
 ﻿using Milimoe.FunGame.Core.Entity;
+using Milimoe.FunGame.Core.Interface.Entity;
 using Milimoe.FunGame.Core.Library.Constant;
 using Oshima.FunGame.OshimaModules.Effects.OpenEffects;
 
@@ -54,13 +55,17 @@ namespace Oshima.FunGame.OshimaModules.Effects.PassiveEffects
             {
                 RemainDurationTurn = DurationTurn;
             }
-            GamingQueue?.ChangeCharacterHardnessTime(character, _hardnessReductionPercent, true, false);
             AddEffectTypeToCharacter(character, [EffectType.Slow]);
         }
 
         public override void OnEffectLost(Character character)
         {
             RemoveEffectTypesFromCharacter(character);
+        }
+
+        public void ApplyChange(Character character)
+        {
+            GamingQueue?.ChangeCharacterHardnessTime(character, _hardnessReductionPercent, true, false);
         }
     }
 }

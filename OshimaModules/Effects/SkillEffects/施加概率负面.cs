@@ -1,4 +1,5 @@
 ﻿using Milimoe.FunGame.Core.Entity;
+using Milimoe.FunGame.Core.Interface.Entity;
 using Milimoe.FunGame.Core.Library.Common.Addon;
 using Milimoe.FunGame.Core.Library.Constant;
 using Oshima.FunGame.OshimaModules.Effects.PassiveEffects;
@@ -154,6 +155,10 @@ namespace Oshima.FunGame.OshimaModules.Effects.SkillEffects
                     target.Effects.Add(e);
                     e.OnEffectGained(target);
                     GamingQueue?.LastRound.AddApplyEffects(target, e.EffectType);
+                    if (e is 迟滞 cz)
+                    {
+                        cz.ApplyChange(target);
+                    }
                 }
             }
         }

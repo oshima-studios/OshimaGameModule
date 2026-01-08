@@ -47,6 +47,9 @@ namespace Oshima.FunGame.OshimaModules
                     10 => new ColdBlue(),
                     11 => new dddovo(),
                     12 => new Quduoduo(),
+                    14 => new XReouni(),
+                    15 => new Neptune(),
+                    17 => new Ryuko(),
                     _ => null,
                 };
             };

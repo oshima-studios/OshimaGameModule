@@ -47,7 +47,7 @@ namespace Oshima.FunGame.OshimaModules.Skills
                 WriteLine($"[ {character} ] 发动了心灵之火！额外进行一次普通攻击！");
                 冷却时间 = 基础冷却时间;
                 是否是嵌套普通攻击 = true;
-                character.NormalAttack.Attack(GamingQueue, character, true, enemy);
+                character.NormalAttack.Attack(GamingQueue, character, null, enemy);
             }
 
             if (character == Skill.Character && 是否是嵌套普通攻击)

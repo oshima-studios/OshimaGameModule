@@ -250,7 +250,7 @@ namespace Oshima.FunGame.OshimaServers
                     StringBuilder builder = new();
                     CharacterStatistics stats = actionQueue.CharacterStatistics[character];
                     builder.AppendLine($"{count++}. [ {character.ToStringWithLevel()} ] （{stats.Kills} / {stats.Assists}）");
-                    builder.AppendLine($"存活时长：{stats.LiveTime} / 存活回合数：{stats.LiveRound} / 行动回合数：{stats.ActionTurn}");
+                    builder.AppendLine($"存活时长：{stats.LiveTime} / 存活回合数：{stats.LiveRound} / 行动回合数：{stats.ActionTurn} / 总计决策数：{stats.TurnDecisions} / 总计决策点：{stats.UseDecisionPoints}");
                     builder.AppendLine($"总计伤害：{stats.TotalDamage} / 总计物理伤害：{stats.TotalPhysicalDamage} / 总计魔法伤害：{stats.TotalMagicDamage}");
                     builder.AppendLine($"总承受伤害：{stats.TotalTakenDamage} / 总承受物理伤害：{stats.TotalTakenPhysicalDamage} / 总承受魔法伤害：{stats.TotalTakenMagicDamage}");
                     builder.Append($"每秒伤害：{stats.DamagePerSecond} / 每回合伤害：{stats.DamagePerTurn}");

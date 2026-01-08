@@ -48,7 +48,10 @@ namespace Oshima.FunGame.OshimaModules.Skills
                     是否是满层伤害 = true;
                     是否是叠加伤害 = true;
                     WriteLine($"[ {character} ] 发动了征服者的满层效果！");
-                    DamageToEnemy(character, enemy, DamageType.True, magicType, 满层伤害);
+                    DamageToEnemy(character, enemy, DamageType.True, magicType, 满层伤害, new()
+                    {
+                        TriggerEffects = false
+                    });
                     ClearExPrimaryAttribute(character);
                     层数 = 0;
                     允许叠层 = false;
@@ -79,7 +82,10 @@ namespace Oshima.FunGame.OshimaModules.Skills
                         {
                             是否是叠加伤害 = true;
                             WriteLine($"[ {character} ] 发动了征服者！");
-                            DamageToEnemy(character, enemy, DamageType.True, magicType, 真实伤害 * 层数);
+                            DamageToEnemy(character, enemy, DamageType.True, magicType, 真实伤害 * 层数, new()
+                            {
+                                TriggerEffects = false
+                            });
                         }
                     }
                 }

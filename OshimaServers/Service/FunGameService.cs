@@ -45,13 +45,18 @@ namespace Oshima.FunGame.OshimaServers.Service
             FunGameConstant.Characters.Add(new ColdBlue());
             FunGameConstant.Characters.Add(new dddovo());
             FunGameConstant.Characters.Add(new Quduoduo());
+            FunGameConstant.Characters.Add(new XReouni());
+            FunGameConstant.Characters.Add(new Neptune());
+            FunGameConstant.Characters.Add(new Ryuko());
 
             FunGameConstant.Skills.AddRange([new 疾风步(), new 助威(), new 挑拨(), new 绞丝棍(), new 金刚击(), new 旋风轮(), new 双连击(), new 绝影(), new 胧(), new 魔眼(),
                 new 天堂之吻(), new 回复弹(), new 养命功(), new 镜花水月(), new 剑风闪(), new 疾走(), new 闪现()]);
 
-            FunGameConstant.SuperSkills.AddRange([new 嗜血本能(), new 平衡强化(), new 绝对领域(), new 精准打击(), new 三重叠加(), new 变幻之心(), new 力量爆发(), new 能量毁灭(), new 血之狂欢(), new 迅捷之势(), new 天赐之力(), new 魔法涌流()]);
+            FunGameConstant.SuperSkills.AddRange([new 嗜血本能(), new 平衡强化(), new 绝对领域(), new 精准打击(), new 三重叠加(), new 变幻之心(), new 力量爆发(), new 能量毁灭(), new 血之狂欢(),
+                new 迅捷之势(), new 天赐之力(), new 魔法涌流(), new 归元环(), new 海王星的野望(), new 自我抉择()]);
 
-            FunGameConstant.PassiveSkills.AddRange([new META马(), new 心灵之火(), new 魔法震荡(), new 灵能反射(), new 智慧与力量(), new 致命打击(), new 毁灭之势(), new 枯竭打击(), new 破釜沉舟(), new 累积之压(), new 敏捷之刃(), new 弱者猎手()]);
+            FunGameConstant.PassiveSkills.AddRange([new META马(), new 心灵之火(), new 魔法震荡(), new 灵能反射(), new 智慧与力量(), new 致命打击(), new 毁灭之势(), new 枯竭打击(), new 破釜沉舟(),
+                new 累积之压(), new 敏捷之刃(), new 弱者猎手(), new 八卦阵(), new 深海之戟(), new 能量复苏()]);
 
             FunGameConstant.CommonPassiveSkills.AddRange([new 征服者(), new 致命节奏(), new 强攻(), new 电刑(), new 黑暗收割()]);
 
@@ -1230,6 +1235,51 @@ namespace Oshima.FunGame.OshimaServers.Service
                 };
                 character.Skills.Add(血之狂欢);
             }
+
+            if (id == 14)
+            {
+                Skill 八卦阵 = new 八卦阵(character)
+                {
+                    Level = passiveLevel
+                };
+                character.Skills.Add(八卦阵);
+
+                Skill 归元环 = new 归元环(character)
+                {
+                    Level = superLevel
+                };
+                character.Skills.Add(归元环);
+            }
+
+            if (id == 15)
+            {
+                Skill 深海之戟 = new 深海之戟(character)
+                {
+                    Level = passiveLevel
+                };
+                character.Skills.Add(深海之戟);
+
+                Skill 海王星的野望 = new 海王星的野望(character)
+                {
+                    Level = superLevel
+                };
+                character.Skills.Add(海王星的野望);
+            }
+
+            if (id == 17)
+            {
+                Skill 能量复苏 = new 能量复苏(character)
+                {
+                    Level = passiveLevel
+                };
+                character.Skills.Add(能量复苏);
+
+                Skill 自我抉择 = new 自我抉择(character)
+                {
+                    Level = superLevel
+                };
+                character.Skills.Add(自我抉择);
+            }
         }
 
         public static bool UseItem(Item item, int times, User user, IEnumerable<Character> targets, out string msg)
@@ -1793,7 +1843,7 @@ namespace Oshima.FunGame.OshimaServers.Service
             }
             else
             {
-                baseScore = baseScore * 0.7 + 0.4 * (stats.Kills / (stats.Kills + stats.Deaths + 0.01));
+                baseScore = baseScore * 0.9 + 0.6 * (stats.Kills / (stats.Kills + stats.Deaths + 0.01));
             }
 
             // 伤害贡献
@@ -1819,16 +1869,12 @@ namespace Oshima.FunGame.OshimaServers.Service
             {
                 if (stats.Assists > team.Score) stats.Assists = team.Score;
                 teamContribution = (stats.Kills + stats.Assists) / (team.Score + 0.01);
-                if (team.IsWinner)
-                {
-                    teamContribution += 0.15;
-                }
             }
 
             // 权重设置
-            double k = stats.Deaths > 0 ? 0.2 : 0.075; // 伤害贡献权重
-            double l = stats.Deaths > 0 ? 0.2 : 0.05; // 存活时间权重
-            double t = stats.Deaths > 0 ? 0.2 : 0.075; // 参团率权重
+            double k = stats.Deaths == 0 ? 0.2 : 0.075; // 伤害贡献权重
+            double l = stats.Deaths == 0 ? 0.2 : 0.05; // 存活时间权重
+            double t = stats.Deaths == 0 ? 0.2 : 0.075; // 参团率权重
 
             // 计算最终评分
             double rating = baseScore + k * damageContribution + l * liveTimeContribution + t * teamContribution;

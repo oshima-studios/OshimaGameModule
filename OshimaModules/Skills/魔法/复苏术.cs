@@ -18,6 +18,7 @@ namespace Oshima.FunGame.OshimaModules.Skills
         public override bool CanSelectEnemy => false;
         public override bool CanSelectTeammate => true;
         public override int CanSelectTargetCount => 1;
+        public override bool AllowSelectDead => true;
 
         public 复苏术(Character? character = null) : base(SkillType.Magic, character)
         {

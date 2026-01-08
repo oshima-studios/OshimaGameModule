@@ -1,7 +1,7 @@
-﻿using System;
-using Milimoe.FunGame.Core.Entity;
+﻿using Milimoe.FunGame.Core.Entity;
 using Milimoe.FunGame.Core.Library.Common.Addon;
 using Milimoe.FunGame.Core.Library.Constant;
+using Oshima.FunGame.OshimaModules.Effects.PassiveEffects;
 
 namespace Oshima.FunGame.OshimaModules.Skills
 {
@@ -11,7 +11,7 @@ namespace Oshima.FunGame.OshimaModules.Skills
         public override string Name => "深海之戟";
         public override string Description => Effects.Count > 0 ? Effects.First().Description : "";
         public override string ExemptionDescription => Effects.Count > 0 ? Effects.First().ExemptionDescription : "";
-        public override int CanSelectTargetRange => 3;
+        public override int CanSelectTargetRange => 5;
 
         public 深海之戟(Character? character = null) : base(SkillType.Passive, character)
         {
@@ -33,7 +33,11 @@ namespace Oshima.FunGame.OshimaModules.Skills
             get
             {
                 string str = $"分裂伤害：{分裂百分比 * 100:0.##}%。无视免疫。";
-                if (GamingQueue?.Map != null)
+                if (野望 != null)
+                {
+                    return $"技能机制受 [ {nameof(海王星的野望)} ] 影响而改变：{野望.爆炸伤害描述}{str}";
+                }
+                else if (GamingQueue?.Map != null)
                 {
                     return $"普通攻击暴击时会自动产生分裂伤害至其附近半径为 {Skill.CanSelectTargetRange} 格的菱形区域内的敌人，但最多只会对两个敌人造成分裂伤害。{str}";
                 }
@@ -45,13 +49,18 @@ namespace Oshima.FunGame.OshimaModules.Skills
         }
         public override ImmuneType IgnoreImmune => ImmuneType.All;
 
-        public double 分裂百分比 => 0.3 + (Skill.Character?.Level ?? 0) / 100;
+        public double 分裂百分比 => Math.Min(0.75, 0.3 + (Skill.Character?.Level ?? 0 + 0.00) / 100);
+        public 海王星的野望特效? 野望 { get; set; } = null;
 
         public override void AfterDamageCalculation(Character character, Character enemy, double damage, double actualDamage, bool isNormalAttack, DamageType damageType, MagicType magicType, DamageResult damageResult)
         {
-            if (character == Skill.Character && isNormalAttack && damageResult == DamageResult.Critical && GamingQueue != null)
+            if (野望 != null && enemy.Effects.FirstOrDefault(e => e is 海王星的野望标记) is 海王星的野望标记 e)
             {
-                List<Character> allEnemys = [.. GamingQueue.AllCharacters.Where(c => c != character && c != enemy && c.HP > 0 && !GamingQueue.IsTeammate(character, c))];
+                野望.分裂伤害(character, enemy, actualDamage, damageType, magicType);
+            }
+            else if (character == Skill.Character && isNormalAttack && damageResult == DamageResult.Critical && GamingQueue != null)
+            {
+                List<Character> allEnemys = [.. GamingQueue.GetEnemies(character).Where(c => c != character && c != enemy && c.HP > 0)];
                 List<Character> targets = [];
                 if (GamingQueue?.Map is GameMap map)
                 {
@@ -71,7 +80,13 @@ namespace Oshima.FunGame.OshimaModules.Skills
                 double 分裂伤害 = actualDamage * 分裂百分比;
                 foreach (Character target in targets)
                 {
-                    DamageToEnemy(character, target, damageType, magicType, 分裂伤害, false, true);
+                    DamageToEnemy(character, target, damageType, magicType, 分裂伤害, new()
+                    {
+                        CalculateCritical = false,
+                        CalculateReduction = true,
+                        TriggerEffects = false,
+                        IgnoreImmune = true
+                    });
                 }
             }
         }

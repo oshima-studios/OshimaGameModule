@@ -78,6 +78,8 @@ namespace Oshima.FunGame.WebAPI.Controllers
                     builder.AppendLine($"每回合伤害：{stats.DamagePerRound:0.##}");
                     builder.AppendLine($"每行动回合伤害：{stats.DamagePerTurn:0.##}");
                     builder.AppendLine($"每秒伤害：{stats.DamagePerSecond:0.##}");
+                    builder.AppendLine($"总计回合决策数：{stats.TurnDecisions:0.##} / 场均：{stats.AvgTurnDecisions:0.##}");
+                    builder.AppendLine($"总计使用决策点：{stats.UseDecisionPoints:0.##} / 场均：{stats.AvgUseDecisionPoints:0.##}");
                     builder.AppendLine($"总计击杀数：{stats.Kills}" + (stats.Plays != 0 ? $" / 场均：{(double)stats.Kills / stats.Plays:0.##}" : ""));
                     builder.AppendLine($"总计死亡数：{stats.Deaths}" + (stats.Plays != 0 ? $" / 场均：{(double)stats.Deaths / stats.Plays:0.##}" : ""));
                     builder.AppendLine($"击杀死亡比：{(stats.Deaths == 0 ? stats.Kills : ((double)stats.Kills / stats.Deaths)):0.##}");
@@ -137,6 +139,8 @@ namespace Oshima.FunGame.WebAPI.Controllers
                     builder.AppendLine($"每回合伤害：{stats.DamagePerRound:0.##}");
                     builder.AppendLine($"每行动回合伤害：{stats.DamagePerTurn:0.##}");
                     builder.AppendLine($"每秒伤害：{stats.DamagePerSecond:0.##}");
+                    builder.AppendLine($"总计回合决策数：{stats.TurnDecisions:0.##} / 场均：{stats.AvgTurnDecisions:0.##}");
+                    builder.AppendLine($"总计使用决策点：{stats.UseDecisionPoints:0.##} / 场均：{stats.AvgUseDecisionPoints:0.##}");
                     builder.AppendLine($"总计击杀数：{stats.Kills}" + (stats.Plays != 0 ? $" / 场均：{(double)stats.Kills / stats.Plays:0.##}" : ""));
                     builder.AppendLine($"总计死亡数：{stats.Deaths}" + (stats.Plays != 0 ? $" / 场均：{(double)stats.Deaths / stats.Plays:0.##}" : ""));
                     builder.AppendLine($"击杀死亡比：{(stats.Deaths == 0 ? stats.Kills : ((double)stats.Kills / stats.Deaths)):0.##}");
@@ -4557,52 +4561,63 @@ namespace Oshima.FunGame.WebAPI.Controllers
         }
 
         [HttpPost("signin")]
-        public string SignIn([FromQuery] long? uid = null)
+        public string SignIn([FromQuery] long uid = 0)
         {
-            long userid = uid ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
-
-            PluginConfig pc = FunGameService.GetUserConfig(userid, out _);
-
-            if (pc.Count > 0)
+            try
             {
-                User user = FunGameService.GetUser(pc);
-                bool sign = false;
-                int days = 0;
-                DateTime lastTime = DateTime.MinValue;
-                DateTime newLastTime = DateTime.Now;
-                if (pc.TryGetValue("signed", out object? value) && value is bool temp && temp)
-                {
-                    sign = true;
-                }
-                if (pc.TryGetValue("days", out value) && int.TryParse(value.ToString(), out int temp2))
-                {
-                    days = temp2;
-                }
+                PluginConfig pc = FunGameService.GetUserConfig(uid, out _);
 
-                if (pc.TryGetValue("lastTime", out value) && DateTime.TryParse(value.ToString(), out lastTime) && (newLastTime.Date - lastTime.Date).TotalDays > 1)
+                if (pc.Count > 0)
                 {
-                    days = 0;
-                }
+                    string msg = "";
+                    User user = FunGameService.GetUser(pc);
+                    bool sign = false;
+                    int days = 0;
+                    DateTime lastTime = DateTime.MinValue;
+                    DateTime newLastTime = DateTime.Now;
+                    if (pc.TryGetValue("signed", out object? value) && value is bool temp && temp)
+                    {
+                        sign = true;
+                    }
+                    if (pc.TryGetValue("days", out value) && int.TryParse(value.ToString(), out int temp2))
+                    {
+                        days = temp2;
+                    }
 
-                if (sign)
+                    if (pc.TryGetValue("lastTime", out value) && DateTime.TryParse(value.ToString(), out lastTime) && (newLastTime.Date - lastTime.Date).TotalDays > 1)
+                    {
+                        days = 0;
+                    }
+
+                    if (sign)
+                    {
+                        msg = $"你今天已经签过到了哦！" +
+                            (lastTime != DateTime.MinValue ? $"\r\n你上一次签到时间：{lastTime.ToString(General.GeneralDateTimeFormatChinese)}，连续签到：{days} 天。" : "");
+                    }
+                    else
+                    {
+                        msg = FunGameService.GetSignInResult(user, days);
+                        pc.Add("signed", true);
+                        pc.Add("days", days + 1);
+                        pc.Add("lastTime", newLastTime);
+                    }
+
+                    FunGameService.SetUserConfigButNotRelease(uid, pc, user);
+                    return msg + "\r\n提示：发送【帮助】来获取更多玩法指令！";
+                }
+                else
                 {
-                    FunGameService.ReleaseUserSemaphoreSlim(userid);
-                    return $"你今天已经签过到了哦！" +
-                        (lastTime != DateTime.MinValue ? $"\r\n你上一次签到时间：{lastTime.ToString(General.GeneralDateTimeFormatChinese)}，连续签到：{days} 天。" : "");
+                    return noSaved;
                 }
-
-                string msg = FunGameService.GetSignInResult(user, days);
-                pc.Add("user", user);
-                pc.Add("signed", true);
-                pc.Add("days", days + 1);
-                pc.Add("lastTime", newLastTime);
-                FunGameService.SetUserConfigAndReleaseSemaphoreSlim(userid, pc, user);
-                return msg + "\r\n提示：发送【帮助】来获取更多玩法指令！";
             }
-            else
+            catch (Exception e)
             {
-                FunGameService.ReleaseUserSemaphoreSlim(userid);
-                return noSaved;
+                if (Logger.IsEnabled(Microsoft.Extensions.Logging.LogLevel.Error)) Logger.LogError(e, "Error: {e}", e);
+                return busy;
+            }
+            finally
+            {
+                FunGameService.ReleaseUserSemaphoreSlim(uid);
             }
         }
 

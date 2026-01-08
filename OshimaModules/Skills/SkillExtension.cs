@@ -1,5 +1,4 @@
-﻿using System.Text;
-using Milimoe.FunGame.Core.Entity;
+﻿using Milimoe.FunGame.Core.Entity;
 using Milimoe.FunGame.Core.Library.Constant;
 
 namespace Oshima.FunGame.OshimaModules.Skills
@@ -8,7 +7,7 @@ namespace Oshima.FunGame.OshimaModules.Skills
     {
         public static string TargetDescription(this Skill skill)
         {
-            if (skill.IsNonDirectional)
+            if (skill.IsNonDirectional && skill.GamingQueue?.Map != null)
             {
                 return skill.RangeTargetDescription();
             }
@@ -40,7 +39,7 @@ namespace Oshima.FunGame.OshimaModules.Skills
                 str = $"{(skill.CanSelectTargetCount > 1 ? $"至多 {skill.CanSelectTargetCount} 个" : "")}目标";
             }
 
-            if (skill.CanSelectTargetRange > 0)
+            if (skill.CanSelectTargetRange > 0 && skill.GamingQueue?.Map != null)
             {
                 str += $"以及以{(skill.CanSelectTargetCount > 1 ? "这些" : "该")}目标为中心，半径为 {skill.CanSelectTargetRange} 格的菱形区域中的等同阵营角色";
             }

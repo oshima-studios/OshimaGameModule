@@ -46,10 +46,10 @@ namespace Oshima.FunGame.OshimaModules.Skills
                     checkQuota = dp.CheckActionTypeQuota(CharacterActionType.NormalAttack);
                     dp.AddActionType(CharacterActionType.NormalAttack, false);
                 }
-                caster.NormalAttack.Attack(GamingQueue, caster, true, targets);
+                caster.NormalAttack.Attack(GamingQueue, caster, null, targets);
                 if (checkQuota)
                 {
-                    caster.NormalAttack.Attack(GamingQueue, caster, true, targets);
+                    caster.NormalAttack.Attack(GamingQueue, caster, null, targets);
                 }
             }
         }

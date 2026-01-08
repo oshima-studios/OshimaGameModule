@@ -88,32 +88,15 @@ namespace Oshima.FunGame.OshimaServers.Service
                 // M = 5, W = 0, P1 = 0, P3 = 2
                 // M = 5, W = 1, P1 = 0, P3 = 0
 
-                List<Character> list = [.. FunGameConstant.Characters];
+                List<Character> list = [.. FunGameConstant.Characters.Select(c => c.Copy())];
 
-                if (list.Count > 11)
+                if (list.Count > 10)
                 {
                     if (PrintOut) Console.WriteLine();
                     if (PrintOut) Console.WriteLine("Start!!!");
                     if (PrintOut) Console.WriteLine();
 
-                    Character character1 = list[0].Copy();
-                    Character character2 = list[1].Copy();
-                    Character character3 = list[2].Copy();
-                    Character character4 = list[3].Copy();
-                    Character character5 = list[4].Copy();
-                    Character character6 = list[5].Copy();
-                    Character character7 = list[6].Copy();
-                    Character character8 = list[7].Copy();
-                    Character character9 = list[8].Copy();
-                    Character character10 = list[9].Copy();
-                    Character character11 = list[10].Copy();
-                    Character character12 = list[11].Copy();
-
-                    List<Character> characters = [
-                        character1, character2, character3, character4,
-                        character5, character6, character7, character8,
-                        character9, character10, character11, character12
-                    ];
+                    List<Character> characters = [.. list.OrderBy(o => Random.Shared.Next()).Take(10)];
 
                     int clevel = 10;
                     int slevel = 2;
@@ -410,7 +393,7 @@ namespace Oshima.FunGame.OshimaServers.Service
                         double timeLapse = actionQueue.TimeLapse();
                         totalTime = actionQueue.TotalTime;
                         nextDropTime -= timeLapse;
-                        Thread.Sleep(1);
+                        //Thread.Sleep(1);
 
                         if (roundMsg != "")
                         {
@@ -483,7 +466,7 @@ namespace Oshima.FunGame.OshimaServers.Service
                         stats.MVPs++;
                         mvpBuilder.AppendLine($"{(tgq != null ? "[ " + tgq.GetTeamFromEliminated(mvp)?.Name + " ] " : "")}[ {mvp.ToStringWithLevel()} ]");
                         mvpBuilder.AppendLine($"技术得分：{stats.Rating:0.0#} / 击杀数：{stats.Kills} / 助攻数：{stats.Assists}{(actionQueue.MaxRespawnTimes != 0 ? " / 死亡数：" + stats.Deaths : "")}");
-                        mvpBuilder.AppendLine($"存活时长：{stats.LiveTime:0.##} / 存活回合数：{stats.LiveRound} / 行动回合数：{stats.ActionTurn}");
+                        mvpBuilder.AppendLine($"存活时长：{stats.LiveTime:0.##} / 存活回合数：{stats.LiveRound} / 行动回合数：{stats.ActionTurn} / 总计决策数：{stats.TurnDecisions} / 总计决策点：{stats.UseDecisionPoints}");
                         mvpBuilder.AppendLine($"控制时长：{stats.ControlTime:0.##} / 总计治疗：{stats.TotalHeal:0.##} / 护盾抵消：{stats.TotalShield:0.##}");
                         mvpBuilder.AppendLine($"总计伤害：{stats.TotalDamage:0.##} / 总计物理伤害：{stats.TotalPhysicalDamage:0.##} / 总计魔法伤害：{stats.TotalMagicDamage:0.##}");
                         mvpBuilder.AppendLine($"总承受伤害：{stats.TotalTakenDamage:0.##} / 总承受物理伤害：{stats.TotalTakenPhysicalDamage:0.##} / 总承受魔法伤害：{stats.TotalTakenMagicDamage:0.##}");
@@ -546,7 +529,7 @@ namespace Oshima.FunGame.OshimaServers.Service
                             CharacterStatistics stats = tgq.CharacterStatistics[character];
                             builder.AppendLine($"{(isWeb ? count + "." : ("[ " + tgq.GetTeamFromEliminated(character)?.Name + " ]" ?? ""))} [ {character.ToStringWithLevel()} ]");
                             builder.AppendLine($"技术得分：{stats.Rating:0.0#} / 击杀数：{stats.Kills} / 助攻数：{stats.Assists}{(tgq.MaxRespawnTimes != 0 ? " / 死亡数：" + stats.Deaths : "")}");
-                            builder.AppendLine($"存活时长：{stats.LiveTime:0.##} / 存活回合数：{stats.LiveRound} / 行动回合数：{stats.ActionTurn}");
+                            builder.AppendLine($"存活时长：{stats.LiveTime:0.##} / 存活回合数：{stats.LiveRound} / 行动回合数：{stats.ActionTurn} / 总计决策数：{stats.TurnDecisions} / 总计决策点：{stats.UseDecisionPoints}");
                             builder.AppendLine($"控制时长：{stats.ControlTime:0.##} / 总计治疗：{stats.TotalHeal:0.##} / 护盾抵消：{stats.TotalShield:0.##}");
                             builder.AppendLine($"总计伤害：{stats.TotalDamage:0.##} / 总计物理伤害：{stats.TotalPhysicalDamage:0.##} / 总计魔法伤害：{stats.TotalMagicDamage:0.##}");
                             builder.AppendLine($"总承受伤害：{stats.TotalTakenDamage:0.##} / 总承受物理伤害：{stats.TotalTakenPhysicalDamage:0.##} / 总承受魔法伤害：{stats.TotalTakenMagicDamage:0.##}");
@@ -579,7 +562,7 @@ namespace Oshima.FunGame.OshimaServers.Service
                             CharacterStatistics stats = actionQueue.CharacterStatistics[character];
                             builder.AppendLine($"{(isWeb ? count + ". " : "")}[ {character.ToStringWithLevel()} ]");
                             builder.AppendLine($"技术得分：{stats.Rating:0.0#} / 击杀数：{stats.Kills} / 助攻数：{stats.Assists}{(actionQueue.MaxRespawnTimes != 0 ? " / 死亡数：" + stats.Deaths : "")}");
-                            builder.AppendLine($"存活时长：{stats.LiveTime:0.##} / 存活回合数：{stats.LiveRound} / 行动回合数：{stats.ActionTurn}");
+                            builder.AppendLine($"存活时长：{stats.LiveTime:0.##} / 存活回合数：{stats.LiveRound} / 行动回合数：{stats.ActionTurn} / 总计决策数：{stats.TurnDecisions} / 总计决策点：{stats.UseDecisionPoints}");
                             builder.AppendLine($"控制时长：{stats.ControlTime:0.##} / 总计治疗：{stats.TotalHeal:0.##} / 护盾抵消：{stats.TotalShield:0.##}");
                             builder.AppendLine($"总计伤害：{stats.TotalDamage:0.##} / 总计物理伤害：{stats.TotalPhysicalDamage:0.##} / 总计魔法伤害：{stats.TotalMagicDamage:0.##}");
                             builder.AppendLine($"总承受伤害：{stats.TotalTakenDamage:0.##} / 总承受物理伤害：{stats.TotalTakenPhysicalDamage:0.##} / 总承受魔法伤害：{stats.TotalTakenMagicDamage:0.##}");
@@ -1160,6 +1143,8 @@ namespace Oshima.FunGame.OshimaServers.Service
             totalStats.Top3s += stats.Top3s;
             totalStats.Loses += stats.Loses;
             totalStats.MVPs += stats.MVPs;
+            totalStats.UseDecisionPoints += stats.UseDecisionPoints;
+            totalStats.TurnDecisions += stats.TurnDecisions;
             if (totalStats.Plays != 0)
             {
                 totalStats.AvgDamage = Calculation.Round2Digits(totalStats.TotalDamage / totalStats.Plays);
@@ -1179,6 +1164,8 @@ namespace Oshima.FunGame.OshimaServers.Service
                 totalStats.AvgEarnedMoney = totalStats.TotalEarnedMoney / totalStats.Plays;
                 totalStats.Winrate = Calculation.Round4Digits(Convert.ToDouble(totalStats.Wins) / Convert.ToDouble(totalStats.Plays));
                 totalStats.Top3rate = Calculation.Round4Digits(Convert.ToDouble(totalStats.Top3s) / Convert.ToDouble(totalStats.Plays));
+                totalStats.AvgUseDecisionPoints = totalStats.UseDecisionPoints / totalStats.Plays;
+                totalStats.AvgTurnDecisions = totalStats.TurnDecisions / totalStats.Plays;
             }
             if (totalStats.LiveRound != 0) totalStats.DamagePerRound = Calculation.Round2Digits(totalStats.TotalDamage / totalStats.LiveRound);
             if (totalStats.ActionTurn != 0) totalStats.DamagePerTurn = Calculation.Round2Digits(totalStats.TotalDamage / totalStats.ActionTurn);

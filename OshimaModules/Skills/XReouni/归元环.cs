@@ -1,7 +1,6 @@
 ﻿using Milimoe.FunGame.Core.Entity;
 using Milimoe.FunGame.Core.Library.Common.Addon;
 using Milimoe.FunGame.Core.Library.Constant;
-using Milimoe.FunGame.Core.Model;
 
 namespace Oshima.FunGame.OshimaModules.Skills
 {
@@ -13,7 +12,7 @@ namespace Oshima.FunGame.OshimaModules.Skills
         public override string DispelDescription => Effects.Count > 0 ? Effects.First().DispelDescription : "";
         public override double EPCost => 100;
         public override double CD => 60;
-        public override double HardnessTime { get; set; } = 10;
+        public override double HardnessTime { get; set; } = 8;
         public override bool CanSelectSelf => true;
         public override bool CanSelectEnemy => false;
 
