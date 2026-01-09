@@ -4,17 +4,17 @@ using Oshima.FunGame.OshimaModules.Effects.PassiveEffects;
 
 namespace Oshima.FunGame.OshimaModules.Skills
 {
-    public class 魔法震荡 : Skill
+    public class 蚀魂震击 : Skill
     {
-        public override long Id => (long)PassiveID.魔法震荡;
-        public override string Name => "魔法震荡";
+        public override long Id => (long)PassiveID.蚀魂震击;
+        public override string Name => "蚀魂震击";
         public override string Description => Effects.Count > 0 ? Effects.First().Description : "";
         public override string DispelDescription => Effects.Count > 0 ? Effects.First().DispelDescription : "";
 
-        public 魔法震荡(Character? character = null) : base(SkillType.Passive, character)
+        public 蚀魂震击(Character? character = null) : base(SkillType.Passive, character)
         {
             ExemptionDescription = SkillSet.GetExemptionDescription(EffectType.Stun);
-            Effects.Add(new 魔法震荡特效(this));
+            Effects.Add(new 蚀魂震击特效(this));
         }
 
         public override IEnumerable<Effect> AddPassiveEffectToCharacter()
@@ -23,7 +23,7 @@ namespace Oshima.FunGame.OshimaModules.Skills
         }
     }
 
-    public class 魔法震荡特效(Skill skill) : Effect(skill)
+    public class 蚀魂震击特效(Skill skill) : Effect(skill)
     {
         public override long Id => Skill.Id;
         public override string Name => Skill.Name;
@@ -64,7 +64,7 @@ namespace Oshima.FunGame.OshimaModules.Skills
                     enemy.Effects.Add(e);
                     e.OnEffectGained(enemy);
                 }
-                WriteLine($"[ {character} ] 的魔法伤害触发了魔法震荡，[ {enemy} ] 被眩晕了！");
+                WriteLine($"[ {character} ] 的魔法伤害触发了蚀魂震击，[ {enemy} ] 被眩晕了！");
                 冷却时间 = 基础冷却时间;
             }
         }

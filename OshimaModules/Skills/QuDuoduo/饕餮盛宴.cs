@@ -4,10 +4,10 @@ using Milimoe.FunGame.Core.Library.Constant;
 
 namespace Oshima.FunGame.OshimaModules.Skills
 {
-    public class 血之狂欢 : Skill
+    public class 饕餮盛宴 : Skill
     {
-        public override long Id => (long)SuperSkillID.血之狂欢;
-        public override string Name => "血之狂欢";
+        public override long Id => (long)SuperSkillID.饕餮盛宴;
+        public override string Name => "饕餮盛宴";
         public override string Description => Effects.Count > 0 ? Effects.First().Description : "";
         public override string DispelDescription => Effects.Count > 0 ? Effects.First().DispelDescription : "";
         public override double EPCost => 100;
@@ -16,13 +16,13 @@ namespace Oshima.FunGame.OshimaModules.Skills
         public override bool CanSelectSelf => true;
         public override bool CanSelectEnemy => false;
 
-        public 血之狂欢(Character? character = null) : base(SkillType.SuperSkill, character)
+        public 饕餮盛宴(Character? character = null) : base(SkillType.SuperSkill, character)
         {
-            Effects.Add(new 血之狂欢特效(this));
+            Effects.Add(new 饕餮盛宴特效(this));
         }
     }
 
-    public class 血之狂欢特效(Skill skill) : Effect(skill)
+    public class 饕餮盛宴特效(Skill skill) : Effect(skill)
     {
         public override long Id => Skill.Id;
         public override string Name => Skill.Name;

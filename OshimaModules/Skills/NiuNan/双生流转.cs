@@ -3,15 +3,15 @@ using Milimoe.FunGame.Core.Library.Constant;
 
 namespace Oshima.FunGame.OshimaModules.Skills
 {
-    public class 智慧与力量 : Skill
+    public class 双生流转 : Skill
     {
-        public override long Id => (long)PassiveID.智慧与力量;
-        public override string Name => "智慧与力量";
+        public override long Id => (long)PassiveID.双生流转;
+        public override string Name => "双生流转";
         public override string Description => Effects.Count > 0 ? Effects.First().Description : "";
 
-        public 智慧与力量(Character? character = null) : base(SkillType.Passive, character)
+        public 双生流转(Character? character = null) : base(SkillType.Passive, character)
         {
-            Effects.Add(new 智慧与力量特效(this));
+            Effects.Add(new 双生流转特效(this));
         }
 
         public override IEnumerable<Effect> AddPassiveEffectToCharacter()
@@ -20,7 +20,7 @@ namespace Oshima.FunGame.OshimaModules.Skills
         }
     }
 
-    public class 智慧与力量特效(Skill skill) : Effect(skill)
+    public class 双生流转特效(Skill skill) : Effect(skill)
     {
         public override long Id => Skill.Id;
         public override string Name => Skill.Name;

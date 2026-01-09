@@ -4,10 +4,10 @@ using Milimoe.FunGame.Core.Library.Constant;
 
 namespace Oshima.FunGame.OshimaModules.Skills
 {
-    public class 嗜血本能 : Skill
+    public class 极寒渴望 : Skill
     {
-        public override long Id => (long)SuperSkillID.嗜血本能;
-        public override string Name => "嗜血本能";
+        public override long Id => (long)SuperSkillID.极寒渴望;
+        public override string Name => "极寒渴望";
         public override string Description => Effects.Count > 0 ? Effects.First().Description : "";
         public override string DispelDescription => Effects.Count > 0 ? Effects.First().DispelDescription : "";
         public override double EPCost => 100;
@@ -16,13 +16,13 @@ namespace Oshima.FunGame.OshimaModules.Skills
         public override bool CanSelectSelf => true;
         public override bool CanSelectEnemy => false;
 
-        public 嗜血本能(Character? character = null) : base(SkillType.SuperSkill, character)
+        public 极寒渴望(Character? character = null) : base(SkillType.SuperSkill, character)
         {
-            Effects.Add(new 嗜血本能特效(this));
+            Effects.Add(new 极寒渴望特效(this));
         }
     }
 
-    public class 嗜血本能特效(Skill skill) : Effect(skill)
+    public class 极寒渴望特效(Skill skill) : Effect(skill)
     {
         public override long Id => Skill.Id;
         public override string Name => Skill.Name;

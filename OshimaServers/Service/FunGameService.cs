@@ -45,18 +45,21 @@ namespace Oshima.FunGame.OshimaServers.Service
             FunGameConstant.Characters.Add(new ColdBlue());
             FunGameConstant.Characters.Add(new dddovo());
             FunGameConstant.Characters.Add(new Quduoduo());
+            FunGameConstant.Characters.Add(new ShiYu());
             FunGameConstant.Characters.Add(new XReouni());
             FunGameConstant.Characters.Add(new Neptune());
+            FunGameConstant.Characters.Add(new CHAOS());
             FunGameConstant.Characters.Add(new Ryuko());
+            FunGameConstant.Characters.Add(new TheGodK());
 
             FunGameConstant.Skills.AddRange([new 疾风步(), new 助威(), new 挑拨(), new 绞丝棍(), new 金刚击(), new 旋风轮(), new 双连击(), new 绝影(), new 胧(), new 魔眼(),
                 new 天堂之吻(), new 回复弹(), new 养命功(), new 镜花水月(), new 剑风闪(), new 疾走(), new 闪现()]);
 
-            FunGameConstant.SuperSkills.AddRange([new 嗜血本能(), new 平衡强化(), new 绝对领域(), new 精准打击(), new 三重叠加(), new 变幻之心(), new 力量爆发(), new 能量毁灭(), new 血之狂欢(),
-                new 迅捷之势(), new 天赐之力(), new 魔法涌流(), new 归元环(), new 海王星的野望(), new 自我抉择()]);
+            FunGameConstant.SuperSkills.AddRange([new 极寒渴望(), new 身心一境(), new 绝对领域(), new 零式灭杀(), new 三相灵枢(), new 变幻之心(), new 熵灭极诣(), new 残香凋零(), new 饕餮盛宴(),
+                new 宿命时律(), new 千羽瞬华(), new 咒怨洪流(), new 放监(), new 归元环(), new 海王星的野望(), new 全军出击(), new 宿命之潮(), new 神之因果()]);
 
-            FunGameConstant.PassiveSkills.AddRange([new META马(), new 心灵之火(), new 魔法震荡(), new 灵能反射(), new 智慧与力量(), new 致命打击(), new 毁灭之势(), new 枯竭打击(), new 破釜沉舟(),
-                new 累积之压(), new 敏捷之刃(), new 弱者猎手(), new 八卦阵(), new 深海之戟(), new 能量复苏()]);
+            FunGameConstant.PassiveSkills.AddRange([new META马(), new 心灵之弦(), new 蚀魂震击(), new 灵能反射(), new 双生流转(), new 零式崩解(), new 少女绮想(), new 暗香疏影(), new 破釜沉舟(),
+                new 累积之压(), new 银隼之赐(), new 弱者猎手(), new 开宫(), new 八卦阵(), new 深海之戟(), new 雇佣兵团(), new 不息之流(), new 概念之骰()]);
 
             FunGameConstant.CommonPassiveSkills.AddRange([new 征服者(), new 致命节奏(), new 强攻(), new 电刑(), new 黑暗收割()]);
 
@@ -1064,41 +1067,41 @@ namespace Oshima.FunGame.OshimaServers.Service
                 };
                 character.Skills.Add(META马);
 
-                Skill 力量爆发 = new 力量爆发(character)
+                Skill 熵灭极诣 = new 熵灭极诣(character)
                 {
                     Level = superLevel
                 };
-                character.Skills.Add(力量爆发);
+                character.Skills.Add(熵灭极诣);
             }
 
             if (id == 2)
             {
-                Skill 心灵之火 = new 心灵之火(character)
+                Skill 心灵之弦 = new 心灵之弦(character)
                 {
                     Level = passiveLevel
                 };
-                character.Skills.Add(心灵之火);
+                character.Skills.Add(心灵之弦);
 
-                Skill 天赐之力 = new 天赐之力(character)
+                Skill 千羽瞬华 = new 千羽瞬华(character)
                 {
                     Level = superLevel
                 };
-                character.Skills.Add(天赐之力);
+                character.Skills.Add(千羽瞬华);
             }
 
             if (id == 3)
             {
-                Skill 魔法震荡 = new 魔法震荡(character)
+                Skill 蚀魂震击 = new 蚀魂震击(character)
                 {
                     Level = passiveLevel
                 };
-                character.Skills.Add(魔法震荡);
+                character.Skills.Add(蚀魂震击);
 
-                Skill 魔法涌流 = new 魔法涌流(character)
+                Skill 咒怨洪流 = new 咒怨洪流(character)
                 {
                     Level = superLevel
                 };
-                character.Skills.Add(魔法涌流);
+                character.Skills.Add(咒怨洪流);
             }
 
             if (id == 4)
@@ -1109,20 +1112,20 @@ namespace Oshima.FunGame.OshimaServers.Service
                 };
                 character.Skills.Add(灵能反射);
 
-                Skill 三重叠加 = new 三重叠加(character)
+                Skill 三相灵枢 = new 三相灵枢(character)
                 {
                     Level = superLevel
                 };
-                character.Skills.Add(三重叠加);
+                character.Skills.Add(三相灵枢);
             }
 
             if (id == 5)
             {
-                Skill 智慧与力量 = new 智慧与力量(character)
+                Skill 双生流转 = new 双生流转(character)
                 {
                     Level = passiveLevel
                 };
-                character.Skills.Add(智慧与力量);
+                character.Skills.Add(双生流转);
 
                 Skill 变幻之心 = new 变幻之心(character)
                 {
@@ -1133,26 +1136,26 @@ namespace Oshima.FunGame.OshimaServers.Service
 
             if (id == 6)
             {
-                Skill 致命打击 = new 致命打击(character)
+                Skill 零式崩解 = new 零式崩解(character)
                 {
                     Level = passiveLevel
                 };
-                character.Skills.Add(致命打击);
+                character.Skills.Add(零式崩解);
 
-                Skill 精准打击 = new 精准打击(character)
+                Skill 零式灭杀 = new 零式灭杀(character)
                 {
                     Level = superLevel
                 };
-                character.Skills.Add(精准打击);
+                character.Skills.Add(零式灭杀);
             }
 
             if (id == 7)
             {
-                Skill 毁灭之势 = new 毁灭之势(character)
+                Skill 少女绮想 = new 少女绮想(character)
                 {
                     Level = passiveLevel
                 };
-                character.Skills.Add(毁灭之势);
+                character.Skills.Add(少女绮想);
 
                 Skill 绝对领域 = new 绝对领域(character)
                 {
@@ -1163,17 +1166,17 @@ namespace Oshima.FunGame.OshimaServers.Service
 
             if (id == 8)
             {
-                Skill 枯竭打击 = new 枯竭打击(character)
+                Skill 暗香疏影 = new 暗香疏影(character)
                 {
                     Level = passiveLevel
                 };
-                character.Skills.Add(枯竭打击);
+                character.Skills.Add(暗香疏影);
 
-                Skill 能量毁灭 = new 能量毁灭(character)
+                Skill 残香凋零 = new 残香凋零(character)
                 {
                     Level = superLevel
                 };
-                character.Skills.Add(能量毁灭);
+                character.Skills.Add(残香凋零);
             }
 
             if (id == 9)
@@ -1184,11 +1187,11 @@ namespace Oshima.FunGame.OshimaServers.Service
                 };
                 character.Skills.Add(破釜沉舟);
 
-                Skill 迅捷之势 = new 迅捷之势(character)
+                Skill 宿命时律 = new 宿命时律(character)
                 {
                     Level = superLevel
                 };
-                character.Skills.Add(迅捷之势);
+                character.Skills.Add(宿命时律);
             }
 
             if (id == 10)
@@ -1199,26 +1202,26 @@ namespace Oshima.FunGame.OshimaServers.Service
                 };
                 character.Skills.Add(累积之压);
 
-                Skill 嗜血本能 = new 嗜血本能(character)
+                Skill 极寒渴望 = new 极寒渴望(character)
                 {
                     Level = superLevel
                 };
-                character.Skills.Add(嗜血本能);
+                character.Skills.Add(极寒渴望);
             }
 
             if (id == 11)
             {
-                Skill 敏捷之刃 = new 敏捷之刃(character)
+                Skill 银隼之赐 = new 银隼之赐(character)
                 {
                     Level = passiveLevel
                 };
-                character.Skills.Add(敏捷之刃);
+                character.Skills.Add(银隼之赐);
 
-                Skill 平衡强化 = new 平衡强化(character)
+                Skill 身心一境 = new 身心一境(character)
                 {
                     Level = superLevel
                 };
-                character.Skills.Add(平衡强化);
+                character.Skills.Add(身心一境);
             }
 
             if (id == 12)
@@ -1229,11 +1232,26 @@ namespace Oshima.FunGame.OshimaServers.Service
                 };
                 character.Skills.Add(弱者猎手);
 
-                Skill 血之狂欢 = new 血之狂欢(character)
+                Skill 饕餮盛宴 = new 饕餮盛宴(character)
                 {
                     Level = superLevel
                 };
-                character.Skills.Add(血之狂欢);
+                character.Skills.Add(饕餮盛宴);
+            }
+
+            if (id == 13)
+            {
+                Skill 开宫 = new 开宫(character)
+                {
+                    Level = passiveLevel
+                };
+                character.Skills.Add(开宫);
+
+                Skill 放监 = new 放监(character)
+                {
+                    Level = superLevel
+                };
+                character.Skills.Add(放监);
             }
 
             if (id == 14)
@@ -1266,19 +1284,49 @@ namespace Oshima.FunGame.OshimaServers.Service
                 character.Skills.Add(海王星的野望);
             }
 
-            if (id == 17)
+            if (id == 16)
             {
-                Skill 能量复苏 = new 能量复苏(character)
+                Skill 雇佣兵团 = new 雇佣兵团(character)
                 {
                     Level = passiveLevel
                 };
-                character.Skills.Add(能量复苏);
+                character.Skills.Add(雇佣兵团);
 
-                Skill 自我抉择 = new 自我抉择(character)
+                Skill 全军出击 = new 全军出击(character)
                 {
                     Level = superLevel
                 };
-                character.Skills.Add(自我抉择);
+                character.Skills.Add(全军出击);
+            }
+
+            if (id == 17)
+            {
+                Skill 不息之流 = new 不息之流(character)
+                {
+                    Level = passiveLevel
+                };
+                character.Skills.Add(不息之流);
+
+                Skill 宿命之潮 = new 宿命之潮(character)
+                {
+                    Level = superLevel
+                };
+                character.Skills.Add(宿命之潮);
+            }
+
+            if (id == 18)
+            {
+                Skill 概念之骰 = new 概念之骰(character)
+                {
+                    Level = passiveLevel
+                };
+                character.Skills.Add(概念之骰);
+
+                Skill 神之因果 = new 神之因果(character)
+                {
+                    Level = superLevel
+                };
+                character.Skills.Add(神之因果);
             }
         }
 
@@ -1832,55 +1880,77 @@ namespace Oshima.FunGame.OshimaServers.Service
             return roundRewards;
         }
 
-        public static double CalculateRating(CharacterStatistics stats, Team? team = null, CharacterStatistics[]? teammateStats = null)
+        public static double CalculateRating(CharacterStatistics stats, Team? team = null, CharacterStatistics[]? allStats = null)
         {
-            // 基础得分
-            double baseScore = (stats.Kills + stats.Assists) / (stats.Kills + stats.Assists + stats.Deaths + 0.01);
-            if (team is null)
+            double k = stats.Kills;
+            double a = stats.Assists;
+            double d = Math.Max(0, stats.Deaths);
+            double dmg = stats.TotalDamage + (stats.TotalTrueDamage * 0.2);
+            double heal = stats.TotalHeal + stats.TotalShield;
+            double cc = stats.ControlTime;
+            double taken = stats.TotalTakenDamage;
+            double live = stats.LiveTime;
+
+            if (team != null)
             {
-                baseScore += stats.Kills * 0.1;
-                baseScore -= stats.Deaths * 0.05;
+                double teamTotalDmg = allStats?.Sum(s => s.TotalDamage + s.TotalTrueDamage * 0.2) ?? dmg;
+                double teamTotalHeal = allStats?.Sum(s => s.TotalHeal + s.TotalShield) ?? heal;
+                int playerCount = allStats?.Length ?? 1;
+
+                double dmgShare = dmg / Math.Max(1, teamTotalDmg);
+                double healShare = heal / Math.Max(1, teamTotalHeal);
+                double roleContribution = Math.Max(dmgShare, healShare) * playerCount * 0.4;
+                double roleScore = Math.Min(0.8, roleContribution);
+
+                double kdaRatio = (k * 1.3 + a * 0.3) / (d + 1.5);
+                double kdaScore = Math.Min(0.6, (kdaRatio / 3.0) * 0.4);
+
+                double ccScore = Math.Min(0.1, (cc / 60.0) * 0.05);
+                double tankScore = Math.Min(0.1, (taken / (d + 1) / 10000.0) * 0.1);
+
+                double totalRating = roleScore + kdaScore + ccScore + tankScore;
+
+                double avgDeaths = allStats?.Average(s => s.Deaths) ?? d;
+                if (d > avgDeaths && kdaRatio < 1.0) totalRating *= 0.75;
+
+                totalRating += 0.25;
+                return Math.Round(Math.Max(0.01, totalRating), 2);
             }
             else
             {
-                baseScore = baseScore * 0.9 + 0.6 * (stats.Kills / (stats.Kills + stats.Deaths + 0.01));
-            }
+                int rank = stats.LastRank;
+                int totalPlayers = allStats?.Length ?? 10;
+                double maxKills = allStats?.Max(s => s.Kills) ?? k;
+                double maxDmg = allStats?.Max(s => s.TotalDamage + s.TotalTrueDamage * 0.2) ?? dmg;
 
-            // 伤害贡献
-            double damageContribution = Math.Log(1 + Math.Min(2, (stats.TotalDamage / (stats.TotalTakenDamage + 1.45))));
-            if (team != null && teammateStats != null)
-            {
-                // 考虑团队伤害排名，优先高伤害的
-                int damageRank = teammateStats.OrderByDescending(s => s.TotalDamage).ToList().IndexOf(stats) + 1;
-                if (damageRank > 1)
+                double rankScore = ((totalPlayers - rank + 1.0) / totalPlayers) * 0.6;
+
+                double killPart = (k * 1.5 + a * 0.3) / Math.Max(1, maxKills + 1);
+                double dmgPart = (dmg / Math.Max(1, maxDmg * 1.2)) * 0.1;
+                double combatScore = Math.Min(0.4, killPart * 0.3 + dmgPart);
+
+                double utilityScore = Math.Min(0.05, (cc / 60.0) * 0.02 + (heal / Math.Max(1, maxDmg)) * 0.03);
+
+                double totalRating = rankScore + combatScore + utilityScore;
+
+                if (k == 0)
                 {
-                    double d = 1 - (0.1 * (damageRank - 1));
-                    if (d < 0.1) d = 0.1;
-                    damageContribution *= d;
+                    totalRating *= 0.7;
                 }
+
+                if (rank == 1 && k > 0)
+                {
+                    if (k >= maxKills) totalRating += 0.15;
+                }
+
+                if (rank > 5 && k >= maxKills * 0.8 && k > 0)
+                {
+                    totalRating += 0.25;
+                }
+
+                totalRating += 0.25;
+                return Math.Round(Math.Max(0.01, totalRating), 2);
             }
-
-            // 存活时间贡献
-            double liveTimeContribution = Math.Log(1 + (stats.LiveTime / (stats.TotalTakenDamage + 1) * 100));
-
-            // 团队模式参团率加成
-            double teamContribution = 0;
-            if (team != null)
-            {
-                if (stats.Assists > team.Score) stats.Assists = team.Score;
-                teamContribution = (stats.Kills + stats.Assists) / (team.Score + 0.01);
-            }
-
-            // 权重设置
-            double k = stats.Deaths == 0 ? 0.2 : 0.075; // 伤害贡献权重
-            double l = stats.Deaths == 0 ? 0.2 : 0.05; // 存活时间权重
-            double t = stats.Deaths == 0 ? 0.2 : 0.075; // 参团率权重
-
-            // 计算最终评分
-            double rating = baseScore + k * damageContribution + l * liveTimeContribution + t * teamContribution;
-
-            // 确保评分在合理范围内
-            return Math.Max(0.01, rating);
         }
 
         public static void GetCharacterRating(Dictionary<Character, CharacterStatistics> statistics, bool isTeam, List<Team> teams)

@@ -4,10 +4,10 @@ using Milimoe.FunGame.Core.Library.Constant;
 
 namespace Oshima.FunGame.OshimaModules.Skills
 {
-    public class 三重叠加 : Skill
+    public class 三相灵枢 : Skill
     {
-        public override long Id => (long)SuperSkillID.三重叠加;
-        public override string Name => "三重叠加";
+        public override long Id => (long)SuperSkillID.三相灵枢;
+        public override string Name => "三相灵枢";
         public override string Description => Effects.Count > 0 ? Effects.First().Description : "";
         public override string DispelDescription => Effects.Count > 0 ? Effects.First().DispelDescription : "";
         public override double EPCost => 100;
@@ -16,17 +16,17 @@ namespace Oshima.FunGame.OshimaModules.Skills
         public override bool CanSelectSelf => true;
         public override bool CanSelectEnemy => false;
 
-        public 三重叠加(Character? character = null) : base(SkillType.SuperSkill, character)
+        public 三相灵枢(Character? character = null) : base(SkillType.SuperSkill, character)
         {
-            Effects.Add(new 三重叠加特效(this));
+            Effects.Add(new 三相灵枢特效(this));
         }
     }
 
-    public class 三重叠加特效(Skill skill) : Effect(skill)
+    public class 三相灵枢特效(Skill skill) : Effect(skill)
     {
         public override long Id => Skill.Id;
-        public override string Name => "三重叠加";
-        public override string Description => $"使 [ 灵能反射 ] 支持普通攻击，且当前释放魔法次数归零，最大硬直消除次数提高到 {灵能反射次数} 次；在魔法命中和普通攻击命中时能够回复所回复能量值的 {魔法值倍数:0.#} 倍魔法值，持续 {技能持续次数} 次（灵能反射每消除次数达到最大时算一次）。" +
+        public override string Name => "三相灵枢";
+        public override string Description => $"{Skill.SkillOwner()}操纵三相之力，使 [ 灵能反射 ] 支持普通攻击，且当前释放魔法次数归零，最大硬直消除次数提高到 {灵能反射次数} 次；在魔法命中和普通攻击命中时能够回复所回复能量值的 {魔法值倍数:0.#} 倍魔法值，持续 {技能持续次数} 次（灵能反射每消除次数达到最大时算一次）。" +
             $"（剩余：{剩余持续次数} 次）";
         public override DispelledType DispelledType => DispelledType.CannotBeDispelled;
 

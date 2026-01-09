@@ -5,10 +5,10 @@ using Milimoe.FunGame.Core.Model;
 
 namespace Oshima.FunGame.OshimaModules.Skills
 {
-    public class 天赐之力 : Skill
+    public class 千羽瞬华 : Skill
     {
-        public override long Id => (long)SuperSkillID.天赐之力;
-        public override string Name => "天赐之力";
+        public override long Id => (long)SuperSkillID.千羽瞬华;
+        public override string Name => "千羽瞬华";
         public override string Description => Effects.Count > 0 ? Effects.First().Description : "";
         public override string DispelDescription => Effects.Count > 0 ? Effects.First().DispelDescription : "";
         public override double EPCost => 100;
@@ -17,17 +17,17 @@ namespace Oshima.FunGame.OshimaModules.Skills
         public override bool CanSelectSelf => true;
         public override bool CanSelectEnemy => false;
 
-        public 天赐之力(Character? character = null) : base(SkillType.SuperSkill, character)
+        public 千羽瞬华(Character? character = null) : base(SkillType.SuperSkill, character)
         {
-            Effects.Add(new 天赐之力特效(this));
+            Effects.Add(new 千羽瞬华特效(this));
         }
     }
 
-    public class 天赐之力特效(Skill skill) : Effect(skill)
+    public class 千羽瞬华特效(Skill skill) : Effect(skill)
     {
         public override long Id => Skill.Id;
         public override string Name => Skill.Name;
-        public override string Description => $"{Duration:0.##} {GameplayEquilibriumConstant.InGameTime}内，增加 {攻击力提升系数 * 100:0.##}% 攻击力 [ {攻击力提升:0.##} ]、{物理穿透提升 * 100:0.##}% 物理穿透和 {闪避率提升 * 100:0.##}% 闪避率（不可叠加），普通攻击硬直时间额外减少 20%，基于 {系数 * 100:0.##}% 敏捷 [ {伤害加成:0.##} ] 强化普通攻击的伤害。在持续时间内，[ 心灵之火 ] 的冷却时间降低至 3 {GameplayEquilibriumConstant.InGameTime}。";
+        public override string Description => $"{Skill.SkillOwner()}将世间事物的弱点完全暴露在「千羽」的绚烂之下。{Duration:0.##} {GameplayEquilibriumConstant.InGameTime}内，增加{Skill.SkillOwner()} {攻击力提升系数 * 100:0.##}% 攻击力 [ {攻击力提升:0.##} ]、{物理穿透提升 * 100:0.##}% 物理穿透和 {闪避率提升 * 100:0.##}% 闪避率（不可叠加），普通攻击硬直时间额外减少 20%，基于 {系数 * 100:0.##}% 敏捷 [ {伤害加成:0.##} ] 强化普通攻击的伤害。在持续时间内，[ 心灵之弦 ] 的冷却时间降低至 3 {GameplayEquilibriumConstant.InGameTime}。";
         public override bool Durative => true;
         public override double Duration => 30;
         public override DispelledType DispelledType => DispelledType.CannotBeDispelled;
@@ -46,7 +46,7 @@ namespace Oshima.FunGame.OshimaModules.Skills
             character.ExATK2 += 实际的攻击力提升;
             character.PhysicalPenetration += 物理穿透提升;
             character.ExEvadeRate += 闪避率提升;
-            if (character.Effects.Where(e => e is 心灵之火特效).FirstOrDefault() is 心灵之火特效 e)
+            if (character.Effects.Where(e => e is 心灵之弦特效).FirstOrDefault() is 心灵之弦特效 e)
             {
                 e.基础冷却时间 = 3;
                 if (e.冷却时间 > e.基础冷却时间) e.冷却时间 = e.基础冷却时间;
@@ -58,7 +58,7 @@ namespace Oshima.FunGame.OshimaModules.Skills
             character.ExATK2 -= 实际的攻击力提升;
             character.PhysicalPenetration -= 物理穿透提升;
             character.ExEvadeRate -= 闪避率提升;
-            if (character.Effects.Where(e => e is 心灵之火特效).FirstOrDefault() is 心灵之火特效 e)
+            if (character.Effects.Where(e => e is 心灵之弦特效).FirstOrDefault() is 心灵之弦特效 e)
             {
                 e.基础冷却时间 = 10;
             }

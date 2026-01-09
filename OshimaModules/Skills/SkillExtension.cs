@@ -5,6 +5,19 @@ namespace Oshima.FunGame.OshimaModules.Skills
 {
     public static class SkillExtension
     {
+        public static string SkillOwner(this Skill skill, Character? character = null)
+        {
+            if (character is null && skill.Character is not null)
+            {
+                character = skill.Character;
+            }
+            if (character is null)
+            {
+                return "你";
+            }
+            return character.NickName != "" ? character.NickName : character.GetName();
+        }
+
         public static string TargetDescription(this Skill skill)
         {
             if (skill.IsNonDirectional && skill.GamingQueue?.Map != null)

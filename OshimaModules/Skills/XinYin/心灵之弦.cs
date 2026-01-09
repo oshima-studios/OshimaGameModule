@@ -3,15 +3,15 @@ using Milimoe.FunGame.Core.Library.Constant;
 
 namespace Oshima.FunGame.OshimaModules.Skills
 {
-    public class 心灵之火 : Skill
+    public class 心灵之弦 : Skill
     {
-        public override long Id => (long)PassiveID.心灵之火;
-        public override string Name => "心灵之火";
+        public override long Id => (long)PassiveID.心灵之弦;
+        public override string Name => "心灵之弦";
         public override string Description => Effects.Count > 0 ? Effects.First().Description : "";
 
-        public 心灵之火(Character? character = null) : base(SkillType.Passive, character)
+        public 心灵之弦(Character? character = null) : base(SkillType.Passive, character)
         {
-            Effects.Add(new 心灵之火特效(this));
+            Effects.Add(new 心灵之弦特效(this));
         }
 
         public override IEnumerable<Effect> AddPassiveEffectToCharacter()
@@ -20,7 +20,7 @@ namespace Oshima.FunGame.OshimaModules.Skills
         }
     }
 
-    public class 心灵之火特效(Skill skill) : Effect(skill)
+    public class 心灵之弦特效(Skill skill) : Effect(skill)
     {
         public override long Id => Skill.Id;
         public override string Name => Skill.Name;
@@ -44,7 +44,7 @@ namespace Oshima.FunGame.OshimaModules.Skills
         {
             if (character == Skill.Character && isNormalAttack && 冷却时间 == 0 && !是否是嵌套普通攻击 && GamingQueue != null && enemy.HP > 0)
             {
-                WriteLine($"[ {character} ] 发动了心灵之火！额外进行一次普通攻击！");
+                WriteLine($"[ {character} ] 发动了心灵之弦！额外进行一次普通攻击！");
                 冷却时间 = 基础冷却时间;
                 是否是嵌套普通攻击 = true;
                 character.NormalAttack.Attack(GamingQueue, character, null, enemy);

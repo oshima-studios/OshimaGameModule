@@ -4,25 +4,25 @@ using Milimoe.FunGame.Core.Library.Constant;
 
 namespace Oshima.FunGame.OshimaModules.Skills
 {
-    public class 迅捷之势 : Skill
+    public class 宿命时律 : Skill
     {
-        public override long Id => (long)SuperSkillID.迅捷之势;
-        public override string Name => "迅捷之势";
+        public override long Id => (long)SuperSkillID.宿命时律;
+        public override string Name => "宿命时律";
         public override string Description => Effects.Count > 0 ? Effects.First().Description : "";
         public override string DispelDescription => Effects.Count > 0 ? Effects.First().DispelDescription : "";
         public override double EPCost => 100;
-        public override double CD => 80 - 4 * (Level - 1);
+        public override double CD => 60 - 4 * (Level - 1);
         public override double HardnessTime { get; set; } = 10;
         public override bool CanSelectSelf => true;
         public override bool CanSelectEnemy => false;
 
-        public 迅捷之势(Character? character = null) : base(SkillType.SuperSkill, character)
+        public 宿命时律(Character? character = null) : base(SkillType.SuperSkill, character)
         {
-            Effects.Add(new 迅捷之势特效(this));
+            Effects.Add(new 宿命时律特效(this));
         }
     }
 
-    public class 迅捷之势特效(Skill skill) : Effect(skill)
+    public class 宿命时律特效(Skill skill) : Effect(skill)
     {
         public override long Id => Skill.Id;
         public override string Name => Skill.Name;
@@ -61,7 +61,7 @@ namespace Oshima.FunGame.OshimaModules.Skills
         {
             if (character == Skill.Character && isNormalAttack)
             {
-                WriteLine($"[ {character} ] 发动了迅捷之势！伤害提升了 {智力加成:0.##} 点！");
+                WriteLine($"[ {character} ] 发动了宿命时律！伤害提升了 {智力加成:0.##} 点！");
                 return 智力加成;
             }
             return 0;

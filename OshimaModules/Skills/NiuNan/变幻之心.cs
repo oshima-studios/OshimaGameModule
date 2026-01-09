@@ -26,7 +26,7 @@ namespace Oshima.FunGame.OshimaModules.Skills
     {
         public override long Id => Skill.Id;
         public override string Name => "变幻之心";
-        public override string Description => $"检查 [ 智慧与力量 ] 的模式。在力量模式下，立即回复 {生命值回复 * 100:0.##}% 生命值，同时下 {吸血次数} 次对敌人造成伤害时获得 30% 生命偷取；" +
+        public override string Description => $"检查 [ 双生流转 ] 的模式。在力量模式下，立即回复 {生命值回复 * 100:0.##}% 生命值，同时下 {吸血次数} 次对敌人造成伤害时获得 30% 生命偷取；" +
             $"智力模式下，下 {魔法加成次数} 次魔法伤害提升 {伤害提升 * 100:0.##}%。此技能效果不叠加，重复释放时将重置次数；若是模式切换后重复释放，将回收先前的效果。{当前次数描述}";
         public override DispelledType DispelledType => DispelledType.CannotBeDispelled;
 
@@ -145,7 +145,7 @@ namespace Oshima.FunGame.OshimaModules.Skills
 
         public override void OnSkillCasted(Character caster, List<Character> targets, List<Grid> grids, Dictionary<string, object> others)
         {
-            IEnumerable<Effect> effects = caster.Effects.Where(e => e is 智慧与力量特效);
+            IEnumerable<Effect> effects = caster.Effects.Where(e => e is 双生流转特效);
             if (effects.Any())
             {
                 if (caster.Effects.Contains(this))

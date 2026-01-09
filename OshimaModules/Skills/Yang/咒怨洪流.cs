@@ -4,10 +4,10 @@ using Milimoe.FunGame.Core.Library.Constant;
 
 namespace Oshima.FunGame.OshimaModules.Skills
 {
-    public class 魔法涌流 : Skill
+    public class 咒怨洪流 : Skill
     {
-        public override long Id => (long)SuperSkillID.魔法涌流;
-        public override string Name => "魔法涌流";
+        public override long Id => (long)SuperSkillID.咒怨洪流;
+        public override string Name => "咒怨洪流";
         public override string Description => Effects.Count > 0 ? Effects.First().Description : "";
         public override string DispelDescription => Effects.Count > 0 ? Effects.First().DispelDescription : "";
         public override double EPCost => 100;
@@ -16,17 +16,17 @@ namespace Oshima.FunGame.OshimaModules.Skills
         public override bool CanSelectSelf => true;
         public override bool CanSelectEnemy => false;
 
-        public 魔法涌流(Character? character = null) : base(SkillType.SuperSkill, character)
+        public 咒怨洪流(Character? character = null) : base(SkillType.SuperSkill, character)
         {
-            Effects.Add(new 魔法涌流特效(this));
+            Effects.Add(new 咒怨洪流特效(this));
         }
     }
 
-    public class 魔法涌流特效(Skill skill) : Effect(skill)
+    public class 咒怨洪流特效(Skill skill) : Effect(skill)
     {
         public override long Id => Skill.Id;
-        public override string Name => "魔法涌流";
-        public override string Description => $"{Duration:0.##} {GameplayEquilibriumConstant.InGameTime}内，增加自身所有伤害的 {减伤比例 * 100:0.##}% 伤害减免；【魔法震荡】的冷却时间降低至 5 {GameplayEquilibriumConstant.InGameTime}，并将普通攻击转为魔法伤害，允许普通攻击时选择至多 3 个目标。";
+        public override string Name => "咒怨洪流";
+        public override string Description => $"{Skill.SkillOwner()}将「熵核」的污染之力附着在武器之上。{Duration:0.##} {GameplayEquilibriumConstant.InGameTime}内，增加自身所有伤害的 {减伤比例 * 100:0.##}% 伤害减免；[ 蚀魂震击 ] 的冷却时间降低至 5 {GameplayEquilibriumConstant.InGameTime}，并将普通攻击转为魔法伤害，允许普通攻击时选择至多 3 个目标。";
         public override bool Durative => true;
         public override double Duration => 30;
         public override DispelledType DispelledType => DispelledType.CannotBeDispelled;
@@ -39,7 +39,7 @@ namespace Oshima.FunGame.OshimaModules.Skills
             character.NormalAttack.CanSelectTargetCount += 2;
             实际比例 = 减伤比例;
             character.NormalAttack.SetMagicType(new(this, true, MagicType.None, 999), GamingQueue);
-            if (character.Effects.Where(e => e is 魔法震荡特效).FirstOrDefault() is 魔法震荡特效 e)
+            if (character.Effects.Where(e => e is 蚀魂震击特效).FirstOrDefault() is 蚀魂震击特效 e)
             {
                 e.基础冷却时间 = 5;
                 if (e.冷却时间 > e.基础冷却时间) e.冷却时间 = e.基础冷却时间;
@@ -51,7 +51,7 @@ namespace Oshima.FunGame.OshimaModules.Skills
             实际比例 = 0;
             character.NormalAttack.CanSelectTargetCount -= 2;
             character.NormalAttack.UnsetMagicType(this, GamingQueue);
-            if (character.Effects.Where(e => e is 魔法震荡特效).FirstOrDefault() is 魔法震荡特效 e)
+            if (character.Effects.Where(e => e is 蚀魂震击特效).FirstOrDefault() is 蚀魂震击特效 e)
             {
                 e.基础冷却时间 = 10;
             }

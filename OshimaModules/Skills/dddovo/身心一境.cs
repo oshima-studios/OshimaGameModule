@@ -4,10 +4,10 @@ using Milimoe.FunGame.Core.Library.Constant;
 
 namespace Oshima.FunGame.OshimaModules.Skills
 {
-    public class 平衡强化 : Skill
+    public class 身心一境 : Skill
     {
-        public override long Id => (long)SuperSkillID.平衡强化;
-        public override string Name => "平衡强化";
+        public override long Id => (long)SuperSkillID.身心一境;
+        public override string Name => "身心一境";
         public override string Description => Effects.Count > 0 ? Effects.First().Description : "";
         public override string DispelDescription => Effects.Count > 0 ? Effects.First().DispelDescription : "";
         public override double EPCost => 100;
@@ -16,13 +16,13 @@ namespace Oshima.FunGame.OshimaModules.Skills
         public override bool CanSelectSelf => true;
         public override bool CanSelectEnemy => false;
 
-        public 平衡强化(Character? character = null) : base(SkillType.SuperSkill, character)
+        public 身心一境(Character? character = null) : base(SkillType.SuperSkill, character)
         {
-            Effects.Add(new 平衡强化特效(this));
+            Effects.Add(new 身心一境特效(this));
         }
     }
 
-    public class 平衡强化特效(Skill skill) : Effect(skill)
+    public class 身心一境特效(Skill skill) : Effect(skill)
     {
         public override long Id => Skill.Id;
         public override string Name => Skill.Name;

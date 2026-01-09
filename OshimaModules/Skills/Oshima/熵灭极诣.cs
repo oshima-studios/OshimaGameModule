@@ -4,10 +4,10 @@ using Milimoe.FunGame.Core.Library.Constant;
 
 namespace Oshima.FunGame.OshimaModules.Skills
 {
-    public class 力量爆发 : Skill
+    public class 熵灭极诣 : Skill
     {
-        public override long Id => (long)SuperSkillID.力量爆发;
-        public override string Name => "力量爆发";
+        public override long Id => (long)SuperSkillID.熵灭极诣;
+        public override string Name => "熵灭·极诣";
         public override string Description => Effects.Count > 0 ? Effects.First().Description : "";
         public override string DispelDescription => Effects.Count > 0 ? Effects.First().DispelDescription : "";
         public override double EPCost => 100;
@@ -16,17 +16,17 @@ namespace Oshima.FunGame.OshimaModules.Skills
         public override bool CanSelectSelf => true;
         public override bool CanSelectEnemy => false;
 
-        public 力量爆发(Character? character = null) : base(SkillType.SuperSkill, character)
+        public 熵灭极诣(Character? character = null) : base(SkillType.SuperSkill, character)
         {
-            Effects.Add(new 力量爆发特效(this));
+            Effects.Add(new 熵灭极诣特效(this));
         }
     }
 
-    public class 力量爆发特效(Skill skill) : Effect(skill)
+    public class 熵灭极诣特效(Skill skill) : Effect(skill)
     {
         public override long Id => Skill.Id;
-        public override string Name => "力量爆发";
-        public override string Description => $"获得 135% 力量 [ {攻击力加成:0.##} ] 的攻击力加成，但每次普通攻击命中时都会损失自身 9% 当前生命值 [ {当前生命值:0.##} ]，持续 {Duration:0.##} {GameplayEquilibriumConstant.InGameTime}。";
+        public override string Name => Skill.Name;
+        public override string Description => $"{Skill.SkillOwner()}释放「熵灭」的力量，获得 135% 力量 [ {攻击力加成:0.##} ] 的攻击力加成，但每次普通攻击命中时都会损失自身 9% 当前生命值 [ {当前生命值:0.##} ]，持续 {Duration:0.##} {GameplayEquilibriumConstant.InGameTime}。";
         public override bool Durative => true;
         public override double Duration => 10 + 1 * (Level - 1);
         public override DispelledType DispelledType => DispelledType.CannotBeDispelled;

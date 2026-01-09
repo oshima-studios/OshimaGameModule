@@ -4,10 +4,10 @@ using Milimoe.FunGame.Core.Library.Constant;
 
 namespace Oshima.FunGame.OshimaModules.Skills
 {
-    public class 精准打击 : Skill
+    public class 零式灭杀 : Skill
     {
-        public override long Id => (long)SuperSkillID.精准打击;
-        public override string Name => "精准打击";
+        public override long Id => (long)SuperSkillID.零式灭杀;
+        public override string Name => "零式灭杀";
         public override string Description => Effects.Count > 0 ? Effects.First().Description : "";
         public override string DispelDescription => Effects.Count > 0 ? Effects.First().DispelDescription : "";
         public override double EPCost => 100;
@@ -16,17 +16,17 @@ namespace Oshima.FunGame.OshimaModules.Skills
         public override bool CanSelectSelf => true;
         public override bool CanSelectEnemy => false;
 
-        public 精准打击(Character? character = null) : base(SkillType.SuperSkill, character)
+        public 零式灭杀(Character? character = null) : base(SkillType.SuperSkill, character)
         {
-            Effects.Add(new 精准打击特效(this));
+            Effects.Add(new 零式灭杀特效(this));
         }
     }
 
-    public class 精准打击特效(Skill skill) : Effect(skill)
+    public class 零式灭杀特效(Skill skill) : Effect(skill)
     {
         public override long Id => Skill.Id;
         public override string Name => Skill.Name;
-        public override string Description => $"30 {GameplayEquilibriumConstant.InGameTime}内暴击率提升 {暴击率提升 * 100:0.##}%，暴击伤害提升 {暴击伤害提升 * 100:0.##}%，物理穿透提升 {物理穿透提升 * 100:0.##}%。";
+        public override string Description => $"{Skill.SkillOwner()}展现零式剑法精准而凶残的奥义。30 {GameplayEquilibriumConstant.InGameTime}内暴击率提升 {暴击率提升 * 100:0.##}%，暴击伤害提升 {暴击伤害提升 * 100:0.##}%，物理穿透提升 {物理穿透提升 * 100:0.##}%。";
         public override bool Durative => true;
         public override double Duration => 30;
         public override DispelledType DispelledType => DispelledType.CannotBeDispelled;
