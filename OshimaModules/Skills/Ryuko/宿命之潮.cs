@@ -1,5 +1,4 @@
 ﻿using Milimoe.FunGame.Core.Entity;
-using Milimoe.FunGame.Core.Interface.Entity;
 using Milimoe.FunGame.Core.Library.Common.Addon;
 using Milimoe.FunGame.Core.Library.Constant;
 using Milimoe.FunGame.Core.Model;
@@ -47,7 +46,7 @@ namespace Oshima.FunGame.OshimaModules.Skills
         private double 熵核持续时间 => 15 + 2 * (Skill.Level - 1);
         private string 守护描述 => $"【守护】极致地加速生命回复，每{GameplayEquilibriumConstant.InGameTime}额外回复 {守护额外回复 * 100:0.##}% 当前生命值 [ {Skill.Character?.HP * 守护额外回复:0.##} ]，为全体友方角色提供每{GameplayEquilibriumConstant.InGameTime}额外 {守护友方回复 * 100:0.##}% 当前生命值的生命回复，并嘲讽全体敌方角色，被嘲讽的角色仅能将{Skill.SkillOwner()}作为攻击目标。" +
             $"施加嘲讽状态时，只有目标的敏捷高于{Skill.SkillOwner()}的角色才能进行豁免检定。持续 {守护持续时间:0.##} {GameplayEquilibriumConstant.InGameTime}。";
-        private double 守护额外回复 => 0.08 + 0.006 * (Skill.Level - 1);
+        private double 守护额外回复 => 0.06 + 0.005 * (Skill.Level - 1);
         private double 守护友方回复 => 0.01 + 0.01 * (Skill.Level - 1);
         private double 守护持续时间 => 15 + 1 * (Skill.Level - 1);
         private bool 选择熵核 { get; set; } = false;

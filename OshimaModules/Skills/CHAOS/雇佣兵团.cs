@@ -41,7 +41,7 @@ namespace Oshima.FunGame.OshimaModules.Skills
 
         public override void OnEffectLost(Character character)
         {
-
+            
         }
     }
 }
