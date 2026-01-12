@@ -25,8 +25,8 @@ namespace Oshima.FunGame.OshimaModules.Skills
     {
         public override long Id => Skill.Id;
         public override string Name => Skill.Name;
-        public override string Description => $"对一半以下生命值的目标造成伤害时，将收集其灵魂以永久提升自身伤害，每个灵魂提供 {额外伤害提升 * 100:0.##}% 伤害加成。最多收集 {最多灵魂数量} 个灵魂。" +
-            $"若自身死亡，灵魂将损失一半。（当前灵魂数量：{当前灵魂数量} 个；伤害提升：{当前灵魂数量 * 额外伤害提升 * 100:0.##}%）";
+        public override string Description => $"{Skill.SkillOwner()}对一半以下生命值的目标造成伤害时，将收集其灵魂以永久提升自身伤害，每个灵魂提供 {额外伤害提升 * 100:0.##}% 伤害加成。最多收集 {最多灵魂数量} 个灵魂。" +
+            $"若{Skill.SkillOwner()}死亡，灵魂将损失一半。（当前灵魂数量：{当前灵魂数量} 个；伤害提升：{当前灵魂数量 * 额外伤害提升 * 100:0.##}%）";
 
         private static double 额外伤害提升 => 0.02;
         private int 当前灵魂数量 { get; set; } = 0;

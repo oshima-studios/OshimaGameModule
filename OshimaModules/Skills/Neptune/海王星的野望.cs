@@ -39,10 +39,9 @@ namespace Oshima.FunGame.OshimaModules.Skills
         public override MagicType MagicType => Skill.Character?.MagicType ?? MagicType.None;
         public override ImmuneType IgnoreImmune => ImmuneType.All;
 
-        public string 爆炸伤害描述 => $"对受到标记的目标造成伤害，有 {概率 * 100:0.##}% 概率产生爆炸，爆炸将产生 {分裂伤害系数 * 100:0.##}% 分裂伤害。分裂伤害为全图索敌，会优先分裂至两个在持续时间内对{Skill.SkillOwner()}造成伤害最多的敌人，若没有符合条件的敌人或敌人数量不足，则将分裂至至多两个随机的敌人。";
+        public string 爆炸伤害描述 => $"对受到标记的目标造成伤害时将产生爆炸，爆炸将产生 {分裂伤害系数 * 100:0.##}% 分裂伤害。分裂伤害为全图索敌，会优先分裂至两个在持续时间内对{Skill.SkillOwner()}造成伤害最多的敌人，若没有符合条件的敌人或敌人数量不足，则将分裂至被标记的敌人，或至多两个随机的敌人。";
         public double 直接伤害 => 180 + 240 * (Skill.Level - 1);
         public double 持续时间 => 25 + 2 * (Skill.Level - 1);
-        public double 概率 => 0.3 + 0.08 * (Skill.Level - 1);
         public double 分裂伤害系数 => 0.4 + 0.07 * (Skill.Level - 1);
         public double 力量提升 => 0.6 * (Skill.Character?.BaseSTR ?? 0);
         public Dictionary<Character, double> 敌人伤害统计 { get; set; } = [];
@@ -80,10 +79,7 @@ namespace Oshima.FunGame.OshimaModules.Skills
 
             if (character == Skill.Character && (damageResult == DamageResult.Normal || damageResult == DamageResult.Critical) && enemy.Effects.FirstOrDefault(e => e is 海王星的野望标记) is 海王星的野望标记 e)
             {
-                if (Random.Shared.NextDouble() < 概率)
-                {
-                    分裂伤害(character, enemy, actualDamage, damageType, magicType);
-                }
+                分裂伤害(character, enemy, actualDamage, damageType, magicType);
             }
         }
 
@@ -128,7 +124,12 @@ namespace Oshima.FunGame.OshimaModules.Skills
                 if (GamingQueue != null)
                 {
                     allEnemys = [.. GamingQueue.GetEnemies(character).Where(c => c != character && c != enemy && !targets.Contains(c) && c.HP > 0)];
-                    targets.AddRange(allEnemys.OrderBy(o => Random.Shared.Next()).Take(count));
+                    targets.AddRange(allEnemys.Where(c => c.Effects.Any(e => e is 海王星的野望标记)).Take(count));
+                    if (targets.Count < 2)
+                    {
+                        count = 2 - targets.Count;
+                        targets.AddRange(allEnemys.OrderBy(o => Random.Shared.Next()).Take(count));
+                    }
                 }
             }
             damage *= 分裂伤害系数;

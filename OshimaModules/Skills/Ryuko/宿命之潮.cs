@@ -169,7 +169,7 @@ namespace Oshima.FunGame.OshimaModules.Skills
                 {
                     Effect e = new 愤怒(Skill, caster, caster, true, Duration, 0)
                     {
-                        DispelledType = DispelledType.CannotBeDispelled
+                        DispelledType = DispelledType.Strong
                     };
                     if (enemy.AGI <= caster.AGI || (enemy.AGI > caster.AGI && !CheckExemption(caster, enemy, e)))
                     {

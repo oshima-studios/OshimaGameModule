@@ -53,17 +53,14 @@ namespace Oshima.FunGame.OshimaModules.Skills
                     }
                     if (归元)
                     {
-                        WriteLine($"[ {character} ] 发动了归元环！冷却时间减少了 {归元环特效.冷却时间减少:0.##} {GameplayEquilibriumConstant.InGameTime}！");
+                        WriteLine($"[ {character} ] 发动了归元环！冷却时间减少了 20%！");
                         foreach (Skill s in c.Skills)
                         {
-                            if (s.CurrentCD >= 归元环特效.冷却时间阈值)
+                            s.CurrentCD -= s.CD * 归元环特效.冷却时间减少;
+                            if (s.CurrentCD < 0)
                             {
-                                s.CurrentCD -= 归元环特效.冷却时间减少;
-                                if (s.CurrentCD < 0)
-                                {
-                                    s.CurrentCD = 0;
-                                    s.Enable = true;
-                                }
+                                s.CurrentCD = 0;
+                                s.Enable = true;
                             }
                         }
                     }

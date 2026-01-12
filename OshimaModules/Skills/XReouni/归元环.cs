@@ -26,13 +26,12 @@ namespace Oshima.FunGame.OshimaModules.Skills
     {
         public override long Id => Skill.Id;
         public override string Name => Skill.Name;
-        public override string Description => $"{Duration:0.##} {GameplayEquilibriumConstant.InGameTime}内，造成伤害必定暴击；使 [ 八卦阵 ] 不需要检定，直接产生偶数效果；并减少所有当前冷却时间高于 {冷却时间阈值:0.##} {GameplayEquilibriumConstant.InGameTime}的主动技能 {冷却时间减少:0.##} {GameplayEquilibriumConstant.InGameTime}冷却时间。";
+        public override string Description => $"{Duration:0.##} {GameplayEquilibriumConstant.InGameTime}内，造成伤害必定暴击；使 [ 八卦阵 ] 不需要检定，直接产生偶数效果；并且每次触发偶数效果时，减少所有主动技能 {冷却时间减少 * 100:0.##}% 冷却时间。";
         public override bool Durative => true;
         public override double Duration => 30;
         public override DispelledType DispelledType => DispelledType.CannotBeDispelled;
 
-        public const double 冷却时间阈值 = 6;
-        public const double 冷却时间减少 = 3;
+        public const double 冷却时间减少 = 0.2;
 
         public override void OnEffectGained(Character character)
         {

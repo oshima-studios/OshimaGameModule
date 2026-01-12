@@ -11,7 +11,7 @@ namespace Oshima.FunGame.OshimaModules.Skills
         public override string Description => Effects.Count > 0 ? Effects.First().Description : "";
         public override string DispelDescription => Effects.Count > 0 ? Effects.First().DispelDescription : "";
         public override double EPCost => 100;
-        public override double CD => 50;
+        public override double CD => 65;
         public override double HardnessTime { get; set; } = 3;
         public override bool CanSelectSelf => true;
         public override bool CanSelectEnemy => false;
@@ -31,7 +31,7 @@ namespace Oshima.FunGame.OshimaModules.Skills
         public override double Duration => 30;
         public override DispelledType DispelledType => DispelledType.CannotBeDispelled;
 
-        private double 减伤比例 => 0.15 + 0.04 * (Level - 1);
+        private double 减伤比例 => 0.15 + 0.02 * (Level - 1);
         private double 实际比例 = 0;
 
         public override void OnEffectGained(Character character)
