@@ -4,6 +4,7 @@ namespace Oshima.FunGame.OshimaModules.Units
 {
     public class RegionUnit : Unit
     {
+        public override bool IsUnit => false; // 不走单位判断
         public HashSet<Func<Region, bool>> GenerationPredicates { get; } = [];
 
         public RegionUnit(long id, string name, params IEnumerable<Func<Region, bool>> predicates)

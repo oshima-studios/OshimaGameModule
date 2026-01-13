@@ -64,7 +64,7 @@ namespace Oshima.FunGame.OshimaModules.Effects.PassiveEffects
             return CharacterActionType.EndTurn;
         }
 
-        public override void AfterDeathCalculation(Character death, Character? killer, Dictionary<Character, int> continuousKilling, Dictionary<Character, int> earnedMoney)
+        public override void AfterDeathCalculation(Character death, Character? killer, Dictionary<Character, int> continuousKilling, Dictionary<Character, int> earnedMoney, Character[] assists)
         {
             if (death == _targetCharacter)
             {

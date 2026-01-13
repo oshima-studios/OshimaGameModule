@@ -162,13 +162,14 @@ namespace Oshima.FunGame.OshimaModules.Skills
                 List<Character> allTeammates = [];
                 if (GamingQueue != null)
                 {
-                    allEnemys = [.. GamingQueue.GetEnemies(caster).Where(c => c != caster && c.HP > 0)];
-                    allTeammates = [.. GamingQueue.GetTeammates(caster).Where(c => c != caster && c.HP > 0)];
+                    allEnemys = [.. GamingQueue.GetEnemies(caster).Where(c => c != caster && GamingQueue.Queue.Contains(c))];
+                    allTeammates = [.. GamingQueue.GetTeammates(caster).Where(c => c != caster && GamingQueue.Queue.Contains(c))];
                 }
                 foreach (Character enemy in allEnemys)
                 {
                     Effect e = new 愤怒(Skill, caster, caster, true, Duration, 0)
                     {
+                        ExemptionType = PrimaryAttribute.AGI,
                         DispelledType = DispelledType.Strong
                     };
                     if (enemy.AGI <= caster.AGI || (enemy.AGI > caster.AGI && !CheckExemption(caster, enemy, e)))

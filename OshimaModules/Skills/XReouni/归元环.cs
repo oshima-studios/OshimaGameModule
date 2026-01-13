@@ -31,7 +31,7 @@ namespace Oshima.FunGame.OshimaModules.Skills
         public override double Duration => 30;
         public override DispelledType DispelledType => DispelledType.CannotBeDispelled;
 
-        public const double 冷却时间减少 = 0.2;
+        public const double 冷却时间减少 = 0.1;
 
         public override void OnEffectGained(Character character)
         {

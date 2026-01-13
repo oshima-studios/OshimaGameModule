@@ -8,7 +8,7 @@ namespace Oshima.FunGame.OshimaModules.Skills
     {
         public override long Id => (long)SuperSkillID.放监;
         public override string Name => "放监";
-        public override string Description => Effects.Count > 0 ? Effects.First().Description : "";
+        public override string Description => Effects.Count > 0 ? ((放监特效)Effects.First()).通用描述 : "";
         public override string DispelDescription => Effects.Count > 0 ? Effects.First().DispelDescription : "";
         public override double EPCost => 100;
         public override double CD => 65;
@@ -22,13 +22,22 @@ namespace Oshima.FunGame.OshimaModules.Skills
         }
     }
 
-    public class 放监特效(Skill skill) : Effect(skill)
+    public class 放监特效 : Effect
     {
         public override long Id => Skill.Id;
         public override string Name => Skill.Name;
-        public override string Description => $"使时雨标记变得不可驱散，并且延长至 5 回合。持有标记的角色，必须完成以下任务来消除标记，否则将在标记消失时受到基于{Skill.SkillOwner()} 660% 核心属性 + 100% 攻击力 [ {Skill.Character?.PrimaryAttributeValue * 6.6 + Skill.Character?.ATK:0.##} ] 的魔法伤害（该伤害必定暴击）：\r\n" +
-            $"1. 如果是敌人，则必须攻击一次队友，此伤害必定暴击且无视闪避；如果是队友，必须攻击一次{Skill.SkillOwner()}，治疗加成再度提升 100%。\r\n2. 对{Skill.SkillOwner()}释放一个指向性技能，{Skill.SkillOwner()}将此技能效果无效化并且获得该技能的使用权持续 4 回合。\r\n此技能对队友的伤害将不会导致队友死亡。";
+        public override string Description { get; set; } = "";
         public override DispelledType DispelledType => DispelledType.CannotBeDispelled;
+
+        public string 通用描述 => $"使场上现有的时雨标记变得不可驱散，并且刷新为持续 3 回合。并给予持有时雨标记的敌方角色 [ 宫监手标记 ]，宫监手标记不可驱散，持续 3 回合。持有宫监手标记的角色，必须完成以下两个任务以消除标记，否则将在标记消失时受到基于{Skill.SkillOwner()} {核心属性系数 * 100:0.##}% 核心属性 + {攻击力系数 * 100:0.##}% 攻击力 [ {Skill.Character?.PrimaryAttributeValue * 核心属性系数 + Skill.Character?.ATK * 攻击力系数:0.##} ] 的真实伤害：\r\n" +
+            $"1. 使用 [ 普通攻击 ] 攻击一次队友，此伤害必定暴击且无视闪避；\r\n2. 对{Skill.SkillOwner()}释放一个指向性技能，{Skill.SkillOwner()}将此技能效果无效化并且复制该技能获得使用权持续 4 回合，该复制品没有冷却时间。";
+        public double 核心属性系数 => 1.1 * Skill.Level;
+        public double 攻击力系数 => 0.4 + 0.2 * (Skill.Level - 1);
+
+        public 放监特效(Skill skill) : base(skill)
+        {
+            Description = 通用描述;
+        }
 
         public override void OnSkillCasted(Character caster, List<Character> targets, List<Grid> grids, Dictionary<string, object> others)
         {

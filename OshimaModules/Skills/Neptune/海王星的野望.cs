@@ -17,7 +17,7 @@ namespace Oshima.FunGame.OshimaModules.Skills
         public override bool CanSelectSelf => false;
         public override bool CanSelectEnemy => true;
         public override bool CanSelectTeammate => false;
-        public override int CanSelectTargetCount => 2;
+        public override int CanSelectTargetCount => 3;
         public override bool IsNonDirectional => true;
         public override int CanSelectTargetRange => 3;
 
@@ -39,10 +39,10 @@ namespace Oshima.FunGame.OshimaModules.Skills
         public override MagicType MagicType => Skill.Character?.MagicType ?? MagicType.None;
         public override ImmuneType IgnoreImmune => ImmuneType.All;
 
-        public string 爆炸伤害描述 => $"对受到标记的目标造成伤害时将产生爆炸，爆炸将产生 {分裂伤害系数 * 100:0.##}% 分裂伤害。分裂伤害为全图索敌，会优先分裂至两个在持续时间内对{Skill.SkillOwner()}造成伤害最多的敌人，若没有符合条件的敌人或敌人数量不足，则将分裂至被标记的敌人，或至多两个随机的敌人。";
+        public string 爆炸伤害描述 => $"对受到标记的目标造成伤害时将产生爆炸，爆炸将产生 {分裂伤害系数 * 100:0.##}% 分裂伤害。分裂伤害为全图索敌，会优先分裂至三个在持续时间内对{Skill.SkillOwner()}造成伤害最多的敌人，若没有符合条件的敌人或敌人数量不足，则将分裂至被标记的敌人，或至多三个随机的敌人。";
         public double 直接伤害 => 180 + 240 * (Skill.Level - 1);
         public double 持续时间 => 25 + 2 * (Skill.Level - 1);
-        public double 分裂伤害系数 => 0.4 + 0.07 * (Skill.Level - 1);
+        public double 分裂伤害系数 => 0.4 + 0.08 * (Skill.Level - 1);
         public double 力量提升 => 0.6 * (Skill.Character?.BaseSTR ?? 0);
         public Dictionary<Character, double> 敌人伤害统计 { get; set; } = [];
 
@@ -115,19 +115,19 @@ namespace Oshima.FunGame.OshimaModules.Skills
         public void 分裂伤害(Character character, Character enemy, double damage, DamageType damageType, MagicType magicType)
         {
             List<Character> targets = [];
-            targets.AddRange(敌人伤害统计.Where(w => w.Key != character && w.Key != enemy && w.Key.HP > 0).OrderByDescending(o => o.Value).Select(s => s.Key).Take(2));
-            if (targets.Count < 2)
+            targets.AddRange(敌人伤害统计.Where(w => w.Key != character && w.Key != enemy && w.Key.HP > 0).OrderByDescending(o => o.Value).Select(s => s.Key).Take(3));
+            if (targets.Count < 3)
             {
-                int count = 2 - targets.Count;
+                int count = 3 - targets.Count;
                 // 获取所有敌人
                 List<Character> allEnemys = [];
                 if (GamingQueue != null)
                 {
                     allEnemys = [.. GamingQueue.GetEnemies(character).Where(c => c != character && c != enemy && !targets.Contains(c) && c.HP > 0)];
                     targets.AddRange(allEnemys.Where(c => c.Effects.Any(e => e is 海王星的野望标记)).Take(count));
-                    if (targets.Count < 2)
+                    if (targets.Count < 3)
                     {
-                        count = 2 - targets.Count;
+                        count = 3 - targets.Count;
                         targets.AddRange(allEnemys.OrderBy(o => Random.Shared.Next()).Take(count));
                     }
                 }

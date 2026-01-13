@@ -2,9 +2,7 @@
 using System.Text;
 using System.Text.Json;
 using Milimoe.FunGame.Core.Api.Utility;
-using Milimoe.FunGame.Core.Controller;
 using Milimoe.FunGame.Core.Entity;
-using Milimoe.FunGame.Core.Interface.Base;
 using Milimoe.FunGame.Core.Library.Common.Addon;
 using Milimoe.FunGame.Core.Library.Constant;
 using Milimoe.FunGame.Core.Model;
@@ -472,6 +470,7 @@ namespace Oshima.FunGame.OshimaServers.Service
                         mvpBuilder.AppendLine($"总承受伤害：{stats.TotalTakenDamage:0.##} / 总承受物理伤害：{stats.TotalTakenPhysicalDamage:0.##} / 总承受魔法伤害：{stats.TotalTakenMagicDamage:0.##}");
                         if (stats.TotalTrueDamage > 0 || stats.TotalTakenTrueDamage > 0) mvpBuilder.AppendLine($"总计真实伤害：{stats.TotalTrueDamage:0.##} / 总承受真实伤害：{stats.TotalTakenTrueDamage:0.##}");
                         mvpBuilder.AppendLine($"每秒伤害：{stats.DamagePerSecond:0.##} / 每回合伤害：{stats.DamagePerTurn:0.##}");
+                        if (actionQueue.IsDebug) WriteLine(mvp.GetInfo());
                     }
 
                     int top = isWeb ? actionQueue.CharacterStatistics.Count : 0; // 回执多少个角色的统计信息
@@ -687,7 +686,7 @@ namespace Oshima.FunGame.OshimaServers.Service
             }
         }
 
-        private static bool ActionQueue_CharacterDeath(GamingQueue queue, Character current, Character death)
+        private static bool ActionQueue_CharacterDeath(GamingQueue queue, Character current, Character death, Character[] assists)
         {
             death.Items.Clear();
             return true;

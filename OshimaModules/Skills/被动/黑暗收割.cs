@@ -53,7 +53,7 @@ namespace Oshima.FunGame.OshimaModules.Skills
             }
         }
 
-        public override void AfterDeathCalculation(Character death, Character? killer, Dictionary<Character, int> continuousKilling, Dictionary<Character, int> earnedMoney)
+        public override void AfterDeathCalculation(Character death, Character? killer, Dictionary<Character, int> continuousKilling, Dictionary<Character, int> earnedMoney, Character[] assists)
         {
             if (death == Skill.Character && 当前灵魂数量 > 0)
             {

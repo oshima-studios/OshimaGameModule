@@ -1,4 +1,5 @@
 ﻿using System.Collections.Concurrent;
+using System.Text;
 using Milimoe.FunGame.Core.Entity;
 using Milimoe.FunGame.Core.Library.Constant;
 using Oshima.Core.Constant;
@@ -631,5 +632,26 @@ namespace Oshima.FunGame.OshimaModules.Models
                 "隅隆隐婚婶婉颇颈绩绪续骑绰绳维绵绷绸综绽绿缀巢琴琳琢琼斑替揍款堪塔搭" +
                 "堰揩越趁趋超揽堤提博揭喜彭揣插揪搜煮援搀裁搁搓搂搅壹握搔揉斯期欺联葫" +
                 "散惹葬募葛董葡敬葱蒋蒂落韩朝辜葵棒棱棋椰植森焚椅椒棵棍椎棉";
+
+        public static string GenerateRandomChineseUserName()
+        {
+            StringBuilder name = new();
+
+            // 随机姓
+            string lastname = FunGameConstant.CommonSurnames[Random.Shared.Next(FunGameConstant.CommonSurnames.Length)];
+            name.Append(lastname);
+
+            // 随机生成名字长度，2到5个字
+            int nameLength = Random.Shared.Next(1, 2);
+
+            for (int i = 0; i < nameLength; i++)
+            {
+                // 从常用汉字集中随机选择一个汉字
+                char chineseCharacter = FunGameConstant.CommonChineseCharacters[Random.Shared.Next(FunGameConstant.CommonChineseCharacters.Length)];
+                name.Append(chineseCharacter);
+            }
+
+            return name.ToString();
+        }
     }
 }

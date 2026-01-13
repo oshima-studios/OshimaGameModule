@@ -1897,24 +1897,23 @@ namespace Oshima.FunGame.OshimaServers.Service
                 double teamTotalHeal = allStats?.Sum(s => s.TotalHeal + s.TotalShield) ?? heal;
                 int playerCount = allStats?.Length ?? 1;
 
-                double dmgShare = dmg / Math.Max(1, teamTotalDmg);
+                double dmgShare = dmg / Math.Max(2.3, teamTotalDmg);
                 double healShare = heal / Math.Max(1, teamTotalHeal);
-                double roleContribution = Math.Max(dmgShare, healShare) * playerCount * 0.4;
-                double roleScore = Math.Min(0.8, roleContribution);
+                double roleContribution = Math.Max(dmgShare, healShare) * playerCount * 0.6;
+                double roleScore = Math.Min(1.0, roleContribution);
 
-                double kdaRatio = (k * 1.3 + a * 0.3) / (d + 1.5);
-                double kdaScore = Math.Min(0.6, (kdaRatio / 3.0) * 0.4);
+                double kdaRatio = (k * 1.4 + a * 0.2) / (d + 1.8);
+                double kdaScore = Math.Min(1.0, (kdaRatio / 3.0) * 0.4);
 
-                double ccScore = Math.Min(0.1, (cc / 60.0) * 0.05);
-                double tankScore = Math.Min(0.1, (taken / (d + 1) / 10000.0) * 0.1);
+                double ccScore = Math.Min(0.10, (cc / 60.0) * 0.05);
+                double tankScore = Math.Min(0.10, (taken / (d + 1) / 10000.0) * 0.1);
 
                 double totalRating = roleScore + kdaScore + ccScore + tankScore;
 
                 double avgDeaths = allStats?.Average(s => s.Deaths) ?? d;
                 if (d > avgDeaths && kdaRatio < 1.0) totalRating *= 0.75;
 
-                totalRating += 0.25;
-                return Math.Round(Math.Max(0.01, totalRating), 2);
+                return Math.Round(Math.Max(0.01, totalRating), 4);
             }
             else
             {
@@ -1923,19 +1922,19 @@ namespace Oshima.FunGame.OshimaServers.Service
                 double maxKills = allStats?.Max(s => s.Kills) ?? k;
                 double maxDmg = allStats?.Max(s => s.TotalDamage + s.TotalTrueDamage * 0.2) ?? dmg;
 
-                double rankScore = ((totalPlayers - rank + 1.0) / totalPlayers) * 0.6;
+                double rankScore = ((totalPlayers - rank + 1.0) / totalPlayers) * 0.8;
 
-                double killPart = (k * 1.5 + a * 0.3) / Math.Max(1, maxKills + 1);
-                double dmgPart = (dmg / Math.Max(1, maxDmg * 1.2)) * 0.1;
-                double combatScore = Math.Min(0.4, killPart * 0.3 + dmgPart);
+                double killPart = (k * 1.7 + a * 0.1) / Math.Max(1, maxKills + 1);
+                double dmgPart = (dmg / Math.Max(1, maxDmg * 1.8)) * 0.1;
+                double combatScore = Math.Min(0.8, killPart * 0.4 + dmgPart);
 
-                double utilityScore = Math.Min(0.05, (cc / 60.0) * 0.02 + (heal / Math.Max(1, maxDmg)) * 0.03);
+                double utilityScore = Math.Min(0.2, (cc / 60.0) * 0.04 + (heal / Math.Max(1, maxDmg)) * 0.05);
 
                 double totalRating = rankScore + combatScore + utilityScore;
 
                 if (k == 0)
                 {
-                    totalRating *= 0.7;
+                    totalRating *= 0.6;
                 }
 
                 if (rank == 1 && k > 0)
@@ -1945,11 +1944,10 @@ namespace Oshima.FunGame.OshimaServers.Service
 
                 if (rank > 5 && k >= maxKills * 0.8 && k > 0)
                 {
-                    totalRating += 0.25;
+                    totalRating += 0.15;
                 }
 
-                totalRating += 0.25;
-                return Math.Round(Math.Max(0.01, totalRating), 2);
+                return Math.Round(Math.Max(0.01, totalRating), 4);
             }
         }
 
