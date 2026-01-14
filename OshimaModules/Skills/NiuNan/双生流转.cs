@@ -67,7 +67,7 @@ namespace Oshima.FunGame.OshimaModules.Skills
             }
         }
 
-        public override bool BeforeCriticalCheck(Character actor, Character enemy, ref double throwingBonus)
+        public override bool BeforeCriticalCheck(Character actor, Character enemy, bool isNormalAttack, ref double throwingBonus)
         {
             if (actor == Skill.Character)
             {

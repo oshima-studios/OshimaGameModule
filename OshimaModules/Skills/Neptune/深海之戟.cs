@@ -35,7 +35,7 @@ namespace Oshima.FunGame.OshimaModules.Skills
                 string str = $"分裂伤害：{分裂百分比 * 100:0.##}%。无视免疫。";
                 if (野望 != null)
                 {
-                    return $"技能机制受 [ {nameof(海王星的野望)} ] 影响而改变：{野望.爆炸伤害描述}{str}";
+                    return $"技能机制受 [ {nameof(海王星的野望)} ] 影响而改变：{野望.爆炸伤害描述}未攻击标记目标时，按原机制，在普通攻击暴击时分裂。";
                 }
                 else if (GamingQueue?.Map != null)
                 {
@@ -49,12 +49,12 @@ namespace Oshima.FunGame.OshimaModules.Skills
         }
         public override ImmuneType IgnoreImmune => ImmuneType.All;
 
-        public double 分裂百分比 => Math.Min(0.75, 0.3 + (Skill.Character?.Level ?? 0 + 0.00) / 100);
+        public double 分裂百分比 => Math.Min(0.5, 0.3 + (Skill.Character?.Level ?? 0 + 0.00) / 200);
         public 海王星的野望特效? 野望 { get; set; } = null;
 
         public override void AfterDamageCalculation(Character character, Character enemy, double damage, double actualDamage, bool isNormalAttack, DamageType damageType, MagicType magicType, DamageResult damageResult)
         {
-            if (野望 != null && enemy.Effects.FirstOrDefault(e => e is 海王星的野望标记) is 海王星的野望标记 e)
+            if (character == Skill.Character && 野望 != null && (damageResult == DamageResult.Normal || damageResult == DamageResult.Critical) && enemy.Effects.FirstOrDefault(e => e is 海王星的野望标记) is 海王星的野望标记 e)
             {
                 野望.分裂伤害(character, enemy, actualDamage, damageType, magicType);
             }

@@ -11,7 +11,7 @@ namespace Oshima.FunGame.OshimaModules.Skills
         public override string Description => Effects.Count > 0 ? ((全军出击特效)Effects.First()).GeneralDescription : "";
         public override string DispelDescription => Effects.Count > 0 ? Effects.First().DispelDescription : "";
         public override double EPCost => 100;
-        public override double CD => 80;
+        public override double CD => 100;
         public override double HardnessTime { get; set; } = 5;
         public override bool CanSelectSelf => true;
         public override bool CanSelectEnemy => false;
@@ -29,6 +29,8 @@ namespace Oshima.FunGame.OshimaModules.Skills
         public override string Description { get; set; } = "";
         public override DispelledType DispelledType => DispelledType.CannotBeDispelled;
         public string GeneralDescription => $"将雇佣兵数量立即补全至 {雇佣兵团特效.最大数量} 名，每名雇佣兵的生命值回复至满并提升 {攻击力提升 * 100:0.##}% 攻击力。在 {持续时间} {GameplayEquilibriumConstant.InGameTime}内，场上的每名雇佣兵额外为{Skill.SkillOwner()}提供 {攻击力 * 100:0.##}% 攻击力和 {行动速度:0.##} 点行动速度、{加速系数 * 100:0.##}% 加速系数、{冷却缩减 * 100:0.##}% 冷却缩减。";
+        public override bool Durative => true;
+        public override double Duration => 持续时间;
 
         public double 持续时间 => 20 + 2 * (Skill.Level - 1);
         public const double 攻击力 = 0.04;
@@ -86,7 +88,6 @@ namespace Oshima.FunGame.OshimaModules.Skills
                 }
             }
             刷新技能效果(caster);
-            GamingQueue?.LastRound.AddApplyEffects(caster, EffectType.CritBoost, EffectType.PenetrationBoost);
         }
 
         public void 刷新技能效果(Character character)

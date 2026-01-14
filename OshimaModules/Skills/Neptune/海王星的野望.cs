@@ -32,7 +32,7 @@ namespace Oshima.FunGame.OshimaModules.Skills
         public override long Id => Skill.Id;
         public override string Name => Skill.Name;
         public override string Description => $"标记{Skill.TargetDescription()}，持续 {持续时间:0.##} {GameplayEquilibriumConstant.InGameTime}。立即对标记目标造成 {直接伤害:0.##} 点{CharacterSet.GetDamageTypeName(DamageType.Magical, MagicType)}。" +
-            $"在持续时间内{爆炸伤害描述}在此期间，{Skill.SkillOwner()}的力量提升 60% [ {力量提升:0.##} ]，并且 [ {nameof(深海之戟)} ] 改变为相同机制。无视免疫。";
+            $"在持续时间内{爆炸伤害描述}在此期间，{Skill.SkillOwner()}的力量提升 60% [ {力量提升:0.##} ]，并且 [ {nameof(深海之戟)} ] 改变为相同机制，可以叠加触发。无视免疫。";
         public override bool Durative => true;
         public override double Duration => 持续时间;
         public override DispelledType DispelledType => DispelledType.CannotBeDispelled;
@@ -42,7 +42,7 @@ namespace Oshima.FunGame.OshimaModules.Skills
         public string 爆炸伤害描述 => $"对受到标记的目标造成伤害时将产生爆炸，爆炸将产生 {分裂伤害系数 * 100:0.##}% 分裂伤害。分裂伤害为全图索敌，会优先分裂至三个在持续时间内对{Skill.SkillOwner()}造成伤害最多的敌人，若没有符合条件的敌人或敌人数量不足，则将分裂至被标记的敌人，或至多三个随机的敌人。";
         public double 直接伤害 => 180 + 240 * (Skill.Level - 1);
         public double 持续时间 => 25 + 2 * (Skill.Level - 1);
-        public double 分裂伤害系数 => 0.4 + 0.08 * (Skill.Level - 1);
+        public double 分裂伤害系数 => 0.25 + 0.05 * (Skill.Level - 1);
         public double 力量提升 => 0.6 * (Skill.Character?.BaseSTR ?? 0);
         public Dictionary<Character, double> 敌人伤害统计 { get; set; } = [];
 

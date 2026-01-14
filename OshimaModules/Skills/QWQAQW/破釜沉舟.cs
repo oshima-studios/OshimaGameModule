@@ -42,13 +42,13 @@ namespace Oshima.FunGame.OshimaModules.Skills
         private double 受到伤害之前的HP = 0;
         private double 这次受到的额外伤害 = 0;
         private readonly double 常规伤害加成 = 0.35;
-        private readonly double 常规生命偷取 = 0.1;
+        private readonly double 常规生命偷取 = 0.15;
         private readonly int 高于40额外伤害上限 = 40;
         private readonly int 高于40额外伤害下限 = 20;
-        private readonly int 高于40的加成上限 = 80;
-        private readonly int 高于40的加成下限 = 50;
+        private readonly int 高于40的加成上限 = 90;
+        private readonly int 高于40的加成下限 = 60;
         private readonly int 低于40的加成上限 = 120;
-        private readonly int 低于40的加成下限 = 90;
+        private readonly int 低于40的加成下限 = 100;
 
         private double 伤害加成(double damage)
         {
@@ -110,6 +110,7 @@ namespace Oshima.FunGame.OshimaModules.Skills
 
             if (character == Skill.Character && 已通过累计受到伤害发动破釜沉舟)
             {
+                已通过累计受到伤害发动破釜沉舟 = false;
                 累计受到的伤害 = 0;
                 double ls = actualDamage * 常规生命偷取;
                 HealToTarget(character, character, ls, triggerEffects: false);
@@ -121,7 +122,6 @@ namespace Oshima.FunGame.OshimaModules.Skills
         {
             if (已通过累计受到伤害发动破釜沉舟 && actor == Skill.Character)
             {
-                已通过累计受到伤害发动破釜沉舟 = false;
                 throwingBonus -= 0.3;
             }
             return true;

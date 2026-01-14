@@ -34,13 +34,14 @@ namespace Oshima.FunGame.OshimaModules.Skills
         public const int 最小数量 = 2;
         public const int 最大数量 = 5;
         public const int 补充间隔 = 20;
-        public const double 生命值比例 = 0.25;
+        public const double 生命值比例 = 0.15;
         public const double 攻击力比例 = 0.4;
 
         public override void AfterDeathCalculation(Character death, Character? killer, Dictionary<Character, int> continuousKilling, Dictionary<Character, int> earnedMoney, Character[] assists)
         {
             if (death is 雇佣兵 gyb)
             {
+                WriteLine($"[ {killer} ] 杀死了 [ {death} ]！");
                 雇佣兵团.Remove(gyb);
                 if (雇佣兵团.Count < 最小数量 && Skill.CurrentCD == 0)
                 {

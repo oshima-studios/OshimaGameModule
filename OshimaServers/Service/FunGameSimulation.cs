@@ -393,6 +393,13 @@ namespace Oshima.FunGame.OshimaServers.Service
                         nextDropTime -= timeLapse;
                         //Thread.Sleep(1);
 
+                        if (actionQueue.GameOver)
+                        {
+                            result.Add(Msg);
+                            lastRecord.Add(actionQueue.LastRound.ToString());
+                            break;
+                        }
+
                         if (roundMsg != "")
                         {
                             if ((isTeam && deathMatchRoundDetail || !isTeam) && isWeb)
@@ -686,7 +693,7 @@ namespace Oshima.FunGame.OshimaServers.Service
             }
         }
 
-        private static bool ActionQueue_CharacterDeath(GamingQueue queue, Character current, Character death, Character[] assists)
+        private static bool ActionQueue_CharacterDeath(GamingQueue queue, Character death, Character? killer, Character[] assists)
         {
             death.Items.Clear();
             return true;

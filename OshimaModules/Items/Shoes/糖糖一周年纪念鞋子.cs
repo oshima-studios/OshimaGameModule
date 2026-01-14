@@ -35,6 +35,7 @@ namespace Oshima.FunGame.OshimaModules.Items
         public override string Description => string.Join("", Effects.Select(e => e.Description));
 
         private readonly double 行动速度加成 = 180;
+        private readonly double 移动距离加成 = 4;
         private readonly double 加速系数加成 = 0.2;
 
         public 糖糖一周年纪念鞋子技能(Character? character = null, Item? item = null) : base(SkillType.Passive, character)
@@ -44,9 +45,11 @@ namespace Oshima.FunGame.OshimaModules.Items
             Dictionary<string, object> values = new()
             {
                 { "exspd", 行动速度加成 },
+                { "exmov", 移动距离加成 },
                 { "exacc", 加速系数加成 }
             };
             Effects.Add(new ExSPD(this, values, character));
+            Effects.Add(new ExMOV(this, values, character));
             Effects.Add(new AccelerationCoefficient(this, values, character));
         }
 

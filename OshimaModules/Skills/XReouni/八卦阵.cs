@@ -30,8 +30,8 @@ namespace Oshima.FunGame.OshimaModules.Skills
         public bool 归元 { get; set; } = false;
         public bool 回合投掷出奇数 { get; set; } = false;
         public bool 奇数效果 { get; set; } = false;
-        public double 伤害提升 { get; set; } = 0.8;
-        public double 伤害减少 { get; set; } = 0.4;
+        public double 伤害提升 { get; set; } = 0.6;
+        public double 伤害减少 { get; set; } = 0.3;
         public double 奇数平衡性提升 { get; set; } = 0.1;
         public double 奇数伤害提升 { get; set; } = 0.3;
         public double 奇数伤害减少 { get; set; } = 0.15;
