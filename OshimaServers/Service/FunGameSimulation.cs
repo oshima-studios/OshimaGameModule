@@ -1029,9 +1029,9 @@ namespace Oshima.FunGame.OshimaServers.Service
         public static void DropItems(GamingQueue queue, int mQuality, int wQuality, int aQuality, int sQuality, int acQuality, bool addLevel = true)
         {
             Item[] weapons = [.. FunGameConstant.Equipment.Where(i => i.ItemType == ItemType.Weapon && (wQuality >= 5 && (int)i.QualityType >= 5 || wQuality < 5 && (int)i.QualityType == wQuality))];
-            Item[] armors = [.. FunGameConstant.Equipment.Where(i => i.ItemType == ItemType.Armor && (aQuality >= 5 && (int)i.QualityType == 5 || aQuality < 5 && (int)i.QualityType == aQuality))];
-            Item[] shoes = [.. FunGameConstant.Equipment.Where(i => i.ItemType == ItemType.Shoes && (sQuality >= 5 && (int)i.QualityType == 5 || sQuality < 5 && (int)i.QualityType == sQuality))];
-            Item[] accessories = [.. FunGameConstant.Equipment.Where(i => i.ItemType == ItemType.Accessory && (acQuality >= 5 && (int)i.QualityType == 5 || acQuality < 5 && (int)i.QualityType == acQuality))];
+            Item[] armors = [.. FunGameConstant.Equipment.Where(i => i.ItemType == ItemType.Armor && (aQuality >= 5 && (int)i.QualityType >= 5 || aQuality < 5 && (int)i.QualityType == aQuality))];
+            Item[] shoes = [.. FunGameConstant.Equipment.Where(i => i.ItemType == ItemType.Shoes && (sQuality >= 5 && (int)i.QualityType >= 5 || sQuality < 5 && (int)i.QualityType == sQuality))];
+            Item[] accessories = [.. FunGameConstant.Equipment.Where(i => i.ItemType == ItemType.Accessory && (acQuality >= 5 && (int)i.QualityType >= 5 || acQuality < 5 && (int)i.QualityType == acQuality))];
             Item[] consumables = [.. FunGameConstant.AllItems.Where(i => i.ItemType == ItemType.Consumable && i.IsInGameItem)];
             foreach (Character character in queue.AllCharacters)
             {
