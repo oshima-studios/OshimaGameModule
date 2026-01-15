@@ -63,16 +63,6 @@ namespace Oshima.FunGame.OshimaModules.Skills
             }
             return true;
         }
-
-        public override void OnCharacterActionTaken(Character actor, DecisionPoints dp, CharacterActionType type)
-        {
-            Skill[] skills = [.. actor.Skills.Where(s => s.Values.TryGetValue(nameof(时雨标记), out object? value) && value.Equals(1))];
-            foreach (Skill skill in skills)
-            {
-                skill.CurrentCD = 0;
-                skill.Enable = true;
-            }
-        }
     }
 
     public class 放监特效(Skill skill) : Effect(skill)
@@ -84,9 +74,9 @@ namespace Oshima.FunGame.OshimaModules.Skills
 
         public string 通用描述 => $"使场上现有的时雨标记变得不可驱散，并且刷新为持续 3 回合。并给予持有时雨标记的敌方角色 [ 宫监手标记 ]，宫监手标记不可驱散，持续 3 回合。{任务要求}";
         public string 任务要求 => $"持有宫监手标记的角色，必须完成以下两个任务以消除标记，否则将在标记消失时，每个未完成的任务给予角色基于{Skill.SkillOwner()} {核心属性系数 * 100:0.##}% 核心属性 + {攻击力系数 * 100:0.##}% 攻击力 [ {Skill.Character?.PrimaryAttributeValue * 核心属性系数 + Skill.Character?.ATK * 攻击力系数:0.##} ] 的真实伤害：\r\n" +
-            $"1. 使用 [ 普通攻击 ] 攻击一次队友，此伤害必定暴击且无视闪避；\r\n2. 对{Skill.SkillOwner()}释放一个指向性技能，{Skill.SkillOwner()}将此技能效果无效化并且复制该技能获得使用权持续 4 回合，该复制品没有冷却时间。\r\n注意：在宫监手标记被消除前，对{Skill.SkillOwner()}释放指向性技能始终会触发无效化和复制效果。杀死{Skill.SkillOwner()}可以终止所有放监任务。";
-        public double 核心属性系数 => 0.8 * Skill.Level;
-        public double 攻击力系数 => 0.2 + 0.15 * (Skill.Level - 1);
+            $"1. 使用 [ 普通攻击 ] 攻击一次队友，此伤害必定暴击且无视闪避；\r\n2. 对{Skill.SkillOwner()}释放一个指向性技能，{Skill.SkillOwner()}将此技能效果无效化并且复制该技能获得使用权持续 4 回合。\r\n注意：在宫监手标记被消除前，对{Skill.SkillOwner()}释放指向性技能始终会触发无效化和复制效果。杀死{Skill.SkillOwner()}可以终止所有放监任务。";
+        public double 核心属性系数 => 0.7 * Skill.Level;
+        public double 攻击力系数 => 0.2 + 0.10 * (Skill.Level - 1);
 
         public void 造成伤害(Character character, int count)
         {
@@ -112,17 +102,17 @@ namespace Oshima.FunGame.OshimaModules.Skills
                     {
                         e.DispelledType = DispelledType.CannotBeDispelled;
                         e.RemainDurationTurn = 3;
-                    }
-                    if (enemies.Contains(character))
-                    {
-                        Effect e2 = new 宫监手标记(Skill, caster, character, this)
+                        if (enemies.Contains(character))
                         {
-                            Durative = false,
-                            DurationTurn = 3,
-                            RemainDurationTurn = 3
-                        };
-                        character.Effects.Add(e2);
-                        e2.OnEffectGained(character);
+                            Effect e2 = new 宫监手标记(Skill, caster, character, this)
+                            {
+                                Durative = false,
+                                DurationTurn = 3,
+                                RemainDurationTurn = 3
+                            };
+                            character.Effects.Add(e2);
+                            e2.OnEffectGained(character);
+                        }
                     }
                 }
                 GamingQueue.LastRound.AddApplyEffects(caster, EffectType.Focusing);

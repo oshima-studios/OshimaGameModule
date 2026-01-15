@@ -49,7 +49,7 @@ namespace Oshima.FunGame.OshimaModules.Skills
         }
         public override ImmuneType IgnoreImmune => ImmuneType.All;
 
-        public double 分裂百分比 => Math.Min(0.5, 0.3 + (Skill.Character?.Level ?? 0 + 0.00) / 200);
+        public double 分裂百分比 { get; set; } = 0.25;
         public 海王星的野望特效? 野望 { get; set; } = null;
 
         public override void AfterDamageCalculation(Character character, Character enemy, double damage, double actualDamage, bool isNormalAttack, DamageType damageType, MagicType magicType, DamageResult damageResult)

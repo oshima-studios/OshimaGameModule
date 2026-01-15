@@ -23,6 +23,7 @@ namespace Oshima.FunGame.OshimaServers.Service
         public static GameMap Map { get; } = new FastAutoMap();
         public static bool IsRuning { get; set; } = false;
         public static bool IsWeb { get; set; } = false;
+        public static bool IsDebug { get; set; } = false;
         public static bool PrintOut { get; set; } = false;
         public static bool DeathMatchRoundDetail { get; set; } = false;
         public static string Msg { get; set; } = "";
@@ -204,6 +205,7 @@ namespace Oshima.FunGame.OshimaServers.Service
                     if (PrintOut) characters.ForEach(c => Console.WriteLine(c.GetInfo()));
 
                     // 初始化队列，准备开始游戏
+                    actionQueue.IsDebug = IsDebug;
                     actionQueue.InitActionQueue();
                     actionQueue.SetCharactersToAIControl(false, characters);
                     if (PrintOut) Console.WriteLine();

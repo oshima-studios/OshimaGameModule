@@ -1,4 +1,5 @@
 ﻿using Milimoe.FunGame.Core.Entity;
+using Milimoe.FunGame.Core.Interface.Entity;
 using Milimoe.FunGame.Core.Library.Common.Addon;
 using Milimoe.FunGame.Core.Library.Constant;
 using Oshima.FunGame.OshimaModules.Models;
@@ -31,13 +32,13 @@ namespace Oshima.FunGame.OshimaModules.Skills
             (雇佣兵团.Count < 最小数量 && Skill.CurrentCD > 0 ? $"（下次补充：{Skill.CurrentCD} {GameplayEquilibriumConstant.InGameTime}后）" : "");
 
         public List<雇佣兵> 雇佣兵团 { get; } = [];
-        public const int 最小数量 = 2;
+        public const int 最小数量 = 1;
         public const int 最大数量 = 5;
-        public const int 补充间隔 = 20;
-        public const double 生命值比例 = 0.15;
-        public const double 攻击力比例 = 0.4;
+        public const int 补充间隔 = 30;
+        public const double 生命值比例 = 0.1;
+        public const double 攻击力比例 = 0.6;
 
-        public override void AfterDeathCalculation(Character death, Character? killer, Dictionary<Character, int> continuousKilling, Dictionary<Character, int> earnedMoney, Character[] assists)
+        public override void AfterDeathCalculation(Character death, bool hasMaster, Character? killer, Dictionary<Character, int> continuousKilling, Dictionary<Character, int> earnedMoney, Character[] assists)
         {
             if (death is 雇佣兵 gyb)
             {
@@ -99,6 +100,14 @@ namespace Oshima.FunGame.OshimaModules.Skills
                 }
                 while (count < 最小数量);
             }
+            if (GamingQueue != null)
+            {
+                foreach (雇佣兵 gyb in 雇佣兵团.Where(g => !GamingQueue.Queue.Contains(g)))
+                {
+                    if (gyb.HP <= 0) gyb.HP = 1;
+                    添加到地图(character, gyb);
+                }
+            }
         }
 
         public int 新增雇佣兵(Character character)
@@ -124,6 +133,14 @@ namespace Oshima.FunGame.OshimaModules.Skills
             gyb.Recovery();
             雇佣兵团.Add(gyb);
 
+            添加到地图(character, gyb);
+            WriteLine($"[ {character} ] 召唤了{gyb}！");
+
+            return 雇佣兵团.Count;
+        }
+
+        public void 添加到地图(Character character, 雇佣兵 gyb)
+        {
             // 添加到地图/队列
             if (GamingQueue != null)
             {
@@ -137,15 +154,12 @@ namespace Oshima.FunGame.OshimaModules.Skills
                         if (target != null)
                         {
                             map.SetCharacterCurrentGrid(gyb, target);
-                            WriteLine($"[ {character} ] 召唤了雇佣兵 ({target.X}, {target.Y}, {target.Z}) !");
                         }
                     }
                 }
                 GamingQueue.Queue.Add(gyb);
                 GamingQueue.ChangeCharacterHardnessTime(gyb, 5, false, false);
             }
-
-            return 雇佣兵团.Count;
         }
     }
 }

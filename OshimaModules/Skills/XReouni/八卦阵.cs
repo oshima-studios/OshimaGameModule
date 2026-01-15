@@ -36,7 +36,7 @@ namespace Oshima.FunGame.OshimaModules.Skills
         public double 奇数伤害提升 { get; set; } = 0.3;
         public double 奇数伤害减少 { get; set; } = 0.15;
 
-        public override double AlterActualDamageAfterCalculation(Character character, Character enemy, double damage, bool isNormalAttack, DamageType damageType, MagicType magicType, DamageResult damageResult, ref bool isEvaded, Dictionary<Effect, double> totalDamageBonus)
+        public override double AlterExpectedDamageBeforeCalculation(Character character, Character enemy, double damage, bool isNormalAttack, DamageType damageType, MagicType magicType, Dictionary<Effect, double> totalDamageBonus)
         {
             double bonus = 0;
             if (character != Skill.Character && enemy != Skill.Character)
