@@ -26,7 +26,7 @@ namespace Oshima.FunGame.OshimaModules.Skills
     {
         public override long Id => Skill.Id;
         public override string Name => Skill.Name;
-        public override string Description => $"敏捷提高 20% [ {敏捷提升:0.##} ] 点，然后将当前力量补充到敏捷的 {平衡系数 * 100:0.##}%{(Skill.Character != null ? $" [ {Skill.Character.AGI * 平衡系数:0.##} ]" : "")}，持续 {Duration:0.##} {GameplayEquilibriumConstant.InGameTime}。";
+        public override string Description => $"敏捷提高 20% [ {敏捷提升:0.##} ] 点。若当前总力量低于敏捷，则获得额外力量提升，使得总力量等于敏捷的 {平衡系数 * 100:0.##}%{(Skill.Character != null ? $" [ {Skill.Character.AGI * 平衡系数:0.##} ]" : "")}，持续 {Duration:0.##} {GameplayEquilibriumConstant.InGameTime}。";
         public override bool Durative => true;
         public override double Duration => 30;
         public override DispelledType DispelledType => DispelledType.CannotBeDispelled;

@@ -47,7 +47,7 @@ namespace Oshima.FunGame.OshimaModules.Effects.PassiveEffects
 
         public override void AfterDeathCalculation(Character death, bool hasMaster, Character? killer, Dictionary<Character, int> continuousKilling, Dictionary<Character, int> earnedMoney, Character[] assists)
         {
-            if (GamingQueue != null && killer != null && killer == _targetCharacter && Source != null && death != Source && GamingQueue.Queue.Contains(Source))
+            if (GamingQueue != null && !hasMaster && killer != null && killer == _targetCharacter && Source != null && death != Source && GamingQueue.Queue.Contains(Source))
             {
                 WriteLine($"[ {Source} ] 正在观察 [ {killer} ] 的情绪。");
                 if (LastType == CharacterActionType.NormalAttack)
@@ -82,15 +82,22 @@ namespace Oshima.FunGame.OshimaModules.Effects.PassiveEffects
                     Source.Effects.Add(e);
                     WriteLine($"[ {Source} ] 复制了 [ {killer} ] 的技能：{LastSkill.Name}！！");
                 }
-                Effect e2 = new 时雨标记(Skill, Source)
+                if (killer.Effects.FirstOrDefault(e => e is 时雨标记) is 时雨标记 e2)
                 {
-                    Durative = false,
-                    DurationTurn = 3,
-                    RemainDurationTurn = 3
-                };
-                e2.OnEffectGained(killer);
-                killer.Effects.Add(e2);
-                WriteLine($"[ {Source} ] 给予了 [ {killer} ] 时雨标记！");
+                    e2.RemainDurationTurn = 3;
+                }
+                else
+                {
+                    e2 = new 时雨标记(Skill, Source)
+                    {
+                        Durative = false,
+                        DurationTurn = 3,
+                        RemainDurationTurn = 3
+                    };
+                    e2.OnEffectGained(killer);
+                    killer.Effects.Add(e2);
+                    WriteLine($"[ {Source} ] 给予了 [ {killer} ] 时雨标记！");
+                }
             }
         }
     }

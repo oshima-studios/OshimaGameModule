@@ -14,7 +14,7 @@ namespace Oshima.FunGame.OshimaModules.Skills
         public override string DispelDescription => Effects.Count > 0 ? Effects.First().DispelDescription : "";
         public override string ExemptionDescription => Effects.Count > 0 ? Effects.First().ExemptionDescription : "";
         public override double EPCost => 100;
-        public override double CD => 60;
+        public override double CD => 80;
         public override double HardnessTime { get; set; } = 2;
         public override bool CanSelectSelf => true;
         public override bool CanSelectEnemy => false;
@@ -92,7 +92,7 @@ namespace Oshima.FunGame.OshimaModules.Skills
         {
             if (实际选择熵核 && character == Skill.Character && (damageResult == DamageResult.Normal || damageResult == DamageResult.Critical) && !CheckSkilledImmune(character, enemy, Skill))
             {
-                Effect e = new 禁止治疗(Skill, character, true, 熵核影响敌人时间, 0)
+                禁止治疗 e = new(Skill, character, false, true, true, true, 熵核影响敌人时间, 0)
                 {
                     ExemptionType = PrimaryAttribute.AGI,
                     ExemptDuration = false,
@@ -100,7 +100,7 @@ namespace Oshima.FunGame.OshimaModules.Skills
                 };
                 if (enemy.AGI <= character.AGI || (enemy.AGI > character.AGI && !CheckExemption(character, enemy, e)))
                 {
-                    WriteLine($"[ {character} ] 对 [ {enemy} ] 施加了禁止治疗！！持续时间：{熵核影响敌人时间:0.##} {GameplayEquilibriumConstant.InGameTime}！");
+                    WriteLine($"[ {character} ] 对 [ {enemy} ] 施加了禁止治疗{e.禁止类型}！！持续时间：{熵核影响敌人时间:0.##} {GameplayEquilibriumConstant.InGameTime}！");
                     enemy.Effects.Add(e);
                     e.OnEffectGained(enemy);
                     GamingQueue?.LastRound.AddApplyEffects(enemy, e.EffectType);

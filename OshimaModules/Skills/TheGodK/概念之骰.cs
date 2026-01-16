@@ -68,7 +68,7 @@ namespace Oshima.FunGame.OshimaModules.Skills
 
         public override double AlterActualDamageAfterCalculation(Character character, Character enemy, double damage, bool isNormalAttack, DamageType damageType, MagicType magicType, DamageResult damageResult, ref bool isEvaded, Dictionary<Effect, double> totalDamageBonus)
         {
-            if (enemy == Skill.Character && 实际受到伤害减少 > 0)
+            if (enemy == Skill.Character && 实际受到伤害减少 > 0 && (damageResult == DamageResult.Normal || damageResult == DamageResult.Critical))
             {
                 double reduce = damage * 实际受到伤害减少;
                 WriteLine($"[ {Skill.Character} ] 发动了概念之骰！伤害减少了 {reduce:0.##} 点！");

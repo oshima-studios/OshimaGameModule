@@ -26,13 +26,13 @@ namespace Oshima.FunGame.OshimaModules.Skills
     {
         public override long Id => Skill.Id;
         public override string Name => Skill.Name;
-        public override string Description => $"{Skill.SkillOwner()}释放「熵灭」的力量，获得 135% 力量 [ {攻击力加成:0.##} ] 的攻击力加成，但每次普通攻击命中时都会损失自身 9% 当前生命值 [ {当前生命值:0.##} ]，持续 {Duration:0.##} {GameplayEquilibriumConstant.InGameTime}。";
+        public override string Description => $"{Skill.SkillOwner()}释放「熵灭」的力量，获得 135% 力量 [ {攻击力加成:0.##} ] 的攻击力加成，但每次普通攻击命中时都会损失自身 6% 当前生命值 [ {当前生命值:0.##} ]，持续 {Duration:0.##} {GameplayEquilibriumConstant.InGameTime}。";
         public override bool Durative => true;
-        public override double Duration => 10 + 1 * (Level - 1);
+        public override double Duration => 10 + 2 * (Level - 1);
         public override DispelledType DispelledType => DispelledType.CannotBeDispelled;
 
         private double 攻击力加成 => Skill.Character?.STR * 1.35 ?? 0;
-        private double 当前生命值 => Skill.Character?.HP * 0.09 ?? 0;
+        private double 当前生命值 => Skill.Character?.HP * 0.06 ?? 0;
         private double 实际攻击力加成 = 0;
 
         public override void OnEffectGained(Character character)

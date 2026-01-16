@@ -28,7 +28,7 @@ namespace Oshima.FunGame.OshimaModules.Skills
         public override long Id => Skill.Id;
         public override string Name => Skill.Name;
         public override string Description => $"{Skill.SkillOwner()}在场上时，会召唤数名雇佣兵协助战斗，初始数量为 {最小数量} 名，雇佣兵具有独立的回合，生命值为{Skill.SkillOwner()}的 {生命值比例 * 100:0.##}% [ {Skill.Character?.MaxHP * 生命值比例:0.##} ]，攻击力为{Skill.SkillOwner()}的 {攻击力比例 * 100:0.##}% 基础攻击力 [ {Skill.Character?.BaseATK * 攻击力比例:0.##} ]，" +
-            $"完整继承其他能力值（暴击率、闪避率等）。当{Skill.SkillOwner()}参与击杀时，便会临时产生一名额外的雇佣兵。场上最多可以存在 {最大数量} 名雇佣兵，达到数量后不再产生新的雇佣兵；当不足 {最小数量} 名雇佣兵时，{补充间隔} {GameplayEquilibriumConstant.InGameTime}后会重新补充一名雇佣兵。" +
+            $"完整继承其他能力值（暴击率、闪避率等），雇佣兵每{GameplayEquilibriumConstant.InGameTime}流失 {生命流失 * 100:0.##}% 当前生命值。当{Skill.SkillOwner()}参与击杀时，便会临时产生一名额外的雇佣兵。场上最多可以存在 {最大数量} 名雇佣兵，达到数量后不再产生新的雇佣兵；当不足 {最小数量} 名雇佣兵时，{补充间隔} {GameplayEquilibriumConstant.InGameTime}后会重新补充一名雇佣兵。" +
             (雇佣兵团.Count < 最小数量 && Skill.CurrentCD > 0 ? $"（下次补充：{Skill.CurrentCD} {GameplayEquilibriumConstant.InGameTime}后）" : "");
 
         public List<雇佣兵> 雇佣兵团 { get; } = [];
@@ -37,6 +37,7 @@ namespace Oshima.FunGame.OshimaModules.Skills
         public const int 补充间隔 = 30;
         public const double 生命值比例 = 0.1;
         public const double 攻击力比例 = 0.6;
+        public const double 生命流失 = 0.09;
 
         public override void AfterDeathCalculation(Character death, bool hasMaster, Character? killer, Dictionary<Character, int> continuousKilling, Dictionary<Character, int> earnedMoney, Character[] assists)
         {
@@ -72,6 +73,18 @@ namespace Oshima.FunGame.OshimaModules.Skills
             if (character == Skill.Character)
             {
                 保底补充(character);
+            }
+            foreach (雇佣兵 gyb in 雇佣兵团)
+            {
+                if (gyb.HP > 0)
+                {
+                    double lost = gyb.HP * 生命流失 * elapsed;
+                    gyb.HP -= lost;
+                    if (gyb.HP <= 0)
+                    {
+                        gyb.HP = 1;
+                    }
+                }
             }
         }
 
@@ -125,7 +138,7 @@ namespace Oshima.FunGame.OshimaModules.Skills
                 InitialHR = character.HR,
                 InitialMR = character.MR,
                 Lifesteal = character.Lifesteal,
-                ExPDR = character.PDR,
+                ExPDR = character.ExPDR,
                 PhysicalPenetration = character.PhysicalPenetration,
                 MagicalPenetration = character.MagicalPenetration
             };
