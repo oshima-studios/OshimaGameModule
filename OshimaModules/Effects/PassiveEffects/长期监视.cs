@@ -76,6 +76,8 @@ namespace Oshima.FunGame.OshimaModules.Effects.PassiveEffects
                     };
                     e.CopiedSkill.Values[nameof(时雨标记)] = 1;
                     e.CopiedSkill.CurrentCD = 0;
+                    e.CopiedSkill.FreeCostEP = true;
+                    e.CopiedSkill.FreeCostMP = true;
                     e.CopiedSkill.Enable = true;
                     e.CopiedSkill.IsInEffect = false;
                     e.OnEffectGained(Source);
