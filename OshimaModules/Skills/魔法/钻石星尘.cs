@@ -29,6 +29,7 @@ namespace Oshima.FunGame.OshimaModules.Skills
         public override bool IsNonDirectional => true;
         public override SkillRangeType SkillRangeType => SkillRangeType.Circle;
         public override int CanSelectTargetRange => 2;
+        public override double MagicBottleneck => 35 + 24 * (Level - 1);
 
         public 钻石星尘(Character? character = null) : base(SkillType.Magic, character)
         {

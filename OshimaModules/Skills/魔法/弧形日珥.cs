@@ -14,6 +14,7 @@ namespace Oshima.FunGame.OshimaModules.Skills
         public override double CastTime => 8;
         public override double HardnessTime { get; set; } = 6;
         public override int CanSelectTargetCount => 3;
+        public override double MagicBottleneck => 12 + 13 * (Level - 1);
 
         public 弧形日珥(Character? character = null) : base(SkillType.Magic, character)
         {

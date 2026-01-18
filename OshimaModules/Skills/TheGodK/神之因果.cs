@@ -75,7 +75,7 @@ namespace Oshima.FunGame.OshimaModules.Skills
                 double damage = 因果伤害值 * 2 / enemies.Count;
                 foreach (Character enemy in enemies)
                 {
-                    DamageToEnemy(character, enemy, DamageType.True, MagicType, damage, new()
+                    DamageToEnemy(character, enemy, DamageType.True, MagicType, damage, new(character)
                     {
                         CalculateShield = false,
                         IgnoreImmune = true,

@@ -30,6 +30,7 @@ namespace Oshima.FunGame.OshimaModules.Skills
                 };
             }
         }
+        public override double MagicBottleneck => 20 + 24 * (Level - 1);
 
         public 死亡咆哮(Character? character = null) : base(SkillType.Magic, character)
         {

@@ -30,6 +30,7 @@ namespace Oshima.FunGame.OshimaModules.Skills
                 };
             }
         }
+        public override double MagicBottleneck => 20 + 22 * (Level - 1);
 
         public 等离子之波(Character? character = null) : base(SkillType.Magic, character)
         {

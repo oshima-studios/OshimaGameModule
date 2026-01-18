@@ -31,6 +31,7 @@ namespace Oshima.FunGame.OshimaModules.Skills
                 };
             }
         }
+        public override double MagicBottleneck => 20 + 24 * (Level - 1);
 
         public 银色荆棘(Character? character = null) : base(SkillType.Magic, character)
         {

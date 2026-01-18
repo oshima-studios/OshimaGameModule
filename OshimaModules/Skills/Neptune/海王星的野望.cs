@@ -135,7 +135,7 @@ namespace Oshima.FunGame.OshimaModules.Skills
             damage *= 分裂伤害系数;
             foreach (Character target in targets)
             {
-                DamageToEnemy(character, target, damageType, magicType, damage, new()
+                DamageToEnemy(character, target, damageType, magicType, damage, new(character)
                 {
                     CalculateCritical = false,
                     CalculateReduction = true,

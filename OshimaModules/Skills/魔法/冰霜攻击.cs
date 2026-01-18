@@ -11,8 +11,9 @@ namespace Oshima.FunGame.OshimaModules.Skills
         public override string Description => Effects.Count > 0 ? Effects.First().Description : "";
         public override double MPCost => Level > 0 ? 50 + (50 * (Level - 1)) : 50;
         public override double CD => 25;
-        public override double CastTime => 8;
+        public override double CastTime => 5;
         public override double HardnessTime { get; set; } = 3;
+        public override double MagicBottleneck => 20 + 22 * (Level - 1);
 
         public 冰霜攻击(Character? character = null) : base(SkillType.Magic, character)
         {

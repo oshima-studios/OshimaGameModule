@@ -13,6 +13,7 @@ namespace Oshima.FunGame.OshimaModules.Skills
         public override double CD => 20;
         public override double CastTime => 6;
         public override double HardnessTime { get; set; } = 3;
+        public override double MagicBottleneck => 16 + 17 * (Level - 1);
 
         public 水之矢(Character? character = null) : base(SkillType.Magic, character)
         {

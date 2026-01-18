@@ -79,7 +79,7 @@ namespace Oshima.FunGame.OshimaModules.Skills
 
         public override void AfterDeathCalculation(Character death, bool hasMaster, Character? killer, Dictionary<Character, int> continuousKilling, Dictionary<Character, int> earnedMoney, Character[] assists)
         {
-            if (Skill.Character != null && death != Skill.Character && (killer == Skill.Character || assists.Contains(Skill.Character)) && Skill is 概念之骰 skill)
+            if (Skill.Character != null && death != Skill.Character && !hasMaster && (killer == Skill.Character || assists.Contains(Skill.Character)) && Skill is 概念之骰 skill)
             {
                 WriteLine($"[ {Skill.Character} ] 进行概念投掷：“此乃，神之概念。”");
                 bool result = false;

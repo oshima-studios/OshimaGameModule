@@ -33,6 +33,7 @@ namespace Oshima.FunGame.OshimaModules.Skills
                 };
             }
         }
+        public override double MagicBottleneck => 15 + 20 * (Level - 1);
 
         public 灾难冲击波(Character? character = null) : base(SkillType.Magic, character)
         {

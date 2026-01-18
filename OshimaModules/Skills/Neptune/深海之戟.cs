@@ -80,7 +80,7 @@ namespace Oshima.FunGame.OshimaModules.Skills
                 double 分裂伤害 = actualDamage * 分裂百分比;
                 foreach (Character target in targets)
                 {
-                    DamageToEnemy(character, target, damageType, magicType, 分裂伤害, new()
+                    DamageToEnemy(character, target, damageType, magicType, 分裂伤害, new(character)
                     {
                         CalculateCritical = false,
                         CalculateReduction = true,

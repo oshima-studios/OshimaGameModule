@@ -16,6 +16,7 @@ namespace Oshima.FunGame.OshimaModules.Skills
         public override double CastTime => Level > 0 ? 3 + (0.5 * (Level - 1)) : 3;
         public override double HardnessTime { get; set; } = 8;
         public override bool SelectAllEnemies => true;
+        public override double MagicBottleneck => 28 + 24 * (Level - 1);
 
         public 导力停止(Character? character = null) : base(SkillType.Magic, character)
         {
