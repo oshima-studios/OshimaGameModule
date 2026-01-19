@@ -32,6 +32,7 @@ namespace Oshima.FunGame.OshimaModules.Skills
                 };
             }
         }
+        public override double MagicBottleneck => 13 + 14 * (Level - 1);
 
         public 回复术复(Character? character = null) : base(SkillType.Magic, character)
         {

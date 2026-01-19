@@ -45,7 +45,7 @@ namespace Oshima.FunGame.OshimaModules.Effects.PassiveEffects
                 return 0;
             }
             List<Character> teammates = GamingQueue.GetTeammates(character);
-            if ((character == Source || teammates.Contains(Source)) && enemy.Effects.Any(e => e is 时雨标记))
+            if ((character == Source || teammates.Contains(Source)) && character.Effects.Any(e => e is 时雨标记) && enemy.Effects.Any(e => e is 时雨标记))
             {
                 double bonus = damage * 0.25;
                 WriteLine($"[ {character} ] 受到了{nameof(时雨标记)}的影响，伤害提高了 {bonus:0.##} 点！");

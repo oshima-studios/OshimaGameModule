@@ -68,7 +68,7 @@ namespace Oshima.FunGame.OshimaModules.Skills
                 caster.Effects.Add(this);
                 OnEffectGained(caster);
             }
-            if (caster.Effects.FirstOrDefault(e => e is 雇佣兵团特效) is 雇佣兵团特效 e)
+            if (caster.Effects.FirstOrDefault(e => e is 雇佣兵团特效 && e.Skill == Skill) is 雇佣兵团特效 e)
             {
                 e.Skill.CurrentCD = 0;
                 e.Skill.Enable = true;
@@ -116,7 +116,7 @@ namespace Oshima.FunGame.OshimaModules.Skills
             {
                 return;
             }
-            if (character.Effects.FirstOrDefault(e => e is 雇佣兵团特效) is 雇佣兵团特效 e)
+            if (character.Effects.FirstOrDefault(e => e is 雇佣兵团特效 && e.Skill == Skill) is 雇佣兵团特效 e)
             {
                 int count = e.雇佣兵团.Count;
                 实际攻击力提升 = 攻击力 * count;

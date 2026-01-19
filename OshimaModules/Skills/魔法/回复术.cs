@@ -17,6 +17,7 @@ namespace Oshima.FunGame.OshimaModules.Skills
         public override bool CanSelectEnemy => false;
         public override bool CanSelectTeammate => true;
         public override int CanSelectTargetCount => 1;
+        public override double MagicBottleneck => 11 + 12 * (Level - 1);
 
         public 回复术(Character? character = null) : base(SkillType.Magic, character)
         {

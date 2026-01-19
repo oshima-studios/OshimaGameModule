@@ -145,7 +145,7 @@ namespace Oshima.FunGame.OshimaModules.Skills
 
         public override void OnSkillCasted(Character caster, List<Character> targets, List<Grid> grids, Dictionary<string, object> others)
         {
-            IEnumerable<Effect> effects = caster.Effects.Where(e => e is 双生流转特效);
+            IEnumerable<Effect> effects = caster.Effects.Where(e => e is 双生流转特效 && e.Skill.Character == Skill.Character);
             if (effects.Any())
             {
                 if (caster.Effects.Contains(this))

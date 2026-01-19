@@ -19,6 +19,7 @@ namespace Oshima.FunGame.OshimaModules.Skills
         public override bool CanSelectEnemy => false;
         public override bool CanSelectTeammate => true;
         public override bool SelectAllTeammates => true;
+        public override double MagicBottleneck => 14 + 15 * (Level - 1);
 
         public 盖亚之盾(Character? character = null) : base(SkillType.Magic, character)
         {

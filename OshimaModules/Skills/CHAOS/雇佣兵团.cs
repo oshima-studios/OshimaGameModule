@@ -1,5 +1,4 @@
 ﻿using Milimoe.FunGame.Core.Entity;
-using Milimoe.FunGame.Core.Interface.Entity;
 using Milimoe.FunGame.Core.Library.Common.Addon;
 using Milimoe.FunGame.Core.Library.Constant;
 using Oshima.FunGame.OshimaModules.Models;
@@ -39,6 +38,20 @@ namespace Oshima.FunGame.OshimaModules.Skills
         public const double 攻击力比例 = 0.6;
         public const double 生命流失 = 0.09;
 
+        private bool 激活 = false;
+
+        public override void OnGameStart()
+        {
+            if (!激活)
+            {
+                激活 = true;
+                if (Skill.Character != null)
+                {
+                    保底补充(Skill.Character);
+                }
+            }
+        }
+
         public override void AfterDeathCalculation(Character death, bool hasMaster, Character? killer, Dictionary<Character, int> continuousKilling, Dictionary<Character, int> earnedMoney, Character[] assists)
         {
             if (death is 雇佣兵 gyb)
@@ -61,11 +74,6 @@ namespace Oshima.FunGame.OshimaModules.Skills
             {
                 新增雇佣兵(Skill.Character);
             }
-        }
-
-        public override void OnTurnStart(Character character, List<Character> enemys, List<Character> teammates, List<Skill> skills, List<Item> items)
-        {
-            保底补充(character);
         }
 
         public override void OnTimeElapsed(Character character, double elapsed)
@@ -104,6 +112,7 @@ namespace Oshima.FunGame.OshimaModules.Skills
 
         public void 保底补充(Character character)
         {
+            if (!激活) return;
             int count = 雇佣兵团.Count;
             if (count < 最小数量 && Skill.Enable)
             {

@@ -35,7 +35,7 @@ namespace Oshima.FunGame.OshimaModules.Skills
 
         public 银色荆棘(Character? character = null) : base(SkillType.Magic, character)
         {
-            Effects.Add(new 银色荆棘特效(this, false, 0, 2, 0, 0.45, 0.05));
+            Effects.Add(new 银色荆棘特效(this, false, 0, 2, 0, 0.2, 0.03));
         }
     }
 
@@ -50,11 +50,11 @@ namespace Oshima.FunGame.OshimaModules.Skills
         public override bool ExemptDuration => true;
 
         private string 持续时间 => _durative && _duration > 0 ? 实际持续时间 + $" {GameplayEquilibriumConstant.InGameTime}" : (!_durative && _durationTurn > 0 ? 实际持续时间 + " 回合" : $"0 {GameplayEquilibriumConstant.InGameTime}");
-        private double 实际持续时间 => _durative && _duration > 0 ? _duration + _levelGrowth * (Level - 1) : (!_durative && _durationTurn > 0 ? _durationTurn + _levelGrowth * (Level - 1) : 0);
+        private double 实际持续时间 => _durative && _duration > 0 ? (_duration + _levelGrowth * (Level - 1) * MagicEfficacy) : (!_durative && _durationTurn > 0 ? ((int)Math.Round(_durationTurn + _levelGrowth * (Level - 1) * MagicEfficacy, 0, MidpointRounding.ToPositiveInfinity)) : 0);
         private double Damage => Skill.Level > 0 ? 基础数值伤害 + 基础伤害等级成长 * (Skill.Level - 1) : 基础数值伤害;
         private double 基础数值伤害 { get; set; } = 50;
         private double 基础伤害等级成长 { get; set; } = 40;
-        private double ActualConfusionProbability => Level > 0 ? _confusionProbability + _confusionProbabilityLevelGrowth * (Level - 1) : _confusionProbability;
+        private double ActualConfusionProbability => Level > 0 ? (_confusionProbability + _confusionProbabilityLevelGrowth * (Level - 1) * MagicEfficacy) : _confusionProbability;
         private readonly bool _durative;
         private readonly double _duration;
         private readonly int _durationTurn;

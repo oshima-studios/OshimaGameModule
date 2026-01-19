@@ -14,6 +14,7 @@ namespace Oshima.FunGame.OshimaModules.Skills
         public override double CD => Level > 0 ? 28 - (1 * (Level - 1)) : 28;
         public override double CastTime => Level > 0 ? 2 + (2 * (Level - 1)) : 2;
         public override double HardnessTime { get; set; } = 5;
+        public override double MagicBottleneck => 12 + 13 * (Level - 1);
 
         public 时间减速(Character? character = null) : base(SkillType.Magic, character)
         {

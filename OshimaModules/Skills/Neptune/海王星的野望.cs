@@ -77,7 +77,7 @@ namespace Oshima.FunGame.OshimaModules.Skills
                 }
             }
 
-            if (character == Skill.Character && (damageResult == DamageResult.Normal || damageResult == DamageResult.Critical) && enemy.Effects.FirstOrDefault(e => e is 海王星的野望标记) is 海王星的野望标记 e)
+            if (character == Skill.Character && (damageResult == DamageResult.Normal || damageResult == DamageResult.Critical) && enemy.Effects.FirstOrDefault(e => e is 海王星的野望标记 && e.Skill == Skill) is 海王星的野望标记 e)
             {
                 分裂伤害(character, enemy, actualDamage, damageType, magicType);
             }
@@ -124,7 +124,7 @@ namespace Oshima.FunGame.OshimaModules.Skills
                 if (GamingQueue != null)
                 {
                     allEnemys = [.. GamingQueue.GetEnemies(character).Where(c => c != character && c != enemy && !targets.Contains(c) && c.HP > 0)];
-                    targets.AddRange(allEnemys.Where(c => c.Effects.Any(e => e is 海王星的野望标记)).Take(count));
+                    targets.AddRange(allEnemys.Where(c => c.Effects.Any(e => e is 海王星的野望标记 && e.Source == character)).Take(count));
                     if (targets.Count < 3)
                     {
                         count = 3 - targets.Count;

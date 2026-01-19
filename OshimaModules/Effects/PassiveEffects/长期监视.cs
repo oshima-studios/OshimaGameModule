@@ -84,7 +84,7 @@ namespace Oshima.FunGame.OshimaModules.Effects.PassiveEffects
                     Source.Effects.Add(e);
                     WriteLine($"[ {Source} ] 复制了 [ {killer} ] 的技能：{LastSkill.Name}！！");
                 }
-                if (killer.Effects.FirstOrDefault(e => e is 时雨标记) is 时雨标记 e2)
+                if (killer.Effects.FirstOrDefault(e => e is 时雨标记 && e.Source == Source) is 时雨标记 e2)
                 {
                     e2.RemainDurationTurn = 3;
                 }

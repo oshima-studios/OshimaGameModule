@@ -1,5 +1,4 @@
 ﻿using Milimoe.FunGame.Core.Entity;
-using Milimoe.FunGame.Core.Interface.Entity;
 using Milimoe.FunGame.Core.Library.Common.Addon;
 using Milimoe.FunGame.Core.Library.Constant;
 using Oshima.FunGame.OshimaModules.Effects.PassiveEffects;
@@ -23,9 +22,9 @@ namespace Oshima.FunGame.OshimaModules.Effects.SkillEffects
         public override DispelledType DispelledType => _dispelledType;
         public override bool ExemptDuration => true;
 
-        private double ActualProbability => Level > 0 ? _probability + _probabilityLevelGrowth * (Level - 1) : _probability;
+        private double ActualProbability => Level > 0 ? (_probability + _probabilityLevelGrowth * (Level - 1) * MagicEfficacy) : _probability;
         private string 持续时间 => _durative && _duration > 0 ? $"{实际持续时间:0.##}" + $" {GameplayEquilibriumConstant.InGameTime}" : (!_durative && _durationTurn > 0 ? 实际持续时间 + " 回合" : $"0 {GameplayEquilibriumConstant.InGameTime}");
-        private double 实际持续时间 => _durative && _duration > 0 ? _duration + _levelGrowth * (Level - 1) : (!_durative && _durationTurn > 0 ? _durationTurn + _levelGrowth * (Level - 1) : 0);
+        private double 实际持续时间 => _durative && _duration > 0 ? (_duration + _levelGrowth * (Level - 1) * MagicEfficacy) : (!_durative && _durationTurn > 0 ? ((int)Math.Round(_durationTurn + _levelGrowth * (Level - 1) * MagicEfficacy, 0, MidpointRounding.ToPositiveInfinity)) : 0);
         private readonly EffectType _effectType;
         private readonly bool _durative;
         private readonly double _duration;

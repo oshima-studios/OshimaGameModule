@@ -591,13 +591,18 @@ namespace Oshima.FunGame.OshimaServers.Service
                     realCharacter.EP += recoveryEP;
                 }
                 // 减少所有技能的冷却时间
-                foreach (Skill skill in realCharacter.Skills)
+                List<Skill> skills = [.. realCharacter.Skills.Union(realCharacter.Items.Where(i => i.Skills.Active != null).Select(i => i.Skills.Active!))];
+                Milimoe.FunGame.Core.Model.GamingQueue.AddCharacterEquipSlotSkills(realCharacter, skills);
+                foreach (Skill skill in skills)
                 {
-                    skill.CurrentCD -= seconds;
-                    if (skill.CurrentCD <= 0)
+                    if (skill.CurrentCD > 0)
                     {
-                        skill.CurrentCD = 0;
-                        skill.Enable = true;
+                        skill.CurrentCD -= seconds;
+                        if (skill.CurrentCD <= 0)
+                        {
+                            skill.CurrentCD = 0;
+                            skill.Enable = true;
+                        }
                     }
                 }
                 // 移除到时间的特效

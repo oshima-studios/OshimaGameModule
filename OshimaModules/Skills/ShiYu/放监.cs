@@ -41,7 +41,7 @@ namespace Oshima.FunGame.OshimaModules.Skills
 
         public override bool BeforeSkillCasted(Character caster, Skill skill, List<Character> targets, List<Grid> grids, Dictionary<string, object> others)
         {
-            if (Skill.Character != null && caster.Effects.FirstOrDefault(e => e is 宫监手标记) is 宫监手标记 effect)
+            if (Skill.Character != null && caster.Effects.FirstOrDefault(e => e is 宫监手标记 && e.Source == Source) is 宫监手标记 effect)
             {
                 WriteLine($"[ {Skill.Character} ] 高声呼喊：“宫监手，放监！”");
                 复制技能 e = new(Skill, Skill.Character, skill)
@@ -100,7 +100,7 @@ namespace Oshima.FunGame.OshimaModules.Skills
                 List<Character> enemies = GamingQueue.GetEnemies(caster);
                 foreach (Character character in GamingQueue.Queue)
                 {
-                    if (character.Effects.FirstOrDefault(e => e is 时雨标记) is 时雨标记 e)
+                    if (character.Effects.FirstOrDefault(e => e is 时雨标记 && e.Source == caster) is 时雨标记 e)
                     {
                         e.DispelledType = DispelledType.CannotBeDispelled;
                         e.RemainDurationTurn = 3;

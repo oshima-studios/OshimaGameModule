@@ -44,6 +44,7 @@ namespace Oshima.FunGame.OshimaModules.Skills
                 };
             }
         }
+        public override double MagicBottleneck => 12 + 13 * (Level - 1);
         private double 魔法消耗基础 { get; set; } = 65;
         private double 魔法消耗等级成长 { get; set; } = 65;
 

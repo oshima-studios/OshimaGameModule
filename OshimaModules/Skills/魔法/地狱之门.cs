@@ -38,7 +38,7 @@ namespace Oshima.FunGame.OshimaModules.Skills
         public 地狱之门(Character? character = null) : base(SkillType.Magic, character)
         {
             Effects.Add(new 纯数值伤害(this, 75, 15, DamageType.Magical));
-            Effects.Add(new 施加概率负面(this, EffectType.Bleed, true, 3, 0, 0.5, 0.45, 0.05, false, 85.0));
+            Effects.Add(new 施加概率负面(this, EffectType.Bleed, true, 3, 0, 0.5, 0.2, 0.03, false, 85.0));
         }
     }
 }

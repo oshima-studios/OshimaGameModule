@@ -35,8 +35,8 @@ namespace Oshima.FunGame.OshimaModules.Skills
         {
             ExemptionDescription = $"冻结{SkillSet.GetExemptionDescription(EffectType.Freeze)}\r\n易伤{SkillSet.GetExemptionDescription(EffectType.Vulnerable)}";
             Effects.Add(new 纯数值伤害(this, 60, 30, DamageType.Magical));
-            Effects.Add(new 施加概率负面(this, EffectType.Freeze, false, 0, 1, 0, 0.45, 0.05));
-            Effects.Add(new 施加概率负面(this, EffectType.Vulnerable, false, 0, 3, 0, 0.45, 0.05, DamageType.Magical, 0.3));
+            Effects.Add(new 施加概率负面(this, EffectType.Freeze, false, 0, 1, 0, 0.2, 0.03));
+            Effects.Add(new 施加概率负面(this, EffectType.Vulnerable, false, 0, 3, 0, 0.2, 0.03, DamageType.Magical, 0.3));
         }
     }
 }

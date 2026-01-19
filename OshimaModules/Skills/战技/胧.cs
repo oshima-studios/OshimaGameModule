@@ -19,7 +19,7 @@ namespace Oshima.FunGame.OshimaModules.Skills
         {
             CastRange = 4;
             Effects.Add(new 基于攻击力的伤害_带基础伤害(this, 60, 45, 0.065, 0.035, DamageType.Physical));
-            Effects.Add(new 施加概率负面(this, EffectType.Cripple, false, 0, 1, 0, 0.45, 0.05));
+            Effects.Add(new 施加概率负面(this, EffectType.Cripple, false, 0, 1, 0, 0.2, 0.03));
         }
     }
 }
