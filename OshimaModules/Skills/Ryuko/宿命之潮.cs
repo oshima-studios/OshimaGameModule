@@ -39,15 +39,15 @@ namespace Oshima.FunGame.OshimaModules.Skills
         public string 通用描述 => $"{Skill.SkillOwner()}可以选择获得哪一种力量：\r\n{熵核描述}\r\n{守护描述}";
         private string 熵核描述 => $"【熵核】加速生命回复，每{GameplayEquilibriumConstant.InGameTime}额外回复 {熵核额外回复 * 100:0.##}% 当前生命值 [ {Skill.Character?.HP * 熵核额外回复:0.##} ]，攻击力提升 {熵核攻击力提升 * 100:0.##}% [ {Skill.Character?.BaseATK * 熵核攻击力提升:0.##} ]，但是受到的伤害提升 {熵核受到伤害提升 * 100:0.##}%。" +
             $"对敌人造成伤害会使其在 {熵核影响敌人时间:0.##} {GameplayEquilibriumConstant.InGameTime}内无法获得自然的生命和魔法回复的禁止治疗效果，施加该状态时，只有目标的敏捷高于{Skill.SkillOwner()}的角色才能进行豁免检定。持续 {熵核持续时间:0.##} {GameplayEquilibriumConstant.InGameTime}。";
-        private static double 熵核额外回复 => 0.04;
+        private static double 熵核额外回复 => 0.02;
         private double 熵核攻击力提升 => 0.2 + 0.1 * (Skill.Level - 1);
         private double 熵核受到伤害提升 => 0.15 + 0.05 * (Skill.Level - 1);
         private static double 熵核影响敌人时间 => 10;
         private double 熵核持续时间 => 15 + 2 * (Skill.Level - 1);
         private string 守护描述 => $"【守护】极致地加速生命回复，每{GameplayEquilibriumConstant.InGameTime}额外回复 {守护额外回复 * 100:0.##}% 当前生命值 [ {Skill.Character?.HP * 守护额外回复:0.##} ]，为全体友方角色提供每{GameplayEquilibriumConstant.InGameTime}额外 {守护友方回复 * 100:0.##}% 当前生命值的生命回复，并嘲讽全体敌方角色，被嘲讽的角色仅能将{Skill.SkillOwner()}作为攻击目标。" +
             $"施加嘲讽状态时，只有目标的敏捷高于{Skill.SkillOwner()}的角色才能进行豁免检定。持续 {守护持续时间:0.##} {GameplayEquilibriumConstant.InGameTime}。";
-        private double 守护额外回复 => 0.06 + 0.005 * (Skill.Level - 1);
-        private double 守护友方回复 => 0.01 + 0.01 * (Skill.Level - 1);
+        private double 守护额外回复 => 0.01 + 0.003 * (Skill.Level - 1);
+        private double 守护友方回复 => 0.01 + 0.002 * (Skill.Level - 1);
         private double 守护持续时间 => 15 + 1 * (Skill.Level - 1);
         private bool 选择熵核 { get; set; } = false;
 

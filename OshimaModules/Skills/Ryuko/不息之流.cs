@@ -26,7 +26,7 @@ namespace Oshima.FunGame.OshimaModules.Skills
         public override string Name => Skill.Name;
         public override string Description => $"{Skill.SkillOwner()}处于正常态和吟唱态时，每秒回复 {回复系数 * 100:0.##}% 最大生命值 [ {Skill.Character?.MaxHP * 回复系数:0.##} ] 并获得 {能量获取:0.##} 点能量。";
 
-        public double 回复系数 { get; set; } = 0.02;
+        public double 回复系数 { get; set; } = 0.01;
         public double 能量获取 { get; set; } = 1;
 
         public override void OnTimeElapsed(Character character, double elapsed)

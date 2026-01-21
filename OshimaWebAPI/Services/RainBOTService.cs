@@ -502,6 +502,29 @@ namespace Oshima.FunGame.WebAPI.Services
                     return result;
                 }
 
+                if (e.Detail.StartsWith("团队调试模拟", StringComparison.CurrentCultureIgnoreCase))
+                {
+                    e.UseNotice = false;
+                    if (!FunGameSimulation)
+                    {
+                        FunGameSimulation = true;
+                        List<string> msgs = await Controller.GetTestDebug(false, true, hasMap: true);
+                        List<string> real = MergeMessages(msgs);
+                        int count = 1;
+                        foreach (string msg in real)
+                        {
+                            await SendAsync(e, "筽祀牻", msg.Trim(), msgSeq: count++);
+                            if (count != real.Count) await Task.Delay(5500);
+                        }
+                        FunGameSimulation = false;
+                    }
+                    else
+                    {
+                        await SendAsync(e, "筽祀牻", "游戏正在模拟中，请勿重复请求！");
+                    }
+                    return result;
+                }
+
                 if (e.Detail.StartsWith("查数据", StringComparison.CurrentCultureIgnoreCase))
                 {
                     e.UseNotice = false;

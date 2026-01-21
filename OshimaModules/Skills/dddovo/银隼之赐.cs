@@ -34,12 +34,15 @@ namespace Oshima.FunGame.OshimaModules.Skills
 
         public override void AfterDamageCalculation(Character character, Character enemy, double damage, double actualDamage, bool isNormalAttack, DamageType damageType, MagicType magicType, DamageResult damageResult)
         {
-            if (character == Skill.Character && isNormalAttack && (damageResult == DamageResult.Normal || damageResult == DamageResult.Critical) && !是否是嵌套伤害 && enemy.HP > 0)
+            if (Skill.CurrentCD == 0 && character == Skill.Character && isNormalAttack && (damageResult == DamageResult.Normal || damageResult == DamageResult.Critical) && !是否是嵌套伤害 && enemy.HP > 0)
             {
                 Skill.CurrentCD = Skill.CD;
                 WriteLine($"[ {character} ] 发动了银隼之赐！将造成额外伤害！");
                 是否是嵌套伤害 = true;
-                DamageToEnemy(character, enemy, DamageType.Magical, magicType, 敏捷伤害);
+                DamageToEnemy(character, enemy, DamageType.Magical, magicType, 敏捷伤害, new(character)
+                {
+                    TriggerEffects = false
+                });
             }
 
             if (character == Skill.Character && 是否是嵌套伤害)

@@ -63,7 +63,7 @@ namespace Oshima.FunGame.OshimaServers.Service
             }
         }
 
-        public static async Task<List<string>> StartSimulationGame(bool printout, bool isWeb = false, bool isTeam = false, bool deathMatchRoundDetail = false, int maxRespawnTimesMix = 1, bool useStore = false, bool hasMap = false)
+        public static async Task<List<string>> StartSimulationGame(bool printout, bool isWeb = false, bool isTeam = false, bool deathMatchRoundDetail = false, int maxRespawnTimesMix = 1, bool useStore = false, bool hasMap = false, bool isDebug = false)
         {
             PrintOut = printout;
             IsWeb = isWeb;
@@ -205,7 +205,7 @@ namespace Oshima.FunGame.OshimaServers.Service
                     if (PrintOut) characters.ForEach(c => Console.WriteLine(c.GetInfo()));
 
                     // 初始化队列，准备开始游戏
-                    actionQueue.IsDebug = IsDebug;
+                    actionQueue.IsDebug = IsDebug || isDebug;
                     actionQueue.InitActionQueue();
                     actionQueue.SetCharactersToAIControl(false, characters);
                     if (PrintOut) Console.WriteLine();
