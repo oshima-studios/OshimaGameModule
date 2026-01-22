@@ -376,6 +376,11 @@ namespace Oshima.FunGame.OshimaServers.Service
 
                             if (isWeb) actionQueue.DisplayQueue();
                             WriteLine("");
+                            if (actionQueue.Map != null)
+                            {
+                                WriteLine(DisplayMapInConsole(actionQueue.Map));
+                                WriteLine("");
+                            }
                         }
 
                         string roundMsg = "";
@@ -1293,6 +1298,52 @@ namespace Oshima.FunGame.OshimaServers.Service
             return availableGrids.Count > 0 ?
                 availableGrids[Random.Shared.Next(availableGrids.Count)] :
                 null;
+        }
+
+        private static string DisplayMapInConsole(GameMap map)
+        {
+            StringBuilder sb = new();
+
+            // 打印列坐标
+            sb.Append("   ");
+            for (int x = 0; x < map.Length; x++)
+            {
+                sb.Append($" {x}  ");
+            }
+            sb.AppendLine();
+
+            for (int y = 0; y < map.Width; y++)
+            {
+                // 打印行坐标
+                sb.Append($"{y}  ");
+
+                for (int x = 0; x < map.Length; x++)
+                {
+                    Grid? grid = map[x, y, 0];
+
+                    if (grid is null)
+                    {
+                        sb.Append("    ");
+                        continue;
+                    }
+
+                    // 检查格子上是否有角色
+                    if (grid.Characters.Count > 0)
+                    {
+                        // 取第一个角色的昵称首字母
+                        Character character = grid.Characters.First();
+                        string displayChar = character.NickName.Length > 0 ? character.NickName[0].ToString().ToUpper() : "?";
+                        sb.Append($"[{displayChar}] ");
+                    }
+                    else
+                    {
+                        sb.Append(" .  ");
+                    }
+                }
+                sb.AppendLine();
+            }
+
+            return sb.ToString();
         }
     }
 }

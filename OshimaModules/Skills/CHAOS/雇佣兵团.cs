@@ -28,7 +28,7 @@ namespace Oshima.FunGame.OshimaModules.Skills
         public override string Name => Skill.Name;
         public override string Description => $"{Skill.SkillOwner()}在场上时，会召唤数名雇佣兵协助战斗，初始数量为 {最小数量} 名，雇佣兵具有独立的回合，生命值为{Skill.SkillOwner()}的 {生命值比例 * 100:0.##}% [ {Skill.Character?.MaxHP * 生命值比例:0.##} ]，攻击力为{Skill.SkillOwner()}的 {攻击力比例 * 100:0.##}% 基础攻击力 [ {Skill.Character?.BaseATK * 攻击力比例:0.##} ]，" +
             $"完整继承其他能力值（暴击率、闪避率等），雇佣兵每{GameplayEquilibriumConstant.InGameTime}流失 {生命流失 * 100:0.##}% 当前生命值。当{Skill.SkillOwner()}参与击杀时，便会临时产生一名额外的雇佣兵。场上最多可以存在 {最大数量} 名雇佣兵，达到数量后不再产生新的雇佣兵；当不足 {最小数量} 名雇佣兵时，{补充间隔} {GameplayEquilibriumConstant.InGameTime}后会重新补充一名雇佣兵。" +
-            (雇佣兵团.Count < 最小数量 && Skill.CurrentCD > 0 ? $"（下次补充：{Skill.CurrentCD} {GameplayEquilibriumConstant.InGameTime}后）" : "");
+            (雇佣兵团.Count < 最小数量 && Skill.CurrentCD > 0 ? $"（下次补充：{Skill.CurrentCD:0.##} {GameplayEquilibriumConstant.InGameTime}后）" : "");
 
         public List<雇佣兵> 雇佣兵团 { get; } = [];
         public const int 最小数量 = 1;
@@ -58,6 +58,11 @@ namespace Oshima.FunGame.OshimaModules.Skills
             {
                 WriteLine($"[ {killer} ] 杀死了 [ {death} ]！");
                 雇佣兵团.Remove(gyb);
+                if (GamingQueue is Milimoe.FunGame.Core.Model.GamingQueue queue)
+                {
+                    if (queue.Map != null) queue.RemoveCharacterFromMap(gyb);
+                    else queue.RemoveCharacterFromQueue(gyb);
+                }
                 if (雇佣兵团.Count < 最小数量 && Skill.CurrentCD == 0)
                 {
                     Skill.CurrentCD = 补充间隔;
