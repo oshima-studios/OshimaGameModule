@@ -1,3 +1,4 @@
+using System.Collections.Concurrent;
 using System.Text;
 using Milimoe.FunGame.Core.Api.Transmittal;
 using Milimoe.FunGame.Core.Api.Utility;
@@ -18,15 +19,15 @@ namespace Oshima.FunGame.OshimaServers.Service
 {
     public class FunGameService
     {
-        public static Dictionary<long, List<string>> UserExploreCharacterCache { get; } = [];
-        public static Dictionary<long, List<string>> UserExploreItemCache { get; } = [];
-        public static Dictionary<long, List<string>> UserExploreEventCache { get; } = [];
+        public static ConcurrentDictionary<long, List<string>> UserExploreCharacterCache { get; } = [];
+        public static ConcurrentDictionary<long, List<string>> UserExploreItemCache { get; } = [];
+        public static ConcurrentDictionary<long, List<string>> UserExploreEventCache { get; } = [];
         public static HashSet<Activity> Activities { get; } = [];
         public static List<string> ActivitiesCharacterCache { get; } = [];
         public static List<string> ActivitiesItemCache { get; } = [];
         public static List<string> ActivitiesEventCache { get; } = [];
-        public static Dictionary<long, HashSet<string>> UserNotice { get; } = [];
-        public static Dictionary<int, Character> Bosses { get; } = [];
+        public static ConcurrentDictionary<long, HashSet<string>> UserNotice { get; } = [];
+        public static ConcurrentDictionary<int, Character> Bosses { get; } = [];
         public static ServerPluginLoader? ServerPluginLoader { get; set; } = null;
         public static WebAPIPluginLoader? WebAPIPluginLoader { get; set; } = null;
         public static EntityModuleConfig<NoticeModel> Notices { get; } = new("notices", "notice");

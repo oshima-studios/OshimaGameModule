@@ -47,7 +47,7 @@ namespace Oshima.FunGame.WebAPI.Services
             }
             if (msg.UseNotice && msg.FunGameUID > 0 && FunGameService.UserNotice.TryGetValue(msg.FunGameUID, out HashSet<string>? msgs) && msgs != null)
             {
-                FunGameService.UserNotice.Remove(msg.FunGameUID);
+                FunGameService.UserNotice.Remove(msg.FunGameUID, out _);
                 await SendAsync(msg, "离线未读信箱", $"☆--- 离线未读信箱 ---☆\r\n{string.Join("\r\n", msgs)}", msgType, null, 5);
             }
         }

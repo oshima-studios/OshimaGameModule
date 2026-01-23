@@ -4131,7 +4131,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
 
                     if (boss2.HP <= 0)
                     {
-                        FunGameService.Bosses.Remove(bossIndex);
+                        FunGameService.Bosses.Remove(bossIndex, out _);
                         double gained = boss.Level;
                         user.Inventory.Materials += gained;
                         msgs.Add($"恭喜你击败了 Boss，获得 {gained:0.##} {General.GameplayEquilibriumConstant.InGameMaterial}奖励！");
@@ -4401,7 +4401,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
 
                     if (boss2.HP <= 0)
                     {
-                        FunGameService.Bosses.Remove(bossIndex);
+                        FunGameService.Bosses.Remove(bossIndex, out _);
                         double gained = boss.Level;
                         user.Inventory.Materials += gained;
                         msgs.Add($"恭喜你击败了 Boss，获得 {gained:0.##} {General.GameplayEquilibriumConstant.InGameMaterial}奖励！");

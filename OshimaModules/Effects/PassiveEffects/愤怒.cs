@@ -56,7 +56,10 @@ namespace Oshima.FunGame.OshimaModules.Effects.PassiveEffects
             forceAction = true;
             if (_targetCharacter.HP > 0)
             {
-                return CharacterActionType.NormalAttack;
+                pNormalAttack = 1;
+                canUseItem = false;
+                canCastSkill = false;
+                return CharacterActionType.None;
             }
             // 如果目标已死亡，则放弃本回合行动，并在回合结束后自动移除愤怒状态
             RemainDuration = 0;
