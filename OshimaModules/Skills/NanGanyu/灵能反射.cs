@@ -41,7 +41,7 @@ namespace Oshima.FunGame.OshimaModules.Skills
                 foreach (Skill scd in character.Skills)
                 {
                     scd.CurrentCD -= 2;
-                    if (scd.CurrentCD < 0)
+                    if (scd.CurrentCD <= 0)
                     {
                         scd.CurrentCD = 0;
                         scd.Enable = true;

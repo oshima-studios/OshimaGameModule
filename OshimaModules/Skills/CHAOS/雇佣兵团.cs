@@ -154,7 +154,9 @@ namespace Oshima.FunGame.OshimaModules.Skills
                 Lifesteal = character.Lifesteal,
                 ExPDR = character.ExPDR,
                 PhysicalPenetration = character.PhysicalPenetration,
-                MagicalPenetration = character.MagicalPenetration
+                MagicalPenetration = character.MagicalPenetration,
+                ExMOV = character.MOV,
+                ExATR = character.ATR - 1
             };
             gyb.MDF.AddAllValue(character.MDF.Avg);
             gyb.Recovery();

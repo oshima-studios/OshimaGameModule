@@ -77,7 +77,7 @@ namespace Oshima.FunGame.OshimaModules.Skills
                     foreach (Skill s in Skill.Character.Skills)
                     {
                         s.CurrentCD -= s.CD * 归元环特效.冷却时间减少;
-                        if (s.CurrentCD < 0)
+                        if (s.CurrentCD <= 0)
                         {
                             s.CurrentCD = 0;
                             s.Enable = true;
