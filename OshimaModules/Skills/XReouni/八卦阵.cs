@@ -98,7 +98,7 @@ namespace Oshima.FunGame.OshimaModules.Skills
                         { "mdfvalue", 奇数平衡性提升 }
                     }, Skill.Character)
                     {
-                        Name = "八卦阵·奇数效果",
+                        Name = "八卦阵·奇数",
                         Durative = false,
                         DurationTurn = 1,
                         RemainDurationTurn = 1

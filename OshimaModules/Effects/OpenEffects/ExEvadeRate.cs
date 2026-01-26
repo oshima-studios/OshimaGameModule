@@ -6,7 +6,7 @@ namespace Oshima.FunGame.OshimaModules.Effects.OpenEffects
     public class ExEvadeRate : Effect
     {
         public override long Id => (long)EffectID.ExEvadeRate;
-        public override string Name => "闪避率加成";
+        public override string Name { get; set; } = "闪避率加成";
         public override string Description => $"{(实际加成 >= 0 ? "增加" : "减少")}角色 {Math.Abs(实际加成) * 100:0.##}% 闪避率。" + (Source != null && (Skill.Character != Source || Skill is not OpenSkill) ? $"来自：[ {Source} ]" + (Skill.Item != null ? $" 的 [ {Skill.Item.Name} ]" : (Skill is OpenSkill ? "" : $" 的 [ {Skill.Name} ]")) : "");
         public double Value => 实际加成;
 

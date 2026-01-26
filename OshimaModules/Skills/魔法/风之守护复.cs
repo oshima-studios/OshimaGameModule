@@ -77,7 +77,10 @@ namespace Oshima.FunGame.OshimaModules.Skills
                 ExCritRate e = new(Skill, new()
                 {
                     { "excr", CritRate }
-                }, caster);
+                }, caster)
+                {
+                    Name = Name + "·暴击率加成"
+                };
                 target.Effects.Add(e);
                 if (_durative && _duration > 0)
                 {
@@ -97,7 +100,10 @@ namespace Oshima.FunGame.OshimaModules.Skills
                 ExEvadeRate e2 = new(Skill, new()
                 {
                     { "exer", EvadeRate }
-                }, caster);
+                }, caster)
+                {
+                    Name = Name + "·闪避率加成"
+                };
                 target.Effects.Add(e2);
                 if (_durative && _duration > 0)
                 {

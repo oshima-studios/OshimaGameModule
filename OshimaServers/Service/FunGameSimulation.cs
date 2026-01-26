@@ -226,7 +226,7 @@ namespace Oshima.FunGame.OshimaServers.Service
                         {
                             // 创建角色的用户，用于绑定金币
                             User user = Factory.GetUser();
-                            user.Username = FunGameService.GenerateRandomChineseUserName();
+                            user.Username = FunGameConstant.GenerateRandomChineseUserName();
                             user.Inventory.Credits = 20;
                             Character thisCharacter = shuffledCharacters[cid];
                             //thisCharacter.User = user;

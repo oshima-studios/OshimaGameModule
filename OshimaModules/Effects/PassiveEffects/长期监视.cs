@@ -58,6 +58,7 @@ namespace Oshima.FunGame.OshimaModules.Effects.PassiveEffects
                         { "p", 1 }
                     }, Source)
                     {
+                        Name = Name,
                         Durative = false,
                         DurationTurn = 3,
                         RemainDurationTurn = 3

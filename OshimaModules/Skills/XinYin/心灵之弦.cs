@@ -24,7 +24,7 @@ namespace Oshima.FunGame.OshimaModules.Skills
     {
         public override long Id => Skill.Id;
         public override string Name => Skill.Name;
-        public override string Description => $"普通攻击硬直时间减少 20%。每次使用普通攻击时，额外再发动一次普通攻击，伤害特效可叠加，但伤害折减一半，冷却 {基础冷却时间:0.##} {GameplayEquilibriumConstant.InGameTime}。" +
+        public override string Description => $"普通攻击硬直时间减少 20%。每次使用普通攻击时，额外再发动一次普通攻击，伤害特效可叠加，但伤害折减一半，冷却 {基础冷却时间:0.##} {GameplayEquilibriumConstant.InGameTime}。额外普通攻击立即发动，不占用决策点配额。" +
             (冷却时间 > 0 ? $"（正在冷却：剩余 {冷却时间:0.##} {GameplayEquilibriumConstant.InGameTime}）" : "");
 
         public double 冷却时间 { get; set; } = 0;

@@ -1,11 +1,14 @@
 ﻿using System.Collections.Concurrent;
 using System.Text;
+using Milimoe.FunGame.Core.Api.Utility;
 using Milimoe.FunGame.Core.Entity;
 using Milimoe.FunGame.Core.Library.Constant;
 using Oshima.Core.Constant;
+using Oshima.FunGame.OshimaModules.Characters;
 using Oshima.FunGame.OshimaModules.Effects.OpenEffects;
 using Oshima.FunGame.OshimaModules.Items;
 using Oshima.FunGame.OshimaModules.Regions;
+using Oshima.FunGame.OshimaModules.Skills;
 
 namespace Oshima.FunGame.OshimaModules.Models
 {
@@ -55,6 +58,148 @@ namespace Oshima.FunGame.OshimaModules.Models
         public static Dictionary<long, Club> ClubIdAndClub { get; } = [];
         public static DateTime RankingUpdateTime { get; set; } = DateTime.Now;
         public static char[] SplitChars => [',', ' ', '，', '；', ';'];
+
+        public static void InitFunGame()
+        {
+            Characters.Add(new OshimaShiya());
+            Characters.Add(new XinYin());
+            Characters.Add(new Yang());
+            Characters.Add(new NanGanYu());
+            Characters.Add(new NiuNan());
+            Characters.Add(new DokyoMayor());
+            Characters.Add(new MagicalGirl());
+            Characters.Add(new QingXiang());
+            Characters.Add(new QWQAQW());
+            Characters.Add(new ColdBlue());
+            Characters.Add(new dddovo());
+            Characters.Add(new Quduoduo());
+            Characters.Add(new ShiYu());
+            Characters.Add(new XReouni());
+            Characters.Add(new Neptune());
+            Characters.Add(new CHAOS());
+            Characters.Add(new Ryuko());
+            Characters.Add(new TheGodK());
+
+            Skills.AddRange([new 疾风步(), new 助威(), new 挑拨(), new 绞丝棍(), new 金刚击(), new 旋风轮(), new 双连击(), new 绝影(), new 胧(), new 魔眼(),
+                new 天堂之吻(), new 回复弹(), new 养命功(), new 镜花水月(), new 剑风闪(), new 鲨鱼锚击(), new 疾走(), new 闪现()]);
+
+            SuperSkills.AddRange([new 极寒渴望(), new 身心一境(), new 绝对领域(), new 零式灭杀(), new 三相灵枢(), new 变幻之心(), new 熵灭极诣(), new 残香凋零(), new 饕餮盛宴(),
+                new 宿命时律(), new 千羽瞬华(), new 咒怨洪流(), new 放监(), new 归元环(), new 海王星的野望(), new 全军出击(), new 宿命之潮(), new 神之因果()]);
+
+            PassiveSkills.AddRange([new META马(), new 心灵之弦(), new 蚀魂震击(), new 灵能反射(), new 双生流转(), new 零式崩解(), new 少女绮想(), new 暗香疏影(), new 破釜沉舟(),
+                new 累积之压(), new 银隼之赐(), new 弱者猎手(), new 开宫(), new 八卦阵(), new 深海之戟(), new 雇佣兵团(), new 不息之流(), new 概念之骰()]);
+
+            CommonPassiveSkills.AddRange([new 征服者(), new 致命节奏(), new 强攻(), new 电刑(), new 黑暗收割(), new 迅捷步法(), new 贪欲猎手()]);
+
+            Magics.AddRange([new 冰霜攻击(), new 火之矢(), new 水之矢(), new 风之轮(), new 石之锤(), new 心灵之霞(), new 次元上升(), new 暗物质(),
+                new 回复术(), new 治愈术(), new 复苏术(), new 圣灵术(), new 时间加速(), new 时间减速(), new 反魔法领域(), new 沉默十字(), new 虚弱领域(), new 混沌烙印(), new 凝胶稠絮(),
+                new 大地之墙(), new 盖亚之盾(), new 风之守护(), new 结晶防护(), new 强音之力(), new 神圣祝福(), new 根源屏障(), new 灾难冲击波(), new 银色荆棘(), new 等离子之波(),
+                new 地狱之门(), new 钻石星尘(), new 死亡咆哮(), new 鬼魅之痛(), new 导力停止(), new 冰狱冥嚎(), new 火山咆哮(), new 水蓝轰炸(), new 岩石之息(), new 弧形日珥(), new 苍白地狱(), new 破碎虚空(),
+                new 弧光消耗(), new 回复术改(), new 回复术复(), new 治愈术复(), new 风之守护复(), new 强音之力复(), new 结晶防护复(), new 神圣祝福复(), new 时间加速改(), new 时间减速改(), new 时间加速复(), new 时间减速复()]);
+
+            Dictionary<string, Item> exItems = Factory.GetGameModuleInstances<Item>(OshimaGameModuleConstant.General, OshimaGameModuleConstant.Item);
+            Equipment.AddRange(exItems.Values.Where(i => (int)i.ItemType >= 0 && (int)i.ItemType < 5));
+            Equipment.AddRange([new 攻击之爪10(), new 攻击之爪25(), new 攻击之爪40(), new 攻击之爪55(), new 攻击之爪70(), new 攻击之爪85(), new 糖糖一周年纪念武器(),
+                new 糖糖一周年纪念防具(), new 糖糖一周年纪念鞋子(), new 糖糖一周年纪念饰品1(), new 糖糖一周年纪念饰品2()]);
+
+            Items.AddRange(exItems.Values.Where(i => (int)i.ItemType > 4));
+            Items.AddRange([new 小经验书(), new 中经验书(), new 大经验书(), new 升华之印(), new 流光之印(), new 永恒之印(), new 技能卷轴(), new 智慧之果(), new 奥术符文(), new 混沌之核(),
+                new 小回复药(), new 中回复药(), new 大回复药(), new 魔力填充剂1(), new 魔力填充剂2(), new 魔力填充剂3(), new 能量饮料1(), new 能量饮料2(), new 能量饮料3(), new 年夜饭(), new 蛇年大吉(), new 新春快乐(), new 毕业礼包(),
+                new 复苏药1(), new 复苏药2(), new 复苏药3(), new 全回复药(), new 魔法卡礼包(), new 奖券(), new 十连奖券(), new 改名卡(), new 原初之印(), new 创生之印(), new 法则精粹(), new 大师锻造券(),
+                new 一周年纪念礼包(), new 一周年纪念套装(), new 冬至快乐(), new 圣诞礼包(), new 元旦快乐()
+            ]);
+
+            UserDailyItems.AddRange([new 青松(), new 流星石(), new 向日葵(), new 金铃花(), new 琉璃珠(), new 鸣草(), new 马尾(), new 鬼兜虫(), new 烈焰花花蕊(), new 堇瓜(), new 水晶球(), new 薰衣草(),
+                new 青石(), new 莲花(), new 陶罐(), new 海灵芝(), new 四叶草(), new 露珠(), new 茉莉花(), new 绿萝(), new 檀木扇(), new 鸟蛋(), new 竹笋(), new 晶核(), new 手工围巾(), new 柳条篮(), new 风筝(), new 羽毛(), new 发光髓(),
+                new 紫罗兰(), new 松果(), new 电气水晶(), new 薄荷(), new 竹节(), new 铁砧(), new 冰雾花(), new 海草(), new 磐石(), new 砂砾(), new 铁甲贝壳(), new 蜥蜴尾巴(), new 古老钟摆(), new 枯藤()]);
+
+            NotForSaleItems.AddRange([new 一周年纪念礼包(), new 一周年纪念套装(), new 毕业礼包(), new 糖糖一周年纪念武器(), new 糖糖一周年纪念防具(), new 糖糖一周年纪念鞋子(),
+                new 糖糖一周年纪念饰品1(), new 糖糖一周年纪念饰品2()]);
+
+            AllItems.AddRange(Equipment);
+            AllItems.AddRange(Items);
+            AllItems.AddRange(UserDailyItems);
+            AllItems.AddRange(NotForSaleItems);
+
+            foreach (OshimaRegion region in Regions)
+            {
+                List<Item> items = [.. region.Crops.Select(i => i.Copy())];
+                ExploreItems.Add(region, items);
+            }
+
+            long[] notDrawIds = [.. UserDailyItems.Union(NotForSaleItems).Select(i => i.Id)];
+            DrawCardItems.AddRange(AllItems.Where(i => !ItemCanNotDrawCard.Contains(i.ItemType) && !notDrawIds.Contains(i.Id)));
+            CharacterLevelBreakItems.AddRange([new 升华之印(), new 流光之印(), new 永恒之印(), new 原初之印(), new 创生之印()]);
+            SkillLevelUpItems.AddRange([new 技能卷轴(), new 智慧之果(), new 奥术符文(), new 混沌之核(), new 法则精粹()]);
+
+            AllItems.AddRange(ExploreItems.Values.SelectMany(list => list));
+
+            foreach (OshimaRegion region in Regions)
+            {
+                RegionsName[region.Id] = region.Name;
+                RegionsDifficulty[region.Id] = region.Difficulty;
+                IEnumerable<Item> items = AllItems.Where(i => i.Others.TryGetValue("region", out object? value) && int.TryParse(value.ToString(), out int rid) && rid == region.Id).Select(i => i.Copy()).OrderByDescending(i => i.QualityType);
+                foreach (Item item in items)
+                {
+                    region.Items.Add(item);
+                }
+            }
+
+            foreach (OshimaRegion region in PlayerRegions)
+            {
+                RegionsName[region.Id] = region.Name;
+                RegionsDifficulty[region.Id] = region.Difficulty;
+                IEnumerable<Item> items;
+                if (region.Id == 0)
+                {
+                    items = Equipment.Where(i => !i.Others.ContainsKey("region")).Select(i => i.Copy()).OrderByDescending(i => i.QualityType);
+                }
+                else
+                {
+                    items = AllItems.Where(i => i.Others.TryGetValue("region", out object? value) && int.TryParse(value.ToString(), out int rid) && rid == region.Id).Select(i => i.Copy()).OrderByDescending(i => i.QualityType);
+                }
+                foreach (Item item in items)
+                {
+                    region.Items.Add(item);
+                }
+            }
+
+            Skill?[] activeSkills = [.. Equipment.Select(i => i.Skills.Active), .. Items.Select(i => i.Skills.Active)];
+            foreach (Skill? skill in activeSkills)
+            {
+                if (skill != null)
+                {
+                    ItemSkills.Add(skill);
+                }
+            }
+            ItemSkills.AddRange([.. Equipment.SelectMany(i => i.Skills.Passives), .. Items.SelectMany(i => i.Skills.Passives)]);
+
+            AllSkills.AddRange(Magics);
+            AllSkills.AddRange(Skills);
+            AllSkills.AddRange(PassiveSkills);
+            AllSkills.AddRange(CommonPassiveSkills);
+            AllSkills.AddRange(ItemSkills);
+            AllSkills.AddRange(SuperSkills);
+            AllSkills.AddRange(CommonSuperSkills);
+        }
+
+        public static void Reload()
+        {
+            Characters.Clear();
+            Equipment.Clear();
+            Skills.Clear();
+            SuperSkills.Clear();
+            CommonSuperSkills.Clear();
+            PassiveSkills.Clear();
+            CommonPassiveSkills.Clear();
+            Magics.Clear();
+            DrawCardItems.Clear();
+            ExploreItems.Clear();
+            AllItems.Clear();
+            ItemSkills.Clear();
+            AllSkills.Clear();
+            InitFunGame();
+        }
 
         public static Dictionary<int, Dictionary<string, int>> LevelBreakNeedyList { get; } = new()
         {
@@ -633,12 +778,28 @@ namespace Oshima.FunGame.OshimaModules.Models
                 "堰揩越趁趋超揽堤提博揭喜彭揣插揪搜煮援搀裁搁搓搂搅壹握搔揉斯期欺联葫" +
                 "散惹葬募葛董葡敬葱蒋蒂落韩朝辜葵棒棱棋椰植森焚椅椒棵棍椎棉";
 
+        public static string GenerateRandomChineseName()
+        {
+            // 随机生成名字长度，2到5个字
+            int nameLength = Random.Shared.Next(2, 6);
+            StringBuilder name = new();
+
+            for (int i = 0; i < nameLength; i++)
+            {
+                // 从常用汉字集中随机选择一个汉字
+                char chineseCharacter = CommonChineseCharacters[Random.Shared.Next(CommonChineseCharacters.Length)];
+                name.Append(chineseCharacter);
+            }
+
+            return name.ToString();
+        }
+
         public static string GenerateRandomChineseUserName()
         {
             StringBuilder name = new();
 
             // 随机姓
-            string lastname = FunGameConstant.CommonSurnames[Random.Shared.Next(FunGameConstant.CommonSurnames.Length)];
+            string lastname = CommonSurnames[Random.Shared.Next(CommonSurnames.Length)];
             name.Append(lastname);
 
             // 随机生成名字长度，2到5个字
@@ -647,7 +808,7 @@ namespace Oshima.FunGame.OshimaModules.Models
             for (int i = 0; i < nameLength; i++)
             {
                 // 从常用汉字集中随机选择一个汉字
-                char chineseCharacter = FunGameConstant.CommonChineseCharacters[Random.Shared.Next(FunGameConstant.CommonChineseCharacters.Length)];
+                char chineseCharacter = CommonChineseCharacters[Random.Shared.Next(CommonChineseCharacters.Length)];
                 name.Append(chineseCharacter);
             }
 

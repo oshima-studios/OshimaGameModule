@@ -699,7 +699,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
                     string name = "";
                     do
                     {
-                        name = FunGameService.GenerateRandomChineseUserName();
+                        name = FunGameConstant.GenerateRandomChineseUserName();
                     } while (FunGameConstant.UserIdAndUsername.Any(kv => kv.Value.Username == name));
 
                     user.Username = name;
@@ -4864,7 +4864,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
                 {
                     Id = clubid,
                     Guid = Guid.NewGuid(),
-                    Name = FunGameService.GenerateRandomChineseName(),
+                    Name = FunGameConstant.GenerateRandomChineseName(),
                     Master = user,
                     Prefix = clubPrefix,
                     Members = new()
@@ -9347,7 +9347,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
         {
             if (master != null && master == GeneralSettings.Master)
             {
-                FunGameService.Reload();
+                FunGameConstant.Reload();
                 FunGameSimulation.InitFunGameSimulation();
                 return "FunGame已重新加载。";
             }

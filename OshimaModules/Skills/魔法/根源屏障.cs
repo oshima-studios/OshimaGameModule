@@ -42,9 +42,9 @@ namespace Oshima.FunGame.OshimaModules.Skills
             {
                 return Level switch
                 {
-                    3 or 4 or 5 => 2,
-                    6 or 7 or 8 => 3,
-                    _ => 1
+                    3 or 4 or 5 => 3,
+                    6 or 7 or 8 => 4,
+                    _ => 2
                 };
             }
         }
@@ -60,7 +60,7 @@ namespace Oshima.FunGame.OshimaModules.Skills
             effect.OnSkillCasted(caster, targets, grids, others);
             if (Level > 4)
             {
-                effect = new 施加免疫(Skill, ImmuneType.Skilled, false, 0, 1);
+                effect = new 施加免疫(Skill, ImmuneType.Skilled, false, 0, 2);
                 effect.OnSkillCasted(caster, targets, grids, others);
             }
         }

@@ -72,7 +72,7 @@ namespace Oshima.FunGame.OshimaModules.Skills
             if (本回合可附赠动作 && GamingQueue != null && GamingQueue.CharacterDecisionPoints.TryGetValue(character, out DecisionPoints? dp) && dp != null)
             {
                 本回合可附赠动作 = false;
-                dp.AddTempActionQuota(CharacterActionType.NormalAttack, 额外攻击次数);
+                dp.AddTempActionQuota(this, CharacterActionType.NormalAttack, 额外攻击次数);
                 WriteLine($"[ {character} ] 发动了{nameof(咒怨洪流)}！本回合可额外发动 {额外攻击次数} 次普通攻击！");
             }
         }

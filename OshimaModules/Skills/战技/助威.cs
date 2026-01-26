@@ -57,7 +57,10 @@ namespace Oshima.FunGame.OshimaModules.Skills
                 ExATK2 e = new(Skill, new()
                 {
                     { "exatk", ATK }
-                }, caster);
+                }, caster)
+                {
+                    Name = Name
+                };
                 target.Effects.Add(e);
                 if (_durative && _duration > 0)
                 {

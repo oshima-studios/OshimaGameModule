@@ -45,11 +45,11 @@ namespace Oshima.FunGame.OshimaModules.Skills
             $"取得第一层「噬」后，同时获得「恒」效果：当总生命偷取超过 {生命偷取阈值 * 100:0.##}% 后，超出部分每 {生命偷取每单位 * 100:0.##}% 转化为 {生命偷取转化 * 100:0.##}% 攻击力。";
 
         public static int 最多层数 => 8;
-        public static double 攻击力提升 => 0.08;
-        public static double 暴击率提升 => 0.04;
-        public static double 暴击伤害提升 => 0.08;
-        public static double 生命偷取提升 => 0.05;
-        public static double 受到伤害减少 => 0.06;
+        public static double 攻击力提升 => 0.06;
+        public static double 暴击率提升 => 0.03;
+        public static double 暴击伤害提升 => 0.06;
+        public static double 生命偷取提升 => 0.04;
+        public static double 受到伤害减少 => 0.05;
         public static double 生命偷取阈值 => 0.3;
         public static double 生命偷取每单位 => 0.01;
         public static double 生命偷取转化 => 0.005;

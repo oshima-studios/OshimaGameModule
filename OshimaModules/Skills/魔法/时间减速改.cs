@@ -71,6 +71,7 @@ namespace Oshima.FunGame.OshimaModules.Skills
                     { "exspd", -ExSPD }
                 }, caster)
                 {
+                    Name = Name + "·行动速度降低",
                     Durative = _durative,
                     Duration = 实际持续时间,
                     DurationTurn = (int)实际持续时间
@@ -88,6 +89,7 @@ namespace Oshima.FunGame.OshimaModules.Skills
                     { "exacc", -ExACC }
                 }, caster)
                 {
+                    Name = Name + "·加速系数降低",
                     Durative = _durative,
                     Duration = 实际持续时间,
                     DurationTurn = (int)实际持续时间

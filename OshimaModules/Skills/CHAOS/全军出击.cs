@@ -116,7 +116,7 @@ namespace Oshima.FunGame.OshimaModules.Skills
             {
                 return;
             }
-            if (character.Effects.FirstOrDefault(e => e is 雇佣兵团特效 && e.Skill == Skill) is 雇佣兵团特效 e)
+            if (character.Effects.FirstOrDefault(e => e is 雇佣兵团特效 && e.Skill.Character == Skill.Character) is 雇佣兵团特效 e)
             {
                 int count = e.雇佣兵团.Count;
                 实际攻击力提升 = 攻击力 * count;

@@ -6,7 +6,7 @@ namespace Oshima.FunGame.OshimaModules.Effects.OpenEffects
     public class ExSPD : Effect
     {
         public override long Id => (long)EffectID.ExSPD;
-        public override string Name => "行动速度加成";
+        public override string Name { get; set; } = "行动速度加成";
         public override string Description => $"{(实际加成 >= 0 ? "增加" : "减少")}角色 {Math.Abs(实际加成):0.##} 点行动速度。" + (Source != null && (Skill.Character != Source || Skill is not OpenSkill) ? $"来自：[ {Source} ]" + (Skill.Item != null ? $" 的 [ {Skill.Item.Name} ]" : (Skill is OpenSkill ? "" : $" 的 [ {Skill.Name} ]")) : "");
         public double Value => 实际加成;
 

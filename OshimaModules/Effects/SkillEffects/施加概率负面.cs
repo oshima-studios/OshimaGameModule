@@ -145,6 +145,10 @@ namespace Oshima.FunGame.OshimaModules.Effects.SkillEffects
                         tip = $"[ {caster} ] 对 [ {target} ] 造成了战斗不能，禁止普通攻击和使用技能（魔法、战技和爆发技）！持续时间：{持续时间}！";
                         e = new 战斗不能(Skill, caster, _durative, duration, durationTurn);
                         break;
+                    case EffectType.Disarm:
+                        tip = $"[ {caster} ] 对 [ {target} ] 造成了缴械！持续时间：{持续时间}！";
+                        e = new 缴械(Skill, caster, _durative, duration, durationTurn);
+                        break;
                     default:
                         break;
                 }
@@ -249,6 +253,10 @@ namespace Oshima.FunGame.OshimaModules.Effects.SkillEffects
                 case EffectType.Cripple:
                     _dispelledType = DispelledType.Strong;
                     _description = "战斗不能：无法普通攻击和使用技能（魔法、战技和爆发技）。";
+                    break;
+                case EffectType.Disarm:
+                    _dispelledType = DispelledType.Weak;
+                    _description = "缴械：无法普通攻击。";
                     break;
                 default:
                     break;

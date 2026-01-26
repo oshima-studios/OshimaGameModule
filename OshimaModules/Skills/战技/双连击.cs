@@ -44,7 +44,7 @@ namespace Oshima.FunGame.OshimaModules.Skills
                 if (GamingQueue.CharacterDecisionPoints.TryGetValue(caster, out DecisionPoints? dp) && dp != null)
                 {
                     checkQuota = dp.CheckActionTypeQuota(CharacterActionType.NormalAttack);
-                    dp.AddActionType(CharacterActionType.NormalAttack, false);
+                    dp.AddActionType(CharacterActionType.NormalAttack, null, false);
                 }
                 caster.NormalAttack.Attack(GamingQueue, caster, null, targets);
                 if (checkQuota)

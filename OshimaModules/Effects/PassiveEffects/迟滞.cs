@@ -8,7 +8,7 @@ namespace Oshima.FunGame.OshimaModules.Effects.PassiveEffects
     public class 迟滞 : Effect
     {
         public override long Id => (long)PassiveEffectID.迟滞;
-        public override string Name => "迟滞";
+        public override string Name { get; set; } = "迟滞";
         public override string Description => $"此角色处于迟滞状态，普通攻击和技能的硬直时间、当前行动等待时间延长 {_hardnessReductionPercent * 100:0.##}%。来自：[ {Source} ] 的 [ {Skill.Name} ]";
         public override EffectType EffectType => EffectType.Slow;
         public override DispelledType DispelledType => DispelledType.Weak;

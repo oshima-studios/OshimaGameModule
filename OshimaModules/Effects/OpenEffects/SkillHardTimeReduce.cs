@@ -6,7 +6,7 @@ namespace Oshima.FunGame.OshimaModules.Effects.OpenEffects
     public class SkillHardTimeReduce : Effect
     {
         public override long Id => (long)EffectID.SkillHardTimeReduce;
-        public override string Name => Skill.Name;
+        public override string Name { get; set; } = "主动技能硬直减少";
         public override string Description => $"减少角色的所有主动技能 {实际硬直时间减少:0.##} {GameplayEquilibriumConstant.InGameTime}硬直时间。" + (Source != null && (Skill.Character != Source || Skill is not OpenSkill) ? $"来自：[ {Source} ]" + (Skill.Item != null ? $" 的 [ {Skill.Item.Name} ]" : (Skill is OpenSkill ? "" : $" 的 [ {Skill.Name} ]")) : "");
 
         private readonly double 实际硬直时间减少 = 0;

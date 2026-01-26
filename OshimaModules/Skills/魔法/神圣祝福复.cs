@@ -78,7 +78,10 @@ namespace Oshima.FunGame.OshimaModules.Skills
                 ExATK2 e = new(Skill, new()
                 {
                     { "exatk", ExATK }
-                }, caster);
+                }, caster)
+                {
+                    Name = Name + "·攻击力提升"
+                };
                 target.Effects.Add(e);
                 if (_durative && _duration > 0)
                 {
@@ -98,7 +101,10 @@ namespace Oshima.FunGame.OshimaModules.Skills
                 ExDEF2 e2 = new(Skill, new()
                 {
                     { "exdef", ExDEF }
-                }, caster);
+                }, caster)
+                {
+                    Name = Name + "·物理护甲提升"
+                };
                 target.Effects.Add(e2);
                 if (_durative && _duration > 0)
                 {
@@ -119,7 +125,10 @@ namespace Oshima.FunGame.OshimaModules.Skills
                 {
                     { "mdftype", 0 },
                     { "mdfvalue", ExMDF }
-                }, caster);
+                }, caster)
+                {
+                    Name = Name + "·魔法抗性提升"
+                };
                 target.Effects.Add(e3);
                 if (_durative && _duration > 0)
                 {

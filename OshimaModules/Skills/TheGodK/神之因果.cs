@@ -28,13 +28,14 @@ namespace Oshima.FunGame.OshimaModules.Skills
         public override long Id => Skill.Id;
         public override string Name => Skill.Name;
         public override string Description => $"{Skill.SkillOwner()}短暂显现其「神」之本质，开启持续 4 回合的「神之领域」：在持续时间内，{Skill.SkillOwner()}对任意敌方目标造成的伤害，都将记录为「因果伤害值」。" +
-            $"在持续时间结束后，所有敌方角色都会受到 [ 基于总因果伤害值的 600% 除以当前在场敌方角色数量 ] 的真实伤害。在持续时间内，{Skill.SkillOwner()}可以对任何负面效果进行豁免。" +
+            $"在持续时间结束后，所有敌方角色都会受到 [ 基于总因果伤害值的 {系数 * 100:0.##}% 除以当前在场敌方角色数量 ] 的真实伤害。在持续时间内，{Skill.SkillOwner()}可以对任何负面效果进行豁免。" +
             (因果伤害值 > 0 ? $"（当前累计因果：{因果伤害值:0.##} 点）" : "");
         public override DispelledType DispelledType => DispelledType.CannotBeDispelled;
         public override bool Durative => false;
         public override int DurationTurn => 4;
 
         public double 因果伤害值 { get; set; } = 0;
+        public double 系数 => 1 + 0.2 * (Skill.Level - 1);
 
         public override bool OnExemptionCheck(Character character, Character? source, Effect effect, bool isEvade, ref double throwingBonus)
         {
@@ -72,7 +73,7 @@ namespace Oshima.FunGame.OshimaModules.Skills
             {
                 WriteLine($"[ {character} ] 发动了神之因果！万象因果，命运既定！！！");
                 List<Character> enemies = [.. GamingQueue.GetEnemies(character).Where(GamingQueue.Queue.Contains)];
-                double damage = 因果伤害值 * 2 / enemies.Count;
+                double damage = 因果伤害值 * 系数 / enemies.Count;
                 foreach (Character enemy in enemies)
                 {
                     DamageToEnemy(character, enemy, DamageType.True, MagicType, damage, new(character)
@@ -88,7 +89,7 @@ namespace Oshima.FunGame.OshimaModules.Skills
 
         public override void OnSkillCasted(Character caster, List<Character> targets, List<Grid> grids, Dictionary<string, object> others)
         {
-            RemainDuration = Duration;
+            RemainDurationTurn = DurationTurn;
             if (!caster.Effects.Contains(this))
             {
                 caster.Effects.Add(this);

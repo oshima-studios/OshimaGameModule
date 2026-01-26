@@ -41,6 +41,7 @@ namespace Oshima.FunGame.OshimaModules.Effects.SkillEffects
                     { "exspd", SPD }
                 }, caster)
                 {
+                    Name = Name,
                     Durative = _durative,
                     Duration = _duration,
                     DurationTurn = _durationTurn

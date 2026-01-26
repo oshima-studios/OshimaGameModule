@@ -4,6 +4,7 @@ using Milimoe.FunGame.Core.Library.Common.Addon;
 using Milimoe.FunGame.Core.Library.Constant;
 using Oshima.Core.Configs;
 using Oshima.Core.Constant;
+using Oshima.FunGame.OshimaModules.Models;
 using Oshima.FunGame.OshimaServers.Service;
 using TaskScheduler = Milimoe.FunGame.Core.Api.Utility.TaskScheduler;
 
@@ -108,7 +109,7 @@ namespace Oshima.FunGame.OshimaServers
             }
             Controller.NewSQLHelper();
             Controller.NewMailSender();
-            FunGameService.InitFunGame();
+            FunGameConstant.InitFunGame();
             FunGameSimulation.InitFunGameSimulation();
             FunGameService.RefreshNotice();
             TaskScheduler.Shared.AddTask("重置每日运势", new TimeSpan(0, 0, 0), () =>

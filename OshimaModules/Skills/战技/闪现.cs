@@ -45,7 +45,7 @@ namespace Oshima.FunGame.OshimaModules.Skills
             }
             if (GamingQueue != null && GamingQueue.CharacterDecisionPoints.TryGetValue(caster, out DecisionPoints? dp) && dp != null)
             {
-                dp.AddTempActionQuota(CharacterActionType.CastSkill);
+                dp.AddTempActionQuota(this, CharacterActionType.CastSkill);
             }
         }
     }

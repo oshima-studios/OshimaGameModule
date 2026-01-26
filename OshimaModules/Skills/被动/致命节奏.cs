@@ -48,6 +48,7 @@ namespace Oshima.FunGame.OshimaModules.Skills
                     { "exspd", 行动速度提升 }
                 }, character)
                 {
+                    Name = Name + "·行动速度",
                     Durative = true,
                     Duration = 行动速度持续时间
                 };
@@ -67,6 +68,7 @@ namespace Oshima.FunGame.OshimaModules.Skills
                         { "exatk", 额外攻击力 }
                     }, character)
                     {
+                        Name = Name + "·额外攻击力",
                         Durative = true,
                         Duration = 额外攻击力持续时间
                     };
