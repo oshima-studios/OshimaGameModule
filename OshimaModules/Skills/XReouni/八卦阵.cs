@@ -63,13 +63,15 @@ namespace Oshima.FunGame.OshimaModules.Skills
             {
                 if (character == Skill.Character)
                 {
-                    bonus += damage * 伤害提升;
-                    WriteLine($"[ {Skill.Character} ] 发动了八卦阵！伤害提升了 {Math.Abs(bonus):0.##} 点！");
+                    double bonus2 = damage * 伤害提升;
+                    bonus += bonus2;
+                    WriteLine($"[ {Skill.Character} ] 发动了八卦阵！伤害提升了 {Math.Abs(bonus2):0.##} 点！");
                 }
                 else if (enemy == Skill.Character)
                 {
-                    bonus += -(damage * 伤害减少);
-                    WriteLine($"[ {Skill.Character} ] 发动了八卦阵！伤害减少了 {Math.Abs(bonus):0.##} 点！");
+                    double bonus2 = damage * 伤害减少;
+                    bonus -= bonus2;
+                    WriteLine($"[ {Skill.Character} ] 发动了八卦阵！伤害减少了 {Math.Abs(bonus2):0.##} 点！");
                 }
                 if (归元)
                 {
