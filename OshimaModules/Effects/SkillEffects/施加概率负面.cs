@@ -1,6 +1,8 @@
-﻿using Milimoe.FunGame.Core.Entity;
+﻿using Milimoe.FunGame.Core.Api.Utility;
+using Milimoe.FunGame.Core.Entity;
 using Milimoe.FunGame.Core.Library.Common.Addon;
 using Milimoe.FunGame.Core.Library.Constant;
+using Milimoe.FunGame.Core.Model;
 using Oshima.FunGame.OshimaModules.Effects.PassiveEffects;
 using Oshima.FunGame.OshimaModules.Skills;
 
@@ -15,14 +17,15 @@ namespace Oshima.FunGame.OshimaModules.Effects.SkillEffects
             get
             {
                 SetDescription();
-                return $"{ActualProbability * 100:0.##}% 概率对{Skill.TargetDescription()}造成{GetEffectTypeName(_effectType)} {持续时间}。{(_description != "" ? _description : "")}";
+                return $"{概率文本}对{Skill.TargetDescription()}造成{GetEffectTypeName(_effectType)} {持续时间}。{(_description != "" ? _description : "")}";
             }
         }
         public override EffectType EffectType => _effectType;
         public override DispelledType DispelledType => _dispelledType;
         public override bool ExemptDuration => true;
 
-        private double ActualProbability => Level > 0 ? (_probability + _probabilityLevelGrowth * (Level - 1) * MagicEfficacy) : _probability;
+        private string 概率文本 => ActualProbability == 1 ? "" : $"{ActualProbability * 100:0.##}% 概率";
+        private double ActualProbability => Calculation.PercentageCheck(Level > 0 ? (_probability + _probabilityLevelGrowth * (Level - 1) * MagicEfficacy) : _probability);
         private string 持续时间 => _durative && _duration > 0 ? $"{实际持续时间:0.##}" + $" {GameplayEquilibriumConstant.InGameTime}" : (!_durative && _durationTurn > 0 ? 实际持续时间 + " 回合" : $"0 {GameplayEquilibriumConstant.InGameTime}");
         private double 实际持续时间 => _durative && _duration > 0 ? (_duration + _levelGrowth * (Level - 1) * MagicEfficacy) : (!_durative && _durationTurn > 0 ? ((int)Math.Round(_durationTurn + _levelGrowth * (Level - 1) * MagicEfficacy, 0, MidpointRounding.ToPositiveInfinity)) : 0);
         private readonly EffectType _effectType;
@@ -149,11 +152,63 @@ namespace Oshima.FunGame.OshimaModules.Effects.SkillEffects
                         tip = $"[ {caster} ] 对 [ {target} ] 造成了缴械！持续时间：{持续时间}！";
                         e = new 缴械(Skill, caster, _durative, duration, durationTurn);
                         break;
+                    case EffectType.Burn:
+                    case EffectType.Poison:
+                        isPercentage = false;
+                        durationDamage = 0;
+                        durationDamagePercent = 0;
+                        durationDamageLevelGrowth = 0;
+                        damageType = DamageType.Magical;
+                        DamageCalculationOptions? options = null;
+                        if (_args.Length > 0 && _args[0] is bool _)
+                        {
+                            isPercentage = (bool)_args[0];
+                        }
+                        if (_args.Length > 1 && _args[1] is double _)
+                        {
+                            durationDamage = (double)_args[1];
+                        }
+                        if (_args.Length > 2 && _args[2] is double _)
+                        {
+                            durationDamagePercent = (double)_args[2];
+                        }
+                        if (_args.Length > 3 && _args[3] is double _)
+                        {
+                            durationDamageLevelGrowth = (double)_args[3];
+                        }
+                        if (_args.Length > 0 && _args[4] is DamageType _)
+                        {
+                            damageType = (DamageType)_args[4];
+                        }
+                        if (_args.Length > 0 && _args[5] is DamageCalculationOptions _)
+                        {
+                            options = (DamageCalculationOptions)_args[5];
+                        }
+                        if (isPercentage && durationDamagePercent > 0 || !isPercentage && durationDamage > 0)
+                        {
+                            if (Level > 0) durationDamage += durationDamageLevelGrowth * (Level - 1);
+                            if (Level > 0) durationDamagePercent += durationDamageLevelGrowth * (Level - 1);
+                            string damageString = isPercentage ? $"受到 {durationDamagePercent * 100:0.##}% 当前生命值的" : $"受到 {durationDamage:0.##} 点" + CharacterSet.GetDamageTypeName(damageType);
+                            tip = $"[ {caster} ] 对 [ {target} ] 造成了{GetEffectTypeName(_effectType)}！ [ {target} ] 每{GameplayEquilibriumConstant.InGameTime}{damageString}！持续时间：{持续时间}！";
+                            e = new 持续伤害(Skill, target, caster, _durative, duration, durationTurn, isPercentage, durationDamage, durationDamagePercent, damageType, options)
+                            {
+                                EffectType = _effectType
+                            };
+                        }
+                        break;
+                    case EffectType.InterruptCasting:
+                        e = new 打断施法(Skill);
+                        break;
                     default:
                         break;
                 }
                 if (e != null && !CheckExemption(caster, target, e))
                 {
+                    if (e is 打断施法 ddsf)
+                    {
+                        ddsf.OnSkillCasted(caster, [target], [], []);
+                        continue;
+                    }
                     WriteLine(tip);
                     target.Effects.Add(e);
                     e.OnEffectGained(target);
@@ -258,6 +313,45 @@ namespace Oshima.FunGame.OshimaModules.Effects.SkillEffects
                     _dispelledType = DispelledType.Weak;
                     _description = "缴械：无法普通攻击。";
                     break;
+                case EffectType.Burn:
+                case EffectType.Poison:
+                    _dispelledType = DispelledType.Weak;
+                    isPercentage = false;
+                    durationDamage = 0;
+                    durationDamagePercent = 0;
+                    durationDamageLevelGrowth = 0;
+                    damageType = DamageType.Magical;
+                    if (_args.Length > 0 && _args[0] is bool _)
+                    {
+                        isPercentage = (bool)_args[0];
+                    }
+                    if (_args.Length > 1 && _args[1] is double _)
+                    {
+                        durationDamage = (double)_args[1];
+                    }
+                    if (_args.Length > 2 && _args[2] is double _)
+                    {
+                        durationDamagePercent = (double)_args[2];
+                    }
+                    if (_args.Length > 3 && _args[3] is double _)
+                    {
+                        durationDamageLevelGrowth = (double)_args[3];
+                    }
+                    if (_args.Length > 0 && _args[4] is DamageType _)
+                    {
+                        damageType = (DamageType)_args[4];
+                    }
+                    if (isPercentage && durationDamagePercent > 0 || !isPercentage && durationDamage > 0)
+                    {
+                        if (Level > 0) durationDamage += durationDamageLevelGrowth * (Level - 1);
+                        if (Level > 0) durationDamagePercent += durationDamageLevelGrowth * (Level - 1);
+                        string damageString = isPercentage ? $"受到 {durationDamagePercent * 100:0.##}% 当前生命值的" : $"受到 {durationDamage:0.##} 点" + CharacterSet.GetDamageTypeName(damageType);
+                        _description = $"{GetEffectTypeName(_effectType)}：每{GameplayEquilibriumConstant.InGameTime}{damageString}！持续时间：{持续时间}！";
+                    }
+                    break;
+                case EffectType.InterruptCasting:
+                    _description = "打断施法：中断其正在进行的吟唱。";
+                    break;
                 default:
                     break;
             }
@@ -271,6 +365,8 @@ namespace Oshima.FunGame.OshimaModules.Effects.SkillEffects
                 EffectType.Silence => "封技",
                 EffectType.Bleed => "气绝",
                 EffectType.Cripple => "战斗不能",
+                EffectType.Burn => "燃烧",
+                EffectType.Poison => "中毒",
                 _ => SkillSet.GetEffectTypeName(type)
             };
         }
