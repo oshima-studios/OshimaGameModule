@@ -37,14 +37,7 @@ namespace Oshima.FunGame.OshimaModules.Effects.PassiveEffects
 
         public override void OnEffectLost(Character character)
         {
-            foreach (Effect effect in _skill.Effects)
-            {
-                if (character.Effects.Remove(effect))
-                {
-                    effect.OnEffectLost(character);
-                }
-            }
-            character.Skills.Remove(_skill);
+            _skill.RemoveSkillFromCharacter(character);
         }
     }
 }
