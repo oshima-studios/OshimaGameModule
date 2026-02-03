@@ -54,7 +54,7 @@ namespace Oshima.FunGame.OshimaModules.Skills
 
         public override void AfterDamageCalculation(Character character, Character enemy, double damage, double actualDamage, bool isNormalAttack, DamageType damageType, MagicType magicType, DamageResult damageResult)
         {
-            if (character == Skill.Character && 野望 != null && (damageResult == DamageResult.Normal || damageResult == DamageResult.Critical) && enemy.Effects.FirstOrDefault(e => e is 海王星的野望标记 && e.Skill == Skill) is 海王星的野望标记 e)
+            if (character == Skill.Character && 野望 != null && (damageResult == DamageResult.Normal || damageResult == DamageResult.Critical) && enemy.Effects.FirstOrDefault(e => e is 海王星的野望标记 && e.Source == Skill.Character) is 海王星的野望标记 e)
             {
                 野望.分裂伤害(character, enemy, actualDamage, damageType, magicType);
             }

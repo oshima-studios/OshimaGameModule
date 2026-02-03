@@ -50,7 +50,7 @@ namespace Oshima.FunGame.OshimaModules.Skills
         public override void OnEffectGained(Character character)
         {
             IEnumerable<Effect> effects = character.Effects.Where(e => e is 灵能反射特效);
-            if (effects.Any() && effects.First() is 灵能反射特效 e && e.Skill == Skill)
+            if (effects.Any() && effects.First() is 灵能反射特效 e && e.Skill.Character == Skill.Character)
             {
                 e.是否支持普攻 = true;
                 e.触发硬直次数 = 3;
@@ -61,7 +61,7 @@ namespace Oshima.FunGame.OshimaModules.Skills
         public override void OnEffectLost(Character character)
         {
             IEnumerable<Effect> effects = character.Effects.Where(e => e is 灵能反射特效);
-            if (effects.Any() && effects.First() is 灵能反射特效 e && e.Skill == Skill)
+            if (effects.Any() && effects.First() is 灵能反射特效 e && e.Skill.Character == Skill.Character)
             {
                 e.是否支持普攻 = false;
                 e.触发硬直次数 = 2;

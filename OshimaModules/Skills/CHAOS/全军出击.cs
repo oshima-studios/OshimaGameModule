@@ -68,7 +68,7 @@ namespace Oshima.FunGame.OshimaModules.Skills
                 caster.Effects.Add(this);
                 OnEffectGained(caster);
             }
-            if (caster.Effects.FirstOrDefault(e => e is 雇佣兵团特效 && e.Skill == Skill) is 雇佣兵团特效 e)
+            if (caster.Effects.FirstOrDefault(e => e is 雇佣兵团特效 && e.Skill.Character == Skill.Character) is 雇佣兵团特效 e)
             {
                 e.Skill.CurrentCD = 0;
                 e.Skill.Enable = true;

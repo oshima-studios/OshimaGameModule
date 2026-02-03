@@ -49,7 +49,7 @@ namespace Oshima.FunGame.OshimaModules.Skills
                 }
                 WriteLine($"[ {character} ] 发动了灵能反射！额外获得了 {实际获得能量值:0.##} 能量，并消除了 2 {GameplayEquilibriumConstant.InGameTime}冷却时间！");
                 IEnumerable<Effect> effects = character.Effects.Where(e => e is 三相灵枢特效);
-                if (effects.Any() && effects.First() is 三相灵枢特效 e && e.Skill == Skill)
+                if (effects.Any() && effects.First() is 三相灵枢特效 e && e.Skill.Character == Skill.Character)
                 {
                     double 获得的魔法值 = 实际获得能量值 * 3;
                     character.MP += 获得的魔法值;
@@ -92,7 +92,7 @@ namespace Oshima.FunGame.OshimaModules.Skills
             {
                 释放次数 = 0;
                 IEnumerable<Effect> effects = character.Effects.Where(e => e is 三相灵枢特效);
-                if (effects.Any() && effects.First() is 三相灵枢特效 e && e.Skill == Skill)
+                if (effects.Any() && effects.First() is 三相灵枢特效 e && e.Skill.Character == Skill.Character)
                 {
                     baseHardnessTime = 0;
                     isCheckProtected = false;

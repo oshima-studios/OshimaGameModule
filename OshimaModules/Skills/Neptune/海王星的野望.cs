@@ -77,7 +77,7 @@ namespace Oshima.FunGame.OshimaModules.Skills
                 }
             }
 
-            if (character == Skill.Character && (damageResult == DamageResult.Normal || damageResult == DamageResult.Critical) && enemy.Effects.FirstOrDefault(e => e is 海王星的野望标记 && e.Skill == Skill) is 海王星的野望标记 e)
+            if (character == Skill.Character && (damageResult == DamageResult.Normal || damageResult == DamageResult.Critical) && enemy.Effects.FirstOrDefault(e => e is 海王星的野望标记 && e.Source == Skill.Character) is 海王星的野望标记 e)
             {
                 分裂伤害(character, enemy, actualDamage, damageType, magicType);
             }
