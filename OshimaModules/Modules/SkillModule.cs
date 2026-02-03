@@ -1,5 +1,6 @@
 ﻿using Milimoe.FunGame.Core.Api.Utility;
 using Milimoe.FunGame.Core.Entity;
+using Milimoe.FunGame.Core.Interface.Base.Addons;
 using Milimoe.FunGame.Core.Library.Constant;
 using Oshima.Core.Constant;
 using Oshima.FunGame.OshimaModules.Effects.ItemEffects;
@@ -9,7 +10,7 @@ using Oshima.FunGame.OshimaModules.Skills;
 
 namespace Oshima.FunGame.OshimaModules
 {
-    public class SkillModule : Milimoe.FunGame.Core.Library.Common.Addon.SkillModule
+    public class SkillModule : Milimoe.FunGame.Core.Library.Common.Addon.SkillModule, IHotReloadAware
     {
         public override string Name => OshimaGameModuleConstant.Skill;
         public override string Description => OshimaGameModuleConstant.Description;
@@ -38,6 +39,11 @@ namespace Oshima.FunGame.OshimaModules
             General.GameplayEquilibriumConstant.InGameTime = "秒";
             General.GameplayEquilibriumConstant.InGameMaterial = "钻石";
             General.GameplayEquilibriumConstant.UseMagicType = [MagicType.None];
+        }
+
+        public void OnBeforeUnload()
+        {
+
         }
 
         protected override Factory.EntityFactoryDelegate<Skill> SkillFactory()

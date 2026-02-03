@@ -1,11 +1,12 @@
 ﻿using Milimoe.FunGame.Core.Api.Utility;
 using Milimoe.FunGame.Core.Entity;
+using Milimoe.FunGame.Core.Interface.Base.Addons;
 using Oshima.Core.Constant;
 using Oshima.FunGame.OshimaModules.Characters;
 
 namespace Oshima.FunGame.OshimaModules
 {
-    public class CharacterModule : Milimoe.FunGame.Core.Library.Common.Addon.CharacterModule
+    public class CharacterModule : Milimoe.FunGame.Core.Library.Common.Addon.CharacterModule, IHotReloadAware
     {
         public override string Name => OshimaGameModuleConstant.Character;
         public override string Description => OshimaGameModuleConstant.Description;
@@ -27,6 +28,11 @@ namespace Oshima.FunGame.OshimaModules
                 }
                 return characters;
             }
+        }
+
+        public void OnBeforeUnload()
+        {
+
         }
 
         protected override Factory.EntityFactoryDelegate<Character> EntityFactory()

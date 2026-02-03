@@ -1,11 +1,12 @@
 ﻿using Milimoe.FunGame.Core.Interface.Base;
+using Milimoe.FunGame.Core.Interface.Base.Addons;
 using Milimoe.FunGame.Core.Library.Common.Addon;
 using Milimoe.FunGame.Core.Model;
 using Oshima.Core.Constant;
 
 namespace Oshima.FunGame.OshimaMaps
 {
-    public class FastAutoMap : GameMap
+    public class FastAutoMap : GameMap, IHotReloadAware
     {
         public override string Name => OshimaGameModuleConstant.FastAutoMap;
 
@@ -34,6 +35,11 @@ namespace Oshima.FunGame.OshimaMaps
             }
 
             return map;
+        }
+
+        public void OnBeforeUnload()
+        {
+
         }
     }
 }

@@ -4,6 +4,7 @@ using Milimoe.FunGame.Core.Api.Transmittal;
 using Milimoe.FunGame.Core.Api.Utility;
 using Milimoe.FunGame.Core.Entity;
 using Milimoe.FunGame.Core.Interface.Base;
+using Milimoe.FunGame.Core.Interface.Base.Addons;
 using Milimoe.FunGame.Core.Library.Common.Addon;
 using Milimoe.FunGame.Core.Library.Constant;
 using Milimoe.FunGame.Core.Model;
@@ -14,7 +15,7 @@ using Oshima.FunGame.OshimaServers.Service;
 
 namespace Oshima.FunGame.OshimaServers
 {
-    public class FastAutoServer : GameModuleServer
+    public class FastAutoServer : GameModuleServer, IHotReloadAware
     {
         public override string Name => OshimaGameModuleConstant.FastAuto;
         public override string Description => OshimaGameModuleConstant.Description;
@@ -374,6 +375,11 @@ namespace Oshima.FunGame.OshimaServers
                     CharacterStatistics[character] = StatsConfig.Get<CharacterStatistics>(character.ToStringWithOutUser()) ?? CharacterStatistics[character];
                 }
             }
+        }
+
+        public void OnBeforeUnload()
+        {
+
         }
     }
 }

@@ -4,22 +4,26 @@ using Milimoe.FunGame.Core.Api.Transmittal;
 using Milimoe.FunGame.Core.Api.Utility;
 using Milimoe.FunGame.Core.Entity;
 using Milimoe.FunGame.Core.Interface;
+using Milimoe.FunGame.Core.Interface.Base.Addons;
 using Milimoe.FunGame.Core.Library.Common.Addon;
 using Milimoe.FunGame.Core.Library.Common.Event;
+using Milimoe.FunGame.Core.Library.Constant;
 using Oshima.Core.Configs;
 using Oshima.Core.Constant;
 using Oshima.FunGame.OshimaModules.Characters;
 using Oshima.FunGame.OshimaModules.Items;
+using Oshima.FunGame.OshimaModules.Models;
 using Oshima.FunGame.OshimaServers.Service;
 using Oshima.FunGame.WebAPI.Constant;
 using Oshima.FunGame.WebAPI.Controllers;
 using Oshima.FunGame.WebAPI.Models;
 using Oshima.FunGame.WebAPI.Services;
 using ProjectRedbud.FunGame.SQLQueryExtension;
+using TaskScheduler = Milimoe.FunGame.Core.Api.Utility.TaskScheduler;
 
 namespace Oshima.FunGame.WebAPI
 {
-    public class OshimaWebAPI : WebAPIPlugin, ILoginEvent
+    public class OshimaWebAPI : WebAPIPlugin, IHotReloadAware, ILoginEvent
     {
         public override string Name => OshimaGameModuleConstant.WebAPI;
 
@@ -224,6 +228,86 @@ namespace Oshima.FunGame.WebAPI
                 builder.Services.Configure<BotConfig>(builder.Configuration.GetSection("Bot"));
             }
             WebAPIAuthenticator.WebAPICustomBearerTokenAuthenticator += CustomBearerTokenAuthenticator;
+            FunGameConstant.InitFunGame();
+            FunGameSimulation.InitFunGameSimulation();
+            FunGameService.RefreshNotice();
+            TaskScheduler.Shared.AddTask("重置每日运势", new TimeSpan(0, 0, 0), () =>
+            {
+                Controller.WriteLine("已重置所有人的今日运势");
+                Daily.ClearDaily();
+                // 刷新活动缓存
+                FunGameService.GetEventCenter(null);
+                FunGameService.RefreshNotice();
+                FunGameService.PreRefreshStore();
+            });
+            TaskScheduler.Shared.AddTask("上九", new TimeSpan(9, 0, 0), () =>
+            {
+                Controller.WriteLine("重置物品交易冷却时间/刷新地区天气");
+                _ = FunGameService.AllowSellAndTrade();
+                _ = FunGameService.UpdateRegionWeather();
+            });
+            TaskScheduler.Shared.AddTask("下三", new TimeSpan(15, 0, 0), () =>
+            {
+                Controller.WriteLine("重置物品交易冷却时间/刷新地区天气");
+                _ = FunGameService.AllowSellAndTrade();
+                _ = FunGameService.UpdateRegionWeather();
+            });
+            TaskScheduler.Shared.AddRecurringTask("刷新存档缓存", TimeSpan.FromMinutes(1), () =>
+            {
+                FunGameService.RefreshSavedCache();
+                FunGameService.RefreshClubData();
+                Controller.WriteLine("读取 FunGame 存档缓存", LogLevel.Debug);
+                OnlineService.RoomsAutoDisband();
+                Controller.WriteLine("清除空闲房间", LogLevel.Debug);
+            }, true);
+            TaskScheduler.Shared.AddTask("刷新每日任务", new TimeSpan(4, 0, 0), () =>
+            {
+                // 刷新每日任务
+                Task.Run(() =>
+                {
+                    FunGameService.RefreshDailyQuest();
+                    Controller.WriteLine("刷新每日任务");
+                });
+                Task.Run(() =>
+                {
+                    FunGameService.RefreshDailySignIn();
+                    Controller.WriteLine("刷新签到");
+                });
+                Task.Run(() =>
+                {
+                    FunGameService.RefreshStoreData();
+                    Controller.WriteLine("刷新商店");
+                });
+                Task.Run(() =>
+                {
+                    FunGameService.RefreshMarketData();
+                    Controller.WriteLine("刷新市场");
+                });
+                // 刷新活动缓存
+                FunGameService.GetEventCenter(null);
+                FunGameService.RefreshNotice();
+            });
+            TaskScheduler.Shared.AddRecurringTask("刷新boss", TimeSpan.FromHours(1), () =>
+            {
+                FunGameService.GenerateBoss();
+                Controller.WriteLine("刷新boss");
+            }, true);
+            TaskScheduler.Shared.AddRecurringTask("刷新活动缓存", TimeSpan.FromHours(4), () =>
+            {
+                FunGameService.GetEventCenter(null);
+                Controller.WriteLine("刷新活动缓存");
+            }, true);
+        }
+
+        public void OnBeforeUnload()
+        {
+            TaskScheduler.Shared.RemoveTask("重置每日运势");
+            TaskScheduler.Shared.RemoveTask("上九");
+            TaskScheduler.Shared.RemoveTask("下三");
+            TaskScheduler.Shared.RemoveTask("刷新存档缓存");
+            TaskScheduler.Shared.RemoveTask("刷新每日任务");
+            TaskScheduler.Shared.RemoveTask("刷新boss");
+            TaskScheduler.Shared.RemoveTask("刷新活动缓存");
         }
 
         public override void OnWebAPIStarted(params object[] objs)

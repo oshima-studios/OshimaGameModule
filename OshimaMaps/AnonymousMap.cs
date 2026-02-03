@@ -1,10 +1,11 @@
 ﻿using Milimoe.FunGame.Core.Interface.Base;
+using Milimoe.FunGame.Core.Interface.Base.Addons;
 using Milimoe.FunGame.Core.Library.Common.Addon;
 using Oshima.Core.Constant;
 
 namespace Oshima.FunGame.OshimaMaps
 {
-    public class AnonymousMap : GameMap
+    public class AnonymousMap : GameMap, IHotReloadAware
     {
         public override string Name => OshimaGameModuleConstant.AnonymousMap;
 
@@ -27,6 +28,11 @@ namespace Oshima.FunGame.OshimaMaps
             GameMap map = new AnonymousMap();
             map.Load();
             return map;
+        }
+
+        public void OnBeforeUnload()
+        {
+
         }
     }
 }
