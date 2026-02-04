@@ -1,4 +1,5 @@
-﻿using Milimoe.FunGame.Core.Entity;
+﻿using Milimoe.FunGame.Core.Api.Utility;
+using Milimoe.FunGame.Core.Entity;
 using Milimoe.FunGame.Core.Library.Common.Addon;
 using Milimoe.FunGame.Core.Library.Constant;
 using Milimoe.FunGame.Core.Model;
@@ -38,14 +39,19 @@ namespace Oshima.FunGame.OshimaModules.Skills
         private double 攻击力提升 => 攻击力提升系数 * Skill.Character?.BaseATK ?? 0;
         private double 物理穿透提升 => Skill.Level > 0 ? 0.1 + 0.03 * (Skill.Level - 1) : 0.1;
         private double 闪避率提升 => Skill.Level > 0 ? 0.1 + 0.02 * (Skill.Level - 1) : 0.1;
+
         private double 实际的攻击力提升 = 0;
+        private double 实际的物理穿透提升 = 0;
+        private double 实际的闪避率提升 = 0;
 
         public override void OnEffectGained(Character character)
         {
             实际的攻击力提升 = 攻击力提升;
+            实际的物理穿透提升 = 物理穿透提升;
+            实际的闪避率提升 = 闪避率提升;
             character.ExATK2 += 实际的攻击力提升;
-            character.PhysicalPenetration += 物理穿透提升;
-            character.ExEvadeRate += 闪避率提升;
+            character.PhysicalPenetration += 实际的物理穿透提升;
+            character.ExEvadeRate += 实际的闪避率提升;
             if (character.Effects.Where(e => e is 心灵之弦特效).FirstOrDefault() is 心灵之弦特效 e)
             {
                 e.基础冷却时间 = 3;
@@ -56,8 +62,8 @@ namespace Oshima.FunGame.OshimaModules.Skills
         public override void OnEffectLost(Character character)
         {
             character.ExATK2 -= 实际的攻击力提升;
-            character.PhysicalPenetration -= 物理穿透提升;
-            character.ExEvadeRate -= 闪避率提升;
+            character.PhysicalPenetration -= 实际的物理穿透提升;
+            character.ExEvadeRate -= 实际的闪避率提升;
             if (character.Effects.Where(e => e is 心灵之弦特效).FirstOrDefault() is 心灵之弦特效 e)
             {
                 e.基础冷却时间 = 10;
@@ -86,6 +92,9 @@ namespace Oshima.FunGame.OshimaModules.Skills
 
         public override void OnSkillCasted(Character caster, List<Character> targets, List<Grid> grids, Dictionary<string, object> others)
         {
+            实际的攻击力提升 = 0;
+            实际的物理穿透提升 = 0;
+            实际的闪避率提升 = 0;
             RemainDuration = Duration;
             if (!caster.Effects.Contains(this))
             {

@@ -5053,7 +5053,7 @@ namespace Oshima.FunGame.OshimaServers.Service
                         }
                         foreach (Activity activity in userActivities.Values)
                         {
-                           if (SettleQuest(user, activity.Quests, activity))
+                            if (SettleQuest(user, activity.Quests, activity))
                             {
                                 updateQuest = true;
                             }

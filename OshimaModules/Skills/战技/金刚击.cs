@@ -17,7 +17,7 @@ namespace Oshima.FunGame.OshimaModules.Skills
 
         public 金刚击(Character? character = null) : base(SkillType.Skill, character)
         {
-            Effects.Add(new 基于攻击力的伤害_带基础伤害(this, 65, 65, 0.09,0.04, DamageType.Physical));
+            Effects.Add(new 基于攻击力的伤害_带基础伤害(this, 65, 65, 0.09, 0.04, DamageType.Physical));
             Effects.Add(new 打断施法(this));
         }
     }

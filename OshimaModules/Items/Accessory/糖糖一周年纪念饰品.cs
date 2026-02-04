@@ -5,7 +5,7 @@ using Oshima.FunGame.OshimaModules.Skills;
 
 namespace Oshima.FunGame.OshimaModules.Items
 {
-    public class 糖糖一周年纪念饰品1: Item
+    public class 糖糖一周年纪念饰品1 : Item
     {
         public override long Id => (long)AccessoryID.糖糖一周年纪念饰品1;
         public override string Name => "回忆糖纸";
@@ -49,7 +49,7 @@ namespace Oshima.FunGame.OshimaModules.Items
         }
     }
 
-    public class 糖糖一周年纪念饰品2: Item
+    public class 糖糖一周年纪念饰品2 : Item
     {
         public override long Id => (long)AccessoryID.糖糖一周年纪念饰品2;
         public override string Name => "蜂糖蜜酿";

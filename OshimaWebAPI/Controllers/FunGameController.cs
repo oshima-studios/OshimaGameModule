@@ -212,7 +212,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
                     names = [.. FunGameSimulation.TeamCharacterStatistics.OrderByDescending(kv => kv.Value.Plays == 0 ? kv.Value.FirstKills : (double)kv.Value.FirstKills / kv.Value.Plays).Select(kv => kv.Key.GetName())];
                     builder.AppendLine($"总计首杀数：{stats.FirstKills}" + (stats.Plays != 0 ? $" / 首杀率：{(double)stats.FirstKills / stats.Plays * 100:0.##}%" : "") + $"（#{names.IndexOf(character.GetName()) + 1}）");
                     names = [.. FunGameSimulation.TeamCharacterStatistics.OrderByDescending(kv => kv.Value.Plays == 0 ? kv.Value.FirstDeaths : (double)kv.Value.FirstDeaths / kv.Value.Plays).Select(kv => kv.Key.GetName())];
-                    builder.AppendLine($"总计首死数：{stats.FirstDeaths}" + (stats.Plays != 0 ? $" / 首死率：{(double)stats.FirstDeaths / stats.Plays * 100:0.##}%" : "")+ $"（#{names.IndexOf(character.GetName()) + 1}）");
+                    builder.AppendLine($"总计首死数：{stats.FirstDeaths}" + (stats.Plays != 0 ? $" / 首死率：{(double)stats.FirstDeaths / stats.Plays * 100:0.##}%" : "") + $"（#{names.IndexOf(character.GetName()) + 1}）");
                     names = [.. FunGameSimulation.TeamCharacterStatistics.OrderByDescending(kv => kv.Value.Plays).Select(kv => kv.Key.GetName())];
                     builder.AppendLine($"总计参赛数：{stats.Plays}（#{names.IndexOf(character.GetName()) + 1}）");
                     names = [.. FunGameSimulation.TeamCharacterStatistics.OrderByDescending(kv => kv.Value.Wins).Select(kv => kv.Key.GetName())];

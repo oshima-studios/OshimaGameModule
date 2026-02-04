@@ -228,6 +228,26 @@ namespace Oshima.FunGame.WebAPI
                 builder.Services.Configure<BotConfig>(builder.Configuration.GetSection("Bot"));
             }
             WebAPIAuthenticator.WebAPICustomBearerTokenAuthenticator += CustomBearerTokenAuthenticator;
+        }
+
+        public void OnBeforeUnload()
+        {
+            TaskScheduler.Shared.RemoveTask("重置每日运势");
+            TaskScheduler.Shared.RemoveTask("上九");
+            TaskScheduler.Shared.RemoveTask("下三");
+            TaskScheduler.Shared.RemoveTask("刷新存档缓存");
+            TaskScheduler.Shared.RemoveTask("刷新每日任务");
+            TaskScheduler.Shared.RemoveTask("刷新boss");
+            TaskScheduler.Shared.RemoveTask("刷新活动缓存");
+        }
+
+        public override void OnWebAPIStarted(params object[] objs)
+        {
+            if (objs.Length > 0 && objs[0] is WebApplication app)
+            {
+                _serviceScopeFactory = app.Services.GetRequiredService<IServiceScopeFactory>();
+                if (_serviceScopeFactory != null) Controller.WriteLine("获取到：IServiceScopeFactory");
+            }
             FunGameConstant.InitFunGame();
             FunGameSimulation.InitFunGameSimulation();
             FunGameService.RefreshNotice();
@@ -297,26 +317,6 @@ namespace Oshima.FunGame.WebAPI
                 FunGameService.GetEventCenter(null);
                 Controller.WriteLine("刷新活动缓存");
             }, true);
-        }
-
-        public void OnBeforeUnload()
-        {
-            TaskScheduler.Shared.RemoveTask("重置每日运势");
-            TaskScheduler.Shared.RemoveTask("上九");
-            TaskScheduler.Shared.RemoveTask("下三");
-            TaskScheduler.Shared.RemoveTask("刷新存档缓存");
-            TaskScheduler.Shared.RemoveTask("刷新每日任务");
-            TaskScheduler.Shared.RemoveTask("刷新boss");
-            TaskScheduler.Shared.RemoveTask("刷新活动缓存");
-        }
-
-        public override void OnWebAPIStarted(params object[] objs)
-        {
-            if (objs.Length > 0 && objs[0] is WebApplication app)
-            {
-                _serviceScopeFactory = app.Services.GetRequiredService<IServiceScopeFactory>();
-                if (_serviceScopeFactory != null) Controller.WriteLine("获取到：IServiceScopeFactory");
-            }
         }
 
         private string CustomBearerTokenAuthenticator(string token)

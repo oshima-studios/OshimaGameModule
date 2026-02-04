@@ -35,7 +35,7 @@ namespace Oshima.FunGame.OshimaModules
 
         }
 
-        protected override Factory.EntityFactoryDelegate<Character> EntityFactory()
+        protected override Factory.EntityFactoryDelegate<Character> CharacterFactory()
         {
             return (id, name, args) =>
             {

@@ -5,7 +5,7 @@ using Oshima.FunGame.OshimaModules.Skills;
 
 namespace Oshima.FunGame.OshimaModules.Items
 {
-    public class 糖糖一周年纪念防具: Item
+    public class 糖糖一周年纪念防具 : Item
     {
         public override long Id => (long)ArmorID.糖糖一周年纪念防具;
         public override string Name => "糖之誓约";
