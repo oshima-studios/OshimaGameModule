@@ -53,7 +53,7 @@ namespace Oshima.FunGame.OshimaModules.Skills
         {
             实际力量提升 = 力量提升;
             character.ExSTR += 实际力量提升;
-            if (character.Effects.Where(e => e is 深海之戟特效).FirstOrDefault() is 深海之戟特效 e)
+            if (character.Effects.Where(e => e is 深海之戟特效 && e.Skill.Character == character).FirstOrDefault() is 深海之戟特效 e)
             {
                 e.野望 = this;
             }
@@ -62,7 +62,7 @@ namespace Oshima.FunGame.OshimaModules.Skills
         public override void OnEffectLost(Character character)
         {
             character.ExSTR -= 实际力量提升;
-            if (character.Effects.Where(e => e is 深海之戟特效).FirstOrDefault() is 深海之戟特效 e)
+            if (character.Effects.Where(e => e is 深海之戟特效 && e.Skill.Character == character).FirstOrDefault() is 深海之戟特效 e)
             {
                 e.野望 = null;
             }

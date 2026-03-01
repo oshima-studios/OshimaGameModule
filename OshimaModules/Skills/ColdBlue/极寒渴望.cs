@@ -37,7 +37,7 @@ namespace Oshima.FunGame.OshimaModules.Skills
         public override void OnEffectGained(Character character)
         {
             character.Lifesteal += 吸血;
-            if (character.Effects.Where(e => e is 累积之压特效).FirstOrDefault() is 累积之压特效 e)
+            if (character.Effects.Where(e => e is 累积之压特效 && e.Skill.Character == character).FirstOrDefault() is 累积之压特效 e)
             {
                 e.系数 += 最大生命值伤害;
             }
@@ -46,7 +46,7 @@ namespace Oshima.FunGame.OshimaModules.Skills
         public override void OnEffectLost(Character character)
         {
             character.Lifesteal -= 吸血;
-            if (character.Effects.Where(e => e is 累积之压特效).FirstOrDefault() is 累积之压特效 e)
+            if (character.Effects.Where(e => e is 累积之压特效 && e.Skill.Character == character).FirstOrDefault() is 累积之压特效 e)
             {
                 e.系数 -= 最大生命值伤害;
             }

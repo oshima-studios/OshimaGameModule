@@ -141,6 +141,8 @@ namespace Oshima.FunGame.OshimaModules
                     (long)SuperSkillID.全军出击 => new 全军出击(),
                     (long)SuperSkillID.宿命之潮 => new 宿命之潮(),
                     (long)SuperSkillID.神之因果 => new 神之因果(),
+                    (long)SuperSkillID.樱花无双击 => new 樱花无双击(),
+                    (long)SuperSkillID.漆黑之牙 => new 漆黑之牙(),
                     (long)PassiveID.META马 => new META马(),
                     (long)PassiveID.心灵之弦 => new 心灵之弦(),
                     (long)PassiveID.蚀魂震击 => new 蚀魂震击(),

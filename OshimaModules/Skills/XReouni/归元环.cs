@@ -35,7 +35,7 @@ namespace Oshima.FunGame.OshimaModules.Skills
 
         public override void OnEffectGained(Character character)
         {
-            if (character.Effects.Where(e => e is 八卦阵特效).FirstOrDefault() is 八卦阵特效 e)
+            if (character.Effects.Where(e => e is 八卦阵特效 && e.Skill.Character == character).FirstOrDefault() is 八卦阵特效 e)
             {
                 e.归元 = true;
             }
@@ -43,7 +43,7 @@ namespace Oshima.FunGame.OshimaModules.Skills
 
         public override void OnEffectLost(Character character)
         {
-            if (character.Effects.Where(e => e is 八卦阵特效).FirstOrDefault() is 八卦阵特效 e)
+            if (character.Effects.Where(e => e is 八卦阵特效 && e.Skill.Character == character).FirstOrDefault() is 八卦阵特效 e)
             {
                 e.归元 = false;
             }

@@ -52,7 +52,7 @@ namespace Oshima.FunGame.OshimaModules.Skills
             character.ExATK2 += 实际的攻击力提升;
             character.PhysicalPenetration += 实际的物理穿透提升;
             character.ExEvadeRate += 实际的闪避率提升;
-            if (character.Effects.Where(e => e is 心灵之弦特效).FirstOrDefault() is 心灵之弦特效 e)
+            if (character.Effects.FirstOrDefault(e => e is 心灵之弦特效 && e.Skill.Character == character) is 心灵之弦特效 e)
             {
                 e.基础冷却时间 = 3;
                 if (e.冷却时间 > e.基础冷却时间) e.冷却时间 = e.基础冷却时间;
@@ -64,7 +64,7 @@ namespace Oshima.FunGame.OshimaModules.Skills
             character.ExATK2 -= 实际的攻击力提升;
             character.PhysicalPenetration -= 实际的物理穿透提升;
             character.ExEvadeRate -= 实际的闪避率提升;
-            if (character.Effects.Where(e => e is 心灵之弦特效).FirstOrDefault() is 心灵之弦特效 e)
+            if (character.Effects.FirstOrDefault(e => e is 心灵之弦特效 && e.Skill.Character == character) is 心灵之弦特效 e)
             {
                 e.基础冷却时间 = 10;
             }

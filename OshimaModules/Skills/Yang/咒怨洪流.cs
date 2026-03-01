@@ -44,7 +44,7 @@ namespace Oshima.FunGame.OshimaModules.Skills
         {
             实际比例 = 减伤比例;
             character.NormalAttack.SetMagicType(new(this, true, MagicType.None, 999), GamingQueue);
-            if (character.Effects.Where(e => e is 蚀魂震击特效).FirstOrDefault() is 蚀魂震击特效 e)
+            if (character.Effects.Where(e => e is 蚀魂震击特效 && e.Skill.Character == character).FirstOrDefault() is 蚀魂震击特效 e)
             {
                 e.基础冷却时间 = 5;
                 if (e.冷却时间 > e.基础冷却时间) e.冷却时间 = e.基础冷却时间;
@@ -55,7 +55,7 @@ namespace Oshima.FunGame.OshimaModules.Skills
         {
             实际比例 = 0;
             character.NormalAttack.UnsetMagicType(this, GamingQueue);
-            if (character.Effects.Where(e => e is 蚀魂震击特效).FirstOrDefault() is 蚀魂震击特效 e)
+            if (character.Effects.Where(e => e is 蚀魂震击特效 && e.Skill.Character == character).FirstOrDefault() is 蚀魂震击特效 e)
             {
                 e.基础冷却时间 = 10;
             }

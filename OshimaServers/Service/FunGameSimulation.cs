@@ -122,6 +122,13 @@ namespace Oshima.FunGame.OshimaServers.Service
                             passive.Level = 1;
                             c.Skills.Add(passive);
                         }
+                        foreach (Skill skillLoop in FunGameConstant.CommonSuperSkills.OrderBy(o => Random.Shared.Next()).Take(3))
+                        {
+                            Skill super = skillLoop.Copy();
+                            super.Character = c;
+                            super.Level = slevel;
+                            c.Skills.Add(super);
+                        }
                         foreach (Effect e in c.Effects)
                         {
                             e.OnEffectLost(c);
