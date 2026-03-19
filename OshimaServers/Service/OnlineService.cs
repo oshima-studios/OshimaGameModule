@@ -1,4 +1,5 @@
-﻿using Milimoe.FunGame.Core.Api.Utility;
+﻿using System.Collections.Concurrent;
+using Milimoe.FunGame.Core.Api.Utility;
 using Milimoe.FunGame.Core.Entity;
 using Milimoe.FunGame.Core.Library.Constant;
 using Oshima.FunGame.OshimaModules.Models;
@@ -11,7 +12,7 @@ namespace Oshima.FunGame.OshimaServers.Service
         public static SemaphoreSlim RoomSemaphoreSlim { get; } = new(1, 1);
         public static SemaphoreSlim HorseRacingSettleSemaphoreSlim { get; } = new(1, 1);
         public static SemaphoreSlim CooperativeSettleSemaphoreSlim { get; } = new(1, 1);
-        public static Dictionary<string, bool> GroupsHasHorseRacing { get; } = [];
+        public static ConcurrentDictionary<string, bool> GroupsHasHorseRacing { get; } = [];
 
         public static void GetRoomSemaphoreSlim()
         {
@@ -222,9 +223,9 @@ namespace Oshima.FunGame.OshimaServers.Service
                         User[] users = [.. room.UserAndIsReady.Keys.Where(u => u.Id == user.Id)];
                         foreach (User userTemp in users)
                         {
-                            room.UserAndIsReady.Remove(userTemp);
+                            room.UserAndIsReady.Remove(userTemp, out _);
                         }
-                        if (room.UserAndIsReady.Count == 0)
+                        if (room.UserAndIsReady.IsEmpty)
                         {
                             FunGameConstant.Rooms.Remove(room.Roomid);
                             msg += "，该房间人数为零，已解散该房间。";
