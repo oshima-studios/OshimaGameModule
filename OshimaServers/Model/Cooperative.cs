@@ -122,8 +122,8 @@ namespace Oshima.FunGame.OshimaServers.Model
                         // 开始战斗
                         Team team1 = new($"房间{room.Roomid}", characters.Values);
                         Team team2 = new($"{region.Name}", enemys);
-                        FunGameActionQueue actionQueue = new();
-                        List<string> gameMsgs = await actionQueue.StartTeamGame([team1, team2], showAllRound: true);
+                        FunGameActionQueue actionQueue = await FunGameActionQueue.NewAndStartTeamGame([team1, team2], showAllRound: true);
+                        List<string> gameMsgs = actionQueue.Result;
                         if (gameMsgs.Count > 15)
                         {
                             gameMsgs = gameMsgs[^15..];

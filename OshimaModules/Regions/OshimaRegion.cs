@@ -53,34 +53,53 @@ namespace Oshima.FunGame.OshimaModules.Regions
             builder.AppendLine($"温度：{Temperature} ℃");
             builder.AppendLine($"{Description}");
 
+            if (Areas.Count > 0)
+            {
+                builder.AppendLine($"== 区域 ==");
+                builder.AppendLine(string.Join("、", Areas));
+            }
+
             if (Characters.Count > 0)
             {
                 builder.AppendLine($"== 头目 ==");
-                builder.AppendLine(string.Join("，", Characters.Select(c => c.Name)));
+                builder.AppendLine(string.Join("、", Characters.Select(c => c.Name)));
             }
 
             if (Units.Count > 0)
             {
                 builder.AppendLine($"== 生物 ==");
-                builder.AppendLine(string.Join("，", Units.Select(u => u.Name)));
+                builder.AppendLine(string.Join("、", Units.Select(u => u.Name)));
             }
 
             if (Crops.Count > 0)
             {
                 builder.AppendLine($"== 作物 ==");
-                builder.AppendLine(string.Join("，", Crops.Select(i => i.Name + "：" + i.Description + "\"" + i.BackgroundStory + "\"")));
+                builder.AppendLine(string.Join("、", Crops.Select(i => i.Name + "：" + i.Description + "\"" + i.BackgroundStory + "\"")));
+            }
+
+            if (NPCs.Count > 0)
+            {
+                builder.AppendLine($"== NPC ==");
+                builder.AppendLine(string.Join("、", NPCs));
             }
 
             if (Items.Count > 0)
             {
                 builder.AppendLine($"== 掉落 ==");
-                builder.AppendLine(string.Join("，", Items.Select(i =>
+                builder.AppendLine(string.Join("、", Items.Select(i =>
                 {
                     string itemquality = ItemSet.GetQualityTypeName(i.QualityType);
                     string itemtype = ItemSet.GetItemTypeName(i.ItemType) + (i.ItemType == ItemType.Weapon && i.WeaponType != WeaponType.None ? "-" + ItemSet.GetWeaponTypeName(i.WeaponType) : "");
                     if (itemtype != "") itemtype = $"|{itemtype}";
                     return $"[{itemquality + itemtype}]{i.Name}";
                 })));
+            }
+
+            Dictionary<string, QuestExploration> quests = ContinuousQuestList.Union(ImmediateQuestList).Union(ProgressiveQuestList).ToDictionary();
+            if (quests.Count > 0)
+            {
+                builder.AppendLine($"== 任务 ==");
+                builder.AppendLine(string.Join("、", quests.Select(q => $"{q.Key}：{q.Value.Description}")));
             }
 
             builder.AppendLine($"探索难度：{CharacterSet.GetRarityTypeName(Difficulty)}");

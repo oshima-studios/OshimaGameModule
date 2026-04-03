@@ -2095,7 +2095,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
                 {
                     user1.Inventory.MainCharacter.Recovery(EP: 200);
                     user2.Inventory.MainCharacter.Recovery(EP: 200);
-                    return await FunGameActionQueue.NewAndStartGame([user1.Inventory.MainCharacter, user2.Inventory.MainCharacter], 0, 0, false, false, false, false, showAllRound);
+                    return (await FunGameActionQueue.NewAndStartGame([user1.Inventory.MainCharacter, user2.Inventory.MainCharacter], 0, 0, false, false, false, false, showAllRound)).Result;
                 }
                 else
                 {
@@ -2191,7 +2191,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
                     }
                     Team team1 = new($"{user1.Username}的小队", squad1);
                     Team team2 = new($"{user2.Username}的小队" + (userid == enemyid ? "2" : ""), squad2);
-                    return await FunGameActionQueue.NewAndStartTeamGame([team1, team2], 0, 0, false, false, false, false, showAllRound);
+                    return (await FunGameActionQueue.NewAndStartTeamGame([team1, team2], 0, 0, false, false, false, false, showAllRound)).Result;
                 }
                 else
                 {
@@ -4127,7 +4127,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
                     }
 
                     Character boss2 = CharacterBuilder.Build(boss, false, true, null, FunGameConstant.AllItems, FunGameConstant.AllSkills, false);
-                    List<string> msgs = await FunGameActionQueue.NewAndStartGame([user.Inventory.MainCharacter, boss2], 0, 0, false, false, false, false, showAllRound);
+                    List<string> msgs = (await FunGameActionQueue.NewAndStartGame([user.Inventory.MainCharacter, boss2], 0, 0, false, false, false, false, showAllRound)).Result;
 
                     if (boss2.HP <= 0)
                     {
@@ -4397,7 +4397,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
                     Character boss2 = CharacterBuilder.Build(boss, false, true, null, FunGameConstant.AllItems, FunGameConstant.AllSkills, false);
                     Team team1 = new($"{user.Username}的小队", squad);
                     Team team2 = new($"Boss", [boss2]);
-                    List<string> msgs = await FunGameActionQueue.NewAndStartTeamGame([team1, team2], showAllRound: showAllRound);
+                    List<string> msgs = (await FunGameActionQueue.NewAndStartTeamGame([team1, team2], showAllRound: showAllRound)).Result;
 
                     if (boss2.HP <= 0)
                     {

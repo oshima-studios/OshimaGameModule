@@ -1785,7 +1785,7 @@ namespace Oshima.FunGame.OshimaServers.Service
                 CharacterStatistics[]? teammateStats = null;
                 if (isTeam)
                 {
-                    team = teams.Where(t => t.IsOnThisTeam(character)).FirstOrDefault();
+                    team = teams.FirstOrDefault(t => t.IsOnThisTeam(character));
                     if (team != null)
                     {
                         teammateStats = [.. statistics.Where(kv => team.Members.Contains(kv.Key)).Select(kv => kv.Value)];
@@ -2940,8 +2940,8 @@ namespace Oshima.FunGame.OshimaServers.Service
                         // 开始战斗
                         Team team1 = new($"{user.Username}的探索小队", squad);
                         Team team2 = new($"{region.Name}", enemys);
-                        FunGameActionQueue actionQueue = new();
-                        List<string> msgs = await actionQueue.StartTeamGame([team1, team2], showAllRound: true);
+                        FunGameActionQueue actionQueue = await FunGameActionQueue.NewAndStartTeamGame([team1, team2], showAllRound: true);
+                        List<string> msgs = actionQueue.Result;
                         if (msgs.Count > 2)
                         {
                             msgs = msgs[^2..];
@@ -3884,8 +3884,8 @@ namespace Oshima.FunGame.OshimaServers.Service
                 _ => ""
             } + "秘境";
             Team team2 = new(team2Name, enemys);
-            FunGameActionQueue actionQueue = new();
-            List<string> msgs = await actionQueue.StartTeamGame([team1, team2], showAllRound: true);
+            FunGameActionQueue actionQueue = await FunGameActionQueue.NewAndStartTeamGame([team1, team2], showAllRound: true);
+            List<string> msgs = actionQueue.Result;
             if (msgs.Count > 2)
             {
                 msgs = msgs[^2..];

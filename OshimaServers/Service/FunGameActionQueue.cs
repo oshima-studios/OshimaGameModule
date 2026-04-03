@@ -16,7 +16,7 @@ namespace Oshima.FunGame.OshimaServers.Service
 
         private string _msg = "";
 
-        public async Task<List<string>> StartGame(List<Character> characters, int maxRespawnTimes = 0, int maxScoreToWin = 0, bool printout = false, bool isWeb = false, bool deathMatchRoundDetail = false, bool showRoundEndDetail = false, bool showAllRound = false)
+        public List<string> StartGame(List<Character> characters, int maxRespawnTimes = 0, int maxScoreToWin = 0, bool printout = false, bool isWeb = false, bool deathMatchRoundDetail = false, bool showRoundEndDetail = false, bool showAllRound = false)
         {
             Result.Clear();
             PrintOut = printout;
@@ -229,7 +229,7 @@ namespace Oshima.FunGame.OshimaServers.Service
             }
         }
 
-        public async Task<List<string>> StartTeamGame(List<Team> teams, int maxRespawnTimes = 0, int maxScoreToWin = 0, bool printout = false, bool isWeb = false, bool deathMatchRoundDetail = false, bool showRoundEndDetail = false, bool showAllRound = false)
+        public List<string> StartTeamGame(List<Team> teams, int maxRespawnTimes = 0, int maxScoreToWin = 0, bool printout = false, bool isWeb = false, bool deathMatchRoundDetail = false, bool showRoundEndDetail = false, bool showAllRound = false)
         {
             Result.Clear();
             PrintOut = printout;
@@ -426,14 +426,18 @@ namespace Oshima.FunGame.OshimaServers.Service
             if (PrintOut) Console.WriteLine(str);
         }
 
-        public static async Task<List<string>> NewAndStartGame(List<Character> characters, int maxRespawnTimes = 0, int maxScoreToWin = 0, bool printout = false, bool isWeb = false, bool deathMatchRoundDetail = false, bool showRoundEndDetail = false, bool showAllRound = false)
+        public static async Task<FunGameActionQueue> NewAndStartGame(List<Character> characters, int maxRespawnTimes = 0, int maxScoreToWin = 0, bool printout = false, bool isWeb = false, bool deathMatchRoundDetail = false, bool showRoundEndDetail = false, bool showAllRound = false)
         {
-            return await new FunGameActionQueue().StartGame(characters, maxRespawnTimes, maxScoreToWin, printout, isWeb, deathMatchRoundDetail, showRoundEndDetail, showAllRound);
+            FunGameActionQueue actionQueue = new();
+            await Task.Run(() => actionQueue.StartGame(characters, maxRespawnTimes, maxScoreToWin, printout, isWeb, deathMatchRoundDetail, showRoundEndDetail, showAllRound));
+            return actionQueue;
         }
 
-        public static async Task<List<string>> NewAndStartTeamGame(List<Team> teams, int maxRespawnTimes = 0, int maxScoreToWin = 0, bool printout = false, bool isWeb = false, bool deathMatchRoundDetail = false, bool showRoundEndDetail = false, bool showAllRound = false)
+        public static async Task<FunGameActionQueue> NewAndStartTeamGame(List<Team> teams, int maxRespawnTimes = 0, int maxScoreToWin = 0, bool printout = false, bool isWeb = false, bool deathMatchRoundDetail = false, bool showRoundEndDetail = false, bool showAllRound = false)
         {
-            return await new FunGameActionQueue().StartTeamGame(teams, maxRespawnTimes, maxScoreToWin, printout, isWeb, deathMatchRoundDetail, showRoundEndDetail, showAllRound);
+            FunGameActionQueue actionQueue = new();
+            await Task.Run(() => actionQueue.StartTeamGame(teams, maxRespawnTimes, maxScoreToWin, printout, isWeb, deathMatchRoundDetail, showRoundEndDetail, showAllRound));
+            return actionQueue;
         }
     }
 }
