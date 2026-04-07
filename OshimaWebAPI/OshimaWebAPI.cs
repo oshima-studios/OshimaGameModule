@@ -35,7 +35,7 @@ namespace Oshima.FunGame.WebAPI
 
         private IServiceScopeFactory? _serviceScopeFactory = null;
 
-        public override void ProcessInput(string input)
+        public override void ProcessInput(string order, string[] args)
         {
             // RainBOT 测试
             using (IServiceScope? scope = _serviceScopeFactory?.CreateScope())
@@ -47,7 +47,7 @@ namespace Oshima.FunGame.WebAPI
 
                     try
                     {
-                        if (input.Trim() != "")
+                        if (order.Trim() != "")
                         {
                             // 获取 RainBOTService 实例
                             RainBOTService bot = serviceProvider.GetRequiredService<RainBOTService>();
@@ -57,7 +57,7 @@ namespace Oshima.FunGame.WebAPI
                                 GroupOpenId = "1",
                                 AuthorOpenId = "1",
                                 OpenId = "1",
-                                Detail = input,
+                                Detail = order,
                                 Id = "1",
                                 Timestamp = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")
                             };
@@ -71,7 +71,7 @@ namespace Oshima.FunGame.WebAPI
                             }
                         }
 
-                        if (input == "test")
+                        if (order == "test")
                         {
                             //FunGameController funGameController = serviceProvider.GetRequiredService<FunGameController>();
                             //Controller.WriteLine(Controller.JSON.GetObject<string>(funGameController.ShowDailyStore(1)) ?? "test");
@@ -84,7 +84,7 @@ namespace Oshima.FunGame.WebAPI
                 }
             }
 
-            if (input == "testuser")
+            if (order == "testuser")
             {
                 using SQLHelper? sql = Controller.GetSQLHelper();
                 if (sql != null)

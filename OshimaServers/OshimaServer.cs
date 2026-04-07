@@ -19,13 +19,13 @@ namespace Oshima.FunGame.OshimaServers
 
         public override string Author => OshimaGameModuleConstant.Author;
 
-        public override async void ProcessInput(string input)
+        public override async void ProcessInput(string order, string[] args)
         {
             // OSM指令
-            if (input.StartsWith(".osm", StringComparison.CurrentCultureIgnoreCase))
+            if (order.StartsWith(".osm", StringComparison.CurrentCultureIgnoreCase))
             {
                 //MasterCommand.Execute(read, GeneralSettings.Master, false, GeneralSettings.Master, false);
-                Controller.WriteLine("试图使用 .osm 指令：" + input);
+                Controller.WriteLine("试图使用 .osm 指令：" + order);
             }
         }
 
