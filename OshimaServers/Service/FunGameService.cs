@@ -2607,7 +2607,7 @@ namespace Oshima.FunGame.OshimaServers.Service
                     if (userActivities.Values.FirstOrDefault(a => a.Id == id) is Activity userActivity)
                     {
                         if (result != "") result += "\r\n";
-                        result += userActivity.ToString(true, true);
+                        result += GetActivityString(userActivity, true, true);
                     }
                 }
                 return result;
@@ -4971,6 +4971,100 @@ namespace Oshima.FunGame.OshimaServers.Service
                 builder.AppendLine($"☆--- 物品信息 ---☆\r\n{newItem.ToString(false, true)}");
             }
             return builder.ToString().Trim();
+        }
+
+        public static bool ExecuteImmediateQuest(User user, Quest quest, out string result, Activity? activity = null)
+        {
+            result = "在任务过程中，你碰巧遇到了米莉，任务直接完成了！";
+            return true;
+        }
+
+        public static string SettleActivityQuest(User user, Activity activity, Quest quest)
+        {
+            if (quest.AwardsString != "")
+            {
+                if (quest.CreditsAward > 0)
+                {
+                    user.Inventory.Credits += quest.CreditsAward;
+                }
+                if (quest.MaterialsAward > 0)
+                {
+                    user.Inventory.Materials += quest.MaterialsAward;
+                }
+                foreach (Item item in quest.Awards)
+                {
+                    if (quest.AwardsCount.TryGetValue(item.Name, out int qty))
+                    {
+                        for (int i = 0; i < qty; i++)
+                        {
+                            if (FunGameConstant.AllItems.FirstOrDefault(i => i.Name == item.Name) != null)
+                            {
+                                AddItemToUserInventory(user, item, copyLevel: item.ItemType == ItemType.MagicCard);
+                            }
+                        }
+                    }
+                }
+                return $"活动【{activity.Name}】的任务【{quest.Name}】已结算，获得奖励：【{quest.AwardsString}】!";
+            }
+            return "";
+        }
+
+        public static string GetActivityString(Activity activity, bool showQuests, bool isSubActivity = false, User? user = null)
+        {
+            activity.UpdateState();
+            StringBuilder builder = new();
+
+            if (!isSubActivity)
+            {
+                builder.AppendLine($"☆--- {activity.Name} ---☆");
+            }
+            else
+            {
+                builder.AppendLine($"==[ {activity.Name} ]==");
+            }
+
+            builder.AppendLine($"{activity.Description}");
+            builder.AppendLine($"活动状态：{CommonSet.GetActivityStatus(activity.Status)}");
+            builder.AppendLine(activity.GetTimeString(!isSubActivity));
+
+            if (showQuests && activity.Quests.Count > 0)
+            {
+                builder.AppendLine("=== 任务列表 ===");
+                builder.AppendLine(string.Join("\r\n", activity.Quests.Select(q => GetQuestString(q, activity, user))));
+            }
+
+            return builder.ToString().Trim();
+        }
+
+        public static string GetQuestString(Quest quest, Activity? activity = null, User? user = null)
+        {
+            string progressString = "";
+            if (quest.QuestType == QuestType.Progressive)
+            {
+                progressString = $"\r\n当前进度：{quest.Progress}/{quest.MaxProgress}";
+            }
+
+            string str = $"{quest.Id}. {quest.Name}\r\n" +
+                   $"{quest.Description}\r\n" +
+                   (quest.QuestType == QuestType.Continuous ? $"需要时间：{quest.EstimatedMinutes} 分钟\r\n" : "") +
+                   (quest.StartTime.HasValue ? $"开始时间：{quest.StartTime.Value.ToString(General.GeneralDateTimeFormatChinese)}" +
+                       (quest.Status == QuestState.InProgress && quest.QuestType == QuestType.Continuous ?
+                       $"\r\n预计在 {Math.Max(Math.Round((quest.StartTime.Value.AddMinutes(quest.EstimatedMinutes) - DateTime.Now).TotalMinutes, MidpointRounding.ToPositiveInfinity), 1)} 分钟后完成" : "")
+                       + "\r\n"
+                   : "") +
+                   $"完成奖励：{quest.AwardsString}\r\n" +
+                   $"任务状态：";
+
+            if (activity != null && user != null && activity.QuestsAwardedUsers.TryGetValue(quest.Id, out HashSet<long>? value) && (value?.Contains(user.Id) ?? false))
+            {
+                str += CommonSet.GetQuestStatus(QuestState.Settled);
+            }
+            else
+            {
+                str += CommonSet.GetQuestStatus(quest.Status);
+            }
+            
+            return str + progressString + (quest.SettleTime.HasValue ? $"\r\n结算时间：{quest.SettleTime.Value.ToString(General.GeneralDateTimeFormatChinese)}" : "");
         }
 
         public static void RefreshNotice()

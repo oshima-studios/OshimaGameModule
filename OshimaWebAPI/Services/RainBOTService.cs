@@ -2561,6 +2561,44 @@ namespace Oshima.FunGame.WebAPI.Services
                     return result;
                 }
 
+                if (e.Detail.StartsWith("做活动任务", StringComparison.CurrentCultureIgnoreCase))
+                {
+                    string detail = e.Detail.Replace("做活动任务", "").Trim();
+                    string[] strings = detail.Split(" ", StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
+                    int aid = -1, qid = -1;
+                    if (strings.Length > 0 && int.TryParse(strings[0].Trim(), out aid) && strings.Length > 1 && int.TryParse(strings[1].Trim(), out qid))
+                    {
+                        if (aid != -1 && qid != -1)
+                        {
+                            string msg = Controller.PerformEvent(uid, aid, qid);
+                            if (msg != "")
+                            {
+                                await SendAsync(e, "做活动任务", msg);
+                            }
+                        }
+                    }
+                    return result;
+                }
+
+                if (e.Detail.StartsWith("领取奖励", StringComparison.CurrentCultureIgnoreCase))
+                {
+                    string detail = e.Detail.Replace("领取奖励", "").Trim();
+                    string[] strings = detail.Split(" ", StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
+                    int aid = -1, qid = -1;
+                    if (strings.Length > 0 && int.TryParse(strings[0].Trim(), out aid) && strings.Length > 1 && int.TryParse(strings[1].Trim(), out qid))
+                    {
+                        if (aid != -1 && qid != -1)
+                        {
+                            string msg = Controller.ClaimEventPrize(uid, aid, qid);
+                            if (msg != "")
+                            {
+                                await SendAsync(e, "领取奖励", msg);
+                            }
+                        }
+                    }
+                    return result;
+                }
+
                 if (e.Detail.StartsWith("批量锁定", StringComparison.CurrentCultureIgnoreCase))
                 {
                     string detail = e.Detail.Replace("批量锁定", "").Trim();

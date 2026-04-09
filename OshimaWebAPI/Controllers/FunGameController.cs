@@ -4538,9 +4538,15 @@ namespace Oshima.FunGame.WebAPI.Controllers
                         else if (quest.QuestType == QuestType.Immediate)
                         {
                             msgs.Add($"开始任务【{quest.Name}】成功！任务信息如下：\r\n{quest}");
-                            // TODO：实现任务逻辑
-                            quest.Status = QuestState.Completed;
-                            msgs.Add("在任务过程中，你碰巧遇到了米莉，任务直接完成了！");
+                            if (FunGameService.ExecuteImmediateQuest(user, quest, out string result))
+                            {
+                                quest.Status = QuestState.Completed;
+                                msgs.Add(result);
+                            }
+                            else
+                            {
+                                msgs.Add("你的任务失败了，重新做一次吧……");
+                            }
                         }
                         else if (quest.QuestType == QuestType.Progressive)
                         {
@@ -6571,6 +6577,109 @@ namespace Oshima.FunGame.WebAPI.Controllers
             if (pc.Count > 0)
             {
                 User user = FunGameService.GetUser(pc);
+
+                FunGameService.GetEventCenter(user);
+                if (FunGameService.Activities.FirstOrDefault(a => a.Id == activityid) is Activity activity && activity.Quests.FirstOrDefault(q => q.Id == questid) is Quest quest)
+                {
+                    if (quest.QuestType == QuestType.Immediate)
+                    {
+                        if (activity.HasUserAwarded(user.Id, quest))
+                        {
+                            msg = "你已经结算过该任务的奖励了！请检查活动详情。";
+                        }
+                        else if (quest.Status != QuestState.NotStarted)
+                        {
+                            msg = "现在还不可以做这个任务。";
+                        }
+                        else if (FunGameService.ExecuteImmediateQuest(user, quest, out string result, activity))
+                        {
+                            string awardString = FunGameService.SettleActivityQuest(user, activity, quest);
+                            if (awardString != "")
+                            {
+                                msg = awardString;
+                                activity.RegisterAwardedUser(user.Id, quest);
+                            }
+                            if (result != "")
+                            {
+                                msg = result + "\r\n" + msg;
+                            }
+                            if (msg == "")
+                            {
+                                msg = "任务无法进行，请联系服务器管理员。";
+                            }
+                        }
+                    }
+                    else
+                    {
+                        msg = $"请根据任务要求完成任务：\r\n{quest}。";
+                    }
+                }
+                else
+                {
+                    msg = "找不到符合条件的活动/任务。";
+                }
+
+                FunGameService.SetUserConfigAndReleaseSemaphoreSlim(userid, pc, user);
+
+                return msg;
+            }
+            else
+            {
+                FunGameService.ReleaseUserSemaphoreSlim(userid);
+                return noSaved;
+            }
+        }
+
+        [HttpPost("claimeventprize")]
+        public string ClaimEventPrize([FromQuery] long? uid = null, [FromQuery] long? aid = null, [FromQuery] long? qid = null)
+        {
+            long userid = uid ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
+            long activityid = aid ?? 0;
+            long questid = qid ?? 0;
+
+            PluginConfig pc = FunGameService.GetUserConfig(userid, out _);
+
+            string msg = "";
+            if (pc.Count > 0)
+            {
+                User user = FunGameService.GetUser(pc);
+
+                FunGameService.GetEventCenter(user);
+                if (FunGameService.Activities.FirstOrDefault(a => a.Id == activityid) is Activity activity && activity.Quests.FirstOrDefault(q => q.Id == questid) is Quest quest)
+                {
+                    if (quest.QuestType == QuestType.Progressive || quest.QuestType == QuestType.Continuous)
+                    {
+                        if (activity.HasUserAwarded(user.Id, quest))
+                        {
+                            msg = "你已经结算过该任务的奖励了！请检查活动详情。";
+                        }
+                        else if (quest.Status != QuestState.Completed)
+                        {
+                            msg = $"该任务还未完成。\r\n{quest}";
+                        }
+                        else
+                        {
+                            string awardString = FunGameService.SettleActivityQuest(user, activity, quest);
+                            if (awardString != "")
+                            {
+                                msg = awardString;
+                                activity.RegisterAwardedUser(user.Id, quest);
+                            }
+                            else
+                            {
+                                msg = "无法领取该任务的奖励。";
+                            }
+                        }
+                    }
+                    else
+                    {
+                        msg = "该任务只能通过【做活动任务】指令完成并领取奖励。";
+                    }
+                }
+                else
+                {
+                    msg = "找不到符合条件的活动/任务。";
+                }
 
                 FunGameService.SetUserConfigAndReleaseSemaphoreSlim(userid, pc, user);
 
