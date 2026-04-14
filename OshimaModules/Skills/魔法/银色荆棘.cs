@@ -45,7 +45,7 @@ namespace Oshima.FunGame.OshimaModules.Skills
         public override long Id => Skill.Id;
         public override string Name => Skill.Name;
         public override string Description => $"对{Skill.TargetDescription()}造成 {Damage:0.##} 点{CharacterSet.GetDamageTypeName(DamageType.Magical, MagicType)}。" +
-            $"随后 {ActualConfusionProbability * 100:0.##}% 概率对目标施加混乱状态，持续 {持续时间}。混乱：进入行动受限状态，失控并随机行动，且在进行攻击指令时，可能会选取友方角色为目标。";
+            $"随后 {ActualConfusionProbability * 100:0.##}% 概率对目标施加混乱状态，持续 {持续时间}。混乱：进入行动受限状态，失控并随机行动，且所有指令均会在所有角色中随机选取目标。";
         public override DispelledType DispelledType => DispelledType.Strong;
         public override EffectType EffectType => EffectType.Confusion;
         public override bool ExemptDuration => true;

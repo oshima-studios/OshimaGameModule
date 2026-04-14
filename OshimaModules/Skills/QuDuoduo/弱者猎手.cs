@@ -39,7 +39,7 @@ namespace Oshima.FunGame.OshimaModules.Skills
             return 0;
         }
 
-        public override void AlterSelectListBeforeSelection(Character character, ISkill skill, List<Character> enemys, List<Character> teammates)
+        public override void AlterSelectListBeforeSelection(Character character, ISkill skill, List<Character> allEnemys, List<Character> allTeammates, List<Character> enemys, List<Character> teammates)
         {
             猎手标记.Clear();
             AddHalfOfMe([.. enemys.Where(e => e.HP > 0).OrderBy(e => e.HP / e.MaxHP)]);

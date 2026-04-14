@@ -53,7 +53,7 @@ namespace Oshima.FunGame.OshimaModules.Effects.PassiveEffects
             }
         }
 
-        public override void AlterSelectListBeforeSelection(Character character, ISkill skill, List<Character> enemys, List<Character> teammates)
+        public override void AlterSelectListBeforeSelection(Character character, ISkill skill, List<Character> allEnemys, List<Character> allTeammates, List<Character> enemys, List<Character> teammates)
         {
             if (skill is NormalAttack)
             {

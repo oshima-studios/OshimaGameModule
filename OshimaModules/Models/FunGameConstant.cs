@@ -91,7 +91,7 @@ namespace Oshima.FunGame.OshimaModules.Models
 
             CommonPassiveSkills.AddRange([new 征服者(), new 致命节奏(), new 强攻(), new 电刑(), new 黑暗收割(), new 迅捷步法(), new 贪欲猎手()]);
 
-            CommonSuperSkills.AddRange([new 樱花无双击(), new 漆黑之牙()]);
+            CommonSuperSkills.AddRange([new 樱花无双击(), new 漆黑之牙(), new 女王之怒(), new 裁决塔罗(), new 光明之环(), new 圣星光旋()]);
 
             Magics.AddRange([new 冰霜攻击(), new 火之矢(), new 水之矢(), new 风之轮(), new 石之锤(), new 心灵之霞(), new 次元上升(), new 暗物质(),
                 new 回复术(), new 治愈术(), new 复苏术(), new 圣灵术(), new 时间加速(), new 时间减速(), new 反魔法领域(), new 沉默十字(), new 虚弱领域(), new 混沌烙印(), new 凝胶稠絮(),

@@ -27,17 +27,5 @@ namespace Oshima.FunGame.OshimaModules.Skills
             Effects.Add(new 强驱散特效(this));
             Effects.Add(new 纯数值回复生命(this, 380, 270, true));
         }
-
-        public override List<Character> GetSelectableTargets(Character caster, List<Character> enemys, List<Character> teammates)
-        {
-            List<Character> targets = base.GetSelectableTargets(caster, enemys, teammates);
-            if (GamingQueue != null)
-            {
-                // 从死亡队列中获取队友，加入目标列表。
-                Dictionary<Character, bool> deaths = GamingQueue.GetIsTeammateDictionary(caster, GamingQueue.Eliminated);
-                targets = [.. targets.Union(deaths.Where(kv => kv.Value).Select(kv => kv.Key)).Distinct()];
-            }
-            return targets;
-        }
     }
 }

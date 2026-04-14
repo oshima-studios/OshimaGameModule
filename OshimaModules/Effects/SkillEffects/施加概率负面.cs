@@ -230,7 +230,7 @@ namespace Oshima.FunGame.OshimaModules.Effects.SkillEffects
                     break;
                 case EffectType.Confusion:
                     _dispelledType = DispelledType.Strong;
-                    _description = "混乱：进入行动受限状态，失控并随机行动，且在进行攻击指令时，可能会选取友方角色为目标。";
+                    _description = "混乱：进入行动受限状态，失控并随机行动，且所有指令均会在所有角色中随机选取目标。";
                     break;
                 case EffectType.Taunt:
                     _dispelledType = DispelledType.Strong;
