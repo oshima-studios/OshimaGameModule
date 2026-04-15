@@ -35,7 +35,7 @@ namespace Oshima.FunGame.OshimaModules.Skills
         public override string Description => $"对{Skill.TargetDescription()}施加强驱散，并基于{(Skill.Character != null ? CharacterSet.GetPrimaryAttributeName(Skill.Character.PrimaryAttribute) : "核心属性")}的 {PACoefficient * 100:0.##}% 治疗或复苏{Skill.TargetDescription()}，回复 {Heal:0.##} 点生命值。" +
             (Improvement > 0 ? $"灵魂绑定额外效果：增加目标 {Improvement / 2 * 100:0.##}% 物理伤害减免和魔法抗性，持续 2 回合。" : "") + $"复苏：如果目标已死亡，则复活目标。复苏只能至多回复至其最大生命值的 20%。";
 
-        public double PACoefficient => 1.35 + 0.35 * (Skill.Level - 1);
+        public double PACoefficient => 1.35 + 0.65 * (Skill.Level - 1);
         public double Heal => (Skill.Character?.PrimaryAttributeValue ?? 0) * PACoefficient;
 
         public override void OnSkillCasted(Character caster, List<Character> targets, List<Grid> grids, Dictionary<string, object> others)
@@ -70,6 +70,7 @@ namespace Oshima.FunGame.OshimaModules.Skills
                         RemainDurationTurn = 2,
                         IsDebuff = false
                     };
+                    target.Effects.Add(e);
                     e.OnEffectGained(target);
                     RecordCharacterApplyEffects(target, EffectType.DefenseBoost);
                     WriteLine($"[ {target} ] 提升了 {dr * 100:0.##}% 物理伤害减免和魔法抗性！");
