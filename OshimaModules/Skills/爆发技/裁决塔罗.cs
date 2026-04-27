@@ -84,6 +84,11 @@ namespace Oshima.FunGame.OshimaModules.Skills
                         1 => new 施加概率负面(Skill, EffectType.Confusion, false, 0, DurationTurn, 0, 1, 0),
                         _ => new 施加概率负面(Skill, EffectType.Cripple, true, Duration, 0, 0, 1, 0),
                     };
+                    if (e.EffectType == EffectType.Freeze)
+                    {
+                        e.OnSkillCasted(caster, [target], grids, others);
+                        e = new 施加概率负面(Skill, EffectType.Vulnerable, false, 0, DurationTurn, 0, 1, 0, DamageType.Magical, 0.3);
+                    }
                     e.OnSkillCasted(caster, [target], grids, others);
                 }
             }
