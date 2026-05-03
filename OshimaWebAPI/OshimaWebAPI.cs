@@ -57,7 +57,7 @@ namespace Oshima.FunGame.WebAPI
                                 GroupOpenId = "1",
                                 AuthorOpenId = "1",
                                 OpenId = "1",
-                                Detail = order,
+                                Detail = order + (args.Length > 0 ? (" " + string.Join(" ", args).Trim()) : ""),
                                 Id = "1",
                                 Timestamp = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")
                             };

@@ -2549,14 +2549,26 @@ namespace Oshima.FunGame.OshimaServers.Service
                     }
                     ActivitiesEventCache.RemoveAll(willRemove.Contains);
                 }
+                foreach (Activity activity in Activities)
+                {
+                    if (user != null && (activity.Status == ActivityState.InProgress || activity.Status == ActivityState.Ended))
+                    {
+                        if (SettleQuest(user, activity.Quests, activity))
+                        {
+                            update = true;
+                        }
+                    }
+                    if (activity.Predecessor != -1 && Activities.FirstOrDefault(a => a.Id == activity.Predecessor) is Activity preActivity)
+                    {
+                        activity.PredecessorStatus = preActivity.Status;
+                        activity.UpdateState();
+                        update = true;
+                    }
+                }
                 if (update)
                 {
                     foreach (Activity activity in Activities)
                     {
-                        if (user != null && (activity.Status == ActivityState.InProgress || activity.Status == ActivityState.Ended))
-                        {
-                            SettleQuest(user, activity.Quests, activity);
-                        }
                         activities.Add(activity.Id.ToString(), activity);
                     }
                     activities.SaveConfig();
@@ -2565,7 +2577,7 @@ namespace Oshima.FunGame.OshimaServers.Service
             StringBuilder builder = new();
             builder.AppendLine("★☆★ 活动中心 ★☆★");
 
-            ActivityState[] status = [ActivityState.InProgress, ActivityState.Upcoming, ActivityState.Future, ActivityState.Ended];
+            ActivityState[] status = [ActivityState.InProgress, ActivityState.ClaimPeriod, ActivityState.Upcoming, ActivityState.Future, ActivityState.Ended];
             foreach (ActivityState state in status)
             {
                 IEnumerable<Activity> filteredActivities = activities.Values.Where(a => a.Status == state);
@@ -2599,7 +2611,7 @@ namespace Oshima.FunGame.OshimaServers.Service
             GetEventCenter(user);
             if (Activities.FirstOrDefault(a => a.Id == id) is Activity activity)
             {
-                string result = activity.ToString();
+                string result = GetActivityString(activity, true, false, user);
                 if (user != null)
                 {
                     EntityModuleConfig<Activity> userActivities = new("activities", user.Id.ToString());
@@ -2632,6 +2644,20 @@ namespace Oshima.FunGame.OshimaServers.Service
             activities.Remove(activity.Id.ToString());
             activities.SaveConfig();
             return "该活动已删除！";
+        }
+
+        public static void SaveActivities()
+        {
+            lock (Activities)
+            {
+                EntityModuleConfig<Activity> activities = new("activities", "activities");
+                activities.LoadConfig();
+                foreach (Activity activity in Activities)
+                {
+                    activities.Add(activity.Id.ToString(), activity);
+                }
+                activities.SaveConfig();
+            }
         }
 
         public static bool AddEventActivity(Activity activity, EntityModuleConfig<Activity> userActivities)
@@ -4997,10 +5023,7 @@ namespace Oshima.FunGame.OshimaServers.Service
                     {
                         for (int i = 0; i < qty; i++)
                         {
-                            if (FunGameConstant.AllItems.FirstOrDefault(i => i.Name == item.Name) != null)
-                            {
-                                AddItemToUserInventory(user, item, copyLevel: item.ItemType == ItemType.MagicCard);
-                            }
+                            AddItemToUserInventory(user, item, copyLevel: item.ItemType == ItemType.MagicCard);
                         }
                     }
                 }

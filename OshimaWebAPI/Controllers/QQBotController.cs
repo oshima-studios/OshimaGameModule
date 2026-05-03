@@ -22,7 +22,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
         private RainBOTService FungameService { get; set; } = fungameService;
 
         [HttpPost]
-        public IActionResult Post([FromBody] Payload? payload)
+        public async Task<IActionResult> Post([FromBody] Payload? payload)
         {
             if (payload is null)
             {
@@ -40,7 +40,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
                 else if (payload.Op == 0)
                 {
                     // 处理其他事件
-                    return HandleEventAsync(payload);
+                    return await HandleEventAsync(payload);
                 }
                 else
                 {
@@ -95,7 +95,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
             return Ok(response);
         }
 
-        private IActionResult HandleEventAsync(Payload payload)
+        private async Task<IActionResult> HandleEventAsync(Payload payload)
         {
             if (Logger.IsEnabled(LogLevel.Debug)) Logger.LogDebug("处理事件：{EventType}, 数据：{Data}", payload.EventType, payload.Data);
 
@@ -119,21 +119,55 @@ namespace Oshima.FunGame.WebAPI.Controllers
                             }
                             // TODO
                             if (Logger.IsEnabled(LogLevel.Information)) Logger.LogInformation("收到来自用户 {c2cMessage.Author.UserOpenId} 的消息：{c2cMessage.Content}", c2cMessage.Author.UserOpenId, c2cMessage.Content);
-                            //// 上传图片
+                            // 上传图片
                             //string url = $"{Request.Scheme}://{Request.Host}{Request.PathBase}/images/zi/dj1.png";
-                            //var (fileUuid, fileInfo, ttl, error) = await _service.UploadC2CMediaAsync(c2cMessage.Author.UserOpenId, 1, url);
-                            //_if (Logger.IsEnabled(LogLevel.Debug)) Logger.LogDebug("发送的图片地址：{url}", url);
-                            //if (string.IsNullOrEmpty(error))
+                            //UploadMediaResult uploadMediaResult = await Service.UploadC2CMediaAsync(c2cMessage.Author.UserOpenId, 1, url);
+                            //if (Logger.IsEnabled(LogLevel.Debug)) Logger.LogDebug("发送的图片地址：{url}", url);
+                            //if (string.IsNullOrEmpty(uploadMediaResult.Error))
                             //{
                             //    // 回复消息
-                            //    await _service.SendC2CMessageAsync(c2cMessage.Author.UserOpenId, $"你发送的消息是：{c2cMessage.Content}", msgId: c2cMessage.Id);
+                            //    await Service.SendC2CMessageAsync(c2cMessage.Author.UserOpenId, $"你发送的消息是：{c2cMessage.Content}", msgId: c2cMessage.Id);
                             //    // 回复富媒体消息
-                            //    await _service.SendC2CMessageAsync(c2cMessage.Author.UserOpenId, "", msgType: 7, media: new { file_info = fileInfo }, msgId: c2cMessage.Id);
+                            //    await Service.SendC2CMessageAsync(c2cMessage.Author.UserOpenId, "", msgType: 7, media: new { file_info = uploadMediaResult.FileInfo }, msgId: c2cMessage.Id);
                             //}
                             //else
                             //{
-                            //    _if (Logger.IsEnabled(LogLevel.Error)) Logger.LogError("上传图片失败：{error}", error);
+                            //    if (Logger.IsEnabled(LogLevel.Error)) Logger.LogError("上传图片失败：{error}", uploadMediaResult.Error);
                             //}
+                            // 发 md 示例
+                            //// 1. 带蓝字链接
+                            //MarkdownMessage mdMsg = new()
+                            //{
+                            //    Content = "请选择：\n<qqbot-cmd-enter text=\"/签到\"/>"
+                            //};
+                            //// 2. 带按钮
+                            //KeyboardMessage kbMsg = new()
+                            //{
+                            //    Content = new()
+                            //    {
+                            //        Rows = [
+                            //            new()
+                            //            {
+                            //                Buttons = [
+                            //                    new()
+                            //                    {
+                            //                        Id = "btn1",
+                            //                        RenderData = new RenderData { Label = "同意", VisitedLabel = "已同意", Style = 1 },
+                            //                        Action = new Models.Action
+                            //                        {
+                            //                            Type = 2,
+                            //                            Data = "我同意服务条款",
+                            //                            Enter = true,
+                            //                            Reply = false,
+                            //                            Permission = new Permission { Type = 2 }
+                            //                        }
+                            //                    }
+                            //                ]
+                            //            }
+                            //        ]
+                            //    }
+                            //};
+                            //await Service.SendC2CMarkdownAsync(c2cMessage.AuthorOpenId, mdMsg, kbMsg, c2cMessage.Id);
                             TaskUtility.NewTask(async () => await FungameService.Handler(c2cMessage, data));
                         }
                         else

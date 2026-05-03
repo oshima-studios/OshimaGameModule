@@ -6664,6 +6664,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
                             {
                                 msg = awardString;
                                 activity.RegisterAwardedUser(user.Id, quest);
+                                FunGameService.SaveActivities();
                             }
                             else
                             {

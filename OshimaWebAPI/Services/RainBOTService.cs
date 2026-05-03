@@ -45,10 +45,34 @@ namespace Oshima.FunGame.WebAPI.Services
                 content = content.Trim();
                 await Service.SendC2CMessageAsync(msg.OpenId, content, msgType, media, msg.Id, msgSeq);
             }
+            await CheckOfflineNotice(msg);
+        }
+
+        private async Task SendMarkdownAsync(IBotMessage msg, string title, MarkdownMessage mdMsg, KeyboardMessage? kbMsg = null, int? msgSeq = null)
+        {
+            Statics.RunningPlugin?.Controller.WriteLine(title, Milimoe.FunGame.Core.Library.Constant.LogLevel.Debug);
+            if (msg is ThirdPartyMessage third)
+            {
+                third.Result += "\r\n" + mdMsg.Content?.Trim();
+                third.IsCompleted = true;
+            }
+            else if (msg.IsGroup)
+            {
+                await Service.SendGroupMarkdownAsync(msg.OpenId, mdMsg, kbMsg, msg.Id, msgSeq);
+            }
+            else
+            {
+                await Service.SendC2CMarkdownAsync(msg.OpenId, mdMsg, kbMsg, msg.Id, msgSeq);
+            }
+            await CheckOfflineNotice(msg);
+        }
+
+        private async Task CheckOfflineNotice(IBotMessage msg)
+        {
             if (msg.UseNotice && msg.FunGameUID > 0 && FunGameService.UserNotice.TryGetValue(msg.FunGameUID, out HashSet<string>? msgs) && msgs != null)
             {
                 FunGameService.UserNotice.Remove(msg.FunGameUID, out _);
-                await SendAsync(msg, "离线未读信箱", $"☆--- 离线未读信箱 ---☆\r\n{string.Join("\r\n", msgs)}", msgType, null, 5);
+                await SendAsync(msg, "离线未读信箱", $"☆--- 离线未读信箱 ---☆\r\n{string.Join("\r\n", msgs)}", 0, null, 5);
             }
         }
 
@@ -186,9 +210,9 @@ namespace Oshima.FunGame.WebAPI.Services
                         string? err = "";
                         try
                         {
-                            var (fileUuid, fileInfo, ttl, error) = e.IsGroup ? await Service.UploadGroupMediaAsync(e.OpenId, 1, img) : await Service.UploadC2CMediaAsync(e.OpenId, 1, img);
-                            fi = fileInfo;
-                            err = error;
+                            UploadMediaResult uploadMediaResult = e.IsGroup ? await Service.UploadGroupMediaAsync(e.OpenId, 1, img) : await Service.UploadC2CMediaAsync(e.OpenId, 1, img);
+                            fi = uploadMediaResult.FileInfo;
+                            err = uploadMediaResult.Error;
                         }
                         catch (Exception ex)
                         {
