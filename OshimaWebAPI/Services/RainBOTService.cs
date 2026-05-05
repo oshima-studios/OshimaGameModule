@@ -3991,7 +3991,7 @@ namespace Oshima.FunGame.WebAPI.Services
             {
                 Markdown = new()
                 {
-                    Content = $"{subtitle}```\r\n{string.Join("\r\n", msgs)}\r\n```"
+                    Content = $"{subtitle}\r\n```\r\n{string.Join("\r\n", msgs)}\r\n```"
                 }
             };
         }
