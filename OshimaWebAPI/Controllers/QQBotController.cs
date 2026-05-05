@@ -5,8 +5,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using Milimoe.FunGame.Core.Api.Utility;
-using Oshima.FunGame.WebAPI.Models;
+using Oshima.FunGame.OshimaServers.Models;
 using Oshima.FunGame.WebAPI.Services;
 using Rebex.Security.Cryptography;
 
@@ -22,7 +21,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
         private RainBOTService FungameService { get; set; } = fungameService;
 
         [HttpPost]
-        public async Task<IActionResult> Post([FromBody] Payload? payload)
+        public IActionResult Post([FromBody] Payload? payload)
         {
             if (payload is null)
             {
@@ -40,13 +39,13 @@ namespace Oshima.FunGame.WebAPI.Controllers
                 else if (payload.Op == 0)
                 {
                     // 处理其他事件
-                    return await HandleEventAsync(payload);
+                     return HandleEventAsync(payload);
                 }
                 else
                 {
                     if (Logger.IsEnabled(LogLevel.Warning)) Logger.LogWarning("未处理操作码：{payload.Op}", payload.Op);
-                    return Ok();
                 }
+                return Ok();
             }
             catch (Exception e)
             {
@@ -84,7 +83,6 @@ namespace Oshima.FunGame.WebAPI.Controllers
 
             string signature = Convert.ToHexString(result).ToLower(CultureInfo.InvariantCulture);
 
-
             ValidationResponse response = new()
             {
                 PlainToken = validationPayload.PlainToken,
@@ -95,7 +93,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
             return Ok(response);
         }
 
-        private async Task<IActionResult> HandleEventAsync(Payload payload)
+        private IActionResult HandleEventAsync(Payload payload)
         {
             if (Logger.IsEnabled(LogLevel.Debug)) Logger.LogDebug("处理事件：{EventType}, 数据：{Data}", payload.EventType, payload.Data);
 
@@ -120,7 +118,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
                             // TODO
                             if (Logger.IsEnabled(LogLevel.Information)) Logger.LogInformation("收到来自用户 {c2cMessage.Author.UserOpenId} 的消息：{c2cMessage.Content}", c2cMessage.Author.UserOpenId, c2cMessage.Content);
                             // 上传图片
-                            //string url = $"{Request.Scheme}://{Request.Host}{Request.PathBase}/images/zi/dj1.png";
+                            //string url = $"{RequestUrl}/images/zi/dj1.png";
                             //UploadMediaResult uploadMediaResult = await Service.UploadC2CMediaAsync(c2cMessage.Author.UserOpenId, 1, url);
                             //if (Logger.IsEnabled(LogLevel.Debug)) Logger.LogDebug("发送的图片地址：{url}", url);
                             //if (string.IsNullOrEmpty(uploadMediaResult.Error))
@@ -168,7 +166,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
                             //    }
                             //};
                             //await Service.SendC2CMarkdownAsync(c2cMessage.AuthorOpenId, mdMsg, kbMsg, c2cMessage.Id);
-                            TaskUtility.NewTask(async () => await FungameService.Handler(c2cMessage, data));
+                            Task.Run(async () => await FungameService.Handler(c2cMessage, data));
                         }
                         else
                         {
@@ -189,12 +187,36 @@ namespace Oshima.FunGame.WebAPI.Controllers
                             if (Logger.IsEnabled(LogLevel.Information)) Logger.LogInformation("收到来自群组 {groupAtMessage.GroupOpenId} 的消息：{groupAtMessage.Content}", groupAtMessage.GroupOpenId, groupAtMessage.Content);
                             // 回复消息
                             //await _service.SendGroupMessageAsync(groupAtMessage.GroupOpenId, $"你发送的消息是：{groupAtMessage.Content}", msgId: groupAtMessage.Id);
-                            TaskUtility.NewTask(async () => await FungameService.Handler(groupAtMessage, data));
+                            Task.Run(async () => await FungameService.Handler(groupAtMessage, data));
                         }
                         else
                         {
                             if (Logger.IsEnabled(LogLevel.Error)) Logger.LogError("反序列化群聊消息数据失败");
                             return BadRequest("无效的群聊消息数据格式");
+                        }
+                        break;
+                    case "INTERACTION_CREATE":
+                        InteractionEvent? interaction = JsonSerializer.Deserialize<InteractionEvent>(payload.Data.ToString() ?? "");
+                        if (interaction != null)
+                        {
+                            // 提取按钮ID和数据
+                            string buttonId = interaction.Data?.Resolved?.ButtonId ?? "";
+                            string buttonData = interaction.Data?.Resolved?.ButtonData ?? "";
+
+                            if (Logger.IsEnabled(LogLevel.Information))
+                            {
+                                Logger.LogInformation("收到按钮点击：ButtonId={buttonId}, Data={buttonData}, User={user}", buttonId, buttonData, interaction.UserOpenId);
+                            }
+
+                            // TODO
+                            //if (interaction.ChatType == 1)
+                            //{
+                            //    Task.Run(async () => await Service.SendGroupMessageAsync(interaction.GroupOpenId, $"你点击了按钮：{buttonData}"));
+                            //}
+                            //else if (interaction.ChatType == 2)
+                            //{
+                            //    Task.Run(async () => await Service.SendC2CMessageAsync(interaction.UserOpenId, $"你点击了按钮：{buttonData}"));
+                            //}
                         }
                         break;
                     default:
@@ -206,7 +228,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
             catch (JsonException e)
             {
                 if (Logger.IsEnabled(LogLevel.Error)) Logger.LogError("反序列化过程遇到错误：{e}", e);
-                return BadRequest("Invalid JSON format");
+                return BadRequest("无效的 JSON 格式");
             }
             catch (Exception e)
             {

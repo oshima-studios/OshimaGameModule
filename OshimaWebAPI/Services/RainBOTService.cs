@@ -9,6 +9,7 @@ using Milimoe.FunGame.Core.Library.Constant;
 using Oshima.Core.Configs;
 using Oshima.Core.Constant;
 using Oshima.FunGame.OshimaModules.Models;
+using Oshima.FunGame.OshimaServers.Models;
 using Oshima.FunGame.OshimaServers.Service;
 using Oshima.FunGame.WebAPI.Constant;
 using Oshima.FunGame.WebAPI.Controllers;
@@ -27,7 +28,29 @@ namespace Oshima.FunGame.WebAPI.Services
         private IMemoryCache MemoryCache { get; set; } = memoryCache;
         private TestController TestController { get; set; } = testController;
 
-        private async Task SendAsync(IBotMessage msg, string title, string content, int msgType = 0, object? media = null, int? msgSeq = null)
+        private async Task SendAsync(IBotMessage msg, string title, BotReply reply, int? msgSeq = null)
+        {
+            if (reply.Markdown != null)
+            {
+                // 发送 Markdown + 键盘
+                await SendMarkdownAsync(msg, title, reply.Markdown, reply.Keyboard, msgSeq);
+            }
+            else if (reply.Keyboard != null)
+            {
+                // 发送 文本 + 键盘
+                await SendMarkdownAsync(msg, title, new()
+                {
+                    Content = reply.Text
+                }, reply.Keyboard, msgSeq);
+            }
+            else
+            {
+                // 发送纯文本
+                await SendTextAsync(msg, title, reply.Text ?? string.Empty, msgSeq: msgSeq);
+            }
+        }
+
+        private async Task SendTextAsync(IBotMessage msg, string title, string content, int msgType = 0, object? media = null, int? msgSeq = null)
         {
             Statics.RunningPlugin?.Controller.WriteLine(title, Milimoe.FunGame.Core.Library.Constant.LogLevel.Debug);
             if (msg is ThirdPartyMessage third)
@@ -72,31 +95,36 @@ namespace Oshima.FunGame.WebAPI.Services
             if (msg.UseNotice && msg.FunGameUID > 0 && FunGameService.UserNotice.TryGetValue(msg.FunGameUID, out HashSet<string>? msgs) && msgs != null)
             {
                 FunGameService.UserNotice.Remove(msg.FunGameUID, out _);
-                await SendAsync(msg, "离线未读信箱", $"☆--- 离线未读信箱 ---☆\r\n{string.Join("\r\n", msgs)}", 0, null, 5);
+                await SendTextAsync(msg, "离线未读信箱", $"☆--- 离线未读信箱 ---☆\r\n{string.Join("\r\n", msgs)}", 0, null, 5);
             }
         }
 
         private async Task SendHelp(IBotMessage e, Dictionary<string, string> helpDict, string helpName, int currentPage)
         {
             e.UseNotice = false;
+            if (currentPage <= 0) currentPage = 1;
             int pageSize = 15;
-            int totalPages = (helpDict.Count + pageSize - 1) / pageSize;
+            int totalPages = helpDict.MaxPage(pageSize);
 
             StringBuilder result = new($"《筽祀牻》{helpName}指令（第 {currentPage}/{totalPages} 页）\n");
-
+            
             int index = (currentPage - 1) * pageSize + 1;
-            foreach ((string cmd, string desc) in FunGameOrderList.GetPage(helpDict, currentPage, pageSize))
+            foreach ((string cmd, string desc) in helpDict.GetPage(currentPage, pageSize))
             {
                 result.AppendLine($"{index}. {cmd}{(desc != "" ? "：" + desc : "")}");
                 index++;
             }
 
-            if (currentPage < totalPages)
-            {
-                result.AppendLine($"发送【{helpName}{currentPage + 1}】查看下一页");
-            }
+            KeyboardMessage kb = new KeyboardMessage().AddPaginationRow(helpName, currentPage, totalPages);
 
-            await SendAsync(e, "筽祀牻", result.ToString());
+            await SendAsync(e, "筽祀牻", new BotReply()
+            {
+                Markdown = new()
+                {
+                    Content = result.ToString()
+                },
+                Keyboard = kb
+            });
         }
 
         public async Task<bool> Handler(IBotMessage e, OtherData data)
@@ -206,32 +234,40 @@ namespace Oshima.FunGame.WebAPI.Services
                             _ => ""
                         };
 
-                        string? fi = "";
-                        string? err = "";
-                        try
+                        // 传统派已离场
+                        //string? fi = "";
+                        //string? err = "";
+                        //try
+                        //{
+                        //    UploadMediaResult uploadMediaResult = e.IsGroup ? await Service.UploadGroupMediaAsync(e.OpenId, 1, img) : await Service.UploadC2CMediaAsync(e.OpenId, 1, img);
+                        //    fi = uploadMediaResult.FileInfo;
+                        //    err = uploadMediaResult.Error;
+                        //}
+                        //catch (Exception ex)
+                        //{
+                        //    err = ex.ToString();
+                        //}
+                        //if (string.IsNullOrEmpty(err))
+                        //{
+                        //    await SendTextAsync(e, "每日运势", daily.daily, 7, new { file_info = fi });
+                        //}
+                        //else
+                        //{
+                        //    if (Logger.IsEnabled(Microsoft.Extensions.Logging.LogLevel.Error)) Logger.LogError("上传图片失败：{error}", err);
+                        //    await SendAsync(e, "每日运势", daily.daily);
+                        //}
+
+                        // 使用md
+                        await SendAsync(e, "每日运势", new BotReply()
                         {
-                            UploadMediaResult uploadMediaResult = e.IsGroup ? await Service.UploadGroupMediaAsync(e.OpenId, 1, img) : await Service.UploadC2CMediaAsync(e.OpenId, 1, img);
-                            fi = uploadMediaResult.FileInfo;
-                            err = uploadMediaResult.Error;
-                        }
-                        catch (Exception ex)
-                        {
-                            err = ex.ToString();
-                        }
-                        if (string.IsNullOrEmpty(err))
-                        {
-                            await SendAsync(e, "每日运势", daily.daily, 7, new { file_info = fi });
-                        }
-                        else
-                        {
-                            if (Logger.IsEnabled(Microsoft.Extensions.Logging.LogLevel.Error)) Logger.LogError("上传图片失败：{error}", err);
-                            await SendAsync(e, "每日运势", daily.daily);
-                        }
-                        string msg = Controller.GetUserDailyItem(uid, daily.daily);
-                        if (msg != "")
-                        {
-                            await SendAsync(e, "运势幸运物发放", msg, msgSeq: 3);
-                        }
+                            Markdown = new()
+                            {
+                                Content = $"{daily.daily}\r\n![text #256px #256px]({img})"
+                            }
+                        });
+
+                        BotReply rpy = Controller.GetUserDailyItem(uid, daily.daily);
+                        await SendAsync(e, "运势幸运物发放", rpy, msgSeq: 3);
                     }
                     else
                     {
@@ -243,18 +279,24 @@ namespace Oshima.FunGame.WebAPI.Services
                 {
                     e.UseNotice = false;
                     FunGameService.RefreshNotice();
-                    if (FunGameService.Notices.Count > 0)
+                    List<string> msgs = [];
+                    DateTime now = DateTime.Now;
+                    foreach (NoticeModel notice in FunGameService.Notices.Values)
                     {
-                        List<string> msgs = [];
-                        DateTime now = DateTime.Now;
-                        foreach (NoticeModel notice in FunGameService.Notices.Values)
+                        if (now >= notice.StartTime && now <= notice.EndTime)
                         {
-                            if (now >= notice.StartTime && now <= notice.EndTime)
-                            {
-                                msgs.Add(notice.ToString());
-                            }
+                            msgs.Add(notice.ToString());
                         }
-                        await SendAsync(e, "公告", string.Join("\r\n", msgs));
+                    }
+                    if (msgs.Count > 0)
+                    {
+                        await SendAsync(e, "公告", new BotReply()
+                        {
+                            Markdown = new()
+                            {
+                                Content = $"系统公告列表：\r\n```\r\n{string.Join("\r\n", msgs)}\r\n```"
+                            }
+                        });
                     }
                     else
                     {
@@ -341,20 +383,26 @@ namespace Oshima.FunGame.WebAPI.Services
                 if (e.Detail == "帮助")
                 {
                     e.UseNotice = false;
-                    await SendAsync(e, "筽祀牻", @$"欢迎使用《筽祀牻》游戏指令帮助系统！
+                    await SendAsync(e, "筽祀牻", new BotReply()
+                    {
+                        Markdown = new()
+                        {
+                            Content = @$"欢迎使用《筽祀牻》游戏指令帮助系统！
 核心库版本号：{FunGameInfo.FunGame_Version}
 《筽祀牻》是一款奇幻冒险回合制角色扮演游戏。
 在游戏中，你可以和其他角色组成小队，收集物品，在数十个独具风格的地区中冒险并战斗。
 因游戏内容、指令较多，我们将按游戏模块对指令分类，请输入以下指令查看具体分类的帮助内容：
-1、存档帮助
-2、角色帮助
-3、物品帮助
-4、战斗帮助
-5、玩法帮助
-6、社团帮助
-7、活动帮助
-8、商店帮助
-在指令后面加数字即可跳转指定的页码，感谢游玩《筽祀牻》。");
+1、<qqbot-cmd-input text=""存档帮助 "" show=""存档帮助""/>
+2、<qqbot-cmd-input text=""角色帮助 "" show=""角色帮助""/>
+3、<qqbot-cmd-input text=""物品帮助 "" show=""物品帮助""/>
+4、<qqbot-cmd-input text=""战斗帮助 "" show=""战斗帮助""/>
+5、<qqbot-cmd-input text=""玩法帮助 "" show=""玩法帮助""/>
+6、<qqbot-cmd-input text=""社团帮助 "" show=""社团帮助""/>
+7、<qqbot-cmd-input text=""活动帮助 "" show=""活动帮助""/>
+8、<qqbot-cmd-input text=""商店帮助 "" show=""商店帮助""/>
+在指令后面加数字即可跳转指定的页码，感谢游玩《筽祀牻》。"
+                        }
+                    });
                 }
 
                 if (e.Detail.StartsWith("存档帮助"))
@@ -405,13 +453,9 @@ namespace Oshima.FunGame.WebAPI.Services
                     {
                         FunGameSimulation = true;
                         List<string> msgs = await Controller.GetTest(false, maxRespawnTimesMix: 0);
-                        List<string> real = MergeMessages(msgs);
-                        int count = 1;
-                        foreach (string msg in real)
-                        {
-                            await SendAsync(e, "筽祀牻", msg.Trim(), msgSeq: count++);
-                            if (count != real.Count) await Task.Delay(5500);
-                        }
+                        BotReply rpy = MergeToMarkdown("模拟结果如下：", msgs);
+                        rpy.Keyboard = new KeyboardMessage().AppendButtons(1, Button.CreateCmdButton("FunGame模拟", $"FunGame模拟"));
+                        await SendAsync(e, "筽祀牻", rpy, msgSeq: 1);
                         FunGameSimulation = false;
                     }
                     else
@@ -428,13 +472,9 @@ namespace Oshima.FunGame.WebAPI.Services
                     {
                         FunGameSimulation = true;
                         List<string> msgs = await Controller.GetTest(false, maxRespawnTimesMix: 0, hasMap: true);
-                        List<string> real = MergeMessages(msgs);
-                        int count = 1;
-                        foreach (string msg in real)
-                        {
-                            await SendAsync(e, "筽祀牻", msg.Trim(), msgSeq: count++);
-                            if (count != real.Count) await Task.Delay(5500);
-                        }
+                        BotReply rpy = MergeToMarkdown("模拟结果如下：", msgs);
+                        rpy.Keyboard = new KeyboardMessage().AppendButtons(1, Button.CreateCmdButton("个人地图模拟", $"个人地图模拟"));
+                        await SendAsync(e, "筽祀牻", rpy, msgSeq: 1);
                         FunGameSimulation = false;
                     }
                     else
@@ -457,13 +497,9 @@ namespace Oshima.FunGame.WebAPI.Services
                     {
                         FunGameSimulation = true;
                         List<string> msgs = await Controller.GetTest(false, maxRespawnTimesMix: maxRespawnTimesMix);
-                        List<string> real = MergeMessages(msgs);
-                        int count = 1;
-                        foreach (string msg in real)
-                        {
-                            await SendAsync(e, "筽祀牻", msg.Trim(), msgSeq: count++);
-                            if (count != real.Count) await Task.Delay(5500);
-                        }
+                        BotReply rpy = MergeToMarkdown("模拟结果如下：", msgs);
+                        rpy.Keyboard = new KeyboardMessage().AppendButtons(1, Button.CreateCmdButton("混战模拟", $"混战模拟"));
+                        await SendAsync(e, "筽祀牻", rpy, msgSeq: 1);
                         FunGameSimulation = false;
                     }
                     else
@@ -487,13 +523,9 @@ namespace Oshima.FunGame.WebAPI.Services
                     {
                         FunGameSimulation = true;
                         List<string> msgs = await Controller.GetTest(false, true);
-                        List<string> real = MergeMessages(msgs);
-                        int count = 1;
-                        foreach (string msg in real)
-                        {
-                            await SendAsync(e, "筽祀牻", msg.Trim(), msgSeq: count++);
-                            if (count != real.Count) await Task.Delay(5500);
-                        }
+                        BotReply rpy = MergeToMarkdown("模拟结果如下：", msgs);
+                        rpy.Keyboard = new KeyboardMessage().AppendButtons(1, Button.CreateCmdButton("FunGame团队模拟", $"FunGame团队模拟"));
+                        await SendAsync(e, "筽祀牻", rpy, msgSeq: 1);
                         FunGameSimulation = false;
                     }
                     else
@@ -510,13 +542,9 @@ namespace Oshima.FunGame.WebAPI.Services
                     {
                         FunGameSimulation = true;
                         List<string> msgs = await Controller.GetTest(false, true, hasMap: true);
-                        List<string> real = MergeMessages(msgs);
-                        int count = 1;
-                        foreach (string msg in real)
-                        {
-                            await SendAsync(e, "筽祀牻", msg.Trim(), msgSeq: count++);
-                            if (count != real.Count) await Task.Delay(5500);
-                        }
+                        BotReply rpy = MergeToMarkdown("模拟结果如下：", msgs);
+                        rpy.Keyboard = new KeyboardMessage().AppendButtons(1, Button.CreateCmdButton("团队地图模拟", $"团队地图模拟"));
+                        await SendAsync(e, "筽祀牻", rpy, msgSeq: 1);
                         FunGameSimulation = false;
                     }
                     else
@@ -533,13 +561,9 @@ namespace Oshima.FunGame.WebAPI.Services
                     {
                         FunGameSimulation = true;
                         List<string> msgs = await Controller.GetTestDebug(false, true, hasMap: true);
-                        List<string> real = MergeMessages(msgs);
-                        int count = 1;
-                        foreach (string msg in real)
-                        {
-                            await SendAsync(e, "筽祀牻", msg.Trim(), msgSeq: count++);
-                            if (count != real.Count) await Task.Delay(5500);
-                        }
+                        BotReply rpy = MergeToMarkdown("模拟结果如下：", msgs);
+                        rpy.Keyboard = new KeyboardMessage().AppendButtons(1, Button.CreateCmdButton("团队调试模拟", $"团队调试模拟"));
+                        await SendAsync(e, "筽祀牻", rpy, msgSeq: 1);
                         FunGameSimulation = false;
                     }
                     else
@@ -789,11 +813,16 @@ namespace Oshima.FunGame.WebAPI.Services
 
                 if (e.Detail == "我的存档")
                 {
-                    string msg = Controller.ShowSaved(uid);
-                    if (msg != "")
-                    {
-                        await SendAsync(e, "我的存档", "\r\n" + msg);
-                    }
+                    BotReply rpy = Controller.ShowSaved(uid);
+                    rpy.Keyboard = new KeyboardMessage().AppendButtons(3, [
+                        Button.CreateCmdButton("签到", "签到"),
+                        Button.CreateCmdButton("帮助", "帮助"),
+                        Button.CreateCmdButton("运势", "我的运势"),
+                        Button.CreateCmdButton("库存", "我的库存"),
+                        Button.CreateCmdButton("任务", "任务列表"),
+                        Button.CreateCmdButton("商店", "每日商店")
+                    ]);
+                    await SendAsync(e, "我的存档", rpy);
                     return result;
                 }
 
@@ -881,17 +910,17 @@ namespace Oshima.FunGame.WebAPI.Services
                 if (e.Detail == "角色改名")
                 {
                     e.UseNotice = false;
-                    await SendAsync(e, "改名", "\r\n为防止玩家手误更改自己的昵称，请在该指令前添加【确认】二字，即使用【确认角色改名】指令。");
+                    BotReply rpy = "为防止玩家手误更改自己的昵称，请在该指令前添加【确认】二字，即使用【确认角色改名】指令。";
+                    rpy.Keyboard = new KeyboardMessage().AppendButtons(1, Button.CreateCmdButton("确认", "确认角色改名", false));
+                    await SendAsync(e, "改名", rpy);
                     return result;
                 }
 
                 if (e.Detail == "确认角色改名")
                 {
-                    string msg = Controller.ReName(uid);
-                    if (msg != "")
-                    {
-                        await SendAsync(e, "改名", "\r\n" + msg);
-                    }
+                    BotReply rpy = Controller.ReName(uid);
+                    rpy.Keyboard = new KeyboardMessage().AppendButtons(1, Button.CreateCmdButton("查询改名", "查询改名"));
+                    await SendAsync(e, "改名", rpy);
                     return result;
                 }
 
@@ -1005,8 +1034,10 @@ namespace Oshima.FunGame.WebAPI.Services
                 if (e.Detail.StartsWith("自定义改名"))
                 {
                     e.UseNotice = false;
-                    await SendAsync(e, "改名", "\r\n自定义改名说明：自定义改名需要库存中存在至少一张未上锁、且未处于交易、市场出售状态的改名卡，提交改名申请后需要等待审核。" +
-                        "在审核期间，改名卡将会被系统锁定，无法取消、重复提交申请，也不能解锁、分解、交易、出售该改名卡。如已知悉请在该指令前添加【确认】二字，即使用【确认自定义改名】指令。");
+                    BotReply rpy = "自定义改名说明：自定义改名需要库存中存在至少一张未上锁、且未处于交易、市场出售状态的改名卡，提交改名申请后需要等待审核。" +
+                        "在审核期间，改名卡将会被系统锁定，无法取消、重复提交申请，也不能解锁、分解、交易、出售该改名卡。如已知悉请在该指令前添加【确认】二字，即使用【确认自定义改名】指令。";
+                    rpy.Keyboard = new KeyboardMessage().AppendButtons(1, Button.CreateCmdButton("确认", "确认自定义改名", false));
+                    await SendAsync(e, "改名", rpy);
                     return result;
                 }
 
@@ -1024,11 +1055,12 @@ namespace Oshima.FunGame.WebAPI.Services
 
                 if (e.Detail == "角色重随")
                 {
-                    string msg = Controller.RandomCustomCharacter(uid, false);
-                    if (msg != "")
-                    {
-                        await SendAsync(e, "角色重随", "\r\n" + msg);
-                    }
+                    BotReply rpy = Controller.RandomCustomCharacter(uid, false);
+                    rpy.Keyboard = new KeyboardMessage().AppendButtons(2, [
+                        Button.CreateCmdButton("取消角色重随", "取消角色重随", false, style: 0),
+                        Button.CreateCmdButton("确认角色重随", "确认角色重随", false),
+                    ]);
+                    await SendAsync(e, "角色重随", rpy);
                     return result;
                 }
 
@@ -1044,11 +1076,9 @@ namespace Oshima.FunGame.WebAPI.Services
 
                 if (e.Detail == "取消角色重随")
                 {
-                    string msg = Controller.CancelRandomCustomCharacter(uid);
-                    if (msg != "")
-                    {
-                        await SendAsync(e, "角色重随", "\r\n" + msg);
-                    }
+                    BotReply rpy = Controller.CancelRandomCustomCharacter(uid);
+                    rpy.Keyboard = new KeyboardMessage().AppendButtons(1, Button.CreateCmdButton("角色重随", "角色重随", false));
+                    await SendAsync(e, "角色重随", rpy);
                     return result;
                 }
 
@@ -1057,7 +1087,15 @@ namespace Oshima.FunGame.WebAPI.Services
                     List<string> msgs = Controller.DrawCard(uid);
                     if (msgs.Count > 0)
                     {
-                        await SendAsync(e, "抽卡", "\r\n" + string.Join("\r\n", msgs));
+                        BotReply rpy = MergeToMarkdown("抽卡结果如下：", msgs);
+                        rpy.Keyboard = new KeyboardMessage().AppendButtons(2, [
+                            Button.CreateCmdButton("抽卡", "抽卡"),
+                            Button.CreateCmdButton("十连抽卡", "十连抽卡"),
+                        ]).AppendButtonsWithNewRow(2, [
+                            Button.CreateCmdButton("钻石抽卡", "钻石抽卡"),
+                            Button.CreateCmdButton("钻石十连抽卡", "钻石十连抽卡"),
+                        ]);
+                        await SendAsync(e, "抽卡", rpy);
                     }
                     return result;
                 }
@@ -1067,7 +1105,15 @@ namespace Oshima.FunGame.WebAPI.Services
                     List<string> msgs = Controller.DrawCards(uid);
                     if (msgs.Count > 0)
                     {
-                        await SendAsync(e, "十连抽卡", "\r\n" + string.Join("\r\n", msgs));
+                        BotReply rpy = MergeToMarkdown("抽卡结果如下：", msgs);
+                        rpy.Keyboard = new KeyboardMessage().AppendButtons(2, [
+                            Button.CreateCmdButton("抽卡", "抽卡"),
+                            Button.CreateCmdButton("十连抽卡", "十连抽卡"),
+                        ]).AppendButtonsWithNewRow(2, [
+                            Button.CreateCmdButton("钻石抽卡", "钻石抽卡"),
+                            Button.CreateCmdButton("钻石十连抽卡", "钻石十连抽卡"),
+                        ]);
+                        await SendAsync(e, "十连抽卡", rpy);
                     }
                     return result;
                 }
@@ -1077,7 +1123,15 @@ namespace Oshima.FunGame.WebAPI.Services
                     List<string> msgs = Controller.DrawCard_Material(uid);
                     if (msgs.Count > 0)
                     {
-                        await SendAsync(e, "钻石抽卡", "\r\n" + string.Join("\r\n", msgs));
+                        BotReply rpy = MergeToMarkdown("抽卡结果如下：", msgs);
+                        rpy.Keyboard = new KeyboardMessage().AppendButtons(2, [
+                            Button.CreateCmdButton("抽卡", "抽卡"),
+                            Button.CreateCmdButton("十连抽卡", "十连抽卡"),
+                        ]).AppendButtonsWithNewRow(2, [
+                            Button.CreateCmdButton("钻石抽卡", "钻石抽卡"),
+                            Button.CreateCmdButton("钻石十连抽卡", "钻石十连抽卡"),
+                        ]);
+                        await SendAsync(e, "钻石抽卡", rpy);
                     }
                     return result;
                 }
@@ -1087,7 +1141,15 @@ namespace Oshima.FunGame.WebAPI.Services
                     List<string> msgs = Controller.DrawCards_Material(uid);
                     if (msgs.Count > 0)
                     {
-                        await SendAsync(e, "钻石十连抽卡", "\r\n" + string.Join("\r\n", msgs));
+                        BotReply rpy = MergeToMarkdown("抽卡结果如下：", msgs);
+                        rpy.Keyboard = new KeyboardMessage().AppendButtons(2, [
+                            Button.CreateCmdButton("抽卡", "抽卡"),
+                            Button.CreateCmdButton("十连抽卡", "十连抽卡"),
+                        ]).AppendButtonsWithNewRow(2, [
+                            Button.CreateCmdButton("钻石抽卡", "钻石抽卡"),
+                            Button.CreateCmdButton("钻石十连抽卡", "钻石十连抽卡"),
+                        ]);
+                        await SendAsync(e, "钻石十连抽卡", rpy);
                     }
                     return result;
                 }
@@ -1358,11 +1420,9 @@ namespace Oshima.FunGame.WebAPI.Services
 
                 if (e.Detail == "任务列表")
                 {
-                    string msg = Controller.CheckQuestList(uid);
-                    if (msg != "")
-                    {
-                        await SendAsync(e, "任务列表", "\r\n" + msg);
-                    }
+                    BotReply rpy = Controller.CheckQuestList(uid);
+                    rpy.Keyboard = new KeyboardMessage().AppendButtons(1, Button.CreateCmdButton("做任务", "做任务", false));
+                    await SendAsync(e, "任务列表", rpy);
                     return result;
                 }
 
@@ -1845,13 +1905,9 @@ namespace Oshima.FunGame.WebAPI.Services
                     {
                         msgs = await Controller.FightCustom2(uid, detail.Trim(), true);
                     }
-                    List<string> real = MergeMessages(msgs);
-                    int count = 1;
-                    foreach (string msg in real)
-                    {
-                        await SendAsync(e, "完整决斗", msg.Trim(), msgSeq: count++);
-                        if (count != real.Count) await Task.Delay(1500);
-                    }
+                    BotReply rpy = MergeToMarkdown("战斗结果如下：", msgs);
+                    rpy.Keyboard = new KeyboardMessage().AppendButtons(1, Button.CreateCmdButton("再次决斗", $"完整决斗{eqq}"));
+                    await SendAsync(e, "完整决斗", rpy, msgSeq: 1);
                     return result;
                 }
 
@@ -1867,13 +1923,9 @@ namespace Oshima.FunGame.WebAPI.Services
                     {
                         msgs = await Controller.FightCustom2(uid, detail.Trim(), false);
                     }
-                    List<string> real = MergeMessages(msgs);
-                    int count = 1;
-                    foreach (string msg in real)
-                    {
-                        await SendAsync(e, "决斗", msg.Trim(), msgSeq: count++);
-                        if (count != real.Count) await Task.Delay(1500);
-                    }
+                    BotReply rpy = MergeToMarkdown("战斗结果如下：", msgs);
+                    rpy.Keyboard = new KeyboardMessage().AppendButtons(1, Button.CreateCmdButton("再次决斗", $"决斗{eqq}"));
+                    await SendAsync(e, "决斗", rpy, msgSeq: 1);
                     return result;
                 }
 
@@ -1889,13 +1941,9 @@ namespace Oshima.FunGame.WebAPI.Services
                     {
                         msgs = await Controller.FightCustomTeam2(uid, detail.Trim(), true);
                     }
-                    List<string> real = MergeMessages(msgs);
-                    int count = 1;
-                    foreach (string msg in real)
-                    {
-                        await SendAsync(e, "完整决斗", msg.Trim(), msgSeq: count++);
-                        if (count != real.Count) await Task.Delay(1500);
-                    }
+                    BotReply rpy = MergeToMarkdown("战斗结果如下：", msgs);
+                    rpy.Keyboard = new KeyboardMessage().AppendButtons(1, Button.CreateCmdButton("再次决斗", $"小队决斗{eqq}"));
+                    await SendAsync(e, "小队决斗", rpy, msgSeq: 1);
                     return result;
                 }
 
@@ -1925,13 +1973,9 @@ namespace Oshima.FunGame.WebAPI.Services
                     if (int.TryParse(detail.Trim(), out int index))
                     {
                         msgs = await Controller.FightBossTeam(uid, index, true);
-                        List<string> real = MergeMessages(msgs);
-                        int count = 1;
-                        foreach (string msg in real)
-                        {
-                            await SendAsync(e, "BOSS", msg.Trim(), msgSeq: count++);
-                            if (count != real.Count) await Task.Delay(1500);
-                        }
+                        BotReply rpy = MergeToMarkdown("战斗结果如下：", msgs);
+                        rpy.Keyboard = new KeyboardMessage().AppendButtons(1, Button.CreateCmdButton("小队讨伐boss", $"小队讨伐boss"));
+                        await SendAsync(e, "BOSS", rpy, msgSeq: 1);
                     }
                     else
                     {
@@ -1947,13 +1991,9 @@ namespace Oshima.FunGame.WebAPI.Services
                     if (int.TryParse(detail.Trim(), out int index))
                     {
                         msgs = await Controller.FightBoss(uid, index, true);
-                        List<string> real = MergeMessages(msgs);
-                        int count = 1;
-                        foreach (string msg in real)
-                        {
-                            await SendAsync(e, "BOSS", msg.Trim(), msgSeq: count++);
-                            if (count != real.Count) await Task.Delay(1500);
-                        }
+                        BotReply rpy = MergeToMarkdown("战斗结果如下：", msgs);
+                        rpy.Keyboard = new KeyboardMessage().AppendButtons(1, Button.CreateCmdButton("讨伐boss", $"讨伐boss"));
+                        await SendAsync(e, "BOSS", rpy, msgSeq: 1);
                     }
                     else
                     {
@@ -2309,11 +2349,12 @@ namespace Oshima.FunGame.WebAPI.Services
 
                 if (e.Detail == "每日商店")
                 {
-                    string msg = Controller.ShowDailyStore(uid);
-                    if (msg != "")
-                    {
-                        await SendAsync(e, "商店", "\r\n" + msg);
-                    }
+                    BotReply rpy = Controller.ShowDailyStore(uid);
+                    rpy.Keyboard = new KeyboardMessage().AppendButtons(2, [
+                        Button.CreateCmdButton("商店查看", "商店查看", false),
+                        Button.CreateCmdButton("商店购买", "商店购买", false)
+                    ]);
+                    await SendAsync(e, "商店", rpy);
                     return result;
                 }
 
@@ -2445,6 +2486,7 @@ namespace Oshima.FunGame.WebAPI.Services
 
                 if (e.Detail.StartsWith("探索") || e.Detail.StartsWith("前往"))
                 {
+                    string originalDetail = e.Detail;
                     string detail = e.Detail.Replace("探索", "").Replace("前往", "").Trim();
                     string msg = "";
                     string eid = "";
@@ -2467,11 +2509,8 @@ namespace Oshima.FunGame.WebAPI.Services
                         _ = Task.Run(async () =>
                         {
                             await Task.Delay(FunGameConstant.ExploreTime * 60 * 1000);
-                            msg = Controller.SettleExplore(eid, uid);
-                            if (msg.Trim() != "")
-                            {
-                                await SendAsync(e, "探索", msg, msgSeq: 2);
-                            }
+                            BotReply rpy = Controller.SettleExplore(eid, uid, originalDetail);
+                            await SendAsync(e, "探索", rpy, msgSeq: 2);
                         });
                     }
                     else if (cindexs.Count > 5)
@@ -2487,6 +2526,7 @@ namespace Oshima.FunGame.WebAPI.Services
 
                 if (e.Detail.StartsWith("小队探索"))
                 {
+                    string originalDetail = e.Detail;
                     string detail = e.Detail.Replace("小队探索", "").Trim();
                     string msg = "";
                     string eid = "";
@@ -2509,11 +2549,8 @@ namespace Oshima.FunGame.WebAPI.Services
                         _ = Task.Run(async () =>
                         {
                             await Task.Delay(FunGameConstant.ExploreTime * 60 * 1000);
-                            msg = Controller.SettleExplore(eid, uid);
-                            if (msg.Trim() != "")
-                            {
-                                await SendAsync(e, "探索", msg, msgSeq: 2);
-                            }
+                            BotReply rpy = Controller.SettleExplore(eid, uid, originalDetail);
+                            await SendAsync(e, "探索", rpy, msgSeq: 2);
                         });
                     }
                     else
@@ -3727,13 +3764,9 @@ namespace Oshima.FunGame.WebAPI.Services
                             return result;
                         }
                         (Room room, List<string> msgs) = await Controller.RoomRunGame(uid);
-                        List<string> real = MergeMessages(msgs);
-                        int count = 1;
-                        foreach (string msg in real)
-                        {
-                            await SendAsync(e, "房间", msg.Trim(), msgSeq: count++);
-                            if (count <= real.Count) await Task.Delay(1500);
-                        }
+                        BotReply rpy = MergeToMarkdown("该局游戏结果如下：", msgs);
+                        rpy.Keyboard = new KeyboardMessage().AppendButtons(1, Button.CreateCmdButton("快速重新开始", $"快速重新开始"));
+                        await SendAsync(e, "房间", rpy, msgSeq: 1);
                         OnlineService.ReSetRoomState(room.Roomid);
                     }
                     else
@@ -3946,6 +3979,21 @@ namespace Oshima.FunGame.WebAPI.Services
                 MemoryCache.Set(e.AuthorOpenId, 1L, TimeSpan.FromMinutes(10));
             }
             return await Handler(e, data);
+        }
+
+        public BotReply MergeToMarkdown(string subtitle, List<string> msgs)
+        {
+            if (msgs.Count > 30)
+            {
+                msgs = [.. msgs[..15], .. msgs[^15..]];
+            }
+            return new()
+            {
+                Markdown = new()
+                {
+                    Content = $"{subtitle}```\r\n{string.Join("\r\n", msgs)}\r\n```"
+                }
+            };
         }
 
         public List<string> MergeMessages(List<string> msgs)

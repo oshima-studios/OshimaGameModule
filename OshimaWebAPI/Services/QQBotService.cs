@@ -4,7 +4,7 @@ using System.Text.Json;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using Oshima.FunGame.WebAPI.Models;
+using Oshima.FunGame.OshimaServers.Models;
 
 namespace Oshima.FunGame.WebAPI.Services
 {

@@ -15,6 +15,7 @@ using Oshima.FunGame.OshimaModules.Items;
 using Oshima.FunGame.OshimaModules.Models;
 using Oshima.FunGame.OshimaModules.Regions;
 using Oshima.FunGame.OshimaServers.Model;
+using Oshima.FunGame.OshimaServers.Models;
 using Oshima.FunGame.OshimaServers.Service;
 using ProjectRedbud.FunGame.SQLQueryExtension;
 
@@ -4431,8 +4432,17 @@ namespace Oshima.FunGame.WebAPI.Controllers
         }
 
         [HttpPost("checkquestlist")]
-        public string CheckQuestList([FromQuery] long? uid = null)
+        public BotReply CheckQuestList([FromQuery] long? uid = null)
         {
+            MarkdownMessage md = new()
+            {
+                Content = busy
+            };
+            BotReply reply = new()
+            {
+                Markdown = md
+            };
+
             long userid = uid ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
 
             PluginConfig pc = FunGameService.GetUserConfig(userid, out _);
@@ -4448,12 +4458,14 @@ namespace Oshima.FunGame.WebAPI.Controllers
 
                 FunGameService.SetUserConfigAndReleaseSemaphoreSlim(userid, pc, user);
 
-                return msg;
+                md.Content = msg;
+                return reply;
             }
             else
             {
                 FunGameService.ReleaseUserSemaphoreSlim(userid);
-                return noSaved;
+                md.Content = noSaved;
+                return reply;
             }
         }
 
@@ -5830,8 +5842,17 @@ namespace Oshima.FunGame.WebAPI.Controllers
         }
 
         [HttpPost("showdailystore")]
-        public string ShowDailyStore([FromQuery] long? uid = null)
+        public BotReply ShowDailyStore([FromQuery] long? uid = null)
         {
+            MarkdownMessage md = new()
+            {
+                Content = busy
+            };
+            BotReply reply = new()
+            {
+                Markdown = md
+            };
+
             long userid = uid ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
 
             PluginConfig pc = FunGameService.GetUserConfig(userid, out _);
@@ -5846,12 +5867,14 @@ namespace Oshima.FunGame.WebAPI.Controllers
                 stores.SaveConfig();
                 FunGameService.SetUserConfigAndReleaseSemaphoreSlim(userid, pc, user);
 
-                return msg;
+                md.Content = msg;
+                return reply;
             }
             else
             {
                 FunGameService.ReleaseUserSemaphoreSlim(userid);
-                return noSaved;
+                md.Content = noSaved;
+                return reply;
             }
         }
 
@@ -6377,8 +6400,17 @@ namespace Oshima.FunGame.WebAPI.Controllers
         }
 
         [HttpPost("exploresettle")]
-        public string SettleExplore(string exploreId, [FromQuery] long? uid = null)
+        public BotReply SettleExplore([FromQuery] string exploreId, [FromQuery] long? uid = null, [FromQuery] string command = "")
         {
+            MarkdownMessage md = new()
+            {
+                Content = busy
+            };
+            BotReply reply = new()
+            {
+                Markdown = md
+            };
+
             long userid = uid ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
 
             PluginConfig pc = FunGameService.GetUserConfig(userid, out _);
@@ -6401,12 +6433,18 @@ namespace Oshima.FunGame.WebAPI.Controllers
 
                 FunGameService.SetUserConfigAndReleaseSemaphoreSlim(userid, pc, user);
 
-                return msg;
+                md.Content = msg;
+                if (command != "")
+                {
+                    reply.Keyboard = new KeyboardMessage().AppendButtons(1, Button.CreateCmdButton("再探再报", command, permissionType: 0));
+                }
+                return reply;
             }
             else
             {
                 FunGameService.ReleaseUserSemaphoreSlim(userid);
-                return noSaved;
+                md.Content = noSaved;
+                return reply;
             }
         }
 
@@ -9357,14 +9395,22 @@ namespace Oshima.FunGame.WebAPI.Controllers
         }
 
         [HttpPost("getuserdailyitem")]
-        public string GetUserDailyItem([FromQuery] long uid = -1, [FromQuery] string daily = "")
+        public BotReply GetUserDailyItem([FromQuery] long uid = -1, [FromQuery] string daily = "")
         {
+            MarkdownMessage md = new()
+            {
+                Content = busy
+            };
+            BotReply reply = new()
+            {
+                Markdown = md
+            };
             try
             {
                 PluginConfig pc = FunGameService.GetUserConfig(uid, out bool isTimeout);
                 if (isTimeout)
                 {
-                    return busy;
+                    return reply;
                 }
 
                 string msg = "";
@@ -9380,7 +9426,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
                         string itemName = match.Groups[1].Value;
                         if (FunGameConstant.UserDailyItems.FirstOrDefault(i => i.Name == itemName) is Item item)
                         {
-                            msg = $"恭喜你获得了幸运物【{itemName}】，已发放至库存～";
+                            msg = $"恭喜你获得了幸运物【{itemName.CreateCmdInput($"查物品{itemName}")}】，已发放至{"库存".CreateCmdInput("我的库存收藏品")}～";
                             FunGameService.AddItemToUserInventory(user, item);
                         }
                     }
@@ -9395,21 +9441,22 @@ namespace Oshima.FunGame.WebAPI.Controllers
                             Price = 0
                         };
                         user.Inventory.Items.Add(item);
-                        msg += "\r\n圣诞温暖相伴，元旦好运相随，在节日的钟声里收获惊喜！成功参加【双旦活动】，你获得了一张【十连奖券】！";
+                        msg += $"\r\n圣诞温暖相伴，元旦好运相随，在节日的钟声里收获惊喜！成功参加【{"双旦活动".CreateCmdInput($"查活动{activity.Id}")}】，你获得了一张【{"十连奖券".CreateCmdInput("我的物品十连奖券")}】！";
                     }
 
                     FunGameService.SetUserConfigButNotRelease(uid, pc, user);
-                    return msg;
+                    md.Content = msg;
                 }
                 else
                 {
-                    return $"温馨提醒：【创建存档】后获取运势可领取同款幸运物的收藏品，全部收集可兑换强大装备哦～";
+                    md.Content = $"温馨提醒：【{"创建存档".CreateCmdInput()}】后获取运势可领取同款幸运物的收藏品，全部收集可兑换强大装备哦～";
                 }
+                return reply;
             }
             catch (Exception e)
             {
                 if (Logger.IsEnabled(Microsoft.Extensions.Logging.LogLevel.Error)) Logger.LogError(e, "Error: {e}", e);
-                return busy;
+                return reply;
             }
             finally
             {
@@ -9445,6 +9492,50 @@ namespace Oshima.FunGame.WebAPI.Controllers
             {
                 if (Logger.IsEnabled(Microsoft.Extensions.Logging.LogLevel.Error)) Logger.LogError(e, "Error: {e}", e);
                 return busy;
+            }
+            finally
+            {
+                FunGameService.ReleaseUserSemaphoreSlim(uid);
+            }
+        }
+
+        [HttpPost("template2")]
+        public BotReply Template2([FromQuery] long uid = -1)
+        {
+            MarkdownMessage md = new()
+            {
+                Content = busy
+            };
+            BotReply reply = new()
+            {
+                Markdown = md
+            };
+            try
+            {
+                PluginConfig pc = FunGameService.GetUserConfig(uid, out bool isTimeout);
+                if (isTimeout)
+                {
+                    return reply;
+                }
+
+                string msg = "";
+                if (pc.Count > 0)
+                {
+                    User user = FunGameService.GetUser(pc);
+
+                    FunGameService.SetUserConfigButNotRelease(uid, pc, user);
+                    return msg;
+                }
+                else
+                {
+                    md.Content = noSaved;
+                    return reply;
+                }
+            }
+            catch (Exception e)
+            {
+                if (Logger.IsEnabled(Microsoft.Extensions.Logging.LogLevel.Error)) Logger.LogError(e, "Error: {e}", e);
+                return reply;
             }
             finally
             {

@@ -3,6 +3,7 @@ using System.Text;
 using Milimoe.FunGame.Core.Api.Transmittal;
 using Milimoe.FunGame.Core.Api.Utility;
 using Milimoe.FunGame.Core.Entity;
+using Milimoe.FunGame.Core.Interface.Entity;
 using Milimoe.FunGame.Core.Library.Constant;
 using Oshima.Core.Constant;
 using Oshima.FunGame.OshimaModules.Characters;
@@ -13,6 +14,7 @@ using Oshima.FunGame.OshimaModules.Regions;
 using Oshima.FunGame.OshimaModules.Skills;
 using Oshima.FunGame.OshimaModules.Units;
 using Oshima.FunGame.OshimaServers.Model;
+using Oshima.FunGame.OshimaServers.Models;
 using ProjectRedbud.FunGame.SQLQueryExtension;
 
 namespace Oshima.FunGame.OshimaServers.Service
@@ -2709,7 +2711,7 @@ namespace Oshima.FunGame.OshimaServers.Service
             Dictionary<Character, int> characters = inventory
                 .Select((character, index) => new { character, index })
                 .ToDictionary(x => x.character, x => x.index + 1);
-            return $"{(squad.Length > 0 ? string.Join(separator, squad.Select(c => $"#{characters[c]}. {c.ToStringWithLevelWithOutUser()}")) : "空")}";
+            return $"{(squad.Length > 0 ? string.Join(separator, squad.Select(c => $"#{characters[c]}. {c.ToStringWithLevelWithOutUser()}".CreateCmdInput($"我的角色{characters[c]}"))) : "空")}";
         }
 
         public static string GetCharacterGroupInfoByInventorySequence(IEnumerable<Character> inventory, IEnumerable<long> characterIds, string separator = "\r\n")
@@ -2919,7 +2921,7 @@ namespace Oshima.FunGame.OshimaServers.Service
                                 count += Math.Max(1, Random.Shared.Next(1, 4) * diff / 2);
                             }
                             model.Awards[item.Name] = count;
-                            award = $" {count} 个{item.Name}";
+                            award = $" {count} 个{item.Name.CreateCmdInput($"我的物品{item.Name}")}";
                             break;
                         default:
                             break;
@@ -2938,7 +2940,7 @@ namespace Oshima.FunGame.OshimaServers.Service
                     if (squad.All(c => c.HP <= 0))
                     {
                         model.Result = ExploreResult.Nothing;
-                        exploreString = $"探索小队遭遇强大的敌人{enemy.Name}偷袭，狼狈而逃！（什么也没有获得，请检查角色的状态）";
+                        exploreString = $"探索小队遭遇强大的敌人{enemy.Name}偷袭，狼狈而逃！（什么也没有获得，请检查角色的状态；或" + "生命之泉".CreateCmdInput() + "）";
                     }
                     else
                     {
@@ -3005,7 +3007,7 @@ namespace Oshima.FunGame.OshimaServers.Service
                             }
                             model.Awards[item.Name] = count;
                             award = $"{credits} {General.GameplayEquilibriumConstant.InGameCurrency}（包含战斗中击杀奖励），" + $"{exp} 点经验值（探索队员们平分），" +
-                                $"{materials} {General.GameplayEquilibriumConstant.InGameMaterial}，" + $"以及 {count} 个{item.Name}";
+                                $"{materials} {General.GameplayEquilibriumConstant.InGameMaterial}，" + $"以及 {count} 个{item.Name.CreateCmdInput($"我的物品{item.Name}")}";
                             if (Random.Shared.NextDouble() > 0.6)
                             {
                                 QualityType qualityType = QualityType.Blue;
@@ -3025,7 +3027,7 @@ namespace Oshima.FunGame.OshimaServers.Service
                                     string itemquality = ItemSet.GetQualityTypeName(itemDrop.QualityType);
                                     string itemtype = ItemSet.GetItemTypeName(itemDrop.ItemType) + (itemDrop.ItemType == ItemType.Weapon && itemDrop.WeaponType != WeaponType.None ? "-" + ItemSet.GetWeaponTypeName(itemDrop.WeaponType) : "");
                                     if (itemtype != "") itemtype = $"|{itemtype}";
-                                    award += $"！额外获得了：[{itemquality + itemtype}]{itemDrop.Name}";
+                                    award += $"！额外获得了：[{itemquality + itemtype}]{itemDrop.Name.CreateCmdInput($"我的物品{itemDrop.Name}")}";
                                 }
                             }
                             exploreString = $"{exploreString}\r\n{string.Join("\r\n", msgs)}\r\n探索小队战胜了{enemy.Name}！获得了：{award}！";
@@ -3042,7 +3044,7 @@ namespace Oshima.FunGame.OshimaServers.Service
                             {
                                 Item item = FunGameConstant.ExploreItems[region][Random.Shared.Next(FunGameConstant.ExploreItems[region].Count)];
                                 model.Awards[item.Name] = deadEnemys.Count();
-                                award = $"{deadEnemys.Count()} 个{item.Name}";
+                                award = $"{deadEnemys.Count()} 个{item.Name.CreateCmdInput($"我的物品{item.Name}")}";
                                 exploreString += $"但是获得了补偿：{award}！";
                             }
                         }
@@ -3072,7 +3074,7 @@ namespace Oshima.FunGame.OshimaServers.Service
                         string itemquality = ItemSet.GetQualityTypeName(itemEarned.QualityType);
                         string itemtype = ItemSet.GetItemTypeName(itemEarned.ItemType) + (itemEarned.ItemType == ItemType.Weapon && itemEarned.WeaponType != WeaponType.None ? "-" + ItemSet.GetWeaponTypeName(itemEarned.WeaponType) : "");
                         if (itemtype != "") itemtype = $"|{itemtype}";
-                        award += $"[{itemquality + itemtype}]{itemEarned.Name}";
+                        award += $"[{itemquality + itemtype}]{itemEarned.Name.CreateCmdInput($"我的物品{itemEarned.Name}")}";
                     }
                     break;
                 case ExploreResult.Event:
@@ -3995,7 +3997,7 @@ namespace Oshima.FunGame.OshimaServers.Service
                         List<string> expBook = [];
                         if (large > 0)
                         {
-                            expBook.Add($"{large} 个大经验书");
+                            expBook.Add($"{large} 个" + "大经验书".CreateCmdInput($"我的物品大经验书"));
                             for (int i = 0; i < large; i++)
                             {
                                 AddItemToUserInventory(user, new 大经验书());
@@ -4003,7 +4005,7 @@ namespace Oshima.FunGame.OshimaServers.Service
                         }
                         if (medium > 0)
                         {
-                            expBook.Add($"{medium} 个中经验书");
+                            expBook.Add($"{medium} 个" + "中经验书".CreateCmdInput($"我的物品中经验书"));
                             for (int i = 0; i < medium; i++)
                             {
                                 AddItemToUserInventory(user, new 中经验书());
@@ -4011,7 +4013,7 @@ namespace Oshima.FunGame.OshimaServers.Service
                         }
                         if (small > 0)
                         {
-                            expBook.Add($"{small} 个小经验书");
+                            expBook.Add($"{small} 个" + "小经验书".CreateCmdInput($"我的物品小经验书"));
                             for (int i = 0; i < small; i++)
                             {
                                 AddItemToUserInventory(user, new 小经验书());
@@ -4041,7 +4043,7 @@ namespace Oshima.FunGame.OshimaServers.Service
                             region ??= FunGameConstant.Regions[Random.Shared.Next(FunGameConstant.Regions.Count)];
                             item ??= region.Crops.ToList()[Random.Shared.Next(region.Crops.Count)];
                             award = difficulty + Random.Shared.Next(0, 3);
-                            regionItems.Add($"{award} 个{item.Name}（来自{region.Name}）");
+                            regionItems.Add($"{award} 个{item.Name.CreateCmdInput($"我的物品{item.Name}")}（来自{region.Name.CreateCmdInput($"查地区{region.Id}")}）");
                             for (int j = 0; j < award; j++)
                             {
                                 AddItemToUserInventory(user, item, copyLevel: item.ItemType == ItemType.MagicCard);
@@ -4068,7 +4070,7 @@ namespace Oshima.FunGame.OshimaServers.Service
                             }
                             item ??= FunGameConstant.CharacterLevelBreakItems[Random.Shared.Next(FunGameConstant.CharacterLevelBreakItems.Count)];
                             award = difficulty + Random.Shared.Next(0, 3);
-                            characterLevelBreakItems.Add($"{award} 个{item.Name}");
+                            characterLevelBreakItems.Add($"{award} 个{item.Name.CreateCmdInput($"我的物品{item.Name}")}");
                             for (int j = 0; j < award; j++)
                             {
                                 AddItemToUserInventory(user, item, copyLevel: item.ItemType == ItemType.MagicCard);
@@ -4095,7 +4097,7 @@ namespace Oshima.FunGame.OshimaServers.Service
                             }
                             item ??= FunGameConstant.SkillLevelUpItems[Random.Shared.Next(FunGameConstant.SkillLevelUpItems.Count)];
                             award = difficulty + Random.Shared.Next(0, 3);
-                            skillLevelUpItems.Add($"{award} 个{item.Name}");
+                            skillLevelUpItems.Add($"{award} 个{item.Name.CreateCmdInput($"我的物品{item.Name}")}");
                             for (int j = 0; j < award; j++)
                             {
                                 AddItemToUserInventory(user, item, copyLevel: item.ItemType == ItemType.MagicCard);
@@ -4138,7 +4140,7 @@ namespace Oshima.FunGame.OshimaServers.Service
                                 magicCards[ItemSet.GetQualityTypeName(item.QualityType)] = 1;
                             }
                         }
-                        builder.AppendLine($"{string.Join("、", magicCards.Select(kv => $"{kv.Value} 张{kv.Key}魔法卡"))}！");
+                        builder.AppendLine($"{string.Join("、", magicCards.Select(kv => $"{kv.Value} 张{kv.Key}魔法卡"))}！" + "查看库存".CreateCmdInput($"我的库存魔法卡"));
                         break;
                     default:
                         break;

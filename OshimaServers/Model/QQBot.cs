@@ -1,6 +1,6 @@
 ﻿using System.Text.Json.Serialization;
 
-namespace Oshima.FunGame.WebAPI.Models
+namespace Oshima.FunGame.OshimaServers.Models
 {
     public class Payload
     {
@@ -85,6 +85,149 @@ namespace Oshima.FunGame.WebAPI.Models
         public long FunGameUID { get; set; }
         public bool UseNotice { get; set; }
         public string ImageUrl { get; set; }
+    }
+
+    public class BotReply
+    {
+        // 纯文本内容（兼容旧版）
+        public string? Text { get; set; }
+
+        // Markdown 消息（与 Text 互斥，若提供则发送 Markdown）
+        public MarkdownMessage? Markdown { get; set; }
+
+        // Markdown 附带键盘（仅当 Markdown 不为 null 时有效）
+        public KeyboardMessage? Keyboard { get; set; }
+
+        // 方便从 string 隐式转换，旧代码无感知
+        public static implicit operator BotReply(string text) => new() { Text = text };
+    }
+
+    public static class BotReplyExtension
+    {
+        /// <summary>
+        /// 增加键盘按钮
+        /// </summary>
+        /// <param name="kb">键盘消息</param>
+        /// <param name="btnCountPerRow">每行按钮数量，自动检查如果超过则新建行</param>
+        /// <param name="buttons">按钮</param>
+        /// <returns></returns>
+        public static KeyboardMessage AppendButtons(this KeyboardMessage kb, int btnCountPerRow, params IEnumerable<Button> buttons)
+        {
+            if (btnCountPerRow < 1)
+                btnCountPerRow = 1;
+
+            kb.Content ??= new KeyboardContent
+            {
+                Rows = []
+            };
+
+            List<Row> rows = kb.Content.Rows;
+            // 找到当前可用的最后一个 Row，或新建一个
+            Row? currentRow = rows.Count > 0 ? rows[^1] : null;
+
+            foreach (Button button in buttons)
+            {
+                if (currentRow is null || currentRow.Buttons.Count >= btnCountPerRow)
+                {
+                    currentRow = new Row { Buttons = [] };
+                    rows.Add(currentRow);
+                }
+
+                currentRow.Buttons.Add(button);
+            }
+
+            return kb;
+        }
+
+        /// <summary>
+        /// 新增一行，然后在该行增加键盘按钮
+        /// </summary>
+        /// <param name="kb">键盘消息</param>
+        /// <param name="btnCountPerRow">每行按钮数量，自动检查如果超过则新建行</param>
+        /// <param name="buttons">按钮</param>
+        /// <returns></returns>
+        public static KeyboardMessage AppendButtonsWithNewRow(this KeyboardMessage kb, int btnCountPerRow, params IEnumerable<Button> buttons)
+        {
+            if (btnCountPerRow < 1)
+                btnCountPerRow = 1;
+
+            kb.Content ??= new KeyboardContent
+            {
+                Rows = []
+            };
+
+            List<Row> rows = kb.Content.Rows;
+            Row? currentRow = null;
+
+            foreach (Button button in buttons)
+            {
+                if (currentRow is null || currentRow.Buttons.Count >= btnCountPerRow)
+                {
+                    currentRow = new Row { Buttons = [] };
+                    rows.Add(currentRow);
+                }
+
+                currentRow.Buttons.Add(button);
+            }
+
+            return kb;
+        }
+
+        /// <summary>
+        /// 添加通用分类键盘组件
+        /// </summary>
+        /// <param name="kb"></param>
+        /// <param name="command"></param>
+        /// <param name="currentPage"></param>
+        /// <param name="totalPages"></param>
+        /// <returns></returns>
+        public static KeyboardMessage AddPaginationRow(this KeyboardMessage kb, string command, int currentPage, int totalPages)
+        {
+            List<Button> buttons = [];
+
+            // 首页和上一页
+            if (currentPage > 1)
+            {
+                buttons.Add(Button.CreateCmdButton("<<", $"{command}1", enter: true, style: 1));
+                buttons.Add(Button.CreateCmdButton("<", $"{command}{currentPage - 1}", enter: true, style: 1));
+            }
+
+            // 页码指示和跳转
+            buttons.Add(Button.CreateCmdButton($"{currentPage} / {totalPages}", $"{command} ", enter: false, style: 1));
+
+            // 下一页和末页
+            if (currentPage < totalPages)
+            {
+                buttons.Add(Button.CreateCmdButton(">", $"{command}{currentPage + 1}", enter: true, style: 1));
+                buttons.Add(Button.CreateCmdButton(">>", $"{command}{totalPages}", enter: true, style: 1));
+            }
+
+            return kb.AppendButtonsWithNewRow(5, buttons);
+        }
+
+        /// <summary>
+        /// 创建一个 qqbot-cmd-input 标签字符串。点击后 text 会填充到输入框，show 为展示文本。
+        /// </summary>
+        /// <param name="show">按钮或链接展示的文本</param>
+        /// <param name="text">填充到输入框的指令文本</param>
+        /// <param name="thisIsText">交换两个参数（指示 this 为 text）</param>
+        /// <returns>形如 &lt;qqbot-cmd-input text="..." show="..."/&gt; 的字符串</returns>
+        public static string CreateCmdInput(this string show, string text, bool thisIsText = false)
+        {
+            // 转义双引号（避免属性值被截断）
+            string escapedText = text.Replace("\"", "&quot;");
+            string escapedShow = show.Replace("\"", "&quot;");
+            if (thisIsText)
+            {
+                return $"<qqbot-cmd-input text=\"{escapedShow}\" show=\"{escapedText}\"/>";
+            }
+            return $"<qqbot-cmd-input text=\"{escapedText}\" show=\"{escapedShow}\"/>";
+        }
+
+        /// <summary>
+        /// 创建展示文本与填充内容相同的 qqbot-cmd-input 标签。
+        /// </summary>
+        public static string CreateCmdInput(this string text) => CreateCmdInput(text, text);
     }
 
     public class ThirdPartyMessage : IBotMessage
@@ -255,6 +398,7 @@ namespace Oshima.FunGame.WebAPI.Models
     {
         public string RequestUrl { get; set; } = "";
     }
+
     public class MarkdownMessage
     {
         /// <summary>
@@ -327,6 +471,70 @@ namespace Oshima.FunGame.WebAPI.Models
 
         [JsonPropertyName("action")]
         public Action Action { get; set; } = new();
+
+        /// <summary>
+        /// 创建一个指令按钮（Type = 2），点击后发送指定指令文本。
+        /// </summary>
+        /// <param name="label">按钮默认显示文本</param>
+        /// <param name="data">指令文本（填充或发送的内容）</param>
+        /// <param name="enter">true = 点击直接发送消息，false = 仅填充到输入框</param>
+        /// <param name="reply">是否引用当前消息（仅在 Type = 2 且 enter = true 时有效）</param>
+        /// <param name="visitedLabel">点击后显示的文本，为 null 则与 label 相同</param>
+        /// <param name="style">按钮样式：0 = 灰色，1 = 蓝色</param>
+        /// <param name="permissionType">权限类型：0 = 指定用户，1 = 管理者，2 = 所有人</param>
+        /// <returns></returns>
+        public static Button CreateCmdButton(string label, string data, bool enter = true, bool reply = false, string? visitedLabel = null, int style = 1, int permissionType = 2)
+        {
+            return new Button
+            {
+                Id = Guid.NewGuid().ToString(),
+                RenderData = new RenderData
+                {
+                    Label = label,
+                    VisitedLabel = visitedLabel ?? label,
+                    Style = style
+                },
+                Action = new Action
+                {
+                    Type = 2,
+                    Data = data,
+                    Enter = enter,
+                    Reply = reply,
+                    Permission = new Permission { Type = permissionType }
+                }
+            };
+        }
+
+        /// <summary>
+        /// 创建一个指令按钮（Type = 1），点击后向服务器发送 INTERACTION_CREATE 事件。
+        /// </summary>
+        /// <param name="label">按钮默认显示文本</param>
+        /// <param name="data">指令文本（填充或发送的内容）</param>
+        /// <param name="enter">true = 点击直接发送消息，false = 仅填充到输入框</param>
+        /// <param name="reply">是否引用当前消息（仅在 Type = 2 且 enter = true 时有效）</param>
+        /// <param name="visitedLabel">点击后显示的文本，为 null 则与 label 相同</param>
+        /// <param name="style">按钮样式：0 = 灰色，1 = 蓝色</param>
+        /// <param name="permissionType">权限类型：0 = 指定用户，1 = 管理者，2 = 所有人</param>
+        /// <returns></returns>
+        public static Button CreateInteractionButton(string label, string data, string? visitedLabel = null, int style = 1, int permissionType = 2)
+        {
+            return new Button
+            {
+                Id = Guid.NewGuid().ToString(),
+                RenderData = new RenderData
+                {
+                    Label = label,
+                    VisitedLabel = visitedLabel ?? label,
+                    Style = style
+                },
+                Action = new Action
+                {
+                    Type = 1,
+                    Data = data,
+                    Permission = new Permission { Type = permissionType }
+                }
+            };
+        }
     }
 
     public class RenderData
@@ -362,7 +570,7 @@ namespace Oshima.FunGame.WebAPI.Models
         public string Data { get; set; } = "";
 
         /// <summary>
-        /// 回调数据，机器人后台会收到 INTERACTION_CREATE 事件，data 会回传
+        /// 当 Type = 2 时，true = 直接发送消息，false = 填充输入框
         /// </summary>
         [JsonPropertyName("enter")]
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
@@ -387,5 +595,77 @@ namespace Oshima.FunGame.WebAPI.Models
     {
         [JsonPropertyName("type")]
         public int Type { get; set; }
+    }
+
+    public class InteractionEvent
+    {
+        [JsonPropertyName("id")]
+        public string Id { get; set; } = "";
+
+        [JsonPropertyName("type")]
+        public int Type { get; set; }
+
+        [JsonPropertyName("chat_type")]
+        public int ChatType { get; set; }
+
+        [JsonPropertyName("timestamp")]
+        public string Timestamp { get; set; } = "";
+
+        [JsonPropertyName("guild_id")]
+        public string GuildId { get; set; } = "";
+
+        [JsonPropertyName("channel_id")]
+        public string ChannelId { get; set; } = "";
+
+        [JsonPropertyName("group_openid")]
+        public string GroupOpenId { get; set; } = "";
+
+        [JsonPropertyName("user_openid")]
+        public string UserOpenId { get; set; } = "";
+
+        [JsonPropertyName("version")]
+        public int Version { get; set; }
+
+        [JsonPropertyName("application_id")]
+        public string ApplicationId { get; set; } = "";
+
+        [JsonPropertyName("data")]
+        public InteractionData Data { get; set; } = new();
+    }
+
+    public class InteractionData
+    {
+        [JsonPropertyName("type")]
+        public int Type { get; set; }
+
+        [JsonPropertyName("resolved")]
+        public InteractionResolved? Resolved { get; set; }
+
+        [JsonPropertyName("feature")]
+        public InteractionFeature? Feature { get; set; }
+    }
+
+    public class InteractionResolved
+    {
+        [JsonPropertyName("button_id")]
+        public string ButtonId { get; set; } = "";
+
+        [JsonPropertyName("button_data")]
+        public string ButtonData { get; set; } = "";
+
+        [JsonPropertyName("message_id")]
+        public string MessageId { get; set; } = "";
+
+        [JsonPropertyName("user_id")]
+        public string UserId { get; set; } = "";
+    }
+
+    public class InteractionFeature
+    {
+        [JsonPropertyName("type")]
+        public int Type { get; set; }
+
+        [JsonPropertyName("data")]
+        public string Data { get; set; } = "";
     }
 }
