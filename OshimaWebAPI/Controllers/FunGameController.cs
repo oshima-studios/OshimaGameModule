@@ -1000,8 +1000,17 @@ namespace Oshima.FunGame.WebAPI.Controllers
         }
 
         [HttpGet("inventoryinfo2")]
-        public List<string> GetInventoryInfo2([FromQuery] long? uid = null, [FromQuery] int? page = null)
+        public BotReply GetInventoryInfo2([FromQuery] long? uid = null, [FromQuery] int? page = null, [FromQuery] string command = "")
         {
+            MarkdownMessage md = new()
+            {
+                Content = busy
+            };
+            BotReply reply = new()
+            {
+                Markdown = md
+            };
+
             long userid = uid ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
             int showPage = page ?? 1;
             if (showPage <= 0) showPage = 1;
@@ -1062,22 +1071,41 @@ namespace Oshima.FunGame.WebAPI.Controllers
                     }
 
                     list.Add($"页数：{showPage} / {maxPage}");
+                    reply.Keyboard = new KeyboardMessage()
+                        .AddPaginationRow(command, showPage, maxPage)
+                        .AppendButtonsWithNewRow(1, Button.CreateCmdButton("库存搜索", $"库存搜索", false));
                 }
                 else
                 {
                     list.Add($"没有这么多页！当前总页数为 {maxPage}，但你请求的是第 {showPage} 页。");
+                    reply.Keyboard = new KeyboardMessage().AppendButtons(4, [
+                        Button.CreateCmdButton("查看首页", $"{command}1"),
+                        Button.CreateCmdButton("跳转至页码", $"{command}", false),
+                        Button.CreateCmdButton("查看末页", $"{command}{maxPage}"),
+                        Button.CreateCmdButton("库存搜索", $"库存搜索", false)
+                    ]);
                 }
             }
             else
             {
                 list.Add(noSaved);
             }
-            return list;
+            md.Content = string.Join("\r\n", list);
+            return reply;
         }
 
         [HttpGet("inventoryinfo3")]
-        public List<string> GetInventoryInfo3([FromQuery] long? uid = null, [FromQuery] int? page = null, [FromQuery] int? order = null, [FromQuery] int? orderqty = null)
+        public BotReply GetInventoryInfo3([FromQuery] long? uid = null, [FromQuery] int? page = null, [FromQuery] int? order = null, [FromQuery] int? orderqty = null, [FromQuery] string command = "")
         {
+            MarkdownMessage md = new()
+            {
+                Content = busy
+            };
+            BotReply reply = new()
+            {
+                Markdown = md
+            };
+
             long userid = uid ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
             int showPage = page ?? 1;
             if (showPage <= 0) showPage = 1;
@@ -1183,22 +1211,41 @@ namespace Oshima.FunGame.WebAPI.Controllers
                         list.Add(str);
                     }
                     list.Add($"页数：{showPage} / {maxPage}");
+                    reply.Keyboard = new KeyboardMessage()
+                        .AddPaginationRow(command, showPage, maxPage)
+                        .AppendButtonsWithNewRow(1, Button.CreateCmdButton("库存搜索", $"库存搜索", false));
                 }
                 else
                 {
                     list.Add($"没有这么多页！当前总页数为 {maxPage}，但你请求的是第 {showPage} 页。");
+                    reply.Keyboard = new KeyboardMessage().AppendButtons(4, [
+                        Button.CreateCmdButton("查看首页", $"{command}1"),
+                        Button.CreateCmdButton("跳转至页码", $"{command}", false),
+                        Button.CreateCmdButton("查看末页", $"{command}{maxPage}"),
+                        Button.CreateCmdButton("库存搜索", $"库存搜索", false)
+                    ]);
                 }
             }
             else
             {
                 list.Add(noSaved);
             }
-            return list;
+            md.Content = string.Join("\r\n", list);
+            return reply;
         }
 
         [HttpGet("inventoryinfo4")]
-        public List<string> GetInventoryInfo4([FromQuery] long? uid = null, [FromQuery] int? page = null, [FromQuery] int? type = null)
+        public BotReply GetInventoryInfo4([FromQuery] long? uid = null, [FromQuery] int? page = null, [FromQuery] int? type = null, [FromQuery] string command = "")
         {
+            MarkdownMessage md = new()
+            {
+                Content = busy
+            };
+            BotReply reply = new()
+            {
+                Markdown = md
+            };
+
             long userid = uid ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
             int showPage = page ?? 1;
             int itemtype = type ?? -1;
@@ -1212,7 +1259,12 @@ namespace Oshima.FunGame.WebAPI.Controllers
             {
                 if (type == -1)
                 {
-                    return ["没有指定物品的类型，请使用通用查询方法！"];
+                    md.Content = "没有指定物品的类型，请使用通用查询方法！";
+                    reply.Keyboard = new KeyboardMessage().AppendButtons(2, [
+                        Button.CreateCmdButton("我的库存", $"我的库存", false),
+                        Button.CreateCmdButton("库存搜索", $"库存搜索", false)
+                    ]);
+                    return reply;
                 }
 
                 User user = FunGameService.GetUser(pc);
@@ -1295,22 +1347,41 @@ namespace Oshima.FunGame.WebAPI.Controllers
                         list.Add(str);
                     }
                     list.Add($"页数：{showPage} / {maxPage}");
+                    reply.Keyboard = new KeyboardMessage()
+                        .AddPaginationRow(command, showPage, maxPage)
+                        .AppendButtonsWithNewRow(1, Button.CreateCmdButton("库存搜索", $"库存搜索", false));
                 }
                 else
                 {
                     list.Add($"没有这么多页！当前总页数为 {maxPage}，但你请求的是第 {showPage} 页。");
+                    reply.Keyboard = new KeyboardMessage().AppendButtons(4, [
+                        Button.CreateCmdButton("查看首页", $"{command}1"),
+                        Button.CreateCmdButton("跳转至页码", $"{command}", false),
+                        Button.CreateCmdButton("查看末页", $"{command}{maxPage}"),
+                        Button.CreateCmdButton("库存搜索", $"库存搜索", false)
+                    ]);
                 }
             }
             else
             {
                 list.Add(noSaved);
             }
-            return list;
+            md.Content = string.Join("\r\n", list);
+            return reply;
         }
 
         [HttpGet("inventoryinfo5")]
-        public List<string> GetInventoryInfo5([FromQuery] long? uid = null, [FromQuery] int? page = null)
+        public BotReply GetInventoryInfo5([FromQuery] long? uid = null, [FromQuery] int? page = null, [FromQuery] string command = "")
         {
+            MarkdownMessage md = new()
+            {
+                Content = busy
+            };
+            BotReply reply = new()
+            {
+                Markdown = md
+            };
+
             long userid = uid ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
             int showPage = page ?? 1;
             if (showPage <= 0) showPage = 1;
@@ -1357,22 +1428,41 @@ namespace Oshima.FunGame.WebAPI.Controllers
                     }
 
                     list.Add($"页数：{showPage} / {maxPage}");
+                    reply.Keyboard = new KeyboardMessage()
+                        .AddPaginationRow(command, showPage, maxPage)
+                        .AppendButtonsWithNewRow(1, Button.CreateCmdButton("库存搜索", $"库存搜索", false));
                 }
                 else
                 {
                     list.Add($"没有这么多页！当前总页数为 {maxPage}，但你请求的是第 {showPage} 页。");
+                    reply.Keyboard = new KeyboardMessage().AppendButtons(4, [
+                        Button.CreateCmdButton("查看首页", $"{command}1"),
+                        Button.CreateCmdButton("跳转至页码", $"{command}", false),
+                        Button.CreateCmdButton("查看末页", $"{command}{maxPage}"),
+                        Button.CreateCmdButton("库存搜索", $"库存搜索", false)
+                    ]);
                 }
             }
             else
             {
                 list.Add(noSaved);
             }
-            return list;
+            md.Content = string.Join("\r\n", list);
+            return reply;
         }
 
         [HttpGet("inventoryinfo6")]
-        public List<string> GetInventoryInfo6([FromQuery] long uid = 0, [FromQuery] int page = 1, [FromQuery] string name = "", [FromForm] bool containsDescription = false)
+        public BotReply GetInventoryInfo6([FromQuery] long uid = 0, [FromQuery] int page = 1, [FromQuery] string name = "", [FromQuery] bool containsDescription = false, [FromQuery] string command = "")
         {
+            MarkdownMessage md = new()
+            {
+                Content = busy
+            };
+            BotReply reply = new()
+            {
+                Markdown = md
+            };
+
             if (page <= 0) page = 1;
 
             PluginConfig pc = FunGameService.GetUserConfig(uid, out _);
@@ -1383,7 +1473,12 @@ namespace Oshima.FunGame.WebAPI.Controllers
             {
                 if (name == "")
                 {
-                    return ["搜索关键词为空！"];
+                    md.Content = "搜索关键词为空！";
+                    reply.Keyboard = new KeyboardMessage().AppendButtons(2, [
+                        Button.CreateCmdButton("我的库存", $"我的库存", false),
+                        Button.CreateCmdButton("库存搜索", $"库存搜索", false)
+                    ]);
+                    return reply;
                 }
 
                 User user = FunGameService.GetUser(pc);
@@ -1466,17 +1561,27 @@ namespace Oshima.FunGame.WebAPI.Controllers
                         list.Add(str);
                     }
                     list.Add($"页数：{page} / {maxPage}");
+                    reply.Keyboard = new KeyboardMessage()
+                        .AddPaginationRow(command, page, maxPage)
+                        .AppendButtonsWithNewRow(1, Button.CreateCmdButton("库存搜索", $"库存搜索", false));
                 }
                 else
                 {
                     list.Add($"没有这么多页！当前总页数为 {maxPage}，但你请求的是第 {page} 页。");
+                    reply.Keyboard = new KeyboardMessage().AppendButtons(4, [
+                        Button.CreateCmdButton("查看首页", $"{command}1"),
+                        Button.CreateCmdButton("跳转至页码", $"{command}", false),
+                        Button.CreateCmdButton("查看末页", $"{command}{maxPage}"),
+                        Button.CreateCmdButton("库存搜索", $"库存搜索", false)
+                    ]);
                 }
             }
             else
             {
                 list.Add(noSaved);
             }
-            return list;
+            md.Content = string.Join("\r\n", list);
+            return reply;
         }
 
         [HttpPost("newcustomcharacter")]
@@ -4162,8 +4267,16 @@ namespace Oshima.FunGame.WebAPI.Controllers
         }
 
         [HttpPost("addsquad")]
-        public string AddSquad([FromQuery] long? uid = null, [FromQuery] int? c = null)
+        public BotReply AddSquad([FromQuery] long? uid = null, [FromQuery] int? c = null)
         {
+            MarkdownMessage md = new()
+            {
+                Content = busy
+            };
+            BotReply reply = new()
+            {
+                Markdown = md
+            };
             try
             {
                 long userid = uid ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
@@ -4183,42 +4296,56 @@ namespace Oshima.FunGame.WebAPI.Controllers
                     else
                     {
                         FunGameService.ReleaseUserSemaphoreSlim(userid);
-                        return $"没有找到与这个序号相对应的角色！";
+                        md.Content = $"没有找到与这个序号相对应的角色！";
+                        return reply;
                     }
 
                     if (user.Inventory.Squad.Count >= 4)
                     {
                         FunGameService.ReleaseUserSemaphoreSlim(userid);
-                        return $"小队人数已满 4 人，无法继续添加角色！当前小队角色如下：\r\n{FunGameService.GetSquadInfo(user.Inventory.Characters, user.Inventory.Squad)}";
+                        md.Content = $"小队人数已满 4 人，无法继续添加角色！当前小队角色如下：\r\n{FunGameService.GetSquadInfo(user.Inventory.Characters, user.Inventory.Squad)}";
+                        return reply;
                     }
 
                     if (user.Inventory.Squad.Contains(character.Id))
                     {
                         FunGameService.ReleaseUserSemaphoreSlim(userid);
-                        return $"此角色已经在小队中了！";
+                        md.Content = $"此角色已经在小队中了！";
+                        return reply;
                     }
 
                     user.Inventory.Squad.Add(character.Id);
                     FunGameService.SetUserConfigAndReleaseSemaphoreSlim(userid, pc, user);
-                    return $"添加小队角色成功：{character}\r\n当前小队角色如下：\r\n{FunGameService.GetSquadInfo(user.Inventory.Characters, user.Inventory.Squad)}";
+                    md.Content = $"添加小队角色成功：{character}\r\n当前小队角色如下：\r\n{FunGameService.GetSquadInfo(user.Inventory.Characters, user.Inventory.Squad)}";
+                    return reply;
                 }
                 else
                 {
                     FunGameService.ReleaseUserSemaphoreSlim(userid);
-                    return noSaved;
+                    md.Content = noSaved;
+                    return reply;
                 }
             }
             catch (Exception e)
             {
                 FunGameService.ReleaseUserSemaphoreSlim(uid.ToString() ?? "");
                 if (Logger.IsEnabled(Microsoft.Extensions.Logging.LogLevel.Error)) Logger.LogError(e, "Error: {e}", e);
-                return busy;
+                md.Content = busy;
+                return reply;
             }
         }
 
         [HttpPost("removesquad")]
-        public string RemoveSquad([FromQuery] long? uid = null, [FromQuery] int? c = null)
+        public BotReply RemoveSquad([FromQuery] long? uid = null, [FromQuery] int? c = null)
         {
+            MarkdownMessage md = new()
+            {
+                Content = busy
+            };
+            BotReply reply = new()
+            {
+                Markdown = md
+            };
             try
             {
                 long userid = uid ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
@@ -4238,36 +4365,49 @@ namespace Oshima.FunGame.WebAPI.Controllers
                     else
                     {
                         FunGameService.ReleaseUserSemaphoreSlim(userid);
-                        return $"没有找到与这个序号相对应的角色！";
+                        md.Content = $"没有找到与这个序号相对应的角色！";
+                        return reply;
                     }
 
                     if (!user.Inventory.Squad.Contains(character.Id))
                     {
                         FunGameService.ReleaseUserSemaphoreSlim(userid);
-                        return $"此角色不在小队中！";
+                        md.Content = $"此角色不在小队中！";
+                        return reply;
                     }
 
                     user.Inventory.Squad.Remove(character.Id);
                     FunGameService.SetUserConfigAndReleaseSemaphoreSlim(userid, pc, user);
-                    return $"移除小队角色成功：{character}\r\n当前小队角色如下：\r\n{FunGameService.GetSquadInfo(user.Inventory.Characters, user.Inventory.Squad)}";
+                    md.Content = $"移除小队角色成功：{character}\r\n当前小队角色如下：\r\n{FunGameService.GetSquadInfo(user.Inventory.Characters, user.Inventory.Squad)}";
+                    return reply;
                 }
                 else
                 {
                     FunGameService.ReleaseUserSemaphoreSlim(userid);
-                    return noSaved;
+                    md.Content = noSaved;
+                    return reply;
                 }
             }
             catch (Exception e)
             {
                 FunGameService.ReleaseUserSemaphoreSlim(uid.ToString() ?? "");
                 if (Logger.IsEnabled(Microsoft.Extensions.Logging.LogLevel.Error)) Logger.LogError(e, "Error: {e}", e);
-                return busy;
+                md.Content = busy;
+                return reply;
             }
         }
 
         [HttpPost("setsquad")]
-        public string SetSquad([FromQuery] long? uid = null, [FromBody] int[]? c = null)
+        public BotReply SetSquad([FromQuery] long? uid = null, [FromBody] int[]? c = null)
         {
+            MarkdownMessage md = new()
+            {
+                Content = busy
+            };
+            BotReply reply = new()
+            {
+                Markdown = md
+            };
             try
             {
                 long userid = uid ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
@@ -4290,25 +4430,29 @@ namespace Oshima.FunGame.WebAPI.Controllers
                         else
                         {
                             FunGameService.ReleaseUserSemaphoreSlim(userid);
-                            return $"设置失败：没有找到与序号 {characterIndex} 相对应的角色！";
+                            md.Content = $"设置失败：没有找到与序号 {characterIndex} 相对应的角色！";
+                            return reply;
                         }
                         user.Inventory.Squad.Add(character.Id);
                     }
 
                     FunGameService.SetUserConfigAndReleaseSemaphoreSlim(userid, pc, user);
-                    return $"设置小队成员成功！当前小队角色如下：\r\n{FunGameService.GetSquadInfo(user.Inventory.Characters, user.Inventory.Squad)}";
+                    md.Content = $"设置小队成员成功！当前小队角色如下：\r\n{FunGameService.GetSquadInfo(user.Inventory.Characters, user.Inventory.Squad)}";
+                    return reply;
                 }
                 else
                 {
                     FunGameService.ReleaseUserSemaphoreSlim(userid);
-                    return noSaved;
+                    md.Content = noSaved;
+                    return reply;
                 }
             }
             catch (Exception e)
             {
                 FunGameService.ReleaseUserSemaphoreSlim(uid.ToString() ?? "");
                 if (Logger.IsEnabled(Microsoft.Extensions.Logging.LogLevel.Error)) Logger.LogError(e, "Error: {e}", e);
-                return busy;
+                md.Content = busy;
+                return reply;
             }
         }
 
@@ -4345,8 +4489,17 @@ namespace Oshima.FunGame.WebAPI.Controllers
         }
 
         [HttpGet("showsquad")]
-        public string ShowSquad([FromQuery] long? uid = null)
+        public BotReply ShowSquad([FromQuery] long? uid = null)
         {
+            MarkdownMessage md = new()
+            {
+                Content = busy
+            };
+            BotReply reply = new()
+            {
+                Markdown = md
+            };
+
             try
             {
                 long userid = uid ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
@@ -4357,26 +4510,38 @@ namespace Oshima.FunGame.WebAPI.Controllers
                 if (pc.Count > 0)
                 {
                     User user = FunGameService.GetUser(pc);
-                    return $"你的当前小队角色如下：\r\n{FunGameService.GetSquadInfo(user.Inventory.Characters, user.Inventory.Squad)}";
+                    md.Content = $"你的当前小队角色如下：\r\n{FunGameService.GetSquadInfo(user.Inventory.Characters, user.Inventory.Squad)}";
+                    return reply;
                 }
                 else
                 {
-                    return noSaved;
+                    md.Content = noSaved;
+                    return reply;
                 }
             }
             catch (Exception e)
             {
                 if (Logger.IsEnabled(Microsoft.Extensions.Logging.LogLevel.Error)) Logger.LogError(e, "Error: {e}", e);
-                return busy;
+                md.Content = busy;
+                return reply;
             }
         }
 
         [HttpPost("fightbossteam")]
-        public async Task<List<string>> FightBossTeam([FromQuery] long? uid = null, [FromQuery] int? index = null, [FromQuery] bool? all = null)
+        public async Task<BotReply> FightBossTeam([FromQuery] long? uid = null, [FromQuery] int? index = null, [FromQuery] bool? all = null)
         {
             long userid = uid ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
             int bossIndex = index ?? 0;
             bool showAllRound = all ?? false;
+
+            MarkdownMessage md = new()
+            {
+                Content = busy
+            };
+            BotReply reply = new()
+            {
+                Markdown = md
+            };
 
             PluginConfig pc = FunGameService.GetUserConfig(userid, out _);
 
@@ -4391,8 +4556,9 @@ namespace Oshima.FunGame.WebAPI.Controllers
                     if (squad.All(c => c.HP < c.MaxHP * 0.1))
                     {
                         FunGameService.ReleaseUserSemaphoreSlim(userid);
-                        return [$"小队角色均重伤未愈，当前生命值低于 10%，请先等待生命值自动回复或重组小队！\r\n" +
-                            $"当前小队角色如下：\r\n{FunGameService.GetSquadInfo(user.Inventory.Characters, user.Inventory.Squad)}"];
+                        md.Content = $"小队角色均重伤未愈，当前生命值低于 10%，请先等待生命值自动回复、使用{"生命之泉".CreateCmdInput()}服务或重组小队！\r\n" +
+                            $"当前小队角色如下：\r\n{FunGameService.GetSquadInfo(user.Inventory.Characters, user.Inventory.Squad)}";
+                        return reply;
                     }
 
                     Character boss2 = CharacterBuilder.Build(boss, false, true, null, FunGameConstant.AllItems, FunGameConstant.AllSkills, false);
@@ -4416,18 +4582,22 @@ namespace Oshima.FunGame.WebAPI.Controllers
                     }
                     FunGameService.SetUserConfigAndReleaseSemaphoreSlim(userid, pc, user);
 
-                    return msgs;
+                    md.Content = FunGameService.MergeToMarkdown("战斗结果如下：", msgs);
+                    reply.Keyboard = new KeyboardMessage().AppendButtons(1, Button.CreateCmdButton("小队讨伐boss", $"小队讨伐boss"));
+                    return reply;
                 }
                 else
                 {
                     FunGameService.ReleaseUserSemaphoreSlim(userid);
-                    return [$"找不到指定编号的 Boss！"];
+                    md.Content = $"找不到指定编号的 Boss！";
+                    return reply;
                 }
             }
             else
             {
                 FunGameService.ReleaseUserSemaphoreSlim(userid);
-                return [noSaved];
+                md.Content = noSaved;
+                return reply;
             }
         }
 
@@ -6166,27 +6336,38 @@ namespace Oshima.FunGame.WebAPI.Controllers
                         }
                         else
                         {
-                            characterIds = [.. user.Inventory.Squad];
+                            List<long> realCid = [];
+                            List<Character> characters = [.. user.Inventory.Characters];
+                            for (int i = 0; i < characters.Count; i++)
+                            {
+                                if ((i == 0 && user.Inventory.Squad.Contains(FunGameConstant.CustomCharacterId)) || user.Inventory.Squad.Contains(characters[i].Id))
+                                {
+                                    realCid.Add(i + 1);
+                                }
+                            }
+                            characterIds = [.. realCid];
                             characterCount = characterIds.Length;
                         }
                     }
-
-                    // 检查角色存在
-                    List<long> invalid = [];
-                    foreach (long cid in characterIds)
+                    else
                     {
-                        if (cid > 0 && cid <= user.Inventory.Characters.Count)
+                        // 检查角色存在
+                        List<long> invalid = [];
+                        foreach (long cid in characterIds)
                         {
-                            // do nothing
+                            if (cid > 0 && cid <= user.Inventory.Characters.Count)
+                            {
+                                // do nothing
+                            }
+                            else
+                            {
+                                invalid.Add(cid);
+                            }
                         }
-                        else
+                        if (invalid.Count > 0)
                         {
-                            invalid.Add(cid);
+                            msg = $"没有找到与输入序号相对应的角色：{string.Join("，", invalid)}。";
                         }
-                    }
-                    if (invalid.Count > 0)
-                    {
-                        msg = $"没有找到与输入序号相对应的角色：{string.Join("，", invalid)}。";
                     }
 
                     // 检查探索许可
@@ -6436,7 +6617,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
                 md.Content = msg;
                 if (command != "")
                 {
-                    reply.Keyboard = new KeyboardMessage().AppendButtons(1, Button.CreateCmdButton("再探再报", command, permissionType: 0));
+                    reply.Keyboard = new KeyboardMessage().AppendButtons(1, Button.CreateCmdButton("再探再报", command, permissionType: 0, specifyUserIds: user.AutoKey));
                 }
                 return reply;
             }
@@ -8110,9 +8291,18 @@ namespace Oshima.FunGame.WebAPI.Controllers
         }
 
         [HttpPost("fightinstance")]
-        public async Task<string> FightInstance([FromQuery] long? uid = null, [FromQuery] int type = 0, [FromQuery] int difficulty = 1)
+        public async Task<BotReply> FightInstance([FromQuery] long? uid = null, [FromQuery] int type = 0, [FromQuery] int difficulty = 1)
         {
             long userid = uid ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
+
+            MarkdownMessage md = new()
+            {
+                Content = busy
+            };
+            BotReply reply = new()
+            {
+                Markdown = md
+            };
 
             try
             {
@@ -8139,7 +8329,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
                         Character[] squad = [.. user.Inventory.Characters.Where(c => user.Inventory.Squad.Contains(c.Id))];
                         if (squad.All(c => c.HP < c.MaxHP * 0.1))
                         {
-                            msg = $"小队角色均重伤未愈，当前生命值低于 10%，请先等待生命值自动回复或重组小队！\r\n" +
+                            msg = $"小队角色均重伤未愈，当前生命值低于 10%，请先等待生命值自动回复、使用{"生命之泉".CreateCmdInput()}服务或重组小队！\r\n" +
                             $"当前小队角色如下：\r\n{FunGameService.GetSquadInfo(user.Inventory.Characters, user.Inventory.Squad)}";
                         }
                         else
@@ -8152,11 +8342,11 @@ namespace Oshima.FunGame.WebAPI.Controllers
                                 if (exploreTimes <= 0)
                                 {
                                     exploreTimes = 0;
-                                    msg = $"今日的探索许可已用完，无法再继续挑战秘境。";
+                                    msg = $"今日的{"探索许可".CreateCmdInput("商店1")}已用完，无法再继续挑战秘境。";
                                 }
                                 else if (reduce > exploreTimes)
                                 {
-                                    msg = $"本次秘境挑战需要消耗 {reduce} 个探索许可，超过了你的剩余探索许可数量（{exploreTimes} 个），请减少小队的角色数量或更改难度系数。" +
+                                    msg = $"本次秘境挑战需要消耗 {reduce} 个{"探索许可".CreateCmdInput("商店1")}，超过了你的剩余探索许可数量（{exploreTimes} 个），请减少小队的角色数量或更改难度系数。" +
                                         $"\r\n需要注意：难度系数一比一兑换探索许可，并且参与挑战的角色，都需要消耗相同数量的探索许可。特殊地，魔法卡秘境额外 3 倍探索许可消耗。";
                                 }
                             }
@@ -8172,11 +8362,11 @@ namespace Oshima.FunGame.WebAPI.Controllers
                                 if (result)
                                 {
                                     exploreTimes -= reduce;
-                                    msg += $"本次秘境挑战消耗探索许可 {reduce} 个，你的剩余探索许可：{exploreTimes} 个。";
+                                    msg += $"本次秘境挑战消耗探索许可 {reduce} 个，你的剩余{"探索许可".CreateCmdInput("商店1")}：{exploreTimes} 个。";
                                 }
                                 else
                                 {
-                                    msg += $"本次秘境挑战失败，不消耗任何探索许可，请继续加油！你的剩余探索许可：{exploreTimes} 个。";
+                                    msg += $"本次秘境挑战失败，不消耗任何探索许可，请继续加油！你的剩余{"探索许可".CreateCmdInput("商店1")}：{exploreTimes} 个。";
                                 }
                             }
 
@@ -8191,19 +8381,22 @@ namespace Oshima.FunGame.WebAPI.Controllers
 
                     FunGameService.SetUserConfigAndReleaseSemaphoreSlim(userid, pc, user);
 
-                    return msg;
+                    md.Content = msg;
+                    return reply;
                 }
                 else
                 {
                     FunGameService.ReleaseUserSemaphoreSlim(userid);
-                    return noSaved;
+                    md.Content = noSaved;
+                    return reply;
                 }
             }
             catch (Exception e)
             {
                 FunGameService.ReleaseUserSemaphoreSlim(userid);
                 if (Logger.IsEnabled(Microsoft.Extensions.Logging.LogLevel.Error)) Logger.LogError(e, "Error: {e}", e);
-                return busy;
+                md.Content = busy;
+                return reply;
             }
         }
 

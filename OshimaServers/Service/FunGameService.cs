@@ -3,7 +3,6 @@ using System.Text;
 using Milimoe.FunGame.Core.Api.Transmittal;
 using Milimoe.FunGame.Core.Api.Utility;
 using Milimoe.FunGame.Core.Entity;
-using Milimoe.FunGame.Core.Interface.Entity;
 using Milimoe.FunGame.Core.Library.Constant;
 using Oshima.Core.Constant;
 using Oshima.FunGame.OshimaModules.Characters;
@@ -21,6 +20,7 @@ namespace Oshima.FunGame.OshimaServers.Service
 {
     public class FunGameService
     {
+        public static ConcurrentDictionary<long, string> UIDWithOpenID { get; } = [];
         public static ConcurrentDictionary<long, List<string>> UserExploreCharacterCache { get; } = [];
         public static ConcurrentDictionary<long, List<string>> UserExploreItemCache { get; } = [];
         public static ConcurrentDictionary<long, List<string>> UserExploreEventCache { get; } = [];
@@ -5458,6 +5458,10 @@ namespace Oshima.FunGame.OshimaServers.Service
         {
             OnUserConfigSaving(pc, user);
             if (updateLastTime) user.LastTime = DateTime.Now;
+            if (UIDWithOpenID.TryGetValue(user.Id, out string? openid) && openid != null)
+            {
+                user.AutoKey = openid;
+            }
             pc.Add("user", user);
             pc.SaveConfig();
             if (release && FunGameConstant.UserSemaphoreSlims.TryGetValue(key, out SemaphoreSlim? obj) && obj != null && obj.CurrentCount == 0)
@@ -5512,6 +5516,15 @@ namespace Oshima.FunGame.OshimaServers.Service
             {
                 FunGameConstant.MarketSemaphoreSlim.Release();
             }
+        }
+
+        public static string MergeToMarkdown(string subtitle, params List<string> msgs)
+        {
+            if (msgs.Count > 30)
+            {
+                msgs = [.. msgs[..15], .. msgs[^15..]];
+            }
+            return $"{subtitle}\r\n```\r\n{string.Join("\r\n", msgs)}\r\n```";
         }
     }
 }
