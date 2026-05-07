@@ -2428,11 +2428,7 @@ namespace Oshima.FunGame.WebAPI.Services
 
                 if (e.Detail == "探索信息")
                 {
-                    string msg = Controller.GetExploreInfo(uid);
-                    if (msg != "")
-                    {
-                        await SendAsync(e, "探索信息", string.Join("\r\n", msg));
-                    }
+                    await SendAsync(e, "探索信息", Controller.GetExploreInfo(uid));
                     return result;
                 }
 
@@ -2450,7 +2446,7 @@ namespace Oshima.FunGame.WebAPI.Services
                 {
                     string originalDetail = e.Detail;
                     string detail = e.Detail.Replace("探索", "").Replace("前往", "").Trim();
-                    string msg = "";
+                    BotReply reply = new();
                     string eid = "";
                     string[] strings = detail.Split(FunGameConstant.SplitChars, StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
                     List<int> cindexs = [];
@@ -2463,11 +2459,8 @@ namespace Oshima.FunGame.WebAPI.Services
                     }
                     if (cindexs.Count > 1 && cindexs.Count <= 5)
                     {
-                        (msg, eid) = Controller.ExploreRegion(uid, cindexs[0], false, [.. cindexs.Skip(1).Select(id => (long)id)]);
-                        if (msg.Trim() != "")
-                        {
-                            await SendAsync(e, "探索", msg);
-                        }
+                        (reply, eid) = Controller.ExploreRegion(uid, cindexs[0], false, [.. cindexs.Skip(1).Select(id => (long)id)]);
+                        await SendAsync(e, "探索", reply);
                         _ = Task.Run(async () =>
                         {
                             await Task.Delay(FunGameConstant.ExploreTime * 60 * 1000);
@@ -2490,7 +2483,7 @@ namespace Oshima.FunGame.WebAPI.Services
                 {
                     string originalDetail = e.Detail;
                     string detail = e.Detail.Replace("小队探索", "").Trim();
-                    string msg = "";
+                    BotReply reply = "";
                     string eid = "";
                     string[] strings = detail.Split(FunGameConstant.SplitChars, StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
                     List<int> cindexs = [];
@@ -2503,11 +2496,8 @@ namespace Oshima.FunGame.WebAPI.Services
                     }
                     if (cindexs.Count > 0)
                     {
-                        (msg, eid) = Controller.ExploreRegion(uid, cindexs[0], true);
-                        if (msg.Trim() != "")
-                        {
-                            await SendAsync(e, "探索", msg);
-                        }
+                        (reply, eid) = Controller.ExploreRegion(uid, cindexs[0], true);
+                        await SendAsync(e, "探索", reply);
                         _ = Task.Run(async () =>
                         {
                             await Task.Delay(FunGameConstant.ExploreTime * 60 * 1000);
@@ -3692,7 +3682,7 @@ namespace Oshima.FunGame.WebAPI.Services
                         }
                         (Room room, List<string> msgs) = await Controller.RoomRunGame(uid);
                         BotReply rpy = MergeToMarkdown("该局游戏结果如下：", msgs);
-                        rpy.Keyboard = new KeyboardMessage().AppendButtons(1, Button.CreateCmdButton("快速重新开始", $"快速重新开始"));
+                        rpy.Keyboard = new KeyboardMessage().AppendButtons(1, Button.CreateCmdButton("快速重新开始", $"开始游戏"));
                         await SendAsync(e, "房间", rpy, msgSeq: 1);
                         OnlineService.ReSetRoomState(room.Roomid);
                     }

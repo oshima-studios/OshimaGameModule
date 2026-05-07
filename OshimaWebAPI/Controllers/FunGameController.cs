@@ -6310,8 +6310,16 @@ namespace Oshima.FunGame.WebAPI.Controllers
         }
 
         [HttpPost("exploreregion")]
-        public (string, string) ExploreRegion([FromQuery] long? uid = null, [FromQuery] long? id = null, [FromQuery] bool useSquad = false, [FromBody] long[]? cids = null)
+        public (BotReply, string) ExploreRegion([FromQuery] long? uid = null, [FromQuery] long? id = null, [FromQuery] bool useSquad = false, [FromBody] long[]? cids = null)
         {
+            MarkdownMessage md = new()
+            {
+                Content = busy
+            };
+            BotReply reply = new()
+            {
+                Markdown = md
+            };
             string exploreId = "";
             try
             {
@@ -6332,7 +6340,8 @@ namespace Oshima.FunGame.WebAPI.Controllers
                         if (user.Inventory.Squad.Count == 0)
                         {
                             FunGameService.ReleaseUserSemaphoreSlim(userid);
-                            return ($"你尚未设置小队，请先设置1-4名角色！", exploreId);
+                            md.Content = $"你尚未设置小队，请先设置1-4名角色！";
+                            return (reply, exploreId);
                         }
                         else
                         {
@@ -6389,11 +6398,11 @@ namespace Oshima.FunGame.WebAPI.Controllers
                             if (exploreTimes <= 0)
                             {
                                 exploreTimes = 0;
-                                msg = $"今日的探索许可已用完，无法再继续探索。";
+                                msg = $"今日的{"探索许可".CreateCmdInput("商店1")}已用完，无法再继续探索。";
                             }
                             else if (reduce > exploreTimes)
                             {
-                                msg = $"本次探索需要消耗 {reduce} 个探索许可，超过了你的剩余探索许可数量（{exploreTimes} 个），请减少选择的角色数量或更换探索地区。" +
+                                msg = $"本次探索需要消耗 {reduce} 个{"探索许可".CreateCmdInput("商店1")}，超过了你的剩余探索许可数量（{exploreTimes} 个），请减少选择的角色数量或更换探索地区。" +
                                     $"\r\n需要注意：探索难度星级一比一兑换探索许可，并且参与探索的角色，都需要消耗相同数量的探索许可。";
                             }
                         }
@@ -6401,7 +6410,8 @@ namespace Oshima.FunGame.WebAPI.Controllers
                     else
                     {
                         FunGameService.ReleaseUserSemaphoreSlim(userid);
-                        return ($"没有找到与这个序号相对应的地区！", exploreId);
+                        md.Content = $"没有找到与这个序号相对应的地区！";
+                        return (reply, exploreId);
                     }
 
                     // 检查角色是否正在探索
@@ -6450,7 +6460,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
                         TaskUtility.NewTask(async () => await FunGameService.GenerateExploreModel(model, region, characterIds, user));
 
                         if (msg != "") msg += "\r\n";
-                        msg += $"本次消耗探索许可 {reduce} 个，你的剩余探索许可：{exploreTimes} 个。需要注意：探索难度星级一比一兑换探索许可，并且参与探索的角色，都需要消耗相同数量的探索许可。";
+                        msg += $"本次消耗探索许可 {reduce} 个，你的剩余{"探索许可".CreateCmdInput("商店1")}：{exploreTimes} 个。需要注意：探索难度星级一比一兑换探索许可，并且参与探索的角色，都需要消耗相同数量的探索许可。";
                     }
 
                     pc.Add("exploreTimes", exploreTimes);
@@ -6461,25 +6471,36 @@ namespace Oshima.FunGame.WebAPI.Controllers
                     }
                     FunGameService.SetUserConfigAndReleaseSemaphoreSlim(userid, pc, user);
 
-                    return (msg, exploreId);
+                    md.Content = msg;
+                    return (reply, exploreId);
                 }
                 else
                 {
                     FunGameService.ReleaseUserSemaphoreSlim(userid);
-                    return (noSaved, exploreId);
+                    md.Content = noSaved;
+                    return (reply, exploreId);
                 }
             }
             catch (Exception e)
             {
                 FunGameService.ReleaseUserSemaphoreSlim(uid.ToString() ?? "");
                 if (Logger.IsEnabled(Microsoft.Extensions.Logging.LogLevel.Error)) Logger.LogError(e, "Error: {e}", e);
-                return (busy, exploreId);
+                md.Content = busy;
+                return (reply, exploreId);
             }
         }
 
         [HttpGet("exploreinfo")]
-        public string GetExploreInfo([FromQuery] long? uid = null)
+        public BotReply GetExploreInfo([FromQuery] long? uid = null)
         {
+            MarkdownMessage md = new()
+            {
+                Content = busy
+            };
+            BotReply reply = new()
+            {
+                Markdown = md
+            };
             long userid = uid ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
 
             PluginConfig pc = FunGameService.GetUserConfig(userid, out _);
@@ -6496,7 +6517,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
                     if (exploreTimes <= 0)
                     {
                         exploreTimes = 0;
-                        msg = $"今日的探索许可已用完，无法再继续探索。";
+                        msg = $"今日的{"探索许可".CreateCmdInput("商店1")}已用完，无法再继续探索。";
                     }
                 }
                 else
@@ -6528,13 +6549,15 @@ namespace Oshima.FunGame.WebAPI.Controllers
                 }
 
                 if (msg != "") msg += "\r\n";
-                msg += $"你的剩余探索许可：{exploreTimes} 个。";
+                msg += $"你的剩余{"探索许可".CreateCmdInput("商店1")}：{exploreTimes} 个。";
 
-                return msg;
+                md.Content = msg;
+                return reply;
             }
             else
             {
-                return noSaved;
+                md.Content = noSaved;
+                return reply;
             }
         }
 
@@ -6617,7 +6640,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
                 md.Content = msg;
                 if (command != "")
                 {
-                    reply.Keyboard = new KeyboardMessage().AppendButtons(1, Button.CreateCmdButton("再探再报", command, permissionType: 0, specifyUserIds: user.AutoKey));
+                    reply.Keyboard = new KeyboardMessage().AppendButtons(1, Button.CreateCmdButton("再探再报", command));
                 }
                 return reply;
             }
