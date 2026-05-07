@@ -3682,7 +3682,12 @@ namespace Oshima.FunGame.WebAPI.Services
                         }
                         (Room room, List<string> msgs) = await Controller.RoomRunGame(uid);
                         BotReply rpy = MergeToMarkdown("该局游戏结果如下：", msgs);
-                        rpy.Keyboard = new KeyboardMessage().AppendButtons(1, Button.CreateCmdButton("快速重新开始", $"开始游戏"));
+                        rpy.Keyboard = new KeyboardMessage().AppendButtons(2, [
+                            Button.CreateCmdButton("退出房间", $"退出房间", false),
+                            Button.CreateCmdButton("房间列表", $"房间列表"),
+                            Button.CreateCmdButton("生命之泉", $"生命之泉"),
+                            Button.CreateCmdButton("快速重新开始", $"开始游戏")
+                        ]);
                         await SendAsync(e, "房间", rpy, msgSeq: 1);
                         OnlineService.ReSetRoomState(room.Roomid);
                     }
