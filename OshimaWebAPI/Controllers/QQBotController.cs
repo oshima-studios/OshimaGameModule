@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using Oshima.FunGame.OshimaServers.Models;
+using Oshima.FunGame.OshimaServers.Model;
 using Oshima.FunGame.WebAPI.Services;
 using Rebex.Security.Cryptography;
 

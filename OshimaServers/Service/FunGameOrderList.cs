@@ -1,4 +1,4 @@
-﻿using Oshima.FunGame.OshimaServers.Models;
+﻿using Oshima.FunGame.OshimaServers.Model;
 
 namespace Oshima.FunGame.OshimaServers.Service
 {

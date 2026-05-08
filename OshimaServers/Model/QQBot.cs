@@ -1,6 +1,6 @@
 ﻿using System.Text.Json.Serialization;
 
-namespace Oshima.FunGame.OshimaServers.Models
+namespace Oshima.FunGame.OshimaServers.Model
 {
     public class Payload
     {

@@ -13,7 +13,7 @@ using Oshima.Core.Constant;
 using Oshima.FunGame.OshimaModules.Characters;
 using Oshima.FunGame.OshimaModules.Items;
 using Oshima.FunGame.OshimaModules.Models;
-using Oshima.FunGame.OshimaServers.Models;
+using Oshima.FunGame.OshimaServers.Model;
 using Oshima.FunGame.OshimaServers.Service;
 using Oshima.FunGame.WebAPI.Constant;
 using Oshima.FunGame.WebAPI.Controllers;
@@ -224,6 +224,7 @@ namespace Oshima.FunGame.WebAPI
                 builder.Services.AddScoped<FunGameController>();
                 builder.Services.AddScoped<QQController>();
                 builder.Services.AddScoped<TestController>();
+                builder.Services.AddScoped<CSBettingController>();
                 // 使用 Configure<BotConfig> 从配置源绑定
                 builder.Services.Configure<BotConfig>(builder.Configuration.GetSection("Bot"));
             }

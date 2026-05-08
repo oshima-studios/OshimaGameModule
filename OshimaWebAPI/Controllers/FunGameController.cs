@@ -15,7 +15,6 @@ using Oshima.FunGame.OshimaModules.Items;
 using Oshima.FunGame.OshimaModules.Models;
 using Oshima.FunGame.OshimaModules.Regions;
 using Oshima.FunGame.OshimaServers.Model;
-using Oshima.FunGame.OshimaServers.Models;
 using Oshima.FunGame.OshimaServers.Service;
 using ProjectRedbud.FunGame.SQLQueryExtension;
 
