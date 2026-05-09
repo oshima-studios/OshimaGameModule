@@ -48,7 +48,9 @@ namespace Oshima.FunGame.WebAPI.Services
                 string name = row["name"].ToString() ?? "";
                 int status = Convert.ToInt32(row["status"]);
                 string statusStr = status switch { 0 => "未开始", 1 => "进行中", 2 => "已结束", _ => "未知" };
-                sb.AppendLine($"🏆 [{id}] {name.CreateCmdInput($"赛事详情 {id}")} ({statusStr})");
+                DateTime startTime = Convert.ToDateTime(row["start_time"]);
+                DateTime endTime = Convert.ToDateTime(row["end_time"]);
+                sb.AppendLine($"🏆 [{id}] {name.CreateCmdInput($"赛事详情 {id}")} ({statusStr}：{startTime:yyyy/MM/dd} ~ {endTime:yyyy/MM/dd})");
             }
             return (sb.ToString().TrimEnd(), totalPages);
         }
