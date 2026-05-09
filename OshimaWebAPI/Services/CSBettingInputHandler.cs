@@ -35,9 +35,12 @@ namespace Oshima.FunGame.WebAPI.Services
             }
 
             // 赛事列表
-            if (e.Detail == "赛事列表")
+            if (e.Detail.StartsWith("赛事列表"))
             {
-                BotReply reply = BettingController.GetEventsOverview();
+                int page = 1;
+                string[] parts = e.Detail.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+                if (parts.Length > 1 && int.TryParse(parts[1], out int p)) page = p;
+                BotReply reply = BettingController.GetEventsOverview(page); // 需要Controller增加page参数的方法
                 await SendAsync(e, "CS赛事竞猜", reply);
                 return true;
             }
@@ -62,7 +65,7 @@ namespace Oshima.FunGame.WebAPI.Services
                         Button.CreateCmdButton("📋 赛事列表", "赛事列表"),
                         Button.CreateCmdButton("💰 竞猜领奖", "竞猜领奖"));
                     reply.Keyboard = kb;
-                    BotReply reply2 = BettingController.GetMyBets(uid, matchId);
+                    BotReply reply2 = BettingController.GetMyBets(uid, mid: matchId);
                     if (reply.Markdown != null && reply.Markdown.Content != null && !(reply2.Markdown?.Content?.Equals("你还没有任何竞猜记录。") ?? true))
                     {
                         reply.Markdown.Content = $"{reply.Markdown.Content.Trim()}\r\n你的本场竞猜记录：\r\n{reply2.Markdown.Content}";
@@ -79,13 +82,17 @@ namespace Oshima.FunGame.WebAPI.Services
             // 赛事详情：用于查看某一赛事下的所有比赛
             if (e.Detail.StartsWith("赛事详情"))
             {
-                string detail = e.Detail.Replace("赛事详情", "").Trim();
-                if (int.TryParse(detail, out int eventId))
+                string detail = e.Detail["赛事详情".Length..].Trim();
+                // 解析事件ID和页码
+                string[] parts = detail.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+                if (parts.Length >= 1 && int.TryParse(parts[0], out int eventId))
                 {
+                    int page = 1;
+                    if (parts.Length > 1 && int.TryParse(parts[1], out int p)) page = p;
                     // 调用控制器获取详情（返回BotReply）
-                    BotReply reply = BettingController.GetEventDetail(eventId);
-                    reply.Keyboard = new KeyboardMessage()
-                        .AppendButtons(2,
+                    BotReply reply = BettingController.GetEventDetail(eventId, page);
+                    reply.Keyboard ??= new KeyboardMessage();
+                    reply.Keyboard.AppendButtonsWithNewRow(2,
                             Button.CreateCmdButton("🔍 比赛详情 ", "比赛详情 ", enter: false),
                             Button.CreateCmdButton("📋 赛事列表", "赛事列表"),
                             Button.CreateCmdButton("📜 我的竞猜", "我的竞猜"),
@@ -110,11 +117,14 @@ namespace Oshima.FunGame.WebAPI.Services
                 return true;
             }
 
-            if (e.Detail == "我的竞猜")
+            if (e.Detail.StartsWith("我的竞猜"))
             {
-                BotReply reply = BettingController.GetMyBets(uid);
-                reply.Keyboard = new KeyboardMessage()
-                    .AppendButtons(2,
+                int page = 1;
+                string[] parts = e.Detail.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+                if (parts.Length > 1 && int.TryParse(parts[1], out int p)) page = p;
+                BotReply reply = BettingController.GetMyBets(uid, page);
+                reply.Keyboard ??= new KeyboardMessage();
+                reply.Keyboard.AppendButtonsWithNewRow(2,
                         Button.CreateCmdButton("💰 竞猜领奖", "竞猜领奖", enter: true),
                         Button.CreateCmdButton("📋 赛事列表", "赛事列表"),
                         Button.CreateCmdButton("❓ 竞猜帮助", "竞猜帮助"));

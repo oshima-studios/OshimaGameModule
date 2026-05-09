@@ -26,16 +26,20 @@ namespace Oshima.FunGame.WebAPI.Controllers
         // ---------- 查询类（无需锁）----------
         [AllowAnonymous]
         [HttpGet("events")]
-        public BotReply GetEventsOverview()
+        public BotReply GetEventsOverview([FromQuery] int page = 1, [FromQuery] int pageSize = 10)
         {
-            return new BotReply { Markdown = new MarkdownMessage { Content = CSBettingService.GetEventsOverview() } };
+            var (content, totalPages) = CSBettingService.GetEventsOverview(page, pageSize);
+            KeyboardMessage kb = new KeyboardMessage().AddPaginationRow("赛事列表 ", page, totalPages);
+            return new BotReply { Markdown = new MarkdownMessage { Content = content }, Keyboard = kb };
         }
 
         [AllowAnonymous]
         [HttpGet("event/{eventId:int}")]
-        public BotReply GetEventDetail(int eventId)
+        public BotReply GetEventDetail(int eventId, [FromQuery] int page = 1, [FromQuery] int pageSize = 10)
         {
-            return new BotReply { Markdown = new MarkdownMessage { Content = CSBettingService.GetEventDetail(eventId) } };
+            var (content, totalPages) = CSBettingService.GetEventDetail(eventId, page, pageSize);
+            KeyboardMessage kb = new KeyboardMessage().AddPaginationRow($"赛事详情 {eventId} ", page, totalPages);
+            return new BotReply { Markdown = new MarkdownMessage { Content = content }, Keyboard = kb };
         }
 
         [AllowAnonymous]
@@ -47,16 +51,19 @@ namespace Oshima.FunGame.WebAPI.Controllers
 
         [AllowAnonymous]
         [HttpGet("mybets/{uid:long}")]
-        public BotReply GetMyBets(long uid)
+        public BotReply GetMyBets(long uid, [FromQuery] int page = 1, [FromQuery] int pageSize = 10)
         {
-            return new BotReply { Markdown = new MarkdownMessage { Content = CSBettingService.GetMyBets(uid) } };
+            var (content, totalPages) = CSBettingService.GetMyBets(uid, -1, page, pageSize);
+            KeyboardMessage kb = new KeyboardMessage().AddPaginationRow("我的竞猜 ", page, totalPages);
+            return new BotReply { Markdown = new MarkdownMessage { Content = content }, Keyboard = kb };
         }
 
         [AllowAnonymous]
         [HttpGet("mybets/{uid:long}/{mid:long}")]
         public BotReply GetMyBets(long uid, long mid)
         {
-            return new BotReply { Markdown = new MarkdownMessage { Content = CSBettingService.GetMyBets(uid, mid) } };
+            var (content, _) = CSBettingService.GetMyBets(uid, mid, 1, int.MaxValue);
+            return new BotReply { Markdown = new MarkdownMessage { Content = content } };
         }
 
         // ---------- 需要用户锁的操作 ----------

@@ -9,73 +9,120 @@ namespace Oshima.FunGame.WebAPI.Services
 {
     public class CSBettingService
     {
-        public static string GetEventsOverview()
+        public static (string, int) GetEventsOverview(int page, int pageSize)
         {
             using SQLHelper? sql = Factory.OpenFactory.GetSQLHelper();
-            if (sql != null)
-            {
-                UpdateStatuses(sql);
+            if (sql == null) return ("数据库连接失败。", 0);
 
-                sql.ExecuteDataSet("SELECT id, name, status, start_time FROM csbetting_events ORDER BY start_time DESC");
-                if (!sql.Success || sql.DataSet.Tables.Count == 0) return "暂无赛事。";
-                StringBuilder sb = new();
-                foreach (DataRow row in sql.DataSet.Tables[0].Rows)
-                {
-                    int id = Convert.ToInt32(row["id"]);
-                    string name = row["name"].ToString() ?? "";
-                    int status = Convert.ToInt32(row["status"]);
-                    string statusStr = status switch { 0 => "未开始", 1 => "进行中", 2 => "已结束", _ => "未知" };
-                    sb.AppendLine($"🏆 [{id}] {name.CreateCmdInput($"赛事详情 {id}")} ({statusStr})");
-                }
-                return sb.ToString().TrimEnd();
+            UpdateStatuses(sql);
+
+            // 获取总数
+            sql.ExecuteDataSet("SELECT COUNT(*) FROM csbetting_events");
+            int total = sql.Success ? Convert.ToInt32(sql.DataSet.Tables[0].Rows[0][0]) : 0;
+            int totalPages = (int)Math.Ceiling(total / (double)pageSize);
+            if (page < 1) page = 1;
+            if (page > totalPages) page = totalPages;
+            if (total == 0)
+                return ("暂无赛事。", 1);
+
+            int offset = (page - 1) * pageSize;
+            sql.Parameters["@page_size"] = pageSize;
+            sql.Parameters["@offset"] = offset;
+            sql.ExecuteDataSet($@"
+                SELECT id, name, status, start_time, end_time
+                FROM csbetting_events
+                ORDER BY 
+                    CASE status WHEN 1 THEN 0 WHEN 0 THEN 1 ELSE 2 END,
+                    CASE WHEN status = 2 THEN end_time END DESC,
+                    CASE WHEN status != 2 THEN start_time END ASC
+                LIMIT {pageSize} OFFSET {offset}");
+
+            if (!sql.Success || sql.DataSet.Tables.Count == 0)
+                return ("暂无赛事。", 1);
+
+            StringBuilder sb = new();
+            sb.AppendLine($"🏆 赛事列表（第 {page}/{totalPages} 页）");
+            foreach (DataRow row in sql.DataSet.Tables[0].Rows)
+            {
+                int id = Convert.ToInt32(row["id"]);
+                string name = row["name"].ToString() ?? "";
+                int status = Convert.ToInt32(row["status"]);
+                string statusStr = status switch { 0 => "未开始", 1 => "进行中", 2 => "已结束", _ => "未知" };
+                sb.AppendLine($"🏆 [{id}] {name.CreateCmdInput($"赛事详情 {id}")} ({statusStr})");
             }
-            return "数据库连接失败。";
+            return (sb.ToString().TrimEnd(), totalPages);
         }
 
-        public static string GetEventDetail(int eventId)
+        public static (string, int) GetEventDetail(int eventId, int page, int pageSize)
         {
             using SQLHelper? sql = Factory.OpenFactory.GetSQLHelper();
-            if (sql != null)
+            if (sql == null) return ("数据库连接失败。", 0);
+
+            UpdateStatuses(sql);
+
+            // 获取赛事信息
+            sql.Parameters["@id"] = eventId;
+            sql.ExecuteDataSet("SELECT * FROM csbetting_events WHERE id = @id");
+            if (!sql.Success || sql.DataSet.Tables[0].Rows.Count == 0)
+                return ("赛事不存在。", 0);
+            DataRow evt = sql.DataSet.Tables[0].Rows[0];
+            string name = evt["name"].ToString() ?? "";
+            int status = Convert.ToInt32(evt["status"]);
+            DateTime start = Convert.ToDateTime(evt["start_time"]);
+            DateTime end = Convert.ToDateTime(evt["end_time"]);
+            string statusStr = status switch { 0 => "未开始", 1 => "进行中", 2 => "已结束", _ => "未知" };
+
+            StringBuilder header = new();
+            header.AppendLine($"赛事：{name}");
+            header.AppendLine($"状态：{statusStr}");
+            header.AppendLine($"时间：{start:yyyy/MM/dd} ~ {end:yyyy/MM/dd}");
+
+            // 比赛总数
+            sql.Parameters["@eid"] = eventId;
+            sql.ExecuteDataSet("SELECT COUNT(*) FROM csbetting_matches WHERE event_id = @eid");
+            int total = sql.Success ? Convert.ToInt32(sql.DataSet.Tables[0].Rows[0][0]) : 0;
+            int totalPages = (int)Math.Ceiling(total / (double)pageSize);
+            if (page < 1) page = 1;
+            if (page > totalPages) page = totalPages;
+
+            header.AppendLine($"比赛列表（第 {page}/{totalPages} 页）：");
+
+            // 分页查询比赛
+            int offset = (page - 1) * pageSize;
+            sql.Parameters["@eid"] = eventId;
+            sql.ExecuteDataSet($@"
+                SELECT id, team1_name, team2_name, status, bet_deadline, stage, start_time
+                FROM csbetting_matches
+                WHERE event_id = @eid
+                ORDER BY 
+                    CASE status WHEN 0 THEN 0 WHEN 1 THEN 1 ELSE 2 END,
+                    CASE WHEN status = 2 THEN start_time END DESC,
+                    CASE WHEN status != 2 THEN start_time END ASC
+                LIMIT {pageSize} OFFSET {offset}");
+
+            StringBuilder matches = new();
+            if (sql.Success && sql.DataSet?.Tables[0].Rows.Count > 0)
             {
-                UpdateStatuses(sql);
-
-                sql.Parameters["@id"] = eventId;
-                sql.ExecuteDataSet("SELECT * FROM csbetting_events WHERE id = @id");
-                if (!sql.Success || sql == null || sql.DataSet.Tables[0].Rows.Count == 0) return "赛事不存在。";
-                DataRow evt = sql.DataSet.Tables[0].Rows[0];
-                string name = evt["name"].ToString() ?? "";
-                int status = Convert.ToInt32(evt["status"]);
-                DateTime start = Convert.ToDateTime(evt["start_time"]);
-                DateTime end = Convert.ToDateTime(evt["end_time"]);
-                string statusStr = status switch { 0 => "未开始", 1 => "进行中", 2 => "已结束", _ => "未知" };
-
-                StringBuilder sb = new();
-                sb.AppendLine($"赛事：{name}");
-                sb.AppendLine($"状态：{statusStr}");
-                sb.AppendLine($"时间：{start:yyyy/MM/dd} ~ {end:yyyy/MM/dd}");
-                sb.AppendLine("比赛列表：");
-
-                sql.Parameters["@eid"] = eventId;
-                sql.ExecuteDataSet("SELECT id, team1_name, team2_name, status, bet_deadline, stage FROM csbetting_matches WHERE event_id = @eid ORDER BY start_time");
-                if (sql.Success && sql.DataSet?.Tables[0].Rows.Count > 0)
+                foreach (DataRow row in sql.DataSet.Tables[0].Rows)
                 {
-                    foreach (DataRow row in sql.DataSet.Tables[0].Rows)
-                    {
-                        int mid = Convert.ToInt32(row["id"]);
-                        string t1 = row["team1_name"].ToString() ?? "";
-                        string t2 = row["team2_name"].ToString() ?? "";
-                        int mstatus = Convert.ToInt32(row["status"]);
-                        DateTime deadline = Convert.ToDateTime(row["bet_deadline"]);
-                        string stage = row["stage"].ToString() ?? "";
-                        string mStatusStr = mstatus switch { 0 => "未开始", 1 => "进行中", 2 => "已结束", _ => "未知" };
-                        string matchLabel = $"{t1} vs {t2}";
-                        string clickableMatch = matchLabel.CreateCmdInput($"比赛详情 {mid}");
-                        sb.AppendLine($"  [{mid}] {(stage != "" ? $"{stage} " : "")} {clickableMatch} (状态：{mStatusStr}, 截止：{deadline:MM-dd HH:mm})");
-                    }
+                    int mid = Convert.ToInt32(row["id"]);
+                    string t1 = row["team1_name"].ToString() ?? "";
+                    string t2 = row["team2_name"].ToString() ?? "";
+                    int mstatus = Convert.ToInt32(row["status"]);
+                    DateTime deadline = Convert.ToDateTime(row["bet_deadline"]);
+                    string stage = row["stage"].ToString() ?? "";
+                    string mStatusStr = mstatus switch { 0 => "未开始", 1 => "进行中", 2 => "已结束", _ => "未知" };
+                    string matchLabel = $"{t1} vs {t2}";
+                    string clickableMatch = matchLabel.CreateCmdInput($"比赛详情 {mid}");
+                    matches.AppendLine($"  [{mid}] {(stage != "" ? $"{stage} " : "")} {clickableMatch} (状态：{mStatusStr}, 截止：{deadline:MM-dd HH:mm})");
                 }
-                return sb.ToString();
             }
-            return "数据库连接失败。";
+            else
+            {
+                matches.AppendLine("暂无比赛。");
+            }
+
+            return (header.ToString() + matches.ToString(), totalPages);
         }
 
         public static string GetMatchDetail(int matchId, out int status)
@@ -293,102 +340,134 @@ namespace Oshima.FunGame.WebAPI.Services
             return "数据库连接失败。";
         }
 
-        public static string GetMyBets(long uid, long mid = -1)
+        public static (string, int) GetMyBets(long uid, long mid = -1, int page = 1, int pageSize = 10)
         {
             using SQLHelper? sql = Factory.OpenFactory.GetSQLHelper();
-            if (sql != null)
+            if (sql == null) return ("数据库连接失败。", 0);
+
+            UpdateStatuses(sql);
+
+            sql.Parameters["@uid"] = uid;
+            string matchFilter = "";
+            if (mid > 0)
             {
-                UpdateStatuses(sql);
-
-                sql.Parameters["@uid"] = uid;
-                string matchFilter = "";
-                if (mid > 0)
-                {
-                    sql.Parameters["@mid"] = mid;
-                    matchFilter = " AND br.match_id = @mid";
-                }
-                sql.ExecuteDataSet($@"SELECT br.match_id, m.team1_name, m.team2_name, m.status AS match_status,
-                           GROUP_CONCAT(CONCAT(br.option_type, ':', br.option_value, ':', br.amount) ORDER BY br.id SEPARATOR '|') AS details,
-                           SUM(br.amount) AS total_amount,
-                           MIN(br.is_settled) AS all_settled,
-                           SUM(CASE WHEN br.is_settled = 1 AND br.payout > 0 AND br.is_claimed = 1 THEN 1 ELSE 0 END) AS claimed_count,
-                           SUM(CASE WHEN br.is_settled = 1 AND br.payout > 0 AND br.is_claimed = 0 THEN 1 ELSE 0 END) AS unclaimed_count,
-                           SUM(CASE WHEN br.is_settled = 1 AND br.payout = 0 THEN 1 ELSE 0 END) AS lost_count,
-                           SUM(CASE WHEN br.is_settled = 1 THEN br.payout ELSE 0 END) AS total_payout
-                    FROM csbetting_bet_records br
-                    JOIN csbetting_matches m ON br.match_id = m.id
-                    WHERE br.user_id = @uid {matchFilter}
-                    GROUP BY br.match_id, m.team1_name, m.team2_name, m.status
-                    ORDER BY MAX(br.bet_time) DESC");
-                if (!sql.Success || sql.DataSet.Tables[0].Rows.Count == 0) return "你还没有任何竞猜记录。";
-
-                StringBuilder sb = new();
-                foreach (DataRow row in sql.DataSet.Tables[0].Rows)
-                {
-                    int matchId = Convert.ToInt32(row["match_id"]);
-                    string t1 = row["team1_name"].ToString() ?? "";
-                    string t2 = row["team2_name"].ToString() ?? "";
-                    int matchStatus = Convert.ToInt32(row["match_status"]);
-                    long totalAmount = Convert.ToInt64(row["total_amount"]);
-                    long totalPayout = Convert.ToInt64(row["total_payout"]);
-                    int allSettled = Convert.ToInt32(row["all_settled"]);
-                    int claimedCount = Convert.ToInt32(row["claimed_count"]);
-                    int unclaimedCount = Convert.ToInt32(row["unclaimed_count"]);
-                    int lostCount = Convert.ToInt32(row["lost_count"]);
-
-                    // 解析投注详情
-                    string detailsStr = row["details"].ToString() ?? "";
-                    string[]?parts = detailsStr.Split('|');
-                    List<string> summary = [];
-                    foreach (string part in parts)
-                    {
-                        string[] items = part.Split(':');
-                        if (items.Length >= 3)
-                        {
-                            int otype = int.Parse(items[0]);
-                            string ovalue = items[1];
-                            long oamount = long.Parse(items[2]);
-                            string optStr = otype switch
-                            {
-                                1 => $"{t1}胜",
-                                2 => $"{t2}胜",
-                                3 => $"比分 {ovalue}",
-                                4 => $"MVP {ovalue}",
-                                _ => ovalue
-                            };
-                            summary.Add($"{optStr} {oamount}G");
-                        }
-                    }
-
-                    string detailLine = string.Join(", ", summary);
-                    string statusLine;
-                    if (allSettled == 0)
-                    {
-                        statusLine = "待开奖";
-                    }
-                    else
-                    {
-                        if (claimedCount > 0 && unclaimedCount == 0 && lostCount == 0)
-                            statusLine = "已领取";
-                        else if (unclaimedCount > 0)
-                            statusLine = "待领奖";
-                        else if (lostCount > 0 && claimedCount == 0 && unclaimedCount == 0)
-                            statusLine = "未中奖";
-                        else
-                            statusLine = "部分已领";
-                    }
-
-                    string matchLabel = $"{t1} vs {t2}".CreateCmdInput($"比赛详情 {matchId}");
-                    sb.Append($"[比赛{matchId}] {matchLabel} | ");
-                    sb.Append($"投注：{totalAmount}G ({detailLine}) | ");
-                    sb.Append($"状态：{statusLine}");
-                    if (totalPayout > 0)
-                        sb.Append($" (+{totalPayout}G)");
-                    sb.AppendLine();
-                }
-                return sb.ToString().TrimEnd();
+                sql.Parameters["@mid"] = mid;
+                matchFilter = " AND br.match_id = @mid";
             }
-            return "数据库连接失败。";
+
+            // 总数查询：不同比赛的数量
+            sql.ExecuteDataSet($@"
+                SELECT COUNT(DISTINCT br.match_id) 
+                FROM csbetting_bet_records br
+                JOIN csbetting_matches m ON br.match_id = m.id
+                WHERE br.user_id = @uid {matchFilter}");
+            int total = sql.Success ? Convert.ToInt32(sql.DataSet.Tables[0].Rows[0][0]) : 0;
+            int totalPages = (int)Math.Ceiling(total / (double)pageSize);
+            if (page < 1) page = 1;
+            if (page > totalPages) page = totalPages;
+            if (total == 0)
+                return ("你还没有任何竞猜记录。", 1);
+
+            sql.Parameters["@uid"] = uid;
+            matchFilter = "";
+            if (mid > 0)
+            {
+                sql.Parameters["@mid"] = mid;
+                matchFilter = " AND br.match_id = @mid";
+            }
+            int offset = (page - 1) * pageSize;
+            sql.Parameters["@page_size"] = pageSize;
+            sql.Parameters["@offset"] = offset;
+
+            // 分页聚合查询
+            sql.ExecuteDataSet($@"
+                SELECT br.match_id, m.team1_name, m.team2_name, m.status AS match_status, m.start_time,
+                       GROUP_CONCAT(CONCAT(br.option_type, ':', br.option_value, ':', br.amount) ORDER BY br.id SEPARATOR '|') AS details,
+                       SUM(br.amount) AS total_amount,
+                       MIN(br.is_settled) AS all_settled,
+                       SUM(CASE WHEN br.is_settled = 1 AND br.payout > 0 AND br.is_claimed = 1 THEN 1 ELSE 0 END) AS claimed_count,
+                       SUM(CASE WHEN br.is_settled = 1 AND br.payout > 0 AND br.is_claimed = 0 THEN 1 ELSE 0 END) AS unclaimed_count,
+                       SUM(CASE WHEN br.is_settled = 1 AND br.payout = 0 THEN 1 ELSE 0 END) AS lost_count,
+                       SUM(CASE WHEN br.is_settled = 1 THEN br.payout ELSE 0 END) AS total_payout
+                FROM csbetting_bet_records br
+                JOIN csbetting_matches m ON br.match_id = m.id
+                WHERE br.user_id = @uid {matchFilter}
+                GROUP BY br.match_id, m.team1_name, m.team2_name, m.status, m.start_time
+                ORDER BY 
+                    MIN(br.is_settled) ASC,
+                    CASE WHEN MIN(br.is_settled) = 0 THEN MIN(m.start_time) END ASC,
+                    CASE WHEN MIN(br.is_settled) = 1 THEN MIN(m.start_time) END DESC
+                LIMIT {pageSize} OFFSET {offset}");
+
+            if (!sql.Success || sql.DataSet.Tables[0].Rows.Count == 0)
+                return ("你还没有任何竞猜记录。", 1);
+
+            StringBuilder sb = new();
+            sb.AppendLine($"我的竞猜（第 {page}/{totalPages} 页）");
+            foreach (DataRow row in sql.DataSet.Tables[0].Rows)
+            {
+                int matchId = Convert.ToInt32(row["match_id"]);
+                string t1 = row["team1_name"].ToString() ?? "";
+                string t2 = row["team2_name"].ToString() ?? "";
+                int matchStatus = Convert.ToInt32(row["match_status"]);
+                long totalAmount = Convert.ToInt64(row["total_amount"]);
+                long totalPayout = Convert.ToInt64(row["total_payout"]);
+                int allSettled = Convert.ToInt32(row["all_settled"]);
+                int claimedCount = Convert.ToInt32(row["claimed_count"]);
+                int unclaimedCount = Convert.ToInt32(row["unclaimed_count"]);
+                int lostCount = Convert.ToInt32(row["lost_count"]);
+
+                // 解析投注详情
+                string detailsStr = row["details"].ToString() ?? "";
+                string[]? parts = detailsStr.Split('|');
+                List<string> summary = [];
+                foreach (string part in parts)
+                {
+                    string[] items = part.Split(':');
+                    if (items.Length >= 3)
+                    {
+                        int otype = int.Parse(items[0]);
+                        string ovalue = items[1];
+                        long oamount = long.Parse(items[2]);
+                        string optStr = otype switch
+                        {
+                            1 => $"{t1}胜",
+                            2 => $"{t2}胜",
+                            3 => $"比分 {ovalue}",
+                            4 => $"MVP {ovalue}",
+                            _ => ovalue
+                        };
+                        summary.Add($"{optStr} {oamount}G");
+                    }
+                }
+
+                string detailLine = string.Join(", ", summary);
+                string statusLine;
+                if (allSettled == 0)
+                {
+                    statusLine = "待开奖";
+                }
+                else
+                {
+                    if (claimedCount > 0 && unclaimedCount == 0 && lostCount == 0)
+                        statusLine = "已领取";
+                    else if (unclaimedCount > 0)
+                        statusLine = "待领奖";
+                    else if (lostCount > 0 && claimedCount == 0 && unclaimedCount == 0)
+                        statusLine = "未中奖";
+                    else
+                        statusLine = "部分已领";
+                }
+
+                string matchLabel = $"{t1} vs {t2}".CreateCmdInput($"比赛详情 {matchId}");
+                sb.Append($"[比赛{matchId}] {matchLabel} | ");
+                sb.Append($"投注：{totalAmount}G ({detailLine}) | ");
+                sb.Append($"状态：{statusLine}");
+                if (totalPayout > 0)
+                    sb.Append($" (+{totalPayout}G)");
+                sb.AppendLine();
+            }
+            return (sb.ToString().TrimEnd(), totalPages);
         }
 
         /// <summary>
