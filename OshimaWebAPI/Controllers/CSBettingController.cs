@@ -28,28 +28,35 @@ namespace Oshima.FunGame.WebAPI.Controllers
         [HttpGet("events")]
         public BotReply GetEventsOverview()
         {
-            return new BotReply { Markdown = new MarkdownMessage { Content = CSBettingSQLService.GetEventsOverview() } };
+            return new BotReply { Markdown = new MarkdownMessage { Content = CSBettingService.GetEventsOverview() } };
         }
 
         [AllowAnonymous]
         [HttpGet("event/{eventId:int}")]
         public BotReply GetEventDetail(int eventId)
         {
-            return new BotReply { Markdown = new MarkdownMessage { Content = CSBettingSQLService.GetEventDetail(eventId) } };
+            return new BotReply { Markdown = new MarkdownMessage { Content = CSBettingService.GetEventDetail(eventId) } };
         }
 
         [AllowAnonymous]
         [HttpGet("match/{matchId:int}")]
         public BotReply GetMatchDetail(int matchId)
         {
-            return new BotReply { Markdown = new MarkdownMessage { Content = CSBettingSQLService.GetMatchDetail(matchId) } };
+            return new BotReply { Markdown = new MarkdownMessage { Content = CSBettingService.GetMatchDetail(matchId, out int status) + (status == 0 ? $"\r\n竞猜指令：{"竞猜".CreateCmdInput()} <比赛ID> <选项> <{General.GameplayEquilibriumConstant.InGameCurrency}数>\r\n👇🏻 点击下方按钮快速竞猜" : "")} };
         }
 
         [AllowAnonymous]
         [HttpGet("mybets/{uid:long}")]
         public BotReply GetMyBets(long uid)
         {
-            return new BotReply { Markdown = new MarkdownMessage { Content = CSBettingSQLService.GetMyBets(uid) } };
+            return new BotReply { Markdown = new MarkdownMessage { Content = CSBettingService.GetMyBets(uid) } };
+        }
+
+        [AllowAnonymous]
+        [HttpGet("mybets/{uid:long}/{mid:long}")]
+        public BotReply GetMyBets(long uid, long mid)
+        {
+            return new BotReply { Markdown = new MarkdownMessage { Content = CSBettingService.GetMyBets(uid, mid) } };
         }
 
         // ---------- 需要用户锁的操作 ----------
@@ -88,7 +95,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
                     return reply;
                 }
 
-                if (CSBettingSQLService.PlaceBet(uid, matchId, option, amount, out string error))
+                if (CSBettingService.PlaceBet(uid, matchId, option, amount, out string error))
                 {
                     user.Inventory.Credits -= (int)amount;
                     FunGameService.SetUserConfigButNotRelease(uid, pc, user);
@@ -131,7 +138,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
                 }
 
                 User user = FunGameService.GetUser(pc);
-                long total = CSBettingSQLService.ClaimRewards(uid);
+                long total = CSBettingService.ClaimRewards(uid);
                 if (total > 0)
                 {
                     user.Inventory.Credits += (int)total;
@@ -176,7 +183,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
                     return reply;
                 }
 
-                md.Content = CSBettingSQLService.SettleMatch(matchId, winner, result);
+                md.Content = CSBettingService.SettleMatch(matchId, winner, result);
                 return reply;
             }
             catch (Exception e)
@@ -202,7 +209,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
                     return reply;
                 }
 
-                if (CSBettingSQLService.CreateEvent(request.Name, request.StartTime, request.EndTime, out string error, out long? newId))
+                if (CSBettingService.CreateEvent(request.Name, request.StartTime, request.EndTime, out string error, out long? newId))
                 {
                     md.Content = $"赛事创建成功！新赛事ID：{newId}";
                 }
@@ -235,7 +242,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
                     return reply;
                 }
 
-                if (CSBettingSQLService.CreateMatch(request.EventId, request.Team1Name, request.Team2Name, request.Stage,
+                if (CSBettingService.CreateMatch(request.EventId, request.Team1Name, request.Team2Name, request.Stage,
                     request.StartTime, request.BetDeadline, request.AvailableOptions, out string error, out long? newId))
                 {
                     md.Content = $"比赛创建成功！新比赛ID：{newId}";

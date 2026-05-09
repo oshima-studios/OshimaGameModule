@@ -1,19 +1,21 @@
 ﻿using System.Data;
-using System.Security.Cryptography;
 using System.Text;
 using Milimoe.FunGame.Core.Api.Transmittal;
 using Milimoe.FunGame.Core.Api.Utility;
+using Milimoe.FunGame.Core.Library.Constant;
 using Oshima.FunGame.OshimaServers.Model;
 
 namespace Oshima.FunGame.WebAPI.Services
 {
-    public class CSBettingSQLService
+    public class CSBettingService
     {
         public static string GetEventsOverview()
         {
             using SQLHelper? sql = Factory.OpenFactory.GetSQLHelper();
             if (sql != null)
             {
+                UpdateStatuses(sql);
+
                 sql.ExecuteDataSet("SELECT id, name, status, start_time FROM csbetting_events ORDER BY start_time DESC");
                 if (!sql.Success || sql.DataSet.Tables.Count == 0) return "暂无赛事。";
                 StringBuilder sb = new();
@@ -35,6 +37,8 @@ namespace Oshima.FunGame.WebAPI.Services
             using SQLHelper? sql = Factory.OpenFactory.GetSQLHelper();
             if (sql != null)
             {
+                UpdateStatuses(sql);
+
                 sql.Parameters["@id"] = eventId;
                 sql.ExecuteDataSet("SELECT * FROM csbetting_events WHERE id = @id");
                 if (!sql.Success || sql == null || sql.DataSet.Tables[0].Rows.Count == 0) return "赛事不存在。";
@@ -66,7 +70,7 @@ namespace Oshima.FunGame.WebAPI.Services
                         string mStatusStr = mstatus switch { 0 => "未开始", 1 => "进行中", 2 => "已结束", _ => "未知" };
                         string matchLabel = $"{t1} vs {t2}";
                         string clickableMatch = matchLabel.CreateCmdInput($"比赛详情 {mid}");
-                        sb.AppendLine($"  [{mid}] {(stage != "" ? $"{stage} - " : "")} {clickableMatch} (状态：{mStatusStr}, 截止：{deadline:MM-dd HH:mm})");
+                        sb.AppendLine($"  [{mid}] {(stage != "" ? $"{stage} " : "")} {clickableMatch} (状态：{mStatusStr}, 截止：{deadline:MM-dd HH:mm})");
                     }
                 }
                 return sb.ToString();
@@ -74,11 +78,14 @@ namespace Oshima.FunGame.WebAPI.Services
             return "数据库连接失败。";
         }
 
-        public static string GetMatchDetail(int matchId)
+        public static string GetMatchDetail(int matchId, out int status)
         {
+            status = 0;
             using SQLHelper? sql = Factory.OpenFactory.GetSQLHelper();
             if (sql != null)
             {
+                UpdateStatuses(sql);
+
                 sql.Parameters["@mid"] = matchId;
                 sql.ExecuteDataSet("SELECT * FROM csbetting_matches WHERE id = @mid");
                 if (!sql.Success || sql.DataSet.Tables[0].Rows.Count == 0) return "比赛不存在。";
@@ -86,11 +93,13 @@ namespace Oshima.FunGame.WebAPI.Services
                 long eventId = Convert.ToInt64(row["event_id"]);
                 string t1 = row["team1_name"].ToString() ?? "";
                 string t2 = row["team2_name"].ToString() ?? "";
-                int status = Convert.ToInt32(row["status"]);
+                status = Convert.ToInt32(row["status"]);
                 DateTime start = Convert.ToDateTime(row["start_time"]);
                 DateTime deadline = Convert.ToDateTime(row["bet_deadline"]);
                 string stage = row["stage"].ToString() ?? "";
                 string available = row["available_options"]?.ToString() ?? "[]";
+                string result = row["result"] != DBNull.Value ? row["result"].ToString() ?? "" : "";
+                long winner = row["winner"] != DBNull.Value ? Convert.ToInt64(row["winner"]) : 0;
 
                 string eventName = "";
                 sql.Parameters["@eid"] = eventId;
@@ -113,12 +122,22 @@ namespace Oshima.FunGame.WebAPI.Services
                 sb.AppendLine($"开赛：{start:yyyy/MM/dd HH:mm}");
                 sb.AppendLine($"竞猜截止：{deadline:yyyy/MM/dd HH:mm}");
                 sb.AppendLine($"状态：{statusStr}");
-                sb.AppendLine($"可用选项：");
-                if (available.Contains("team1_win")) sb.AppendLine($"  - {t1}胜 (x 2.5)");
-                if (available.Contains("team2_win")) sb.AppendLine($"  - {t2}胜 (x 2.5)");
-                if (available.Contains("score")) sb.AppendLine($"  - 精确比分 (x 3.5)");
-                if (available.Contains("mvp")) sb.AppendLine($"  - 赛事MVP (x 3.5)");
-                return sb.ToString();
+                if (status == 0)
+                {
+                    sb.AppendLine($"可用选项：");
+                    if (available.Contains("team1_win")) sb.AppendLine($"  - {t1}胜 (x 2.5)");
+                    if (available.Contains("team2_win")) sb.AppendLine($"  - {t2}胜 (x 2.5)");
+                    if (available.Contains("score")) sb.AppendLine($"  - 精确比分 (x 3.5)");
+                    if (available.Contains("mvp")) sb.AppendLine($"  - 赛事MVP (x 3.5)");
+                }
+                else if (status == 2)
+                {
+                    string winnerName = winner switch { 1 => t1, 2 => t2, 3 => result, _ => "待定" };
+                    sb.AppendLine($"胜者：{winnerName}");
+                    if (winner != 3) sb.AppendLine($"结果：{result}");
+                }
+
+                return sb.ToString().Trim();
             }
             return "数据库连接失败。";
         }
@@ -142,7 +161,24 @@ namespace Oshima.FunGame.WebAPI.Services
                 DateTime deadline = Convert.ToDateTime(row["bet_deadline"]);
                 if (status != 0 || DateTime.Now > deadline)
                 {
-                    error = "当前比赛已截止或非投注期。";
+                    error = "当前比赛已结束或非投注期。";
+                    return false;
+                }
+
+                // --- 单场比赛投注上限检查 ---
+                long alreadyBet = 0;
+                long totalBet = amount;
+                sql.Parameters["@uid"] = uid;
+                sql.Parameters["@mid"] = matchId;
+                sql.ExecuteDataSet("SELECT COALESCE(SUM(amount), 0) AS total FROM csbetting_bet_records WHERE user_id = @uid AND match_id = @mid");
+                if (sql.Success && sql.DataSet.Tables[0].Rows.Count > 0)
+                {
+                    alreadyBet = Convert.ToInt64(sql.DataSet.Tables[0].Rows[0]["total"] ?? 0L);
+                    totalBet += alreadyBet;
+                }
+                if (totalBet > 5000)
+                {
+                    error = $"本场比赛你的投注总额不能超过 5000 {General.GameplayEquilibriumConstant.InGameCurrency}（已投 {alreadyBet}）。";
                     return false;
                 }
 
@@ -193,19 +229,26 @@ namespace Oshima.FunGame.WebAPI.Services
             using SQLHelper? sql = Factory.OpenFactory.GetSQLHelper();
             if (sql != null)
             {
+                UpdateStatuses(sql);
+
                 sql.Parameters["@mid"] = matchId;
                 sql.ExecuteDataSet("SELECT * FROM csbetting_matches WHERE id = @mid");
                 if (!sql.Success || sql.DataSet.Tables[0].Rows.Count == 0)
                     return "比赛不存在。";
                 DataRow row = sql.DataSet.Tables[0].Rows[0];
+                string available = row["available_options"]?.ToString() ?? "[]";
+                bool isMvp = available.Contains("mvp", StringComparison.CurrentCultureIgnoreCase);
                 int status = Convert.ToInt32(row["status"]);
                 if (status == 2)
                     return "比赛已结算。";
 
-                int winTeam;
-                if (winner == "team1") winTeam = 1;
-                else if (winner == "team2") winTeam = 2;
-                else return "请指定获胜方为 team1 或 team2。";
+                int winTeam = 3;
+                if (!isMvp)
+                {
+                    if (winner == "team1") winTeam = 1;
+                    else if (winner == "team2") winTeam = 2;
+                    else return "请指定获胜方为 team1 或 team2。MVP 赛事获胜方请直接指定选手 ID。";
+                }
 
                 // 更新比赛结果
                 sql.Parameters["@res"] = result;
@@ -228,7 +271,8 @@ namespace Oshima.FunGame.WebAPI.Services
                         bool win = false;
                         if (otype == 1 && winTeam == 1) win = true;
                         else if (otype == 2 && winTeam == 2) win = true;
-                        else if (otype == 3 && ovalue == result) win = true;
+                        else if (otype == 3 && ovalue.Replace("：", ":").Equals(result, StringComparison.CurrentCultureIgnoreCase)) win = true;
+                        else if (otype == 4 && ovalue.Equals(result, StringComparison.CurrentCultureIgnoreCase)) win = true;
 
                         long payout = 0;
                         string note = "未中奖";
@@ -249,44 +293,125 @@ namespace Oshima.FunGame.WebAPI.Services
             return "数据库连接失败。";
         }
 
-        public static string GetMyBets(long uid)
+        public static string GetMyBets(long uid, long mid = -1)
         {
             using SQLHelper? sql = Factory.OpenFactory.GetSQLHelper();
             if (sql != null)
             {
+                UpdateStatuses(sql);
+
                 sql.Parameters["@uid"] = uid;
-                sql.ExecuteDataSet(@"
-                SELECT br.id, br.match_id, br.option_type, br.option_value, br.amount, br.bet_time,
-                       br.is_settled, br.payout, br.is_claimed, br.result_note,
-                       m.team1_name, m.team2_name
-                FROM csbetting_bet_records br
-                JOIN csbetting_matches m ON br.match_id = m.id
-                WHERE br.user_id = @uid
-                ORDER BY br.bet_time DESC");
+                string matchFilter = "";
+                if (mid > 0)
+                {
+                    sql.Parameters["@mid"] = mid;
+                    matchFilter = " AND br.match_id = @mid";
+                }
+                sql.ExecuteDataSet($@"SELECT br.match_id, m.team1_name, m.team2_name, m.status AS match_status,
+                           GROUP_CONCAT(CONCAT(br.option_type, ':', br.option_value, ':', br.amount) ORDER BY br.id SEPARATOR '|') AS details,
+                           SUM(br.amount) AS total_amount,
+                           MIN(br.is_settled) AS all_settled,
+                           SUM(CASE WHEN br.is_settled = 1 AND br.payout > 0 AND br.is_claimed = 1 THEN 1 ELSE 0 END) AS claimed_count,
+                           SUM(CASE WHEN br.is_settled = 1 AND br.payout > 0 AND br.is_claimed = 0 THEN 1 ELSE 0 END) AS unclaimed_count,
+                           SUM(CASE WHEN br.is_settled = 1 AND br.payout = 0 THEN 1 ELSE 0 END) AS lost_count,
+                           SUM(CASE WHEN br.is_settled = 1 THEN br.payout ELSE 0 END) AS total_payout
+                    FROM csbetting_bet_records br
+                    JOIN csbetting_matches m ON br.match_id = m.id
+                    WHERE br.user_id = @uid {matchFilter}
+                    GROUP BY br.match_id, m.team1_name, m.team2_name, m.status
+                    ORDER BY MAX(br.bet_time) DESC");
                 if (!sql.Success || sql.DataSet.Tables[0].Rows.Count == 0) return "你还没有任何竞猜记录。";
+
                 StringBuilder sb = new();
                 foreach (DataRow row in sql.DataSet.Tables[0].Rows)
                 {
-                    long bid = Convert.ToInt64(row["id"]);
-                    long mid = Convert.ToInt64(row["match_id"]);
+                    int matchId = Convert.ToInt32(row["match_id"]);
                     string t1 = row["team1_name"].ToString() ?? "";
                     string t2 = row["team2_name"].ToString() ?? "";
-                    int otype = Convert.ToInt32(row["option_type"]);
-                    string ovalue = row["option_value"].ToString() ?? "";
-                    long amt = Convert.ToInt64(row["amount"]);
-                    bool settled = Convert.ToBoolean(row["is_settled"]);
-                    long? payout = row["payout"] as long?;
-                    bool claimed = Convert.ToBoolean(row["is_claimed"]);
+                    int matchStatus = Convert.ToInt32(row["match_status"]);
+                    long totalAmount = Convert.ToInt64(row["total_amount"]);
+                    long totalPayout = Convert.ToInt64(row["total_payout"]);
+                    int allSettled = Convert.ToInt32(row["all_settled"]);
+                    int claimedCount = Convert.ToInt32(row["claimed_count"]);
+                    int unclaimedCount = Convert.ToInt32(row["unclaimed_count"]);
+                    int lostCount = Convert.ToInt32(row["lost_count"]);
 
-                    string optStr = otype switch { 1 => $"{t1}胜", 2 => $"{t2}胜", 3 => $"比分 {ovalue}", 4 => $"MVP {ovalue}", _ => ovalue };
-                    string statusStr = settled ? (payout > 0 ? (claimed ? $"+{payout} (已领)" : $"+{payout} (可领)") : "未中奖") : "进行中";
-                    string matchLabel = $"{t1} vs {t2}";
-                    string clickableMatch = matchLabel.CreateCmdInput($"比赛详情 {mid}");
-                    sb.AppendLine($"[{bid}] {clickableMatch} | 选项：{optStr} | 投注：{amt} | 状态：{statusStr}");
+                    // 解析投注详情
+                    string detailsStr = row["details"].ToString() ?? "";
+                    string[]?parts = detailsStr.Split('|');
+                    List<string> summary = [];
+                    foreach (string part in parts)
+                    {
+                        string[] items = part.Split(':');
+                        if (items.Length >= 3)
+                        {
+                            int otype = int.Parse(items[0]);
+                            string ovalue = items[1];
+                            long oamount = long.Parse(items[2]);
+                            string optStr = otype switch
+                            {
+                                1 => $"{t1}胜",
+                                2 => $"{t2}胜",
+                                3 => $"比分 {ovalue}",
+                                4 => $"MVP {ovalue}",
+                                _ => ovalue
+                            };
+                            summary.Add($"{optStr} {oamount}G");
+                        }
+                    }
+
+                    string detailLine = string.Join(", ", summary);
+                    string statusLine;
+                    if (allSettled == 0)
+                    {
+                        statusLine = "待开奖";
+                    }
+                    else
+                    {
+                        if (claimedCount > 0 && unclaimedCount == 0 && lostCount == 0)
+                            statusLine = "已领取";
+                        else if (unclaimedCount > 0)
+                            statusLine = "待领奖";
+                        else if (lostCount > 0 && claimedCount == 0 && unclaimedCount == 0)
+                            statusLine = "未中奖";
+                        else
+                            statusLine = "部分已领";
+                    }
+
+                    string matchLabel = $"{t1} vs {t2}".CreateCmdInput($"比赛详情 {matchId}");
+                    sb.Append($"[比赛{matchId}] {matchLabel} | ");
+                    sb.Append($"投注：{totalAmount}G ({detailLine}) | ");
+                    sb.Append($"状态：{statusLine}");
+                    if (totalPayout > 0)
+                        sb.Append($" (+{totalPayout}G)");
+                    sb.AppendLine();
                 }
-                return sb.ToString();
+                return sb.ToString().TrimEnd();
             }
             return "数据库连接失败。";
+        }
+
+        /// <summary>
+        /// 根据当前时间更新赛事和比赛的状态（仅更新未结束的记录）
+        /// </summary>
+        private static void UpdateStatuses(SQLHelper sql)
+        {
+            DateTime now = DateTime.Now;
+
+            // 更新赛事状态：0→1 (进行中)，1→2 (已结束)
+            sql.Parameters["@now"] = now;
+            sql.Execute("UPDATE csbetting_events SET status = 1 WHERE status = 0 AND start_time <= @now AND end_time > @now");
+            sql.Parameters["@now"] = now;
+            sql.Execute("UPDATE csbetting_events SET status = 2 WHERE status <= 1 AND end_time <= @now");
+
+            // 更新比赛状态：0→1 (进行中)，1→2 (已结束) - 注意不要覆盖已结算的比赛（winner 为 null 时视为未结束）
+            sql.Parameters["@now"] = now;
+            sql.Execute("UPDATE csbetting_matches SET status = 1 WHERE status = 0 AND start_time <= @now AND bet_deadline < @now AND winner IS NULL");
+            // 对于已经过了开始时间但还没有 winner 且状态为 1 的，可保留为进行中；实际上只要 winner 为 null，状态应为 1（进行中）
+            // 如果有结果但 winner 不为 null，管理员应该已经手动结算，状态会设为 2，这里不做额外修改。
+            // 安全起见，只更新未开始的，以及当比赛时间已过且无 winner 时自动变成进行中。
+            // 如果需要自动结束（比如时间过长），可再添加规则，但竞猜系统通常由管理员手动结算结束。
+            // 这里只做基础更新。
         }
 
         public static long ClaimRewards(long uid)

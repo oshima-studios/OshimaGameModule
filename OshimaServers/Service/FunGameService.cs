@@ -13,7 +13,6 @@ using Oshima.FunGame.OshimaModules.Regions;
 using Oshima.FunGame.OshimaModules.Skills;
 using Oshima.FunGame.OshimaModules.Units;
 using Oshima.FunGame.OshimaServers.Model;
-using Oshima.FunGame.OshimaServers.Model;
 using ProjectRedbud.FunGame.SQLQueryExtension;
 
 namespace Oshima.FunGame.OshimaServers.Service
