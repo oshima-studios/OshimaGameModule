@@ -94,7 +94,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
                 // 校验金额
                 if (amount < 1000)
                 {
-                    md.Content = "最低投注额为 1000 {General.GameplayEquilibriumConstant.InGameCurrency}。";
+                    md.Content = $"最低投注额为 1000 {General.GameplayEquilibriumConstant.InGameCurrency}。";
                     FunGameService.SetUserConfigButNotRelease(uid, pc, user);
                     return reply;
                 }
@@ -253,7 +253,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
                 }
 
                 if (CSBettingService.CreateMatch(request.EventId, request.Team1Name, request.Team2Name, request.Stage,
-                    request.StartTime, request.BetDeadline, request.AvailableOptions, out string error, out long? newId))
+                    request.StartTime, request.BetDeadline, request.AvailableOptions, request.Team1WinOdds, request.Team2WinOdds, out string error, out long? newId))
                 {
                     md.Content = $"比赛创建成功！新比赛ID：{newId}";
                 }
@@ -266,6 +266,33 @@ namespace Oshima.FunGame.WebAPI.Controllers
             catch (Exception e)
             {
                 Logger.LogError(e, "CreateMatch 异常");
+                return reply;
+            }
+        }
+
+        [HttpPost("close-betting")]
+        public BotReply CloseBetting([FromQuery] long uid, [FromQuery] int matchId)
+        {
+            MarkdownMessage md = new() { Content = busy };
+            BotReply reply = new() { Markdown = md };
+            try
+            {
+                if (!FunGameConstant.UserIdAndUsername.TryGetValue(uid, out User? admin) || (!admin.IsAdmin && !admin.IsOperator))
+                {
+                    md.Content = "你没有权限执行此操作。";
+                    return reply;
+                }
+
+                if (CSBettingService.CloseBetting(matchId, out string msg))
+                {
+                    md.Content = msg;
+                }
+
+                return reply;
+            }
+            catch (Exception e)
+            {
+                Logger.LogError(e, "CloseBetting 异常");
                 return reply;
             }
         }

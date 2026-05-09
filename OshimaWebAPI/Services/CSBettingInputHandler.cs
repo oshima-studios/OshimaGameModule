@@ -143,6 +143,10 @@ namespace Oshima.FunGame.WebAPI.Services
                     .AppendButtons(2,
                         Button.CreateCmdButton("📜 我的竞猜", "我的竞猜"),
                         Button.CreateCmdButton("📋 赛事列表", "赛事列表"));
+                if (reply.Markdown?.Content?.Contains("创建存档") ?? false)
+                {
+                    reply.Keyboard.AppendButtons(2, Button.CreateCmdButton("⚙️ 创建存档", "创建存档"));
+                }
                 await SendAsync(e, "CS赛事竞猜", reply);
                 return true;
             }
@@ -268,7 +272,8 @@ namespace Oshima.FunGame.WebAPI.Services
 
             // 指令：创建比赛 <赛事ID> <队伍1> <队伍2> <阶段> <开始时间> <投注截止时间> [选项列表(逗号分隔)]
             // 示例：创建比赛 1 NAVI FaZe Quarter-final 2026-03-05 14:00 2026-03-05 13:55
-            // 示例：创建比赛 1 G2 Vitality Semi-final 2026-04-02 18:00 2026-04-02 17:55 team1_win,team2_win,score
+            // 示例：创建比赛 1 G2 Vitality Semi-final 2026-04-02 18:00 2026-04-02 17:55 team1_win,team2_win
+            // 示例：创建比赛 1 G2 Vitality Semi-final 2026-04-02 18:00 2026-04-02 17:55 team1_win=2.5 team2_win=2.5 team1_win,team2_win
             if (e.Detail.StartsWith("创建比赛"))
             {
                 e.UseNotice = false;
@@ -286,7 +291,7 @@ namespace Oshima.FunGame.WebAPI.Services
                         "格式：创建比赛 <赛事ID> <队伍1> <队伍2> <阶段> <开始时间> <投注截止时间> [选项列表(逗号分隔)]\r\n" +
                         "时间格式：yyyy-MM-dd HH:mm（开始/截止各占两段）\r\n" +
                         "示例：创建比赛 1 NAVI FaZe Quarter-final 2026-03-05 14:00 2026-03-05 13:55\r\n" +
-                        "选项默认 team1_win,team2_win ，可额外添加 score,mvp");
+                        "选项默认 team1_win,team2_win ，比分和MVP选项只允许独立添加：score,mvp");
                     return true;
                 }
 
@@ -319,11 +324,28 @@ namespace Oshima.FunGame.WebAPI.Services
                     return true;
                 }
 
-                string options = "team1_win,team2_win";
-                if (parts.Length > 8)
+                // 解析剩余参数：选项和赔率
+                List<string> optionParts = [];
+                decimal? team1Odds = null, team2Odds = null;
+                for (int i = 8; i < parts.Length; i++)
                 {
-                    options = string.Join(",", parts[8..]); // 剩余部分视为选项列表
+                    string segment = parts[i];
+                    if (segment.StartsWith("team1_win="))
+                    {
+                        if (decimal.TryParse(segment[11..], out decimal odds1))
+                            team1Odds = odds1;
+                    }
+                    else if (segment.StartsWith("team2_win="))
+                    {
+                        if (decimal.TryParse(segment[11..], out decimal odds2))
+                            team2Odds = odds2;
+                    }
+                    else
+                    {
+                        optionParts.Add(segment);
+                    }
                 }
+                string options = optionParts.Count > 0 ? string.Join(",", optionParts) : "team1_win,team2_win";
 
                 BotReply reply = BettingController.CreateMatch(new CreateMatchRequest
                 {
@@ -334,9 +356,41 @@ namespace Oshima.FunGame.WebAPI.Services
                     Stage = stage,
                     StartTime = startDt,
                     BetDeadline = deadlineDt,
-                    AvailableOptions = options
+                    AvailableOptions = options,
+                    Team1WinOdds = team1Odds,
+                    Team2WinOdds = team2Odds
                 });
                 await SendAsync(e, "创建比赛", reply);
+                return true;
+            }
+
+            // 指令：关闭投注 <比赛ID>
+            if (e.Detail.StartsWith("关闭投注") || e.Detail.StartsWith("结束竞猜"))
+            {
+                e.UseNotice = false;
+                if (!FunGameConstant.UserIdAndUsername.TryGetValue(uid, out User? user) || (!user.IsAdmin && !user.IsOperator))
+                {
+                    await SendAsync(e, "关闭投注", "你没有权限执行此操作。");
+                    return true;
+                }
+
+                string detail = e.Detail
+                    .Replace("关闭投注", "")
+                    .Replace("结束竞猜", "")
+                    .Trim();
+                if (int.TryParse(detail, out int matchId))
+                {
+                    BotReply reply = BettingController.CloseBetting(uid, matchId);
+                    reply.Keyboard = new KeyboardMessage()
+                        .AppendButtons(2,
+                            Button.CreateCmdButton("📋 赛事列表", "赛事列表"),
+                            Button.CreateCmdButton("🔍 比赛详情", $"比赛详情 {matchId}"));
+                    await SendAsync(e, "关闭投注", reply);
+                }
+                else
+                {
+                    await SendAsync(e, "关闭投注", "格式：关闭投注 <比赛ID>");
+                }
                 return true;
             }
 

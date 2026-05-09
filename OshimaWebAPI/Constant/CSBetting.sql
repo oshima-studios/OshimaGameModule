@@ -60,3 +60,10 @@ CREATE TABLE IF NOT EXISTS `csbetting_matches` (
   KEY `idx_start_time` (`start_time`),
   CONSTRAINT `fk_matches_event` FOREIGN KEY (`event_id`) REFERENCES `csbetting_events` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB AUTO_INCREMENT=11 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='CS比赛表';
+
+-- PATCH
+
+-- 为比赛表添加猜胜者赔率字段
+ALTER TABLE `csbetting_matches`
+    ADD COLUMN `team1_win_odds` DECIMAL(5,2) NOT NULL DEFAULT 2.50 COMMENT '队伍1胜赔率' AFTER `available_options`,
+    ADD COLUMN `team2_win_odds` DECIMAL(5,2) NOT NULL DEFAULT 2.50 COMMENT '队伍2胜赔率' AFTER `team1_win_odds`;

@@ -125,6 +125,16 @@ namespace Oshima.FunGame.WebAPI.Model
         /// 支持的投注选项类型（常规包含 Team1Win/Team2Win，总决赛增加 Score）
         /// </summary>
         public List<BetOptionType> AvailableOptions { get; set; } = [BetOptionType.Team1Win, BetOptionType.Team2Win];
+
+        /// <summary>
+        /// 队伍1胜赔率，默认2.5
+        /// </summary>
+        public decimal Team1WinOdds { get; set; } = 2.50m;
+
+        /// <summary>
+        /// 队伍2胜赔率，默认2.5
+        /// </summary>
+        public decimal Team2WinOdds { get; set; } = 2.50m;
     }
 
     /// <summary>
@@ -208,5 +218,11 @@ namespace Oshima.FunGame.WebAPI.Model
 
         [JsonPropertyName("available_options")]
         public string AvailableOptions { get; set; } = "team1_win,team2_win";
+
+        [JsonPropertyName("team1_win_odds")]
+        public decimal? Team1WinOdds { get; set; }
+
+        [JsonPropertyName("team2_win_odds")]
+        public decimal? Team2WinOdds { get; set; }
     }
 }
