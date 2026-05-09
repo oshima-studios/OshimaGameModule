@@ -20,8 +20,8 @@ namespace Oshima.FunGame.WebAPI.Services
             sql.ExecuteDataSet("SELECT COUNT(*) FROM csbetting_events");
             int total = sql.Success ? Convert.ToInt32(sql.DataSet.Tables[0].Rows[0][0]) : 0;
             int totalPages = (int)Math.Ceiling(total / (double)pageSize);
-            if (page < 1) page = 1;
             if (page > totalPages) page = totalPages;
+            if (page < 1) page = 1;
             if (total == 0)
                 return ("暂无赛事。", 1);
 
@@ -41,7 +41,7 @@ namespace Oshima.FunGame.WebAPI.Services
                 return ("暂无赛事。", 1);
 
             StringBuilder sb = new();
-            sb.AppendLine($"🏆 赛事列表（第 {page}/{totalPages} 页）");
+            sb.AppendLine($"🏆 赛事列表{(totalPages > 1 ? $"（第 {page}/{totalPages} 页）" : "")}");
             foreach (DataRow row in sql.DataSet.Tables[0].Rows)
             {
                 int id = Convert.ToInt32(row["id"]);
@@ -82,10 +82,10 @@ namespace Oshima.FunGame.WebAPI.Services
             sql.ExecuteDataSet("SELECT COUNT(*) FROM csbetting_matches WHERE event_id = @eid");
             int total = sql.Success ? Convert.ToInt32(sql.DataSet.Tables[0].Rows[0][0]) : 0;
             int totalPages = (int)Math.Ceiling(total / (double)pageSize);
-            if (page < 1) page = 1;
             if (page > totalPages) page = totalPages;
+            if (page < 1) page = 1;
 
-            header.AppendLine($"比赛列表（第 {page}/{totalPages} 页）：");
+            header.AppendLine($"比赛列表{(totalPages > 1 ? $"（第 {page}/{totalPages} 页）" : "")}：");
 
             // 分页查询比赛
             int offset = (page - 1) * pageSize;
@@ -347,39 +347,43 @@ namespace Oshima.FunGame.WebAPI.Services
 
             UpdateStatuses(sql);
 
+            bool paged = true;
             sql.Parameters["@uid"] = uid;
             string matchFilter = "";
             if (mid > 0)
             {
                 sql.Parameters["@mid"] = mid;
                 matchFilter = " AND br.match_id = @mid";
+                paged = false;
             }
 
-            // 总数查询：不同比赛的数量
-            sql.ExecuteDataSet($@"
+            int totalPages = 0;
+            if (paged)
+            {
+                // 总数查询：不同比赛的数量
+                sql.ExecuteDataSet($@"
                 SELECT COUNT(DISTINCT br.match_id) 
                 FROM csbetting_bet_records br
                 JOIN csbetting_matches m ON br.match_id = m.id
                 WHERE br.user_id = @uid {matchFilter}");
-            int total = sql.Success ? Convert.ToInt32(sql.DataSet.Tables[0].Rows[0][0]) : 0;
-            int totalPages = (int)Math.Ceiling(total / (double)pageSize);
-            if (page < 1) page = 1;
-            if (page > totalPages) page = totalPages;
-            if (total == 0)
-                return ("你还没有任何竞猜记录。", 1);
-
-            sql.Parameters["@uid"] = uid;
-            matchFilter = "";
-            if (mid > 0)
-            {
-                sql.Parameters["@mid"] = mid;
-                matchFilter = " AND br.match_id = @mid";
+                int total = sql.Success ? Convert.ToInt32(sql.DataSet.Tables[0].Rows[0][0]) : 0;
+                totalPages = (int)Math.Ceiling(total / (double)pageSize);
+                if (page > totalPages) page = totalPages;
+                if (page < 1) page = 1;
+                if (total == 0)
+                    return ("你还没有任何竞猜记录。", 1);
             }
-            int offset = (page - 1) * pageSize;
-            sql.Parameters["@page_size"] = pageSize;
-            sql.Parameters["@offset"] = offset;
+
+            // 构建分页SQL片段
+            string limitClause = "";
+            if (paged)
+            {
+                int offset = (page - 1) * pageSize;
+                limitClause = $" LIMIT {pageSize} OFFSET {offset}";
+            }
 
             // 分页聚合查询
+            sql.Parameters["@uid"] = uid;
             sql.ExecuteDataSet($@"
                 SELECT br.match_id, m.team1_name, m.team2_name, m.status AS match_status, m.start_time,
                        GROUP_CONCAT(CONCAT(br.option_type, ':', br.option_value, ':', br.amount) ORDER BY br.id SEPARATOR '|') AS details,
@@ -397,13 +401,13 @@ namespace Oshima.FunGame.WebAPI.Services
                     MIN(br.is_settled) ASC,
                     CASE WHEN MIN(br.is_settled) = 0 THEN MIN(m.start_time) END ASC,
                     CASE WHEN MIN(br.is_settled) = 1 THEN MIN(m.start_time) END DESC
-                LIMIT {pageSize} OFFSET {offset}");
+                {limitClause}");
 
             if (!sql.Success || sql.DataSet.Tables[0].Rows.Count == 0)
                 return ("你还没有任何竞猜记录。", 1);
 
             StringBuilder sb = new();
-            sb.AppendLine($"我的竞猜（第 {page}/{totalPages} 页）");
+            sb.AppendLine($"我的竞猜{(paged && totalPages > 1 ? $"（第 {page}/{totalPages} 页）" : "")}");
             foreach (DataRow row in sql.DataSet.Tables[0].Rows)
             {
                 int matchId = Convert.ToInt32(row["match_id"]);
