@@ -97,7 +97,7 @@ namespace Oshima.FunGame.WebAPI.Services
                 FROM csbetting_matches
                 WHERE event_id = @eid
                 ORDER BY 
-                    CASE status WHEN 0 THEN 0 WHEN 1 THEN 1 ELSE 2 END,
+                    CASE status WHEN 1 THEN 0 WHEN 0 THEN 1 ELSE 2 END,
                     CASE WHEN status = 2 THEN start_time END DESC,
                     CASE WHEN status != 2 THEN start_time END ASC
                 LIMIT {pageSize} OFFSET {offset}");
