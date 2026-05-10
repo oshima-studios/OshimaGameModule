@@ -94,7 +94,7 @@ namespace Oshima.FunGame.WebAPI.Services
                     BotReply reply2 = BettingController.GetMyBets(uid, mid: matchId);
                     if (reply.Markdown != null && reply.Markdown.Content != null && !(reply2.Markdown?.Content?.Equals("你还没有任何竞猜记录。") ?? true))
                     {
-                        reply.Markdown.Content = $"{reply.Markdown.Content.Trim()}\r\n{reply2.Markdown.Content}";
+                        reply.Markdown.Content += reply2.Markdown.Content;
                     }
                     await SendAsync(e, "CS赛事竞猜", reply);
                 }
