@@ -44,11 +44,24 @@ namespace Oshima.FunGame.WebAPI.Controllers
             return new BotReply { Markdown = new MarkdownMessage { Content = content }, Keyboard = kb };
         }
 
+        /// <summary>
+        /// 获取所有比赛赛程
+        /// </summary>
+        [AllowAnonymous]
+        [HttpGet("matches")]
+        public BotReply GetAllMatches([FromQuery] int page = 1, [FromQuery] int pageSize = 10)
+        {
+            var (content, totalPages) = CSBettingService.GetAllMatches(page, pageSize);
+            KeyboardMessage kb = new();
+            if (totalPages > 1) kb = new KeyboardMessage().AddPaginationRow("赛程 ", page, totalPages);
+            return new BotReply { Markdown = new MarkdownMessage { Content = content }, Keyboard = kb };
+        }
+
         [AllowAnonymous]
         [HttpGet("match/{matchId:int}")]
         public BotReply GetMatchDetail(int matchId)
         {
-            return new BotReply { Markdown = new MarkdownMessage { Content = CSBettingService.GetMatchDetail(matchId, out int status) + (status == 0 ? $"\r\n竞猜指令：{"竞猜".CreateCmdInput()} <比赛ID> <选项> <{General.GameplayEquilibriumConstant.InGameCurrency}数>\r\n👇🏻 点击下方按钮快速竞猜" : "")} };
+            return new BotReply { Markdown = new MarkdownMessage { Content = CSBettingService.GetMatchDetail(matchId, out int status) + (status == 0 ? $"竞猜指令：{"竞猜".CreateCmdInput()} <比赛ID> <选项> <{General.GameplayEquilibriumConstant.InGameCurrency}数>\r\n👇🏻 点击下方按钮快速竞猜" : "")} };
         }
 
         [AllowAnonymous]

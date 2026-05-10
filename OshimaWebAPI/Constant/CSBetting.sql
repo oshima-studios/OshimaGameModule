@@ -67,3 +67,7 @@ CREATE TABLE IF NOT EXISTS `csbetting_matches` (
 ALTER TABLE `csbetting_matches`
     ADD COLUMN `team1_win_odds` DECIMAL(5,2) NOT NULL DEFAULT 2.50 COMMENT '队伍1胜赔率' AFTER `available_options`,
     ADD COLUMN `team2_win_odds` DECIMAL(5,2) NOT NULL DEFAULT 2.50 COMMENT '队伍2胜赔率' AFTER `team1_win_odds`;
+
+-- 为比赛表添加描述字段
+ALTER TABLE `csbetting_matches`
+    ADD COLUMN `description` VARCHAR(255) NOT NULL DEFAULT '' COMMENT '比赛描述信息' AFTER `team2_win_odds`;

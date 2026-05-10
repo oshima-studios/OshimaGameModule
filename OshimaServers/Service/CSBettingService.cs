@@ -127,6 +127,67 @@ namespace Oshima.FunGame.WebAPI.Services
             return (header.ToString() + matches.ToString(), totalPages);
         }
 
+        /// <summary>
+        /// 获取所有比赛列表（赛程），按开始时间排序，支持分页
+        /// </summary>
+        public static (string, int) GetAllMatches(int page, int pageSize)
+        {
+            using SQLHelper? sql = Factory.OpenFactory.GetSQLHelper();
+            if (sql == null) return ("数据库连接失败。", 0);
+
+            UpdateStatuses(sql);
+
+            // 总数
+            sql.ExecuteDataSet("SELECT COUNT(*) FROM csbetting_matches");
+            int total = sql.Success ? Convert.ToInt32(sql.DataSet.Tables[0].Rows[0][0]) : 0;
+            int totalPages = (int)Math.Ceiling(total / (double)pageSize);
+            if (page > totalPages) page = totalPages;
+            if (page < 1) page = 1;
+            if (total == 0)
+                return ("暂无比赛赛程。", 1);
+
+            int offset = (page - 1) * pageSize;
+            sql.Parameters["@offset"] = offset;
+            sql.Parameters["@limit"] = pageSize;
+
+            sql.ExecuteDataSet($@"
+                SELECT m.id, m.team1_name, m.team2_name, m.status, m.start_time, m.stage,
+                       e.name AS event_name, e.id AS event_id
+                FROM csbetting_matches m
+                LEFT JOIN csbetting_events e ON m.event_id = e.id
+                ORDER BY 
+                    CASE m.status WHEN 1 THEN 0 WHEN 0 THEN 1 ELSE 2 END,
+                    m.start_time ASC
+                LIMIT @limit OFFSET @offset");
+
+            if (!sql.Success || sql.DataSet.Tables.Count == 0 || sql.DataSet.Tables[0].Rows.Count == 0)
+                return ("暂无比赛赛程。", 1);
+
+            StringBuilder sb = new();
+            sb.AppendLine($"📅 比赛赛程{(totalPages > 1 ? $"（第 {page}/{totalPages} 页）" : "")}");
+
+            foreach (DataRow row in sql.DataSet.Tables[0].Rows)
+            {
+                int id = Convert.ToInt32(row["id"]);
+                string t1 = row["team1_name"].ToString() ?? "";
+                string t2 = row["team2_name"].ToString() ?? "";
+                int status = Convert.ToInt32(row["status"]);
+                DateTime start = Convert.ToDateTime(row["start_time"]);
+                string stage = row["stage"]?.ToString() ?? "";
+                string eventName = row["event_name"]?.ToString() ?? "";
+                long eventId = Convert.ToInt64(row["event_id"]);
+
+                string statusStr = status switch { 0 => "未开始", 1 => "进行中", 2 => "已结束", _ => "未知" };
+                string matchLabel = $"{t1} vs {t2}".CreateCmdInput($"比赛详情 {id}");
+
+                sb.Append($"[{id}] {matchLabel}");
+                if (!string.IsNullOrWhiteSpace(eventName)) sb.Append($" ({eventName.CreateCmdInput($"赛事详情 {eventId}")}{(!string.IsNullOrWhiteSpace(stage) ? $" - {stage}" : "")})");
+                sb.AppendLine($" | {statusStr} | {start:MM-dd HH:mm}");
+            }
+
+            return (sb.ToString().TrimEnd(), totalPages);
+        }
+
         public static string GetMatchDetail(int matchId, out int status)
         {
             status = 0;
@@ -147,6 +208,7 @@ namespace Oshima.FunGame.WebAPI.Services
                 DateTime deadline = Convert.ToDateTime(row["bet_deadline"]);
                 string stage = row["stage"].ToString() ?? "";
                 string available = row["available_options"]?.ToString() ?? "[]";
+                string description = row["description"].ToString() ?? "";
                 string result = row["result"] != DBNull.Value ? row["result"].ToString() ?? "" : "";
                 long winner = row["winner"] != DBNull.Value ? Convert.ToInt64(row["winner"]) : 0;
                 decimal team1Odds = Convert.ToDecimal(row["team1_win_odds"]);
@@ -176,8 +238,8 @@ namespace Oshima.FunGame.WebAPI.Services
                 if (status == 0)
                 {
                     sb.AppendLine($"可用选项：");
-                    if (available.Contains("team1_win")) sb.AppendLine($"  - {t1}胜 (x {team1Odds})");
-                    if (available.Contains("team2_win")) sb.AppendLine($"  - {t2}胜 (x {team2Odds})");
+                    if (available.Contains("team1_win")) sb.AppendLine($"  - 队伍1 {t1} 胜 (x {team1Odds})");
+                    if (available.Contains("team2_win")) sb.AppendLine($"  - 队伍2 {t2} 胜 (x {team2Odds})");
                     if (available.Contains("score")) sb.AppendLine($"  - 精确比分 (x 4)");
                     if (available.Contains("mvp")) sb.AppendLine($"  - 赛事MVP (x 3.5)");
                 }
@@ -188,7 +250,12 @@ namespace Oshima.FunGame.WebAPI.Services
                     if (winner != 3) sb.AppendLine($"结果：{result}");
                 }
 
-                return sb.ToString().Trim();
+                if (!string.IsNullOrWhiteSpace(description))
+                {
+                    sb.AppendLine($"> 📝 {description}\r\n");
+                }
+
+                return sb.ToString();
             }
             return "数据库连接失败。";
         }
@@ -420,7 +487,8 @@ namespace Oshima.FunGame.WebAPI.Services
                 return ("你还没有任何竞猜记录。", 1);
 
             StringBuilder sb = new();
-            sb.AppendLine($"我的竞猜{(paged && totalPages > 1 ? $"（第 {page}/{totalPages} 页）" : "")}");
+            if (mid > 0) sb.Append("你的本场竞猜记录：\r\n> ");
+            else sb.Append($"我的竞猜{(paged && totalPages > 1 ? $"（第 {page}/{totalPages} 页）" : "")}\r\n> ");
             foreach (DataRow row in sql.DataSet.Tables[0].Rows)
             {
                 int matchId = Convert.ToInt32(row["match_id"]);

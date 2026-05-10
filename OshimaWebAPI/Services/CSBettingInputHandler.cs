@@ -19,6 +19,8 @@ namespace Oshima.FunGame.WebAPI.Services
                     {
                         Content = "🎮 CS赛事竞猜帮助：\r\n"
                                 + $"✨ {"赛事列表".CreateCmdInput()}   - 查看所有赛事\r\n"
+                                + $"✨ {"比赛列表".CreateCmdInput()}   - 查看所有比赛\r\n"
+                                + $"✨ {"创建存档".CreateCmdInput()}   - 创建存档后可竞猜\r\n"
                                 + $"✨ {"我的竞猜".CreateCmdInput()}   - 查看我的投注记录\r\n"
                                 + $"✨ {"竞猜领奖".CreateCmdInput()}   - 领取竞猜奖励\r\n"
                                 + $"✨ {"比赛详情".CreateCmdInput()}   - 查看单场比赛并投注"
@@ -26,6 +28,8 @@ namespace Oshima.FunGame.WebAPI.Services
                     Keyboard = new KeyboardMessage()
                         .AppendButtons(2,
                             Button.CreateCmdButton("📋 赛事列表", "赛事列表"),
+                            Button.CreateCmdButton("📅 比赛列表", "比赛列表"),
+                            Button.CreateCmdButton("⚙️ 创建存档", "创建存档"),
                             Button.CreateCmdButton("📜 我的竞猜", "我的竞猜"),
                             Button.CreateCmdButton("💰 竞猜领奖", "竞猜领奖"),
                             Button.CreateCmdButton("❓ 竞猜帮助", "竞猜帮助"))
@@ -38,10 +42,30 @@ namespace Oshima.FunGame.WebAPI.Services
             if (e.Detail.StartsWith("赛事列表"))
             {
                 int page = 1;
-                string[] parts = e.Detail.Split(' ', StringSplitOptions.RemoveEmptyEntries);
-                if (parts.Length > 1 && int.TryParse(parts[1], out int p)) page = p;
-                BotReply reply = BettingController.GetEventsOverview(page); // 需要Controller增加page参数的方法
+                string detail = e.Detail.Replace("赛事列表", "").Trim();
+                System.Text.RegularExpressions.Match match = GetFirstNumber().Match(detail);
+                if (match.Success && int.TryParse(match.Value, out int p)) page = p;
+                BotReply reply = BettingController.GetEventsOverview(page);
                 await SendAsync(e, "CS赛事竞猜", reply);
+                return true;
+            }
+
+            // 赛程：显示所有比赛
+            if (e.Detail.StartsWith("赛程") || e.Detail.StartsWith("比赛列表"))
+            {
+                int page = 1;
+                string detail = e.Detail.Replace("赛程", "").Replace("比赛列表", "").Trim();
+                System.Text.RegularExpressions.Match match = GetFirstNumber().Match(detail);
+                if (match.Success && int.TryParse(match.Value, out int p)) page = p;
+
+                BotReply reply = BettingController.GetAllMatches(page);
+                reply.Keyboard ??= new KeyboardMessage();
+                reply.Keyboard.AppendButtonsWithNewRow(2,
+                    Button.CreateCmdButton("📋 赛事列表", "赛事列表"),
+                    Button.CreateCmdButton("📅 比赛列表", "比赛列表"),
+                    Button.CreateCmdButton("📜 我的竞猜", "我的竞猜"),
+                    Button.CreateCmdButton("❓ 竞猜帮助", "竞猜帮助"));
+                await SendAsync(e, "比赛赛程", reply);
                 return true;
             }
 
@@ -63,12 +87,14 @@ namespace Oshima.FunGame.WebAPI.Services
                     }
                     kb.AppendButtonsWithNewRow(2,
                         Button.CreateCmdButton("📋 赛事列表", "赛事列表"),
-                        Button.CreateCmdButton("💰 竞猜领奖", "竞猜领奖"));
+                        Button.CreateCmdButton("📅 比赛列表", "比赛列表"),
+                        Button.CreateCmdButton("💰 竞猜领奖", "竞猜领奖"),
+                        Button.CreateCmdButton("❓ 竞猜帮助", "竞猜帮助"));
                     reply.Keyboard = kb;
                     BotReply reply2 = BettingController.GetMyBets(uid, mid: matchId);
                     if (reply.Markdown != null && reply.Markdown.Content != null && !(reply2.Markdown?.Content?.Equals("你还没有任何竞猜记录。") ?? true))
                     {
-                        reply.Markdown.Content = $"{reply.Markdown.Content.Trim()}\r\n你的本场竞猜记录：\r\n{reply2.Markdown.Content}";
+                        reply.Markdown.Content = $"{reply.Markdown.Content.Trim()}\r\n{reply2.Markdown.Content}";
                     }
                     await SendAsync(e, "CS赛事竞猜", reply);
                 }
@@ -93,8 +119,8 @@ namespace Oshima.FunGame.WebAPI.Services
                     BotReply reply = BettingController.GetEventDetail(eventId, page);
                     reply.Keyboard ??= new KeyboardMessage();
                     reply.Keyboard.AppendButtonsWithNewRow(2,
-                            Button.CreateCmdButton("🔍 比赛详情 ", "比赛详情 ", enter: false),
                             Button.CreateCmdButton("📋 赛事列表", "赛事列表"),
+                            Button.CreateCmdButton("📅 比赛列表", "比赛列表"),
                             Button.CreateCmdButton("📜 我的竞猜", "我的竞猜"),
                             Button.CreateCmdButton("💰 竞猜领奖", "竞猜领奖"));
                     await SendAsync(e, "CS赛事竞猜", reply);
@@ -110,7 +136,9 @@ namespace Oshima.FunGame.WebAPI.Services
                         Keyboard = new KeyboardMessage()
                             .AppendButtons(2,
                                 Button.CreateCmdButton("📋 赛事列表", "赛事列表"),
-                                Button.CreateCmdButton("❓ 竞猜帮助", "竞猜帮助"))
+                                Button.CreateCmdButton("📅 比赛列表", "比赛列表"),
+                                Button.CreateCmdButton("❓ 竞猜帮助", "竞猜帮助"),
+                                Button.CreateCmdButton("📜 我的竞猜", "我的竞猜"))
                     };
                     await SendAsync(e, "CS赛事竞猜", reply);
                 }
@@ -120,13 +148,15 @@ namespace Oshima.FunGame.WebAPI.Services
             if (e.Detail.StartsWith("我的竞猜"))
             {
                 int page = 1;
-                string[] parts = e.Detail.Split(' ', StringSplitOptions.RemoveEmptyEntries);
-                if (parts.Length > 1 && int.TryParse(parts[1], out int p)) page = p;
+                string detail = e.Detail.Replace("我的竞猜", "").Trim();
+                System.Text.RegularExpressions.Match match = GetFirstNumber().Match(detail);
+                if (match.Success && int.TryParse(match.Value, out int p)) page = p;
                 BotReply reply = BettingController.GetMyBets(uid, page);
                 reply.Keyboard ??= new KeyboardMessage();
                 reply.Keyboard.AppendButtonsWithNewRow(2,
                         Button.CreateCmdButton("💰 竞猜领奖", "竞猜领奖", enter: true),
                         Button.CreateCmdButton("📋 赛事列表", "赛事列表"),
+                        Button.CreateCmdButton("📅 比赛列表", "比赛列表"),
                         Button.CreateCmdButton("❓ 竞猜帮助", "竞猜帮助"));
                 if (reply.Markdown?.Content?.Contains("创建存档") ?? false)
                 {
@@ -142,7 +172,8 @@ namespace Oshima.FunGame.WebAPI.Services
                 reply.Keyboard = new KeyboardMessage()
                     .AppendButtons(2,
                         Button.CreateCmdButton("📜 我的竞猜", "我的竞猜"),
-                        Button.CreateCmdButton("📋 赛事列表", "赛事列表"));
+                        Button.CreateCmdButton("📋 赛事列表", "赛事列表"),
+                        Button.CreateCmdButton("📅 比赛列表", "比赛列表"));
                 if (reply.Markdown?.Content?.Contains("创建存档") ?? false)
                 {
                     reply.Keyboard.AppendButtons(2, Button.CreateCmdButton("⚙️ 创建存档", "创建存档"));
@@ -172,6 +203,7 @@ namespace Oshima.FunGame.WebAPI.Services
                 kb.AppendButtons(2,
                     Button.CreateCmdButton("📜 我的竞猜", "我的竞猜"),
                     Button.CreateCmdButton("📋 赛事列表", "赛事列表"),
+                    Button.CreateCmdButton("📅 比赛列表", "比赛列表"),
                     Button.CreateCmdButton("❓ 竞猜帮助", "竞猜帮助"));
 
                 if (reply.Markdown?.Content?.Contains("创建存档") ?? false)
@@ -209,6 +241,7 @@ namespace Oshima.FunGame.WebAPI.Services
                     reply.Keyboard = new KeyboardMessage()
                         .AppendButtons(2,
                             Button.CreateCmdButton("📋 赛事列表", "赛事列表"),
+                            Button.CreateCmdButton("📅 比赛列表", "比赛列表"),
                             Button.CreateCmdButton("⚙️ 继续结算", "结算比赛 ", enter: false));
                     await SendAsync(e, "CS赛事竞猜", reply);
                 }
@@ -396,5 +429,8 @@ namespace Oshima.FunGame.WebAPI.Services
 
             return false;
         }
+
+        [System.Text.RegularExpressions.GeneratedRegex(@"\d+")]
+        private static partial System.Text.RegularExpressions.Regex GetFirstNumber();
     }
 }
