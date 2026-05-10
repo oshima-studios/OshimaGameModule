@@ -309,5 +309,35 @@ namespace Oshima.FunGame.WebAPI.Controllers
                 return reply;
             }
         }
+
+        [HttpPost("update-match")]
+        public BotReply UpdateMatch([FromBody] UpdateMatchRequest request)
+        {
+            MarkdownMessage md = new() { Content = busy };
+            BotReply reply = new() { Markdown = md };
+            try
+            {
+                if (!FunGameConstant.UserIdAndUsername.TryGetValue(request.Uid, out User? user) || (!user.IsAdmin && !user.IsOperator))
+                {
+                    md.Content = "你没有权限执行此操作。";
+                    return reply;
+                }
+
+                if (CSBettingService.UpdateMatch(request, out string error))
+                {
+                    md.Content = $"比赛 {request.MatchId} 属性修改成功。";
+                }
+                else
+                {
+                    md.Content = error;
+                }
+                return reply;
+            }
+            catch (Exception e)
+            {
+                Logger.LogError(e, "UpdateMatch 异常");
+                return reply;
+            }
+        }
     }
 }

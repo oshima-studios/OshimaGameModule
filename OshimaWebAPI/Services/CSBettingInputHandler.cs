@@ -94,7 +94,7 @@ namespace Oshima.FunGame.WebAPI.Services
                     BotReply reply2 = BettingController.GetMyBets(uid, mid: matchId);
                     if (reply.Markdown != null && reply.Markdown.Content != null && !(reply2.Markdown?.Content?.Equals("你还没有任何竞猜记录。") ?? true))
                     {
-                        reply.Markdown.Content += reply2.Markdown.Content;
+                        reply.Markdown.Content += (reply.Markdown.Content.Contains("点击下方按钮快速竞猜") ? "\r\n" : "") + reply2.Markdown.Content;
                     }
                     await SendAsync(e, "CS赛事竞猜", reply);
                 }
@@ -357,7 +357,7 @@ namespace Oshima.FunGame.WebAPI.Services
                     return true;
                 }
 
-                // 解析剩余参数：选项和赔率
+                // 解析剩余参数：选项和奖励率
                 List<string> optionParts = [];
                 decimal? team1Odds = null, team2Odds = null;
                 for (int i = 8; i < parts.Length; i++)
@@ -427,10 +427,87 @@ namespace Oshima.FunGame.WebAPI.Services
                 return true;
             }
 
+            // 指令：修改比赛 <比赛ID> [参数=值 ...]
+            if (e.Detail.StartsWith("修改比赛"))
+            {
+                e.UseNotice = false;
+                if (!FunGameConstant.UserIdAndUsername.TryGetValue(uid, out User? user) || (!user.IsAdmin && !user.IsOperator))
+                {
+                    await SendAsync(e, "修改比赛", "你没有权限执行此操作。");
+                    return true;
+                }
+
+                string detail = e.Detail.Replace("修改比赛", "").Trim();
+                string[] parts = detail.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+                if (parts.Length < 2)
+                {
+                    await SendAsync(e, "修改比赛",
+                        "格式：修改比赛 <比赛ID> [参数=值]\r\n" +
+                        "可用参数：t1od=<奖励率> t2od=<奖励率> st=<开始时间> ddl=<截止时间> des=<描述>\r\n" +
+                        "时间格式：yyyy-MM-dd HH:mm\r\n" +
+                        "示例：修改比赛 10 t1od=2.8 ddl=2026-05-12 18:00 des=\"决赛，Bo3\"");
+                    return true;
+                }
+
+                if (!int.TryParse(parts[0], out int matchId))
+                {
+                    await SendAsync(e, "修改比赛", "比赛ID必须为数字。");
+                    return true;
+                }
+
+                // 解析剩余参数 key=value，支持引号包裹的含空格值
+                UpdateMatchRequest request = new() { Uid = uid, MatchId = matchId };
+                string remaining = string.Join(" ", parts[1..]);
+                // 使用正则匹配 key=value，value 可能带双引号
+                System.Text.RegularExpressions.MatchCollection matches = GetParamValue().Matches(remaining);
+                foreach (System.Text.RegularExpressions.Match m in matches)
+                {
+                    string key = m.Groups[1].Value;
+                    string val = m.Groups[2].Success ? m.Groups[2].Value : m.Groups[3].Value;
+
+                    switch (key)
+                    {
+                        case "t1od":
+                            if (decimal.TryParse(val, out decimal t1od)) request.Team1WinOdds = t1od;
+                            else { await SendAsync(e, "修改比赛", "t1od 值无效。"); return true; }
+                            break;
+                        case "t2od":
+                            if (decimal.TryParse(val, out decimal t2od)) request.Team2WinOdds = t2od;
+                            else { await SendAsync(e, "修改比赛", "t2od 值无效。"); return true; }
+                            break;
+                        case "st":
+                            if (DateTime.TryParse(val, out DateTime st)) request.StartTime = st;
+                            else { await SendAsync(e, "修改比赛", "开始时间格式错误，请用 yyyy-MM-dd HH:mm。"); return true; }
+                            break;
+                        case "ddl":
+                            if (DateTime.TryParse(val, out DateTime ddl)) request.BetDeadline = ddl;
+                            else { await SendAsync(e, "修改比赛", "截止时间格式错误，请用 yyyy-MM-dd HH:mm。"); return true; }
+                            break;
+                        case "des":
+                            request.Description = val; // 允许空字符串清空描述
+                            break;
+                        default:
+                            await SendAsync(e, "修改比赛", $"未知参数：{key}");
+                            return true;
+                    }
+                }
+
+                // 调用控制器API
+                BotReply reply = BettingController.UpdateMatch(request);
+                reply.Keyboard = new KeyboardMessage()
+                    .AppendButtons(2,
+                        Button.CreateCmdButton("📋 赛事列表", "赛事列表"),
+                        Button.CreateCmdButton("🔍 比赛详情", $"比赛详情 {matchId}"));
+                await SendAsync(e, "修改比赛", reply);
+                return true;
+            }
+
             return false;
         }
 
         [System.Text.RegularExpressions.GeneratedRegex(@"\d+")]
         private static partial System.Text.RegularExpressions.Regex GetFirstNumber();
+        [System.Text.RegularExpressions.GeneratedRegex(@"(\w+)=(?:""([^""]*)""|(\S+))")]
+        private static partial System.Text.RegularExpressions.Regex GetParamValue();
     }
 }

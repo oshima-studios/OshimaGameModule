@@ -1322,6 +1322,7 @@ namespace Oshima.FunGame.WebAPI.Services
                 if (e.Detail == "签到")
                 {
                     BotReply reply = Controller.SignIn(uid);
+                    reply.Keyboard = new KeyboardMessage().AppendButtons(1, Button.CreateCmdButton("帮助", "帮助"));
                     await SendAsync(e, "签到", reply);
                     return result;
                 }
@@ -2074,9 +2075,15 @@ namespace Oshima.FunGame.WebAPI.Services
                 if (e.Detail == "每日商店")
                 {
                     BotReply rpy = Controller.ShowDailyStore(uid);
-                    rpy.Keyboard = new KeyboardMessage().AppendButtons(2, [
-                        Button.CreateCmdButton("商店查看", "商店查看", false),
-                        Button.CreateCmdButton("商店购买", "商店购买", false)
+                    rpy.Keyboard = new KeyboardMessage().AppendButtons(4, [
+                        Button.CreateCmdButton("查看1", "商店查看 1", false),
+                        Button.CreateCmdButton("查看2", "商店查看 2", false),
+                        Button.CreateCmdButton("查看3", "商店查看 3", false),
+                        Button.CreateCmdButton("查看4", "商店查看 4", false),
+                        Button.CreateCmdButton("购买1", "商店购买 1", false),
+                        Button.CreateCmdButton("购买2", "商店购买 2", false),
+                        Button.CreateCmdButton("购买3", "商店购买 3", false),
+                        Button.CreateCmdButton("购买4", "商店购买 4", false)
                     ]);
                     await SendAsync(e, "商店", rpy);
                     return result;
@@ -2131,6 +2138,7 @@ namespace Oshima.FunGame.WebAPI.Services
                         {
                             reply = Controller.SystemStoreShowInfo(uid, model.StoreRegion, model.StoreName, id);
                         }
+                        reply.Keyboard = new KeyboardMessage().AppendButtons(1, Button.CreateCmdButton("购买此商品", $"商店购买 {id}", false));
                         await SendAsync(e, "商店", reply);
                     }
                     return result;
@@ -2191,7 +2199,7 @@ namespace Oshima.FunGame.WebAPI.Services
                 if (e.Detail == "探索结算")
                 {
                     BotReply reply = Controller.SettleExploreAll(uid);
-                    await SendAsync(e, "探索结算", string.Join("\r\n", reply));
+                    await SendAsync(e, "探索结算", reply);
                     return result;
                 }
 
@@ -2268,14 +2276,14 @@ namespace Oshima.FunGame.WebAPI.Services
                 if (e.Detail == "生命之泉")
                 {
                     BotReply reply = Controller.SpringOfLife(uid);
-                    await SendAsync(e, "生命之泉", string.Join("\r\n", reply));
+                    await SendAsync(e, "生命之泉", reply);
                     return result;
                 }
 
                 if (e.Detail == "酒馆" || e.Detail == "上酒")
                 {
                     BotReply reply = Controller.Pub(uid);
-                    await SendAsync(e, "酒馆", string.Join("\r\n", reply));
+                    await SendAsync(e, "酒馆", reply);
                     return result;
                 }
 
@@ -2284,7 +2292,7 @@ namespace Oshima.FunGame.WebAPI.Services
                     if (FunGameService.Activities.FirstOrDefault(a => a.Name == "毕业季") is Activity activity && activity.Status == ActivityState.InProgress)
                     {
                         BotReply reply = Controller.CreateGiftBox(uid, "毕业礼包", true, 2);
-                        await SendAsync(e, "毕业礼包", string.Join("\r\n", reply));
+                        await SendAsync(e, "毕业礼包", reply);
                     }
                     else
                     {
@@ -2296,7 +2304,7 @@ namespace Oshima.FunGame.WebAPI.Services
                 if (e.Detail == "活动" || e.Detail == "活动中心")
                 {
                     BotReply reply = Controller.GetEvents(uid);
-                    await SendAsync(e, "活动中心", string.Join("\r\n", reply));
+                    await SendAsync(e, "活动中心", reply);
                     return result;
                 }
 
@@ -2728,6 +2736,10 @@ namespace Oshima.FunGame.WebAPI.Services
                 if (e.Detail == "后勤部")
                 {
                     BotReply reply = Controller.ShowSystemStore(uid, "铎京城", "dokyo_logistics");
+                    reply.Keyboard = new KeyboardMessage().AppendButtons(2, [
+                        Button.CreateCmdButton("商店查看", "商店查看", false),
+                        Button.CreateCmdButton("商店购买", "商店购买", false)
+                    ]);
                     await SendAsync(e, "商店", reply);
                     return result;
                 }
@@ -2735,6 +2747,10 @@ namespace Oshima.FunGame.WebAPI.Services
                 if (e.Detail == "武器商会")
                 {
                     BotReply reply = Controller.ShowSystemStore(uid, "铎京城", "dokyo_weapons");
+                    reply.Keyboard = new KeyboardMessage().AppendButtons(2, [
+                        Button.CreateCmdButton("商店查看", "商店查看", false),
+                        Button.CreateCmdButton("商店购买", "商店购买", false)
+                    ]);
                     await SendAsync(e, "商店", reply);
                     return result;
                 }
@@ -2742,6 +2758,10 @@ namespace Oshima.FunGame.WebAPI.Services
                 if (e.Detail == "杂货铺")
                 {
                     BotReply reply = Controller.ShowSystemStore(uid, "铎京城", "dokyo_yuki");
+                    reply.Keyboard = new KeyboardMessage().AppendButtons(2, [
+                        Button.CreateCmdButton("商店查看", "商店查看", false),
+                        Button.CreateCmdButton("商店购买", "商店购买", false)
+                    ]);
                     await SendAsync(e, "商店", reply);
                     return result;
                 }
@@ -2749,6 +2769,10 @@ namespace Oshima.FunGame.WebAPI.Services
                 if (e.Detail == "基金会")
                 {
                     BotReply reply = Controller.ShowSystemStore(uid, "铎京城", "dokyo_welfare");
+                    reply.Keyboard = new KeyboardMessage().AppendButtons(2, [
+                        Button.CreateCmdButton("商店查看", "商店查看", false),
+                        Button.CreateCmdButton("商店购买", "商店购买", false)
+                    ]);
                     await SendAsync(e, "商店", reply);
                     return result;
                 }
@@ -2756,6 +2780,10 @@ namespace Oshima.FunGame.WebAPI.Services
                 if (e.Detail == "锻造商店")
                 {
                     BotReply reply = Controller.ShowSystemStore(uid, "铎京城", "dokyo_forge");
+                    reply.Keyboard = new KeyboardMessage().AppendButtons(2, [
+                        Button.CreateCmdButton("商店查看", "商店查看", false),
+                        Button.CreateCmdButton("商店购买", "商店购买", false)
+                    ]);
                     await SendAsync(e, "商店", reply);
                     return result;
                 }
@@ -2763,6 +2791,10 @@ namespace Oshima.FunGame.WebAPI.Services
                 if (e.Detail == "赛马商店")
                 {
                     BotReply reply = Controller.ShowSystemStore(uid, "铎京城", "dokyo_horseracing");
+                    reply.Keyboard = new KeyboardMessage().AppendButtons(2, [
+                        Button.CreateCmdButton("商店查看", "商店查看", false),
+                        Button.CreateCmdButton("商店购买", "商店购买", false)
+                    ]);
                     await SendAsync(e, "商店", reply);
                     return result;
                 }
@@ -2770,6 +2802,10 @@ namespace Oshima.FunGame.WebAPI.Services
                 if (e.Detail == "共斗商店")
                 {
                     BotReply reply = Controller.ShowSystemStore(uid, "铎京城", "dokyo_cooperative");
+                    reply.Keyboard = new KeyboardMessage().AppendButtons(2, [
+                        Button.CreateCmdButton("商店查看", "商店查看", false),
+                        Button.CreateCmdButton("商店购买", "商店购买", false)
+                    ]);
                     await SendAsync(e, "商店", reply);
                     return result;
                 }
@@ -2806,6 +2842,10 @@ namespace Oshima.FunGame.WebAPI.Services
                             default:
                                 break;
                         }
+                        reply.Keyboard = new KeyboardMessage().AppendButtons(2, [
+                            Button.CreateCmdButton("商店查看", "商店查看", false),
+                            Button.CreateCmdButton("商店购买", "商店购买", false)
+                        ]);
                         await SendAsync(e, "商店", reply);
                     }
                     return result;
@@ -2841,7 +2881,12 @@ namespace Oshima.FunGame.WebAPI.Services
                     FunGameService.GenerateForgeResult(user, model, true);
                     if (model.ResultString != "")
                     {
-                        await SendAsync(e, "模拟锻造配方", model.ResultString);
+                        BotReply reply = new()
+                        {
+                            Markdown = new() { Content = model.ResultString }
+                        };
+                        reply = CreateForgeSystemButtons(reply);
+                        await SendAsync(e, "模拟锻造配方", reply);
                     }
                     return result;
                 }
@@ -2868,6 +2913,7 @@ namespace Oshima.FunGame.WebAPI.Services
                     }
 
                     BotReply reply = Controller.ForgeItem_Create(uid, recipeItems);
+                    reply = CreateForgeSystemButtons(reply);
                     await SendAsync(e, "锻造配方", reply);
                     return result;
                 }
@@ -2875,6 +2921,7 @@ namespace Oshima.FunGame.WebAPI.Services
                 if (e.Detail.StartsWith("模拟锻造"))
                 {
                     BotReply reply = Controller.ForgeItem_Simulate(uid);
+                    reply = CreateForgeSystemButtons(reply);
                     await SendAsync(e, "模拟锻造", reply);
                     return result;
                 }
@@ -2882,6 +2929,7 @@ namespace Oshima.FunGame.WebAPI.Services
                 if (e.Detail.StartsWith("取消锻造"))
                 {
                     BotReply reply = Controller.ForgeItem_Cancel(uid);
+                    reply = CreateForgeSystemButtons(reply);
                     await SendAsync(e, "取消锻造", reply);
                     return result;
                 }
@@ -2889,6 +2937,7 @@ namespace Oshima.FunGame.WebAPI.Services
                 if (e.Detail.StartsWith("确认开始锻造"))
                 {
                     BotReply reply = Controller.ForgeItem_Complete(uid);
+                    reply = CreateForgeSystemButtons(reply);
                     await SendAsync(e, "确认开始锻造", reply);
                     return result;
                 }
@@ -2896,6 +2945,7 @@ namespace Oshima.FunGame.WebAPI.Services
                 if (e.Detail.StartsWith("锻造信息"))
                 {
                     BotReply reply = Controller.ForgeItem_Info(uid);
+                    reply = CreateForgeSystemButtons(reply);
                     await SendAsync(e, "锻造信息", reply);
                     return result;
                 }
@@ -2910,6 +2960,7 @@ namespace Oshima.FunGame.WebAPI.Services
                         if (r != -1 && q != -1)
                         {
                             BotReply reply = Controller.ForgeItem_Master(uid, r, q);
+                            reply = CreateForgeSystemButtons(reply);
                             await SendAsync(e, "大师锻造", reply);
                         }
                     }
@@ -3521,6 +3572,20 @@ namespace Oshima.FunGame.WebAPI.Services
                 real = [real[0], .. real[^2..]];
             }
             return real;
+        }
+
+        public BotReply CreateForgeSystemButtons(BotReply reply)
+        {
+            reply.Keyboard ??= new KeyboardMessage();
+            reply.Keyboard.AppendButtonsWithNewRow(2, [
+                Button.CreateCmdButton("创建配方", "锻造配方", false),
+                Button.CreateCmdButton("模拟配方", "模拟锻造配方", false),
+                Button.CreateCmdButton("锻造信息", "锻造信息", false),
+                Button.CreateCmdButton("取消锻造", "取消锻造", false),
+                Button.CreateCmdButton("模拟锻造", "模拟锻造", false),
+                Button.CreateCmdButton("确认锻造", "确认开始锻造", false)
+            ]);
+            return reply;
         }
 
         public BotReply CreateMarkdownFromText(string text)

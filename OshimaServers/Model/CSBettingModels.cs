@@ -104,6 +104,7 @@ namespace Oshima.FunGame.WebAPI.Model
         public MatchStatus Status { get; set; }
         public DateTime StartTime { get; set; }
         public string Stage { get; set; } = "";
+        public string Description { get; set; } = "";
 
         /// <summary>
         /// 竞猜截止时间
@@ -224,5 +225,29 @@ namespace Oshima.FunGame.WebAPI.Model
 
         [JsonPropertyName("team2_win_odds")]
         public decimal? Team2WinOdds { get; set; }
+    }
+
+    public class UpdateMatchRequest
+    {
+        [JsonPropertyName("uid")]
+        public long Uid { get; set; }
+
+        [JsonPropertyName("match_id")]
+        public int MatchId { get; set; }
+
+        [JsonPropertyName("team1_win_odds")]
+        public decimal? Team1WinOdds { get; set; }
+
+        [JsonPropertyName("team2_win_odds")]
+        public decimal? Team2WinOdds { get; set; }
+
+        [JsonPropertyName("start_time")]
+        public DateTime? StartTime { get; set; }
+
+        [JsonPropertyName("bet_deadline")]
+        public DateTime? BetDeadline { get; set; }
+
+        [JsonPropertyName("description")]
+        public string? Description { get; set; }
     }
 }

@@ -4,6 +4,7 @@ using Milimoe.FunGame.Core.Api.Transmittal;
 using Milimoe.FunGame.Core.Api.Utility;
 using Milimoe.FunGame.Core.Library.Constant;
 using Oshima.FunGame.OshimaServers.Model;
+using Oshima.FunGame.WebAPI.Model;
 
 namespace Oshima.FunGame.WebAPI.Services
 {
@@ -147,8 +148,6 @@ namespace Oshima.FunGame.WebAPI.Services
                 return ("暂无比赛赛程。", 1);
 
             int offset = (page - 1) * pageSize;
-            sql.Parameters["@offset"] = offset;
-            sql.Parameters["@limit"] = pageSize;
 
             sql.ExecuteDataSet($@"
                 SELECT m.id, m.team1_name, m.team2_name, m.status, m.start_time, m.stage,
@@ -157,8 +156,9 @@ namespace Oshima.FunGame.WebAPI.Services
                 LEFT JOIN csbetting_events e ON m.event_id = e.id
                 ORDER BY 
                     CASE m.status WHEN 1 THEN 0 WHEN 0 THEN 1 ELSE 2 END,
-                    m.start_time ASC
-                LIMIT @limit OFFSET @offset");
+                    CASE WHEN m.status = 2 THEN m.start_time END DESC,
+                    CASE WHEN m.status != 2 THEN m.start_time END ASC
+                LIMIT {pageSize} OFFSET {offset}");
 
             if (!sql.Success || sql.DataSet.Tables.Count == 0 || sql.DataSet.Tables[0].Rows.Count == 0)
                 return ("暂无比赛赛程。", 1);
@@ -662,11 +662,11 @@ namespace Oshima.FunGame.WebAPI.Services
                                               .Where(s => s.Length > 0)];
                 string optionsJson = System.Text.Json.JsonSerializer.Serialize(options);
 
-                // 如果比赛包含比分或 MVP 选项，不允许自定义猜胜者赔率
+                // 如果比赛包含比分或 MVP 选项，不允许自定义猜胜者奖励率
                 bool hasSpecialOption = options.Contains("score") || options.Contains("mvp");
                 if ((team1WinOdds.HasValue || team2WinOdds.HasValue) && hasSpecialOption)
                 {
-                    error = "比赛包含比分或MVP选项时，不能自定义猜胜者赔率。";
+                    error = "比赛包含比分或MVP选项时，不能自定义猜胜者奖励率。";
                     return false;
                 }
 
@@ -674,7 +674,7 @@ namespace Oshima.FunGame.WebAPI.Services
                 decimal t2Odds = team2WinOdds ?? 2.50m;
                 if (t1Odds <= 0 || t2Odds <= 0)
                 {
-                    error = "赔率必须大于0。";
+                    error = "奖励率必须大于0。";
                     return false;
                 }
 
@@ -732,6 +732,7 @@ namespace Oshima.FunGame.WebAPI.Services
                 return false;
             }
 
+            sql.Parameters["@mid"] = matchId;
             sql.Execute("UPDATE csbetting_matches SET status = 1 WHERE id = @mid");
             if (sql.Success)
             {
@@ -744,6 +745,96 @@ namespace Oshima.FunGame.WebAPI.Services
 
             message = "更新比赛状态失败。";
             return false;
+        }
+
+        public static bool UpdateMatch(UpdateMatchRequest request, out string error)
+        {
+            error = "";
+            using SQLHelper? sql = Factory.OpenFactory.GetSQLHelper();
+            if (sql == null)
+            {
+                error = "数据库连接失败。";
+                return false;
+            }
+
+            // 检查比赛是否存在
+            sql.Parameters["@mid"] = request.MatchId;
+            sql.ExecuteDataSet("SELECT status, available_options FROM csbetting_matches WHERE id = @mid");
+            if (!sql.Success || sql.DataSet.Tables[0].Rows.Count == 0)
+            {
+                error = "比赛不存在。";
+                return false;
+            }
+
+            int status = Convert.ToInt32(sql.DataSet.Tables[0].Rows[0]["status"]);
+            if (status == 2)
+            {
+                error = "比赛已结束，无法修改。";
+                return false;
+            }
+
+            string available = sql.DataSet.Tables[0].Rows[0]["available_options"]?.ToString() ?? "[]";
+            bool hasSpecial = available.Contains("score", StringComparison.OrdinalIgnoreCase) || available.Contains("mvp", StringComparison.OrdinalIgnoreCase);
+
+            // 校验奖励率逻辑（同创建比赛）
+            if ((request.Team1WinOdds.HasValue || request.Team2WinOdds.HasValue) && hasSpecial)
+            {
+                error = "比赛包含比分或MVP选项时，不能修改猜胜者奖励率。";
+                return false;
+            }
+            if ((request.Team1WinOdds.HasValue && request.Team1WinOdds <= 0) ||
+                (request.Team2WinOdds.HasValue && request.Team2WinOdds <= 0))
+            {
+                error = "奖励率必须大于0。";
+                return false;
+            }
+
+            // 构建动态UPDATE
+            StringBuilder setClause = new();
+            if (request.Team1WinOdds.HasValue)
+            {
+                sql.Parameters["@t1od"] = request.Team1WinOdds.Value;
+                setClause.Append("team1_win_odds = @t1od, ");
+            }
+            if (request.Team2WinOdds.HasValue)
+            {
+                sql.Parameters["@t2od"] = request.Team2WinOdds.Value;
+                setClause.Append("team2_win_odds = @t2od, ");
+            }
+            if (request.StartTime.HasValue)
+            {
+                sql.Parameters["@st"] = request.StartTime.Value;
+                setClause.Append("start_time = @st, ");
+            }
+            if (request.BetDeadline.HasValue)
+            {
+                sql.Parameters["@ddl"] = request.BetDeadline.Value;
+                setClause.Append("bet_deadline = @ddl, ");
+            }
+            if (request.Description != null) 
+            {
+                sql.Parameters["@desc"] = (object?)request.Description ?? DBNull.Value;
+                setClause.Append("description = @desc, ");
+            }
+
+            if (setClause.Length == 0)
+            {
+                error = "没有提供任何修改参数。";
+                return false;
+            }
+
+            setClause.Remove(setClause.Length - 2, 2); // 移除最后的 ", "
+            sql.Parameters["@mid"] = request.MatchId;
+            string updateSql = $"UPDATE csbetting_matches SET {setClause} WHERE id = @mid";
+
+            sql.Execute(updateSql);
+            if (!sql.Success)
+            {
+                error = "修改比赛属性失败。";
+                return false;
+            }
+
+            return true;
         }
     }
 }

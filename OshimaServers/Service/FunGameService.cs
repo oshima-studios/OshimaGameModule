@@ -2585,7 +2585,7 @@ namespace Oshima.FunGame.OshimaServers.Service
                 if (filteredActivities.Any())
                 {
                     builder.AppendLine($"【{CommonSet.GetActivityStatus(state)}】");
-                    builder.AppendLine($"{string.Join("\r\n", filteredActivities.Select(a => a.GetIdName() + $"（{a.GetTimeString(false)}）"))}");
+                    builder.AppendLine($"{string.Join("\r\n", filteredActivities.Select(a => a.GetIdName().CreateCmdInput($"查活动 {a.Id}") + $"（{a.GetTimeString(false)}）"))}");
                 }
             }
 
@@ -5068,7 +5068,7 @@ namespace Oshima.FunGame.OshimaServers.Service
                 progressString = $"\r\n当前进度：{quest.Progress}/{quest.MaxProgress}";
             }
 
-            string str = $"{quest.Id}. {quest.Name}\r\n" +
+            string str = $"{quest.Id}. {quest.Name.CreateCmdInput(BuildQuestCmdInput(quest, activity))}\r\n" +
                    $"{quest.Description}\r\n" +
                    (quest.QuestType == QuestType.Continuous ? $"需要时间：{quest.EstimatedMinutes} 分钟\r\n" : "") +
                    (quest.StartTime.HasValue ? $"开始时间：{quest.StartTime.Value.ToString(General.GeneralDateTimeFormatChinese)}" +
@@ -5089,6 +5089,18 @@ namespace Oshima.FunGame.OshimaServers.Service
             }
             
             return str + progressString + (quest.SettleTime.HasValue ? $"\r\n结算时间：{quest.SettleTime.Value.ToString(General.GeneralDateTimeFormatChinese)}" : "");
+        }
+
+        public static string BuildQuestCmdInput(Quest quest, Activity? activity = null)
+        {
+            if (quest.Status == QuestState.InProgress)
+            {
+                return $"做{(activity is null ? "" : "活动")}任务 {quest.Id}";
+            }
+            else
+            {
+                return activity is null ? "任务结算" : $"领取奖励 {activity.Id} {quest.Id}";
+            }
         }
 
         public static void RefreshNotice()
