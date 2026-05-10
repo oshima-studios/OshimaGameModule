@@ -57,7 +57,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
 
         [AllowAnonymous]
         [HttpGet("stats")]
-        public string GetStats([FromQuery] int? id = null)
+        public BotReply GetStats([FromQuery] int? id = null)
         {
             if (id != null && id > 0 && id <= FunGameConstant.Characters.Count)
             {
@@ -150,7 +150,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
 
         [AllowAnonymous]
         [HttpGet("teamstats")]
-        public string GetTeamStats([FromQuery] int? id = null)
+        public BotReply GetTeamStats([FromQuery] int? id = null)
         {
             if (id != null && id > 0 && id <= FunGameConstant.Characters.Count)
             {
@@ -325,7 +325,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
 
         [AllowAnonymous]
         [HttpGet("characterinfo")]
-        public string GetCharacterInfo([FromQuery] int? id = null)
+        public BotReply GetCharacterInfo([FromQuery] int? id = null)
         {
             if (id != null && id > 0 && id <= FunGameConstant.Characters.Count)
             {
@@ -341,7 +341,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
 
         [AllowAnonymous]
         [HttpGet("skillinfo")]
-        public string GetSkillInfo([FromQuery] long? uid = null, [FromQuery] long? id = null)
+        public BotReply GetSkillInfo([FromQuery] long? uid = null, [FromQuery] long? id = null)
         {
             long userid = uid ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
             PluginConfig pc = FunGameService.GetUserConfig(userid, out _);
@@ -382,7 +382,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
 
         [AllowAnonymous]
         [HttpGet("skillinfoname")]
-        public string GetSkillInfo_Name([FromQuery] long? uid = null, [FromQuery] string? name = null)
+        public BotReply GetSkillInfo_Name([FromQuery] long? uid = null, [FromQuery] string? name = null)
         {
             long userid = uid ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
             PluginConfig pc = FunGameService.GetUserConfig(userid, out _);
@@ -423,7 +423,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
 
         [AllowAnonymous]
         [HttpGet("iteminfo")]
-        public string GetItemInfo([FromQuery] long? uid = null, [FromQuery] long? id = null)
+        public BotReply GetItemInfo([FromQuery] long? uid = null, [FromQuery] long? id = null)
         {
             long userid = uid ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
             PluginConfig pc = FunGameService.GetUserConfig(userid, out _);
@@ -459,7 +459,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
 
         [AllowAnonymous]
         [HttpGet("iteminfoname")]
-        public string GetItemInfo_Name([FromQuery] long? uid = null, [FromQuery] string? name = null)
+        public BotReply GetItemInfo_Name([FromQuery] long? uid = null, [FromQuery] string? name = null)
         {
             long userid = uid ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
             PluginConfig pc = FunGameService.GetUserConfig(userid, out _);
@@ -495,7 +495,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
 
         [AllowAnonymous]
         [HttpGet("newmagiccard")]
-        public string GenerateMagicCard()
+        public BotReply GenerateMagicCard()
         {
             Item i = FunGameService.GenerateMagicCard();
             return i.ToString(false, true);
@@ -503,7 +503,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
 
         [AllowAnonymous]
         [HttpGet("newmagiccardpack")]
-        public string GenerateMagicCardPack()
+        public BotReply GenerateMagicCardPack()
         {
             Item? i = FunGameService.GenerateMagicCardPack(3);
             if (i != null)
@@ -514,7 +514,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
         }
 
         [HttpPost("createsaved")]
-        public string CreateSaved([FromQuery] long? uid = null, [FromQuery] string? openid = null)
+        public BotReply CreateSaved([FromQuery] long? uid = null, [FromQuery] string? openid = null)
         {
             using SQLHelper? sqlHelper = Factory.OpenFactory.GetSQLHelper();
 
@@ -595,7 +595,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
         }
 
         [HttpPost("restoresaved")]
-        public string RestoreSaved([FromQuery] long? uid = null)
+        public BotReply RestoreSaved([FromQuery] long? uid = null)
         {
             //long userid = uid ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
 
@@ -623,7 +623,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
         }
 
         [HttpPost("showsaved")]
-        public string ShowSaved([FromQuery] long? uid = null)
+        public BotReply ShowSaved([FromQuery] long? uid = null)
         {
             long userid = uid ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
 
@@ -680,7 +680,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
         }
 
         [HttpPost("rename")]
-        public string ReName([FromQuery] long? uid = null)
+        public BotReply ReName([FromQuery] long? uid = null)
         {
             long userid = uid ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
 
@@ -733,7 +733,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
         }
 
         [HttpPost("renamecustom")]
-        public string ReName_Custom([FromQuery] long? uid = null, [FromQuery] string name = "")
+        public BotReply ReName_Custom([FromQuery] long? uid = null, [FromQuery] string name = "")
         {
             long userid = uid ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
 
@@ -812,7 +812,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
         }
 
         [HttpPost("randomcustom")]
-        public string RandomCustomCharacter([FromQuery] long? uid = null, [FromQuery] bool? confirm = null)
+        public BotReply RandomCustomCharacter([FromQuery] long? uid = null, [FromQuery] bool? confirm = null)
         {
             long userid = uid ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
             bool isConfirm = confirm ?? false;
@@ -949,7 +949,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
         }
 
         [HttpPost("cancelrandomcustom")]
-        public string CancelRandomCustomCharacter([FromQuery] long? uid = null)
+        public BotReply CancelRandomCustomCharacter([FromQuery] long? uid = null)
         {
             long userid = uid ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
 
@@ -979,7 +979,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
         }
 
         [HttpGet("inventoryinfo")]
-        public string GetInventoryInfo([FromQuery] long? uid = null)
+        public BotReply GetInventoryInfo([FromQuery] long? uid = null)
         {
             long userid = uid ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
 
@@ -1584,7 +1584,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
         }
 
         [HttpPost("newcustomcharacter")]
-        public string NewCustomCharacter([FromQuery] long? uid = null)
+        public BotReply NewCustomCharacter([FromQuery] long? uid = null)
         {
             long userid = uid ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
 
@@ -1697,7 +1697,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
         }
 
         [HttpPost("exchangecredits")]
-        public string ExchangeCredits([FromQuery] long? uid = null, [FromQuery] double? materials = null)
+        public BotReply ExchangeCredits([FromQuery] long? uid = null, [FromQuery] double? materials = null)
         {
             long userid = uid ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
             double useMaterials = materials ?? 0;
@@ -1732,7 +1732,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
         }
 
         [HttpGet("showcharacterinfo")]
-        public string GetCharacterInfoFromInventory([FromQuery] long? uid = null, [FromQuery] int? seq = null, [FromQuery] bool? simple = null)
+        public BotReply GetCharacterInfoFromInventory([FromQuery] long? uid = null, [FromQuery] int? seq = null, [FromQuery] bool? simple = null)
         {
             try
             {
@@ -1785,7 +1785,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
         }
 
         [HttpGet("showcharacterskills")]
-        public string GetCharacterSkills([FromQuery] long? uid = null, [FromQuery] int? seq = null)
+        public BotReply GetCharacterSkills([FromQuery] long? uid = null, [FromQuery] int? seq = null)
         {
             try
             {
@@ -1829,7 +1829,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
         }
 
         [HttpGet("showcharacteritems")]
-        public string GetCharacterItems([FromQuery] long? uid = null, [FromQuery] int? seq = null)
+        public BotReply GetCharacterItems([FromQuery] long? uid = null, [FromQuery] int? seq = null)
         {
             try
             {
@@ -1873,7 +1873,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
         }
 
         [HttpGet("showiteminfo")]
-        public string GetItemInfoFromInventory([FromQuery] long? uid = null, [FromQuery] int? seq = null)
+        public BotReply GetItemInfoFromInventory([FromQuery] long? uid = null, [FromQuery] int? seq = null)
         {
             try
             {
@@ -1910,7 +1910,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
         }
 
         [HttpGet("showiteminfoname")]
-        public string GetItemInfoFromInventory_Name([FromQuery] long? uid = null, [FromQuery] string? name = null, [FromQuery] int? page = null)
+        public BotReply GetItemInfoFromInventory_Name([FromQuery] long? uid = null, [FromQuery] string? name = null, [FromQuery] int? page = null)
         {
             try
             {
@@ -2022,7 +2022,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
         }
 
         [HttpPost("equipitem")]
-        public string EquipItem([FromQuery] long? uid = null, [FromQuery] int? c = null, [FromQuery] int? i = null)
+        public BotReply EquipItem([FromQuery] long? uid = null, [FromQuery] int? c = null, [FromQuery] int? i = null)
         {
             try
             {
@@ -2109,7 +2109,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
         }
 
         [HttpPost("unequipitem")]
-        public string UnEquipItem([FromQuery] long? uid = null, [FromQuery] int? c = null, [FromQuery] int? i = null)
+        public BotReply UnEquipItem([FromQuery] long? uid = null, [FromQuery] int? c = null, [FromQuery] int? i = null)
         {
             try
             {
@@ -2344,7 +2344,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
         /// <param name="characters"></param>
         /// <returns></returns>
         [HttpPost("useitem")]
-        public string UseItem([FromQuery] long? uid = null, [FromQuery] int? id = null, [FromQuery] int? times = null, [FromBody] int[]? characters = null)
+        public BotReply UseItem([FromQuery] long? uid = null, [FromQuery] int? id = null, [FromQuery] int? times = null, [FromBody] int[]? characters = null)
         {
             try
             {
@@ -2461,7 +2461,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
         /// <param name="characters"></param>
         /// <returns></returns>
         [HttpPost("useitem2")]
-        public string UseItem2([FromQuery] long? uid = null, [FromQuery] string? name = null, [FromQuery] int? count = null, [FromBody] int[]? characters = null)
+        public BotReply UseItem2([FromQuery] long? uid = null, [FromQuery] string? name = null, [FromQuery] int? count = null, [FromBody] int[]? characters = null)
         {
             try
             {
@@ -2554,7 +2554,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
         /// <param name="c"></param>
         /// <returns></returns>
         [HttpPost("useitem3")]
-        public string UseItem3([FromQuery] long? uid = null, [FromQuery] int? id = null, [FromQuery] int? id2 = null, [FromQuery] bool? c = null)
+        public BotReply UseItem3([FromQuery] long? uid = null, [FromQuery] int? id = null, [FromQuery] int? id2 = null, [FromQuery] bool? c = null)
         {
             try
             {
@@ -2693,7 +2693,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
         /// <param name="idsAndCids"></param>
         /// <returns></returns>
         [HttpPost("useitem4")]
-        public string UseItem4([FromQuery] long uid, [FromBody] (int[], int[]) idsAndCids)
+        public BotReply UseItem4([FromQuery] long uid, [FromBody] (int[], int[]) idsAndCids)
         {
             try
             {
@@ -2845,7 +2845,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
         }
 
         [HttpPost("characterlevelup")]
-        public string CharacterLevelUp([FromQuery] long? uid = null, [FromQuery] int? c = null, [FromQuery] int? count = null)
+        public BotReply CharacterLevelUp([FromQuery] long? uid = null, [FromQuery] int? c = null, [FromQuery] int? count = null)
         {
             try
             {
@@ -2916,7 +2916,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
         }
 
         [HttpGet("getlevelbreakneedy")]
-        public string GetLevelBreakNeedy([FromQuery] long? uid = null, [FromQuery] int? id = null)
+        public BotReply GetLevelBreakNeedy([FromQuery] long? uid = null, [FromQuery] int? id = null)
         {
             long userid = uid ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
             int characterIndex = id ?? 0;
@@ -2952,7 +2952,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
         }
 
         [HttpPost("characterlevelbreak")]
-        public string CharacterLevelBreak([FromQuery] long? uid = null, [FromQuery] int? c = null)
+        public BotReply CharacterLevelBreak([FromQuery] long? uid = null, [FromQuery] int? c = null)
         {
             try
             {
@@ -3056,7 +3056,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
         }
 
         [HttpPost("createitem")]
-        public string CreateItem([FromQuery] long? uid = null, [FromQuery] string? name = null, [FromQuery] int? count = null, [FromQuery] long? target = null)
+        public BotReply CreateItem([FromQuery] long? uid = null, [FromQuery] string? name = null, [FromQuery] int? count = null, [FromQuery] long? target = null)
         {
             long userid = uid ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
             string itemName = name ?? "";
@@ -3239,7 +3239,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
         }
 
         [HttpPost("createmagiccard")]
-        public string CreateMagicCard([FromQuery] long? uid = null, [FromQuery] long? target = null, [FromQuery] string? quality = null, [FromQuery] long magicId = 0, [FromQuery] int count = 1, [FromQuery] int str = 0, [FromQuery] int agi = 0, [FromQuery] int intelligence = 0)
+        public BotReply CreateMagicCard([FromQuery] long? uid = null, [FromQuery] long? target = null, [FromQuery] string? quality = null, [FromQuery] long magicId = 0, [FromQuery] int count = 1, [FromQuery] int str = 0, [FromQuery] int agi = 0, [FromQuery] int intelligence = 0)
         {
             long userid = uid ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
             if (count <= 0)
@@ -3306,7 +3306,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
         }
 
         [HttpPost("decomposeitem")]
-        public string DecomposeItem([FromQuery] long? uid = null, [FromBody] int[]? items = null)
+        public BotReply DecomposeItem([FromQuery] long? uid = null, [FromBody] int[]? items = null)
         {
             try
             {
@@ -3366,7 +3366,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
         }
 
         [HttpPost("decomposeitem2")]
-        public string DecomposeItem2([FromQuery] long? uid = null, [FromQuery] string? name = null, [FromQuery] int? count = null, [FromQuery] bool allowLock = false)
+        public BotReply DecomposeItem2([FromQuery] long? uid = null, [FromQuery] string? name = null, [FromQuery] int? count = null, [FromQuery] bool allowLock = false)
         {
             try
             {
@@ -3441,7 +3441,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
         }
 
         [HttpPost("decomposeitem3")]
-        public string DecomposeItem3([FromQuery] long? uid = null, [FromQuery] int? q = null)
+        public BotReply DecomposeItem3([FromQuery] long? uid = null, [FromQuery] int? q = null)
         {
             try
             {
@@ -3509,7 +3509,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
         }
 
         [HttpPost("conflatemagiccardpack")]
-        public string ConflateMagicCardPack([FromQuery] long? uid = null, [FromBody] int[]? items = null)
+        public BotReply ConflateMagicCardPack([FromQuery] long? uid = null, [FromBody] int[]? items = null)
         {
             try
             {
@@ -3591,7 +3591,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
         }
 
         [HttpPost("setmain")]
-        public string SetMain([FromQuery] long? uid = null, [FromQuery] int? c = null)
+        public BotReply SetMain([FromQuery] long? uid = null, [FromQuery] int? c = null)
         {
             try
             {
@@ -3634,7 +3634,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
         }
 
         [HttpPost("starttraining")]
-        public string StartTraining([FromQuery] long? uid = null, [FromQuery] int? c = null)
+        public BotReply StartTraining([FromQuery] long? uid = null, [FromQuery] int? c = null)
         {
             try
             {
@@ -3683,7 +3683,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
         }
 
         [HttpPost("stoptraining")]
-        public string StopTraining([FromQuery] long? uid = null)
+        public BotReply StopTraining([FromQuery] long? uid = null)
         {
             try
             {
@@ -3761,7 +3761,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
         }
 
         [HttpGet("gettraininginfo")]
-        public string GetTrainingInfo([FromQuery] long? uid = null)
+        public BotReply GetTrainingInfo([FromQuery] long? uid = null)
         {
             try
             {
@@ -3808,7 +3808,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
         }
 
         [HttpGet("getskilllevelupneedy")]
-        public string GetSkillLevelUpNeedy([FromQuery] long? uid = null, [FromQuery] int? c = null, [FromQuery] string? s = null)
+        public BotReply GetSkillLevelUpNeedy([FromQuery] long? uid = null, [FromQuery] int? c = null, [FromQuery] string? s = null)
         {
             long userid = uid ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
             int characterIndex = c ?? 0;
@@ -3856,7 +3856,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
         }
 
         [HttpPost("skilllevelup")]
-        public string SkillLevelUp([FromQuery] long? uid = null, [FromQuery] int? c = null, [FromQuery] string? s = null)
+        public BotReply SkillLevelUp([FromQuery] long? uid = null, [FromQuery] int? c = null, [FromQuery] string? s = null)
         {
             try
             {
@@ -4007,7 +4007,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
         }
 
         [HttpGet("getnormalattacklevelupneedy")]
-        public string GetNormalAttackLevelUpNeedy([FromQuery] long? uid = null, [FromQuery] int? c = null)
+        public BotReply GetNormalAttackLevelUpNeedy([FromQuery] long? uid = null, [FromQuery] int? c = null)
         {
             long userid = uid ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
             int characterIndex = c ?? 0;
@@ -4044,7 +4044,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
         }
 
         [HttpPost("normalattacklevelup")]
-        public string NormalAttackLevelUp([FromQuery] long? uid = null, [FromQuery] int? c = null)
+        public BotReply NormalAttackLevelUp([FromQuery] long? uid = null, [FromQuery] int? c = null)
         {
             try
             {
@@ -4456,7 +4456,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
         }
 
         [HttpPost("clearsquad")]
-        public string ClearSquad([FromQuery] long? uid = null, [FromBody] int[]? c = null)
+        public BotReply ClearSquad([FromQuery] long? uid = null, [FromBody] int[]? c = null)
         {
             try
             {
@@ -4639,7 +4639,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
         }
 
         [HttpPost("checkworkingquest")]
-        public string CheckWorkingQuest([FromQuery] long? uid = null)
+        public BotReply CheckWorkingQuest([FromQuery] long? uid = null)
         {
             long userid = uid ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
 
@@ -4753,7 +4753,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
         }
 
         [HttpPost("settlequest")]
-        public string SettleQuest([FromQuery] long? uid = null)
+        public BotReply SettleQuest([FromQuery] long? uid = null)
         {
             long userid = uid ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
 
@@ -4781,7 +4781,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
         }
 
         [HttpGet("showmaincharacterorsquadstatus")]
-        public string ShowMainCharacterOrSquadStatus([FromQuery] long? uid = null, [FromQuery] bool? squad = null)
+        public BotReply ShowMainCharacterOrSquadStatus([FromQuery] long? uid = null, [FromQuery] bool? squad = null)
         {
             long userid = uid ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
             bool showSquad = squad ?? false;
@@ -4817,7 +4817,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
         }
 
         [HttpPost("signin")]
-        public string SignIn([FromQuery] long uid = 0)
+        public BotReply SignIn([FromQuery] long uid = 0)
         {
             try
             {
@@ -4878,7 +4878,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
         }
 
         [HttpPost("clubjoin")]
-        public string ClubJoin([FromQuery] long? uid = null, [FromQuery] long? id = null)
+        public BotReply ClubJoin([FromQuery] long? uid = null, [FromQuery] long? id = null)
         {
             long userid = uid ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
             long clubid = id ?? 0;
@@ -4947,7 +4947,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
         }
 
         [HttpPost("clubquit")]
-        public string ClubQuit([FromQuery] long? uid = null)
+        public BotReply ClubQuit([FromQuery] long? uid = null)
         {
             long userid = uid ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
 
@@ -5007,7 +5007,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
         }
 
         [HttpPost("clubcreate")]
-        public string ClubCreate([FromQuery] long? uid = null, [FromQuery] bool? @public = null, [FromQuery] string? prefix = null)
+        public BotReply ClubCreate([FromQuery] long? uid = null, [FromQuery] bool? @public = null, [FromQuery] string? prefix = null)
         {
             long userid = uid ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
             bool isPublic = @public ?? false;
@@ -5085,7 +5085,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
         }
 
         [HttpGet("clubshowinfo")]
-        public string ClubShowInfo([FromQuery] long? uid = null)
+        public BotReply ClubShowInfo([FromQuery] long? uid = null)
         {
             long userid = uid ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
 
@@ -5152,7 +5152,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
         }
 
         [HttpGet("clubshowlist")]
-        public string ClubShowList([FromQuery] long? uid = null, [FromQuery] int page = 0)
+        public BotReply ClubShowList([FromQuery] long? uid = null, [FromQuery] int page = 0)
         {
             long userid = uid ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
 
@@ -5201,7 +5201,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
         }
 
         [HttpGet("clubshowmemberlist")]
-        public string ClubShowMemberList([FromQuery] long? uid = null, [FromQuery] int? type = null, [FromQuery] int? page = null)
+        public BotReply ClubShowMemberList([FromQuery] long? uid = null, [FromQuery] int? type = null, [FromQuery] int? page = null)
         {
             long userid = uid ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
             int showType = type ?? 0;
@@ -5384,7 +5384,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
         }
 
         [HttpPost("clubdisband")]
-        public string ClubDisband([FromQuery] long? uid = null)
+        public BotReply ClubDisband([FromQuery] long? uid = null)
         {
             long userid = uid ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
 
@@ -5464,7 +5464,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
         }
 
         [HttpPost("clubapprove")]
-        public string ClubApprove([FromQuery] long? uid = null, [FromQuery] long? id = null, [FromQuery] bool? approval = null)
+        public BotReply ClubApprove([FromQuery] long? uid = null, [FromQuery] long? id = null, [FromQuery] bool? approval = null)
         {
             long userid = uid ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
             long applicant = id ?? 0;
@@ -5556,7 +5556,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
         }
 
         [HttpPost("clubinvite")]
-        public string ClubInvite([FromQuery] long? uid = null, [FromQuery] long? id = null, [FromQuery] bool cancel = false)
+        public BotReply ClubInvite([FromQuery] long? uid = null, [FromQuery] long? id = null, [FromQuery] bool cancel = false)
         {
             long userid = uid ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
             long invitee = id ?? 0;
@@ -5639,7 +5639,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
         }
 
         [HttpPost("clubkick")]
-        public string ClubKick([FromQuery] long? uid = null, [FromQuery] long? id = null)
+        public BotReply ClubKick([FromQuery] long? uid = null, [FromQuery] long? id = null)
         {
             long userid = uid ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
             long kickid = id ?? 0;
@@ -5721,7 +5721,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
         }
 
         [HttpPost("clubchange")]
-        public string ClubChange([FromQuery] long? uid = null, [FromQuery] string? part = null, [FromBody] string[]? args = null)
+        public BotReply ClubChange([FromQuery] long? uid = null, [FromQuery] string? part = null, [FromBody] string[]? args = null)
         {
             long userid = uid ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
             string name = part?.Trim().ToLower() ?? "";
@@ -5938,7 +5938,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
         }
 
         [HttpPost("clubcontribution")]
-        public string ClubContribution([FromQuery] long uid = -1, [FromQuery] double credits = 0)
+        public BotReply ClubContribution([FromQuery] long uid = -1, [FromQuery] double credits = 0)
         {
             if (credits <= 0)
             {
@@ -6048,7 +6048,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
         }
 
         [HttpPost("dailystorebuy")]
-        public string DailyStoreBuy([FromQuery] long? uid = null, [FromQuery] long? id = null, [FromQuery] int? count = null)
+        public BotReply DailyStoreBuy([FromQuery] long? uid = null, [FromQuery] long? id = null, [FromQuery] int? count = null)
         {
             long userid = uid ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
             long goodid = id ?? 0;
@@ -6100,7 +6100,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
         }
 
         [HttpGet("dailystoreshowinfo")]
-        public string DailyStoreShowInfo([FromQuery] long? uid = null, [FromQuery] long? id = null)
+        public BotReply DailyStoreShowInfo([FromQuery] long? uid = null, [FromQuery] long? id = null)
         {
             long userid = uid ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
             long goodid = id ?? 0;
@@ -6163,7 +6163,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
         }
 
         [HttpPost("creategiftbox")]
-        public string CreateGiftBox([FromQuery] long? uid = null, [FromQuery] string? name = null, [FromQuery] bool? checkRepeat = null, [FromQuery] int? maxRepeat = null)
+        public BotReply CreateGiftBox([FromQuery] long? uid = null, [FromQuery] string? name = null, [FromQuery] bool? checkRepeat = null, [FromQuery] int? maxRepeat = null)
         {
             long userid = uid ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
             string itemName = name ?? "";
@@ -6561,7 +6561,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
         }
 
         [HttpPost("exploresettleall")]
-        public string SettleExploreAll([FromQuery] long? uid = null, [FromQuery] bool? skip = null)
+        public BotReply SettleExploreAll([FromQuery] long? uid = null, [FromQuery] bool? skip = null)
         {
             long userid = uid ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
 
@@ -6652,7 +6652,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
         }
 
         [HttpPost("springoflife")]
-        public string SpringOfLife([FromQuery] long? uid = null)
+        public BotReply SpringOfLife([FromQuery] long? uid = null)
         {
             long userid = uid ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
 
@@ -6707,7 +6707,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
         }
 
         [HttpPost("pub")]
-        public string Pub([FromQuery] long? uid = null)
+        public BotReply Pub([FromQuery] long? uid = null)
         {
             long userid = uid ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
 
@@ -6762,14 +6762,22 @@ namespace Oshima.FunGame.WebAPI.Controllers
         }
 
         [HttpGet("getevents")]
-        public string GetEvents([FromQuery] long uid, [FromQuery] long? id = null)
+        public BotReply GetEvents([FromQuery] long uid, [FromQuery] long? id = null)
         {
+            MarkdownMessage md = new()
+            {
+                Content = busy
+            };
+            BotReply reply = new()
+            {
+                Markdown = md
+            };
             try
             {
                 PluginConfig pc = FunGameService.GetUserConfig(uid, out bool isTimeout);
                 if (isTimeout)
                 {
-                    return busy;
+                    return reply;
                 }
 
                 if (pc.Count > 0)
@@ -6787,17 +6795,19 @@ namespace Oshima.FunGame.WebAPI.Controllers
                     }
 
                     FunGameService.SetUserConfigButNotRelease(uid, pc, user);
-                    return msg;
+                    md.Content = msg;
+                    return reply;
                 }
                 else
                 {
-                    return noSaved;
+                    md.Content = noSaved;
+                    return reply;
                 }
             }
             catch (Exception e)
             {
                 if (Logger.IsEnabled(Microsoft.Extensions.Logging.LogLevel.Error)) Logger.LogError(e, "Error: {e}", e);
-                return busy;
+                return reply;
             }
             finally
             {
@@ -6806,7 +6816,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
         }
 
         [HttpPost("performevent")]
-        public string PerformEvent([FromQuery] long? uid = null, [FromQuery] long? aid = null, [FromQuery] long? qid = null)
+        public BotReply PerformEvent([FromQuery] long? uid = null, [FromQuery] long? aid = null, [FromQuery] long? qid = null)
         {
             long userid = uid ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
             long activityid = aid ?? 0;
@@ -6872,7 +6882,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
         }
 
         [HttpPost("claimeventprize")]
-        public string ClaimEventPrize([FromQuery] long? uid = null, [FromQuery] long? aid = null, [FromQuery] long? qid = null)
+        public BotReply ClaimEventPrize([FromQuery] long? uid = null, [FromQuery] long? aid = null, [FromQuery] long? qid = null)
         {
             long userid = uid ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
             long activityid = aid ?? 0;
@@ -6935,7 +6945,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
         }
 
         [HttpPost("lockitem")]
-        public string LockItem([FromQuery] long? uid = null, [FromQuery] bool unlock = false, [FromBody] int[]? seq = null)
+        public BotReply LockItem([FromQuery] long? uid = null, [FromQuery] bool unlock = false, [FromBody] int[]? seq = null)
         {
             try
             {
@@ -7028,7 +7038,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
         }
 
         [HttpPost("lockitems")]
-        public string LockItems([FromQuery] long uid = -1, [FromQuery] string name = "", [FromQuery] int count = 0, [FromQuery] bool unlock = false)
+        public BotReply LockItems([FromQuery] long uid = -1, [FromQuery] string name = "", [FromQuery] int count = 0, [FromQuery] bool unlock = false)
         {
             try
             {
@@ -7122,7 +7132,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
         }
 
         [HttpPost("makeoffer")]
-        public string MakeOffer([FromQuery] long? uid = null, [FromQuery] long? offeree = null)
+        public BotReply MakeOffer([FromQuery] long? uid = null, [FromQuery] long? offeree = null)
         {
             long userid = uid ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
 
@@ -7171,7 +7181,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
         }
 
         [HttpPost("addofferitems")]
-        public string AddOfferItems([FromQuery] long? uid = null, [FromQuery] long? offer = null, [FromQuery] bool isOpposite = true, [FromBody] int[]? itemIds = null)
+        public BotReply AddOfferItems([FromQuery] long? uid = null, [FromQuery] long? offer = null, [FromQuery] bool isOpposite = true, [FromBody] int[]? itemIds = null)
         {
             long userid = uid ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
             long offerId = offer ?? -1;
@@ -7214,7 +7224,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
         }
 
         [HttpPost("sendoffer")]
-        public string SendOffer([FromQuery] long? uid = null, [FromQuery] long? offerId = null)
+        public BotReply SendOffer([FromQuery] long? uid = null, [FromQuery] long? offerId = null)
         {
             long userid = uid ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
 
@@ -7247,7 +7257,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
         }
 
         [HttpPost("respondoffer")]
-        public string RespondOffer([FromQuery] long? uid = null, [FromQuery] long? offer = null, [FromQuery] bool accept = false)
+        public BotReply RespondOffer([FromQuery] long? uid = null, [FromQuery] long? offer = null, [FromQuery] bool accept = false)
         {
             long userid = uid ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
             long offerId = offer ?? -1;
@@ -7288,7 +7298,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
         }
 
         [HttpGet("getoffer")]
-        public string GetOffer([FromQuery] long? uid = null, [FromQuery] long? offerId = null, [FromQuery] int page = 1)
+        public BotReply GetOffer([FromQuery] long? uid = null, [FromQuery] long? offerId = null, [FromQuery] int page = 1)
         {
             long userid = uid ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
             int showPage = page;
@@ -7411,7 +7421,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
         }
 
         [HttpPost("removeofferitems")]
-        public string RemoveOfferItems([FromQuery] long? uid = null, [FromQuery] long? offer = null, [FromQuery] bool isOpposite = true, [FromBody] int[]? itemIds = null)
+        public BotReply RemoveOfferItems([FromQuery] long? uid = null, [FromQuery] long? offer = null, [FromQuery] bool isOpposite = true, [FromBody] int[]? itemIds = null)
         {
             long userid = uid ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
             long offerId = offer ?? -1;
@@ -7453,7 +7463,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
         }
 
         [HttpPost("canceloffer")]
-        public string CancelOffer([FromQuery] long? uid = null, [FromQuery] long? offerId = null)
+        public BotReply CancelOffer([FromQuery] long? uid = null, [FromQuery] long? offerId = null)
         {
             long userid = uid ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
 
@@ -7486,7 +7496,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
         }
 
         [HttpPost("storesellitem")]
-        public string StoreSellItem([FromQuery] long? uid = null, [FromBody] int[]? items = null)
+        public BotReply StoreSellItem([FromQuery] long? uid = null, [FromBody] int[]? items = null)
         {
             try
             {
@@ -7576,7 +7586,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
         }
 
         [HttpGet("getrenameinfo")]
-        public string GetReNameInfo([FromQuery] long? uid = null)
+        public BotReply GetReNameInfo([FromQuery] long? uid = null)
         {
             long userid = uid ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
 
@@ -7638,7 +7648,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
         }
 
         [HttpGet("getrenameexamines")]
-        public string GetReNameExamines([FromQuery] long? uid = null, [FromQuery] int showPage = 1)
+        public BotReply GetReNameExamines([FromQuery] long? uid = null, [FromQuery] int showPage = 1)
         {
             long userid = uid ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
 
@@ -7735,7 +7745,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
         }
 
         [HttpPost("approverename")]
-        public string ApproveReName([FromQuery] long? uid = null, [FromQuery] long target = -1, [FromQuery] bool approve = true, [FromQuery] bool isClub = false, [FromQuery] string reason = "")
+        public BotReply ApproveReName([FromQuery] long? uid = null, [FromQuery] long target = -1, [FromQuery] bool approve = true, [FromQuery] bool isClub = false, [FromQuery] string reason = "")
         {
             long userid = uid ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
 
@@ -7889,7 +7899,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
         }
 
         [HttpPost("marketsellitem")]
-        public string MarketSellItem([FromQuery] long uid = -1, [FromQuery] double price = 0, [FromBody] int[]? itemIndexs = null)
+        public BotReply MarketSellItem([FromQuery] long uid = -1, [FromQuery] double price = 0, [FromBody] int[]? itemIndexs = null)
         {
             long userid = uid;
             itemIndexs ??= [];
@@ -8001,7 +8011,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
         }
 
         [HttpPost("marketshowlist")]
-        public string MarketShowList([FromQuery] long userid = -1, [FromQuery] int page = 0)
+        public BotReply MarketShowList([FromQuery] long userid = -1, [FromQuery] int page = 0)
         {
             try
             {
@@ -8039,7 +8049,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
         }
 
         [HttpPost("marketshowlistmysells")]
-        public string MarketShowListMySells([FromQuery] long userid = -1, [FromQuery] int page = 0)
+        public BotReply MarketShowListMySells([FromQuery] long userid = -1, [FromQuery] int page = 0)
         {
             try
             {
@@ -8091,7 +8101,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
         }
 
         [HttpPost("marketshowlistmybuys")]
-        public string MarketShowListMyBuys([FromQuery] long userid = -1, [FromQuery] int page = 0)
+        public BotReply MarketShowListMyBuys([FromQuery] long userid = -1, [FromQuery] int page = 0)
         {
             try
             {
@@ -8143,7 +8153,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
         }
 
         [HttpPost("marketiteminfo")]
-        public string MarketItemInfo([FromQuery] long userid = -1, [FromQuery] long itemid = 0)
+        public BotReply MarketItemInfo([FromQuery] long userid = -1, [FromQuery] long itemid = 0)
         {
             try
             {
@@ -8189,7 +8199,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
         }
 
         [HttpPost("marketbuyitem")]
-        public string MarketBuyItem([FromQuery] long userid = -1, [FromQuery] long itemid = 0, [FromQuery] int count = 1)
+        public BotReply MarketBuyItem([FromQuery] long userid = -1, [FromQuery] long itemid = 0, [FromQuery] int count = 1)
         {
             if (count <= 0) count = 1;
             try
@@ -8259,7 +8269,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
         }
 
         [HttpPost("marketdelistitem")]
-        public string MarketDelistItem([FromQuery] long userid = -1, [FromQuery] long itemid = 0)
+        public BotReply MarketDelistItem([FromQuery] long userid = -1, [FromQuery] long itemid = 0)
         {
             try
             {
@@ -8423,7 +8433,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
         }
 
         [HttpPost("showsystemstore")]
-        public string ShowSystemStore([FromQuery] long? uid = null, [FromQuery] string storeRegion = "", [FromQuery] string storeName = "")
+        public BotReply ShowSystemStore([FromQuery] long? uid = null, [FromQuery] string storeRegion = "", [FromQuery] string storeName = "")
         {
             long userid = uid ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
 
@@ -8448,7 +8458,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
         }
 
         [HttpPost("systemstorebuy")]
-        public string SystemStoreBuy([FromQuery] long? uid = null, [FromQuery] string storeRegion = "", [FromQuery] string storeName = "", [FromQuery] long id = 0, [FromQuery] int count = 0)
+        public BotReply SystemStoreBuy([FromQuery] long? uid = null, [FromQuery] string storeRegion = "", [FromQuery] string storeName = "", [FromQuery] long id = 0, [FromQuery] int count = 0)
         {
             long userid = uid ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
 
@@ -8499,7 +8509,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
         }
 
         [HttpGet("systemstoreshowinfo")]
-        public string SystemStoreShowInfo([FromQuery] long? uid = null, [FromQuery] string storeRegion = "", [FromQuery] string storeName = "", [FromQuery] long? id = null)
+        public BotReply SystemStoreShowInfo([FromQuery] long? uid = null, [FromQuery] string storeRegion = "", [FromQuery] string storeName = "", [FromQuery] long? id = null)
         {
             long userid = uid ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
             long goodid = id ?? 0;
@@ -8568,7 +8578,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
         }
 
         [HttpPost("forgeitemcreate")]
-        public string ForgeItem_Create([FromQuery] long uid = -1, [FromBody] Dictionary<string, int>? materials = null)
+        public BotReply ForgeItem_Create([FromQuery] long uid = -1, [FromBody] Dictionary<string, int>? materials = null)
         {
             materials ??= [];
 
@@ -8623,7 +8633,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
         }
 
         [HttpPost("forgeitemmaster")]
-        public string ForgeItem_Master([FromQuery] long uid = -1, [FromQuery] long rid = 0, [FromQuery] int q = 0)
+        public BotReply ForgeItem_Master([FromQuery] long uid = -1, [FromQuery] long rid = 0, [FromQuery] int q = 0)
         {
             try
             {
@@ -8690,7 +8700,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
         }
 
         [HttpGet("forgeiteminfo")]
-        public string ForgeItem_Info([FromQuery] long uid = -1)
+        public BotReply ForgeItem_Info([FromQuery] long uid = -1)
         {
             try
             {
@@ -8746,7 +8756,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
         }
 
         [HttpPost("forgeitemcancel")]
-        public string ForgeItem_Cancel([FromQuery] long uid = -1)
+        public BotReply ForgeItem_Cancel([FromQuery] long uid = -1)
         {
             try
             {
@@ -8795,7 +8805,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
         }
 
         [HttpPost("forgeitemsimulate")]
-        public string ForgeItem_Simulate([FromQuery] long uid = -1)
+        public BotReply ForgeItem_Simulate([FromQuery] long uid = -1)
         {
             try
             {
@@ -8843,7 +8853,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
         }
 
         [HttpPost("forgeitemcomplete")]
-        public string ForgeItem_Complete([FromQuery] long uid = -1)
+        public BotReply ForgeItem_Complete([FromQuery] long uid = -1)
         {
             try
             {
@@ -8933,7 +8943,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
         }
 
         [HttpPost("chat")]
-        public string Chat([FromQuery] long uid = -1, [FromQuery] long uid2 = -1, [FromQuery] string msgTo = "")
+        public BotReply Chat([FromQuery] long uid = -1, [FromQuery] long uid2 = -1, [FromQuery] string msgTo = "")
         {
             try
             {
@@ -8992,7 +9002,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
         }
 
         [HttpPost("chatname")]
-        public string Chat_Name([FromQuery] long uid = -1, [FromQuery] string name = "", [FromQuery] string msgTo = "")
+        public BotReply Chat_Name([FromQuery] long uid = -1, [FromQuery] string name = "", [FromQuery] string msgTo = "")
         {
             try
             {
@@ -9057,7 +9067,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
         }
 
         [HttpPost("roomcreate")]
-        public string RoomCreate([FromQuery] long uid = -1, [FromQuery] string roomType = "", [FromQuery] string password = "", [FromQuery] string groupId = "")
+        public BotReply RoomCreate([FromQuery] long uid = -1, [FromQuery] string roomType = "", [FromQuery] string password = "", [FromQuery] string groupId = "")
         {
             try
             {
@@ -9101,7 +9111,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
         }
 
         [HttpPost("roominto")]
-        public string RoomInto([FromQuery] long uid = -1, [FromQuery] string roomid = "", [FromQuery] string password = "")
+        public BotReply RoomInto([FromQuery] long uid = -1, [FromQuery] string roomid = "", [FromQuery] string password = "")
         {
             try
             {
@@ -9138,7 +9148,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
         }
 
         [HttpPost("roomquit")]
-        public string RoomQuit([FromQuery] long uid = -1)
+        public BotReply RoomQuit([FromQuery] long uid = -1)
         {
             try
             {
@@ -9175,7 +9185,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
         }
 
         [HttpPost("roominfo")]
-        public string RoomInfo([FromQuery] long uid = -1)
+        public BotReply RoomInfo([FromQuery] long uid = -1)
         {
             try
             {
@@ -9212,7 +9222,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
         }
 
         [HttpGet("roomshowlist")]
-        public string RoomShowList([FromQuery] long uid = -1, [FromQuery] string groupId = "")
+        public BotReply RoomShowList([FromQuery] long uid = -1, [FromQuery] string groupId = "")
         {
             try
             {
@@ -9291,7 +9301,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
         }
 
         [HttpGet("getranking")]
-        public string GetRanking([FromQuery] long uid = -1, [FromQuery] int type = -1)
+        public BotReply GetRanking([FromQuery] long uid = -1, [FromQuery] int type = -1)
         {
             try
             {
@@ -9428,7 +9438,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
         }
 
         [HttpPost("additemstocharacter")]
-        public string AddItemsToCharacter([FromQuery] long uid = -1, [FromQuery] int cid = -1, [FromBody] int[]? ids = null)
+        public BotReply AddItemsToCharacter([FromQuery] long uid = -1, [FromQuery] int cid = -1, [FromBody] int[]? ids = null)
         {
             ids ??= [];
             try
@@ -9529,7 +9539,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
         }
 
         [HttpPost("removeitemsfromcharacter")]
-        public string RemoveItemsFromCharacter([FromQuery] long uid = -1, [FromQuery] int cid = -1, [FromBody] int[]? ids = null)
+        public BotReply RemoveItemsFromCharacter([FromQuery] long uid = -1, [FromQuery] int cid = -1, [FromBody] int[]? ids = null)
         {
             ids ??= [];
             try
@@ -9680,7 +9690,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
         }
 
         [HttpPost("template")]
-        public string Template([FromQuery] long uid = -1)
+        public BotReply Template([FromQuery] long uid = -1)
         {
             try
             {
@@ -9759,7 +9769,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
         }
 
         [HttpGet("reload")]
-        public string Relaod([FromQuery] long? master = null)
+        public BotReply Relaod([FromQuery] long? master = null)
         {
             if (master != null && master == GeneralSettings.Master)
             {

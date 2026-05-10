@@ -99,7 +99,7 @@ namespace Oshima.FunGame.OshimaServers.Model
         public KeyboardMessage? Keyboard { get; set; }
 
         // 方便从 string 隐式转换，旧代码无感知
-        public static implicit operator BotReply(string text) => new() { Text = text };
+        public static implicit operator BotReply(string text) => new() { Markdown = new() { Content = text } };
     }
 
     public static class BotReplyExtension
