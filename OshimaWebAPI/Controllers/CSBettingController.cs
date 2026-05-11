@@ -20,7 +20,6 @@ namespace Oshima.FunGame.WebAPI.Controllers
         private ILogger<CSBettingController> Logger { get; set; } = logger;
 
         private const string noSaved = "你还没有创建存档！请发送【创建存档】创建。";
-        private const string refused = "暂时无法使用此指令。";
         private const string busy = "服务器繁忙，请稍后再试。";
 
         // ---------- 查询类（无需锁）----------
@@ -61,20 +60,18 @@ namespace Oshima.FunGame.WebAPI.Controllers
         [HttpGet("match/{matchId:int}")]
         public BotReply GetMatchDetail(int matchId)
         {
-            return new BotReply { Markdown = new MarkdownMessage { Content = CSBettingService.GetMatchDetail(matchId, out int status) + (status == 0 ? $"竞猜指令：{"竞猜".CreateCmdInput()} <比赛ID> <选项> <{General.GameplayEquilibriumConstant.InGameCurrency}数>\r\n👇🏻 点击下方按钮快速竞猜" : "")} };
+            return new BotReply { Markdown = new MarkdownMessage { Content = CSBettingService.GetMatchDetail(matchId, out int status) + (status == 0 ? $"预测指令：{"预测".CreateCmdInput()} <比赛ID> <选项> <{General.GameplayEquilibriumConstant.InGameCurrency}数>\r\n👇🏻 点击下方按钮快速预测" : "")} };
         }
 
-        [AllowAnonymous]
         [HttpGet("mybets/{uid:long}")]
         public BotReply GetMyBets(long uid, [FromQuery] int page = 1, [FromQuery] int pageSize = 10)
         {
             var (content, totalPages) = CSBettingService.GetMyBets(uid, -1, page, pageSize);
             KeyboardMessage kb = new();
-            if (totalPages > 1) kb = new KeyboardMessage().AddPaginationRow("我的竞猜 ", page, totalPages);
+            if (totalPages > 1) kb = new KeyboardMessage().AddPaginationRow("我的预测 ", page, totalPages);
             return new BotReply { Markdown = new MarkdownMessage { Content = content }, Keyboard = kb };
         }
 
-        [AllowAnonymous]
         [HttpGet("mybets/{uid:long}/{mid:long}")]
         public BotReply GetMyBets(long uid, long mid)
         {
@@ -107,7 +104,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
                 // 校验金额
                 if (amount < 1000)
                 {
-                    md.Content = $"最低投注额为 1000 {General.GameplayEquilibriumConstant.InGameCurrency}。";
+                    md.Content = $"最低助力 1000 {General.GameplayEquilibriumConstant.InGameCurrency}。";
                     FunGameService.SetUserConfigButNotRelease(uid, pc, user);
                     return reply;
                 }
@@ -122,7 +119,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
                 {
                     user.Inventory.Credits -= (int)amount;
                     FunGameService.SetUserConfigButNotRelease(uid, pc, user);
-                    md.Content = $"投注成功！{amount} {General.GameplayEquilibriumConstant.InGameCurrency}已扣除。";
+                    md.Content = $"{"助力".CreateCmdInput($"比赛详情 {matchId}")}成功！{amount} {General.GameplayEquilibriumConstant.InGameCurrency}已扣除。";
                 }
                 else
                 {
@@ -266,7 +263,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
                 }
 
                 if (CSBettingService.CreateMatch(request.EventId, request.Team1Name, request.Team2Name, request.Stage,
-                    request.StartTime, request.BetDeadline, request.AvailableOptions, request.Team1WinOdds, request.Team2WinOdds, out string error, out long? newId))
+                    request.StartTime, request.BetDeadline, request.AvailableOptions, request.Team1WinOdds, request.Team2WinOdds, request.Team1WinProbability, out string error, out long? newId))
                 {
                     md.Content = $"比赛创建成功！新比赛ID：{newId}";
                 }

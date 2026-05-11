@@ -233,26 +233,25 @@ namespace Oshima.FunGame.WebAPI.Services
                 }
                 sb.AppendLine($"{t1} vs {t2}".CreateCmdInput($"比赛详情 {matchId}"));
                 sb.AppendLine($"开赛：{start:yyyy/MM/dd HH:mm}");
-                sb.AppendLine($"竞猜截止：{deadline:yyyy/MM/dd HH:mm}");
+                sb.AppendLine($"预测截止：{deadline:yyyy/MM/dd HH:mm}");
                 sb.AppendLine($"状态：{statusStr}");
-                if (status == 0)
-                {
-                    sb.AppendLine($"可用选项：");
-                    if (available.Contains("team1_win")) sb.AppendLine($"  - 队伍1 {t1} 胜 (x {team1Odds})");
-                    if (available.Contains("team2_win")) sb.AppendLine($"  - 队伍2 {t2} 胜 (x {team2Odds})");
-                    if (available.Contains("score")) sb.AppendLine($"  - 精确比分 (x 4)");
-                    if (available.Contains("mvp")) sb.AppendLine($"  - 赛事MVP (x 3.5)");
-                }
-                else if (status == 2)
-                {
-                    string winnerName = winner switch { 1 => t1, 2 => t2, 3 => result, _ => "待定" };
-                    sb.AppendLine($"胜者：{winnerName}");
-                    if (winner != 3) sb.AppendLine($"结果：{result}");
-                }
 
                 if (!string.IsNullOrWhiteSpace(description))
                 {
                     sb.AppendLine($"> 📝 {description}\r\n");
+                }
+
+                if (status == 0) sb.AppendLine($"可用选项：");
+                else sb.AppendLine($"该比赛已截止预测。");
+                if (available.Contains("team1_win")) sb.AppendLine($"  - 队伍1 {t1} 胜 (x {team1Odds})");
+                if (available.Contains("team2_win")) sb.AppendLine($"  - 队伍2 {t2} 胜 (x {team2Odds})");
+                if (available.Contains("score")) sb.AppendLine($"  - 精确比分 (x 4)");
+                if (available.Contains("mvp")) sb.AppendLine($"  - 赛事MVP (x 3.5)");
+                if (status == 2)
+                {
+                    string winnerName = winner switch { 1 => t1, 2 => t2, 3 => result, _ => "待定" };
+                    sb.AppendLine($"胜者：{winnerName}");
+                    if (winner != 3) sb.AppendLine($"结果：{result}");
                 }
 
                 return sb.ToString();
@@ -277,13 +276,15 @@ namespace Oshima.FunGame.WebAPI.Services
                 DataRow row = sql.DataSet.Tables[0].Rows[0];
                 int status = Convert.ToInt32(row["status"]);
                 DateTime deadline = Convert.ToDateTime(row["bet_deadline"]);
-                if (status != 0 || DateTime.Now > deadline)
+                decimal team1Odds = Convert.ToDecimal(row["team1_win_odds"]);
+                decimal team2Odds = Convert.ToDecimal(row["team2_win_odds"]);
+                if (status == 2 || DateTime.Now > deadline)
                 {
-                    error = "当前比赛已结束或非投注期。";
+                    error = "当前比赛已结束或非可预测阶段。";
                     return false;
                 }
 
-                // --- 单场比赛投注上限检查 ---
+                // --- 单场比赛助力上限检查 ---
                 long alreadyBet = 0;
                 long totalBet = amount;
                 sql.Parameters["@uid"] = uid;
@@ -296,44 +297,54 @@ namespace Oshima.FunGame.WebAPI.Services
                 }
                 if (totalBet > 5000)
                 {
-                    error = $"本场比赛你的投注总额不能超过 5000 {General.GameplayEquilibriumConstant.InGameCurrency}（已投 {alreadyBet}）。";
+                    error = $"本场比赛你的助力总额不能超过 5000 {General.GameplayEquilibriumConstant.InGameCurrency}（已助力 {alreadyBet}）。";
                     return false;
                 }
 
                 string available = row["available_options"]?.ToString() ?? "[]";
                 int optionType;
                 string optionValue = option;
+                decimal oddsAtBet = 0;
                 if (option == "team1" && available.Contains("team1_win"))
+                {
                     optionType = 1;
+                    oddsAtBet = team1Odds;
+                }
                 else if (option == "team2" && available.Contains("team2_win"))
+                {
                     optionType = 2;
+                    oddsAtBet = team2Odds;
+                }
                 else if (option.StartsWith("score:") && available.Contains("score"))
                 {
                     optionType = 3;
                     optionValue = option.Replace("score:", "").Trim();
+                    oddsAtBet = 4.0m;
                 }
                 else if (option.StartsWith("mvp:") && available.Contains("mvp"))
                 {
                     optionType = 4;
                     optionValue = option.Replace("mvp:", "").Trim();
+                    oddsAtBet = 3.5m;
                 }
                 else
                 {
-                    error = "无效的投注选项。";
+                    error = "无效的预测选项。";
                     return false;
                 }
 
-                // 写入投注记录
+                // 写入预测记录
                 sql.Parameters["@uid"] = uid;
                 sql.Parameters["@mid"] = matchId;
                 sql.Parameters["@otype"] = optionType;
                 sql.Parameters["@oval"] = optionValue;
                 sql.Parameters["@amt"] = amount;
+                sql.Parameters["@odds"] = oddsAtBet;
                 sql.Parameters["@time"] = DateTime.Now;
-                sql.Execute("INSERT INTO csbetting_bet_records (user_id, match_id, option_type, option_value, amount, bet_time) VALUES (@uid, @mid, @otype, @oval, @amt, @time)");
+                sql.Execute("INSERT INTO csbetting_bet_records (user_id, match_id, option_type, option_value, amount, odds_at_bet, bet_time) VALUES (@uid, @mid, @otype, @oval, @amt, @odds, @time)");
                 if (!sql.Success)
                 {
-                    error = "投注记录写入失败。";
+                    error = "预测记录写入失败。";
                     return false;
                 }
                 return true;
@@ -347,75 +358,102 @@ namespace Oshima.FunGame.WebAPI.Services
             using SQLHelper? sql = Factory.OpenFactory.GetSQLHelper();
             if (sql != null)
             {
-                UpdateStatuses(sql);
-
-                sql.Parameters["@mid"] = matchId;
-                sql.ExecuteDataSet("SELECT * FROM csbetting_matches WHERE id = @mid");
-                if (!sql.Success || sql.DataSet.Tables[0].Rows.Count == 0)
-                    return "比赛不存在。";
-                DataRow row = sql.DataSet.Tables[0].Rows[0];
-                string available = row["available_options"]?.ToString() ?? "[]";
-                bool isMvp = available.Contains("mvp", StringComparison.CurrentCultureIgnoreCase);
-                int status = Convert.ToInt32(row["status"]);
-                if (status == 2)
-                    return "比赛已结算。";
-
-                int winTeam = 3;
-                if (!isMvp)
+                try
                 {
-                    if (winner == "team1") winTeam = 1;
-                    else if (winner == "team2") winTeam = 2;
-                    else return "请指定获胜方为 team1 或 team2。MVP 赛事获胜方请直接指定选手 ID。";
-                }
+                    sql.NewTransaction();
 
-                // 更新比赛结果
-                sql.Parameters["@res"] = result;
-                sql.Parameters["@win"] = winTeam;
-                sql.Parameters["@mid"] = matchId;
-                sql.Execute("UPDATE csbetting_matches SET status=2, result=@res, winner=@win WHERE id=@mid");
+                    UpdateStatuses(sql);
 
-                // 获取所有未结算投注
-                sql.Parameters["@mid"] = matchId;
-                sql.ExecuteDataSet("SELECT * FROM csbetting_bet_records WHERE match_id=@mid AND is_settled=0");
-                if (sql.Success && sql.DataSet.Tables[0].Rows.Count > 0)
-                {
-                    decimal team1Odds = Convert.ToDecimal(row["team1_win_odds"]);
-                    decimal team2Odds = Convert.ToDecimal(row["team2_win_odds"]);
-                    foreach (DataRow bet in sql.DataSet.Tables[0].Rows)
+                    sql.Parameters["@mid"] = matchId;
+                    sql.ExecuteDataSet("SELECT * FROM csbetting_matches WHERE id = @mid");
+                    if (!sql.Success || sql.DataSet.Tables[0].Rows.Count == 0)
+                        return "比赛不存在。";
+                    DataRow row = sql.DataSet.Tables[0].Rows[0];
+                    string available = row["available_options"]?.ToString() ?? "[]";
+                    bool isMvp = available.Contains("mvp", StringComparison.CurrentCultureIgnoreCase);
+                    int status = Convert.ToInt32(row["status"]);
+                    if (status == 2)
+                        return "比赛已结算。";
+
+                    int winTeam = 3;
+                    if (!isMvp)
                     {
-                        long betId = Convert.ToInt64(bet["id"]);
-                        int otype = Convert.ToInt32(bet["option_type"]);
-                        string ovalue = bet["option_value"].ToString() ?? "";
-                        long amount = Convert.ToInt64(bet["amount"]);
+                        if (winner == "team1") winTeam = 1;
+                        else if (winner == "team2") winTeam = 2;
+                        else return "请指定获胜方为 team1 或 team2。MVP 赛事获胜方请直接指定选手 ID。";
+                    }
 
-                        bool win = false;
-                        if (otype == 1 && winTeam == 1) win = true;
-                        else if (otype == 2 && winTeam == 2) win = true;
-                        else if (otype == 3 && ovalue.Replace("：", ":").Equals(result, StringComparison.CurrentCultureIgnoreCase)) win = true;
-                        else if (otype == 4 && ovalue.Equals(result, StringComparison.CurrentCultureIgnoreCase)) win = true;
-
-                        long payout = 0;
-                        string note = "未中奖";
-                        if (win)
+                    // 更新比赛结果
+                    sql.Parameters["@res"] = result;
+                    sql.Parameters["@win"] = winTeam;
+                    sql.Parameters["@mid"] = matchId;
+                    sql.Execute("UPDATE csbetting_matches SET status=2, result=@res, winner=@win WHERE id=@mid");
+                    if (sql.Success)
+                    {
+                        // 获取所有未结算助力
+                        sql.Parameters["@mid"] = matchId;
+                        sql.ExecuteDataSet("SELECT * FROM csbetting_bet_records WHERE match_id=@mid AND is_settled=0");
+                        if (sql.Success && sql.DataSet.Tables[0].Rows.Count > 0)
                         {
-                            double odds = otype switch
+                            decimal team1Odds = Convert.ToDecimal(row["team1_win_odds"]);
+                            decimal team2Odds = Convert.ToDecimal(row["team2_win_odds"]);
+                            foreach (DataRow bet in sql.DataSet.Tables[0].Rows)
                             {
-                                1 => (double)team1Odds,
-                                2 => (double)team2Odds,
-                                3 => 4,
-                                4 => 3.5,
-                                _ => 2.5
-                            };
-                            payout = (long)(amount * odds);
-                            note = "中奖";
+                                long betId = Convert.ToInt64(bet["id"]);
+                                int otype = Convert.ToInt32(bet["option_type"]);
+                                string ovalue = bet["option_value"].ToString() ?? "";
+                                long amount = Convert.ToInt64(bet["amount"]);
+                                decimal oddsAtBet = Convert.ToDecimal(bet["odds_at_bet"]);
+
+                                bool win = false;
+                                if (otype == 1 && winTeam == 1) win = true;
+                                else if (otype == 2 && winTeam == 2) win = true;
+                                else if (otype == 3 && ovalue.Replace("：", ":").Equals(result, StringComparison.CurrentCultureIgnoreCase)) win = true;
+                                else if (otype == 4 && ovalue.Equals(result, StringComparison.CurrentCultureIgnoreCase)) win = true;
+
+                                long payout = 0;
+                                string note = "未中奖";
+                                if (win)
+                                {
+                                    if (oddsAtBet <= 0)
+                                    {
+                                        oddsAtBet = otype switch
+                                        {
+                                            1 => team1Odds,
+                                            2 => team2Odds,
+                                            3 => 4,
+                                            4 => 3.5m,
+                                            _ => 2.5m
+                                        };
+                                    }
+                                    payout = (long)(amount * oddsAtBet);
+                                    note = "中奖";
+                                }
+                                sql.Parameters["@payout"] = payout;
+                                sql.Parameters["@note"] = note;
+                                sql.Parameters["@bid"] = betId;
+                                sql.Execute("UPDATE csbetting_bet_records SET is_settled=1, payout=@payout, result_note=@note WHERE id=@bid");
+                                if (!sql.Success)
+                                {
+                                    sql.Rollback();
+                                    throw sql.LastException ?? new Milimoe.FunGame.SQLQueryException();
+                                }
+                            }
                         }
-                        sql.Parameters["@payout"] = payout;
-                        sql.Parameters["@note"] = note;
-                        sql.Parameters["@bid"] = betId;
-                        sql.Execute("UPDATE csbetting_bet_records SET is_settled=1, payout=@payout, result_note=@note WHERE id=@bid");
+                        sql.Commit();
+                        return $"比赛 {matchId} 结算完成。";
+                    }
+                    else
+                    {
+                        sql.Rollback();
+                        throw sql.LastException ?? new Milimoe.FunGame.SQLQueryException();
                     }
                 }
-                return $"比赛 {matchId} 结算完成。";
+                catch (Exception e)
+                {
+                    sql.Rollback();
+                    return $"比赛 {matchId} 结算失败，发生异常：{e.Message}";
+                }
             }
             return "数据库连接失败。";
         }
@@ -451,7 +489,7 @@ namespace Oshima.FunGame.WebAPI.Services
                 if (page > totalPages) page = totalPages;
                 if (page < 1) page = 1;
                 if (total == 0)
-                    return ("你还没有任何竞猜记录。", 1);
+                    return ("你还没有任何预测记录。", 1);
             }
 
             // 构建分页SQL片段
@@ -466,7 +504,8 @@ namespace Oshima.FunGame.WebAPI.Services
             sql.Parameters["@uid"] = uid;
             sql.ExecuteDataSet($@"
                 SELECT br.match_id, m.team1_name, m.team2_name, m.status AS match_status, m.start_time,
-                       GROUP_CONCAT(CONCAT(br.option_type, ':', br.option_value, ':', br.amount) ORDER BY br.id SEPARATOR '|') AS details,
+                       MAX(m.team1_win_odds) AS team1_odds, MAX(m.team2_win_odds) AS team2_odds,
+                       GROUP_CONCAT(CONCAT(br.option_type, ':', br.option_value, ':', br.amount, ':', br.odds_at_bet) ORDER BY br.id SEPARATOR '|') AS details,
                        SUM(br.amount) AS total_amount,
                        MIN(br.is_settled) AS all_settled,
                        SUM(CASE WHEN br.is_settled = 1 AND br.payout > 0 AND br.is_claimed = 1 THEN 1 ELSE 0 END) AS claimed_count,
@@ -484,17 +523,19 @@ namespace Oshima.FunGame.WebAPI.Services
                 {limitClause}");
 
             if (!sql.Success || sql.DataSet.Tables[0].Rows.Count == 0)
-                return ("你还没有任何竞猜记录。", 1);
+                return ("你还没有任何预测记录。", 1);
 
             StringBuilder sb = new();
-            if (mid > 0) sb.Append("你的本场竞猜记录：\r\n> ");
-            else sb.Append($"我的竞猜{(paged && totalPages > 1 ? $"（第 {page}/{totalPages} 页）" : "")}\r\n> ");
+            if (mid > 0) sb.Append("你的本场预测记录：\r\n> ");
+            else sb.Append($"我的预测{(paged && totalPages > 1 ? $"（第 {page}/{totalPages} 页）" : "")}\r\n> ");
             foreach (DataRow row in sql.DataSet.Tables[0].Rows)
             {
                 int matchId = Convert.ToInt32(row["match_id"]);
                 string t1 = row["team1_name"].ToString() ?? "";
                 string t2 = row["team2_name"].ToString() ?? "";
                 int matchStatus = Convert.ToInt32(row["match_status"]);
+                decimal t1Odds = Convert.ToDecimal(row["team1_odds"]);
+                decimal t2Odds = Convert.ToDecimal(row["team2_odds"]);
                 long totalAmount = Convert.ToInt64(row["total_amount"]);
                 long totalPayout = Convert.ToInt64(row["total_payout"]);
                 int allSettled = Convert.ToInt32(row["all_settled"]);
@@ -502,7 +543,7 @@ namespace Oshima.FunGame.WebAPI.Services
                 int unclaimedCount = Convert.ToInt32(row["unclaimed_count"]);
                 int lostCount = Convert.ToInt32(row["lost_count"]);
 
-                // 解析投注详情
+                // 解析助力详情
                 string detailsStr = row["details"].ToString() ?? "";
                 string[]? parts = detailsStr.Split('|');
                 List<string> summary = [];
@@ -514,6 +555,18 @@ namespace Oshima.FunGame.WebAPI.Services
                         int otype = int.Parse(items[0]);
                         string ovalue = items[1];
                         long oamount = long.Parse(items[2]);
+                        decimal odds = decimal.Parse(items[3]);
+                        if (odds <= 0)
+                        {
+                            odds = otype switch
+                            {
+                                1 => t1Odds,
+                                2 => t2Odds,
+                                3 => 4m,
+                                4 => 3.5m,
+                                _ => 2.5m
+                            };
+                        }
                         string optStr = otype switch
                         {
                             1 => $"{t1}胜",
@@ -522,7 +575,7 @@ namespace Oshima.FunGame.WebAPI.Services
                             4 => $"MVP {ovalue}",
                             _ => ovalue
                         };
-                        summary.Add($"{optStr} {oamount}G");
+                        summary.Add($"{optStr} {oamount}G [x {odds}]");
                     }
                 }
 
@@ -546,7 +599,7 @@ namespace Oshima.FunGame.WebAPI.Services
 
                 string matchLabel = $"{t1} vs {t2}".CreateCmdInput($"比赛详情 {matchId}");
                 sb.Append($"[比赛{matchId}] {matchLabel} | ");
-                sb.Append($"投注：{totalAmount}G ({detailLine}) | ");
+                sb.Append($"助力：{totalAmount}G ({detailLine}) | ");
                 sb.Append($"状态：{statusLine}");
                 if (totalPayout > 0)
                     sb.Append($" (+{totalPayout}G)");
@@ -574,7 +627,7 @@ namespace Oshima.FunGame.WebAPI.Services
             // 对于已经过了开始时间但还没有 winner 且状态为 1 的，可保留为进行中；实际上只要 winner 为 null，状态应为 1（进行中）
             // 如果有结果但 winner 不为 null，管理员应该已经手动结算，状态会设为 2，这里不做额外修改。
             // 安全起见，只更新未开始的，以及当比赛时间已过且无 winner 时自动变成进行中。
-            // 如果需要自动结束（比如时间过长），可再添加规则，但竞猜系统通常由管理员手动结算结束。
+            // 如果需要自动结束（比如时间过长），可再添加规则，但预测系统通常由管理员手动结算结束。
             // 这里只做基础更新。
         }
 
@@ -640,7 +693,7 @@ namespace Oshima.FunGame.WebAPI.Services
         }
 
         // 创建比赛
-        public static bool CreateMatch(int eventId, string team1Name, string team2Name, string stage, DateTime startTime, DateTime betDeadline, string availableOptions, decimal? team1WinOdds, decimal? team2WinOdds, out string error, out long? newMatchId)
+        public static bool CreateMatch(int eventId, string team1Name, string team2Name, string stage, DateTime startTime, DateTime betDeadline, string availableOptions, decimal? team1WinOdds, decimal? team2WinOdds, decimal? team1WinProbability, out string error, out long? newMatchId)
         {
             error = "";
             newMatchId = null;
@@ -670,8 +723,34 @@ namespace Oshima.FunGame.WebAPI.Services
                     return false;
                 }
 
-                decimal t1Odds = team1WinOdds ?? 2.50m;
-                decimal t2Odds = team2WinOdds ?? 2.50m;
+                // 处理默认奖励率或基于胜率计算
+                decimal t1Odds, t2Odds;
+                if (team1WinProbability.HasValue)
+                {
+                    decimal prob = team1WinProbability.Value;
+                    try
+                    {
+                        (t1Odds, t2Odds) = CalculateOdds(prob);
+                    }
+                    catch (Exception e)
+                    {
+                        error = e.Message;
+                        return false;
+                    }
+                }
+                else if (team1WinOdds.HasValue && team2WinOdds.HasValue)
+                {
+                    t1Odds = team1WinOdds.Value;
+                    t2Odds = team2WinOdds.Value;
+                }
+                else
+                {
+                    // 默认双方各 2.0
+                    t1Odds = 2.0m;
+                    t2Odds = 2.0m;
+                }
+
+                // 校验奖励率大于0
                 if (t1Odds <= 0 || t2Odds <= 0)
                 {
                     error = "奖励率必须大于0。";
@@ -704,7 +783,7 @@ namespace Oshima.FunGame.WebAPI.Services
         }
 
         /// <summary>
-        /// 管理员提前结束竞猜（将未开始比赛标记为进行中）
+        /// 管理员提前结束预测（将未开始比赛标记为进行中）
         /// </summary>
         public static bool CloseBetting(int matchId, out string message)
         {
@@ -728,7 +807,7 @@ namespace Oshima.FunGame.WebAPI.Services
             int status = Convert.ToInt32(sql.DataSet.Tables[0].Rows[0]["status"]);
             if (status != 0)
             {
-                message = "该比赛已开始或已结束，无需关闭投注。";
+                message = "该比赛已开始或已结束，无需关闭预测。";
                 return false;
             }
 
@@ -739,7 +818,7 @@ namespace Oshima.FunGame.WebAPI.Services
                 string t1 = sql.DataSet.Tables[0].Rows[0]["team1_name"].ToString() ?? "";
                 string t2 = sql.DataSet.Tables[0].Rows[0]["team2_name"].ToString() ?? "";
                 string matchlabel = $"{t1} vs {t2}".CreateCmdInput($"比赛详情 {matchId}");
-                message = $"[比赛{matchId}] {matchlabel} 的竞猜已提前关闭。";
+                message = $"[比赛{matchId}] {matchlabel} 的预测已提前关闭。";
                 return true;
             }
 
@@ -775,30 +854,53 @@ namespace Oshima.FunGame.WebAPI.Services
 
             string available = sql.DataSet.Tables[0].Rows[0]["available_options"]?.ToString() ?? "[]";
             bool hasSpecial = available.Contains("score", StringComparison.OrdinalIgnoreCase) || available.Contains("mvp", StringComparison.OrdinalIgnoreCase);
+            decimal? newTeam1Odds = request.Team1WinOdds;
+            decimal? newTeam2Odds = request.Team2WinOdds;
 
             // 校验奖励率逻辑（同创建比赛）
-            if ((request.Team1WinOdds.HasValue || request.Team2WinOdds.HasValue) && hasSpecial)
+            if (request.Team1WinProbability.HasValue)
             {
-                error = "比赛包含比分或MVP选项时，不能修改猜胜者奖励率。";
-                return false;
+                if (hasSpecial)
+                {
+                    error = "比赛包含比分或MVP选项，不能修改猜胜者赔率。";
+                    return false;
+                }
+                decimal prob = request.Team1WinProbability.Value;
+                try
+                {
+                    (newTeam1Odds, newTeam2Odds) = CalculateOdds(prob);
+                }
+                catch (Exception e)
+                {
+                    error = e.Message;
+                    return false;
+                }
             }
-            if ((request.Team1WinOdds.HasValue && request.Team1WinOdds <= 0) ||
-                (request.Team2WinOdds.HasValue && request.Team2WinOdds <= 0))
+            else
             {
-                error = "奖励率必须大于0。";
-                return false;
+                if ((newTeam1Odds.HasValue || newTeam2Odds.HasValue) && hasSpecial)
+                {
+                    error = "比赛包含比分或MVP选项时，不能修改猜胜者奖励率。";
+                    return false;
+                }
+                if ((newTeam1Odds.HasValue && newTeam1Odds <= 0) ||
+                    (newTeam2Odds.HasValue && newTeam2Odds <= 0))
+                {
+                    error = "奖励率必须大于0。";
+                    return false;
+                }
             }
 
             // 构建动态UPDATE
             StringBuilder setClause = new();
-            if (request.Team1WinOdds.HasValue)
+            if (newTeam1Odds.HasValue)
             {
-                sql.Parameters["@t1od"] = request.Team1WinOdds.Value;
+                sql.Parameters["@t1od"] = newTeam1Odds.Value;
                 setClause.Append("team1_win_odds = @t1od, ");
             }
-            if (request.Team2WinOdds.HasValue)
+            if (newTeam2Odds.HasValue)
             {
-                sql.Parameters["@t2od"] = request.Team2WinOdds.Value;
+                sql.Parameters["@t2od"] = newTeam2Odds.Value;
                 setClause.Append("team2_win_odds = @t2od, ");
             }
             if (request.StartTime.HasValue)
@@ -835,6 +937,22 @@ namespace Oshima.FunGame.WebAPI.Services
             }
 
             return true;
+        }
+
+        public static (decimal oddsA, decimal oddsB) CalculateOdds(decimal team1WinProbability, decimal margin = 0.08m)
+        {
+            if (team1WinProbability <= 0 || team1WinProbability >= 1)
+                throw new ArgumentException("胜率必须大于0且小于1。");
+
+            if (margin < 0) margin = 0.08m;
+
+            decimal probB = 1m - team1WinProbability;
+            decimal adj = 1m + margin;
+
+            decimal oddsA = Math.Round(1m / (team1WinProbability * adj), 2);
+            decimal oddsB = Math.Round(1m / (probB * adj), 2);
+
+            return (oddsA, oddsB);
         }
     }
 }

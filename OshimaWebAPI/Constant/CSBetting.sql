@@ -71,3 +71,12 @@ ALTER TABLE `csbetting_matches`
 -- 为比赛表添加描述字段
 ALTER TABLE `csbetting_matches`
     ADD COLUMN `description` VARCHAR(255) NOT NULL DEFAULT '' COMMENT '比赛描述信息' AFTER `team2_win_odds`;
+
+-- 将队伍赔率的默认值改为 2.00
+ALTER TABLE `csbetting_matches`
+    MODIFY COLUMN `team1_win_odds` DECIMAL(5,2) NOT NULL DEFAULT 2.00 COMMENT '队伍1胜赔率',
+    MODIFY COLUMN `team2_win_odds` DECIMAL(5,2) NOT NULL DEFAULT 2.00 COMMENT '队伍2胜赔率';
+
+-- 为投注记录表增加投注时的赔率字段，确保结算公平
+ALTER TABLE `csbetting_bet_records`
+    ADD COLUMN `odds_at_bet` DECIMAL(5,2) NOT NULL DEFAULT 0.00 COMMENT '投注时的赔率' AFTER `amount`;
