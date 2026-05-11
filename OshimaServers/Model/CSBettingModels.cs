@@ -78,5 +78,8 @@ namespace Oshima.FunGame.WebAPI.Model
 
         [JsonPropertyName("team1_win_probability")]
         public decimal? Team1WinProbability { get; set; }
+
+        [JsonPropertyName("result")]
+        public string? Result { get; set; }
     }
 }

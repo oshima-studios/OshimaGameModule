@@ -60,7 +60,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
         [HttpGet("match/{matchId:int}")]
         public BotReply GetMatchDetail(int matchId)
         {
-            return new BotReply { Markdown = new MarkdownMessage { Content = CSBettingService.GetMatchDetail(matchId, out int status) + (status == 0 ? $"预测指令：{"预测".CreateCmdInput()} <比赛ID> <选项> <{General.GameplayEquilibriumConstant.InGameCurrency}数>\r\n👇🏻 点击下方按钮快速预测" : "")} };
+            return new BotReply { Markdown = new MarkdownMessage { Content = CSBettingService.GetMatchDetail(matchId, out KeyboardMessage kb) }, Keyboard = kb };
         }
 
         [HttpGet("mybets/{uid:long}")]

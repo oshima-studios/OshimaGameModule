@@ -75,26 +75,16 @@ namespace Oshima.FunGame.WebAPI.Services
                 if (int.TryParse(detail, out int matchId))
                 {
                     BotReply reply = BettingController.GetMatchDetail(matchId);
-                    KeyboardMessage kb = new();
-                    // 构建预测键盘（填充“预测 <matchId> <选项> ”）
-                    if (reply.Markdown?.Content?.Contains("可用选项") ?? false)
-                    {
-                        kb.AppendButtons(2,
-                            Button.CreateCmdButton("⚔️ 队伍1胜", $"预测 {matchId} team1 1000", enter: false),
-                            Button.CreateCmdButton("🛡️ 队伍2胜", $"预测 {matchId} team2 1000", enter: false),
-                            Button.CreateCmdButton("🎯 精确比分", $"预测 {matchId} score:", enter: false),
-                            Button.CreateCmdButton("🏆 MVP", $"预测 {matchId} mvp:", enter: false));
-                    }
-                    kb.AppendButtonsWithNewRow(2,
+                    reply.Keyboard ??= new();
+                    reply.Keyboard.AppendButtonsWithNewRow(2,
                         Button.CreateCmdButton("📋 赛事列表", "赛事列表"),
                         Button.CreateCmdButton("📅 比赛列表", "比赛列表"),
                         Button.CreateCmdButton("💰 预测领奖", "预测领奖"),
                         Button.CreateCmdButton("❓ 预测帮助", "预测帮助"));
-                    reply.Keyboard = kb;
                     BotReply reply2 = BettingController.GetMyBets(uid, mid: matchId);
                     if (reply.Markdown != null && reply.Markdown.Content != null && !(reply2.Markdown?.Content?.Equals("你还没有任何预测记录。") ?? true))
                     {
-                        reply.Markdown.Content += (reply.Markdown.Content.Contains("点击下方按钮快速预测") ? "\r\n" : "") + reply2.Markdown.Content;
+                        reply.Markdown.Content += "\r\n" + reply2.Markdown.Content;
                     }
                     await SendAsync(e, "CS赛事预测", reply);
                 }
@@ -501,6 +491,9 @@ namespace Oshima.FunGame.WebAPI.Services
                             break;
                         case "des":
                             request.Description = val; // 允许空字符串清空描述
+                            break;
+                        case "result":
+                            request.Result = val;
                             break;
                         default:
                             await SendAsync(e, "修改比赛", $"未知参数：{key}");
