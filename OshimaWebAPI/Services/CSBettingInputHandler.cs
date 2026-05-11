@@ -1,4 +1,5 @@
-﻿using Milimoe.FunGame.Core.Entity;
+﻿using System.Security.Cryptography;
+using Milimoe.FunGame.Core.Entity;
 using Milimoe.FunGame.Core.Library.Constant;
 using Oshima.FunGame.OshimaModules.Models;
 using Oshima.FunGame.OshimaServers.Model;
@@ -34,18 +35,6 @@ namespace Oshima.FunGame.WebAPI.Services
                             Button.CreateCmdButton("💰 预测领奖", "预测领奖"),
                             Button.CreateCmdButton("❓ 预测帮助", "预测帮助"))
                 };
-                await SendAsync(e, "CS赛事预测", reply);
-                return true;
-            }
-
-            // 赛事列表
-            if (e.Detail.StartsWith("赛事") || e.Detail.StartsWith("赛事列表"))
-            {
-                int page = 1;
-                string detail = e.Detail.Replace("赛事", "").Replace("赛事列表", "").Trim();
-                System.Text.RegularExpressions.Match match = GetFirstNumber().Match(detail);
-                if (match.Success && int.TryParse(match.Value, out int p)) page = p;
-                BotReply reply = BettingController.GetEventsOverview(page);
                 await SendAsync(e, "CS赛事预测", reply);
                 return true;
             }
@@ -132,6 +121,18 @@ namespace Oshima.FunGame.WebAPI.Services
                     };
                     await SendAsync(e, "CS赛事预测", reply);
                 }
+                return true;
+            }
+
+            // 赛事列表
+            if (e.Detail.StartsWith("赛事") || e.Detail.StartsWith("赛事列表"))
+            {
+                int page = 1;
+                string detail = e.Detail.Replace("赛事", "").Replace("赛事列表", "").Trim();
+                System.Text.RegularExpressions.Match match = GetFirstNumber().Match(detail);
+                if (match.Success && int.TryParse(match.Value, out int p)) page = p;
+                BotReply reply = BettingController.GetEventsOverview(page);
+                await SendAsync(e, "CS赛事预测", reply);
                 return true;
             }
 
@@ -232,7 +233,8 @@ namespace Oshima.FunGame.WebAPI.Services
                         .AppendButtons(2,
                             Button.CreateCmdButton("📋 赛事列表", "赛事列表"),
                             Button.CreateCmdButton("📅 比赛列表", "比赛列表"),
-                            Button.CreateCmdButton("⚙️ 继续结算", "结算比赛 ", enter: false));
+                            Button.CreateCmdButton("⚙️ 继续结算", "结算比赛 ", enter: false),
+                            Button.CreateCmdButton("🔍 比赛详情", $"比赛详情 {mid}"));
                     await SendAsync(e, "CS赛事预测", reply);
                 }
                 else

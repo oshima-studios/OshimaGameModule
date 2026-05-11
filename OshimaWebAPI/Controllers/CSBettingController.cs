@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using System.Security.Cryptography;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Milimoe.FunGame.Core.Api.Utility;
@@ -232,6 +233,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
                 if (CSBettingService.CreateEvent(request.Name, request.StartTime, request.EndTime, out string error, out long? newId))
                 {
                     md.Content = $"赛事创建成功！新赛事ID：{newId}";
+                    reply.Keyboard = new KeyboardMessage().AppendButtons(1, Button.CreateCmdButton("🔍 赛事详情", $"赛事详情 {newId}"));
                 }
                 else
                 {
@@ -266,6 +268,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
                     request.StartTime, request.BetDeadline, request.AvailableOptions, request.Team1WinOdds, request.Team2WinOdds, request.Team1WinProbability, out string error, out long? newId))
                 {
                     md.Content = $"比赛创建成功！新比赛ID：{newId}";
+                    reply.Keyboard = new KeyboardMessage().AppendButtons(1, Button.CreateCmdButton("🔍 比赛详情", $"比赛详情 {newId}"));
                 }
                 else
                 {

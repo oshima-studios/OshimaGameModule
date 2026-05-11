@@ -828,7 +828,7 @@ namespace Oshima.FunGame.WebAPI.Services
 
             // 检查比赛是否存在
             sql.Parameters["@mid"] = request.MatchId;
-            sql.ExecuteDataSet("SELECT status, available_options FROM csbetting_matches WHERE id = @mid");
+            sql.ExecuteDataSet("SELECT status, available_options, bet_deadline FROM csbetting_matches WHERE id = @mid");
             if (!sql.Success || sql.DataSet.Tables[0].Rows.Count == 0)
             {
                 error = "比赛不存在。";
