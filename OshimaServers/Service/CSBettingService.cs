@@ -94,7 +94,7 @@ namespace Oshima.FunGame.WebAPI.Services
             int offset = (page - 1) * pageSize;
             sql.Parameters["@eid"] = eventId;
             sql.ExecuteDataSet($@"
-                SELECT id, team1_name, team2_name, status, bet_deadline, stage, start_time
+                SELECT id, team1_name, team2_name, status, bet_deadline, stage, start_time, result
                 FROM csbetting_matches
                 WHERE event_id = @eid
                 ORDER BY 
