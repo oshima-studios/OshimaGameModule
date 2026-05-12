@@ -1,5 +1,4 @@
-﻿using System.Security.Cryptography;
-using Microsoft.AspNetCore.Authorization;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Milimoe.FunGame.Core.Api.Utility;

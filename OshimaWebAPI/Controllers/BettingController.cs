@@ -7,7 +7,7 @@ using Oshima.FunGame.WebAPI.Model;
 namespace Oshima.FunGame.WebAPI.Controllers
 {
     [ApiController]
-    [Route("api/[controller]")]
+    [Route("[controller]")]
     public class BettingController : ControllerBase
     {
         /// <summary>
