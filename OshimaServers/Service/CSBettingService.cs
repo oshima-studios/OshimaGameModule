@@ -118,7 +118,7 @@ namespace Oshima.FunGame.WebAPI.Services
                     string mStatusStr = mstatus switch { 0 => "未开始", 1 => "进行中", 2 => "已结束", _ => "未知" };
                     string matchLabel = $"{t1} vs {t2}";
                     string clickableMatch = matchLabel.CreateCmdInput($"比赛详情 {mid}");
-                    matches.AppendLine($"  [{mid}] {(stage != "" ? $"{stage} " : "")} {clickableMatch} (状态：{mStatusStr}, 结果：{result}, 截止：{deadline:MM-dd HH:mm})");
+                    matches.AppendLine($"  [{mid}] {(stage != "" ? $"{stage} " : "")} {clickableMatch} (状态：{mStatusStr}{(result.Trim() != "" ? $", 结果：{result}" : "")}, 截止：{deadline:MM-dd HH:mm})");
                 }
             }
             else
