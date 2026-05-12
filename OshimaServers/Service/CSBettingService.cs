@@ -151,7 +151,7 @@ namespace Oshima.FunGame.WebAPI.Services
 
             sql.ExecuteDataSet($@"
                 SELECT m.id, m.team1_name, m.team2_name, m.status, m.start_time, m.stage,
-                       e.name AS event_name, e.id AS event_id
+                       e.name AS event_name, e.id AS event_id, m.result
                 FROM csbetting_matches m
                 LEFT JOIN csbetting_events e ON m.event_id = e.id
                 ORDER BY 
@@ -176,8 +176,9 @@ namespace Oshima.FunGame.WebAPI.Services
                 string stage = row["stage"]?.ToString() ?? "";
                 string eventName = row["event_name"]?.ToString() ?? "";
                 long eventId = Convert.ToInt64(row["event_id"]);
+                string result = row["result"] != DBNull.Value ? row["result"].ToString() ?? "" : "";
 
-                string statusStr = status switch { 0 => "未开始", 1 => "进行中", 2 => "已结束", _ => "未知" };
+                string statusStr = status switch { 0 => "未开始", 1 => "进行中", 2 => $"已结束 | {result}", _ => "未知" };
                 string matchLabel = $"{t1} vs {t2}".CreateCmdInput($"比赛详情 {id}");
 
                 sb.Append($"[{id}] {matchLabel}");
@@ -222,6 +223,22 @@ namespace Oshima.FunGame.WebAPI.Services
                     eventName = rowEvent["name"].ToString() ?? "";
                 }
 
+                // 查询各选项统计
+                sql.Parameters["@mid"] = matchId;
+                DataSet stats = sql.ExecuteDataSet(@"SELECT option_type, 
+                    COUNT(*) AS totalRecord, SUM(amount) AS totalAmount 
+                    FROM csbetting_bet_records WHERE match_id = @mid GROUP BY option_type");
+
+                // 将统计存入字典便于查找
+                Dictionary<int, (int, long)> statDict = [];
+                if (sql.Success && stats.Tables[0].Rows.Count > 0)
+                {
+                    foreach (DataRow srow in stats.Tables[0].Rows)
+                    {
+                        statDict[Convert.ToInt32(srow["option_type"])] = (Convert.ToInt32(srow["totalRecord"]), Convert.ToInt64(srow["totalAmount"]));
+                    }
+                }
+
                 string statusStr = status switch { 0 => "未开始", 1 => "进行中", 2 => "已结束", _ => "未知" };
                 StringBuilder sb = new();
                 sb.AppendLine($"比赛 #{matchId}");
@@ -241,27 +258,44 @@ namespace Oshima.FunGame.WebAPI.Services
                     sb.AppendLine($"> 📝 {description}\r\n");
                 }
 
-                if (status == 0) sb.AppendLine($"可用选项：");
+                DateTime now = DateTime.Now;
+                bool canBet = (status == 0 || status == 1) && now < deadline;
+                if (canBet) sb.AppendLine($"可用选项：");
                 else sb.AppendLine($"该比赛已截止预测。");
+
+                string GetStatString(int opt)
+                {
+                    if (statDict.TryGetValue(opt, out var stat) && stat.Item1 > 0)
+                    {
+                        return $" 👥 {stat.Item1} 🔥 {stat.Item2}";
+                    }
+                    return "";
+                };
+
+                string statText = "";
                 if (available.Contains("team1_win"))
                 {
-                    sb.AppendLine($"  - {t1} 胜 (x {team1Odds})");
-                    if (status == 0) kb.AppendButtons(2, Button.CreateCmdButton($"⚔️ {t1} 胜", $"预测 {matchId} team1 1000", enter: false));
+                    statText = GetStatString(1);
+                    sb.AppendLine($"  - {t1} 胜 (x {team1Odds}){statText}");
+                    if (canBet) kb.AppendButtons(2, Button.CreateCmdButton($"⚔️ {t1} 胜", $"预测 {matchId} team1 1000", enter: false));
                 }
                 if (available.Contains("team2_win"))
                 {
-                    sb.AppendLine($"  - {t2} 胜 (x {team2Odds})");
-                    if (status == 0) kb.AppendButtons(2, Button.CreateCmdButton($"🛡️ {t2} 胜", $"预测 {matchId} team2 1000", enter: false));
+                    statText = GetStatString(2);
+                    sb.AppendLine($"  - {t2} 胜 (x {team2Odds}){statText}");
+                    if (canBet) kb.AppendButtons(2, Button.CreateCmdButton($"🛡️ {t2} 胜", $"预测 {matchId} team2 1000", enter: false));
                 }
                 if (available.Contains("score"))
                 {
-                    sb.AppendLine($"  - 精确比分 (x 4)");
-                    if (status == 0) kb.AppendButtons(2, Button.CreateCmdButton("🎯 精确比分", $"预测 {matchId} score:", enter: false));
+                    statText = GetStatString(3);
+                    sb.AppendLine($"  - 精确比分 (x 4){statText}");
+                    if (canBet) kb.AppendButtons(2, Button.CreateCmdButton("🎯 精确比分", $"预测 {matchId} score:", enter: false));
                 }
                 if (available.Contains("mvp"))
                 {
-                    sb.AppendLine($"  - 赛事MVP (x 3.5)");
-                    if (status == 0) kb.AppendButtons(2, Button.CreateCmdButton("🏆 MVP", $"预测 {matchId} mvp:", enter: false));
+                    statText = GetStatString(4);
+                    sb.AppendLine($"  - 赛事MVP (x 3.5){statText}");
+                    if (canBet) kb.AppendButtons(2, Button.CreateCmdButton("🏆 MVP", $"预测 {matchId} mvp:", enter: false));
                 }
                 if (status == 2)
                 {
@@ -270,7 +304,7 @@ namespace Oshima.FunGame.WebAPI.Services
                     if (winner != 3) sb.AppendLine($"结果：{result}");
                 }
 
-                if (status == 0)
+                if (canBet)
                 {
                     sb.AppendLine($"预测指令：{"预测".CreateCmdInput()} <比赛ID> <选项> <{General.GameplayEquilibriumConstant.InGameCurrency}数>\r\n👇🏻 点击下方按钮快速预测");
                 }
@@ -316,9 +350,9 @@ namespace Oshima.FunGame.WebAPI.Services
                     alreadyBet = Convert.ToInt64(sql.DataSet.Tables[0].Rows[0]["total"] ?? 0L);
                     totalBet += alreadyBet;
                 }
-                if (totalBet > 5000)
+                if (totalBet > 10000)
                 {
-                    error = $"本场比赛你的助力总额不能超过 5000 {General.GameplayEquilibriumConstant.InGameCurrency}（已助力 {alreadyBet}）。";
+                    error = $"本场比赛你的助力总额不能超过 10000 {General.GameplayEquilibriumConstant.InGameCurrency}（已助力 {alreadyBet}）。";
                     return false;
                 }
 
@@ -918,6 +952,11 @@ namespace Oshima.FunGame.WebAPI.Services
             {
                 sql.Parameters["@result"] = (object?)request.Result ?? "";
                 setClause.Append("result = @result, ");
+            }
+            if (request.Stage != null)
+            {
+                sql.Parameters["@stage"] = (object?)request.Stage ?? "";
+                setClause.Append("stage = @stage, ");
             }
 
             if (setClause.Length == 0)

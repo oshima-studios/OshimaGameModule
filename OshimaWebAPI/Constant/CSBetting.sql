@@ -28,7 +28,6 @@ CREATE TABLE IF NOT EXISTS `csbetting_events` (
   `status` tinyint NOT NULL DEFAULT '0' COMMENT '赛事状态：0=未开始，1=进行中，2=已结束',
   `start_time` datetime NOT NULL COMMENT '赛事开始时间',
   `end_time` datetime NOT NULL COMMENT '赛事结束时间',
-  `mvp_candidates` json DEFAULT NULL COMMENT 'MVP候选人UID列表，如 [1001, 1002]',
   `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
   `updated_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
   PRIMARY KEY (`id`),

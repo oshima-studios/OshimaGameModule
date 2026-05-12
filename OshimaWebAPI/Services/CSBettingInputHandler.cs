@@ -18,7 +18,7 @@ namespace Oshima.FunGame.WebAPI.Services
                 {
                     Markdown = new MarkdownMessage
                     {
-                        Content = "🎮 CS赛事预测帮助：\r\n"
+                        Content = "🎮 赛事预测系统帮助：\r\n"
                                 + $"✨ {"赛事列表".CreateCmdInput()}   - 查看所有赛事\r\n"
                                 + $"✨ {"比赛列表".CreateCmdInput()}   - 查看所有比赛\r\n"
                                 + $"✨ {"创建存档".CreateCmdInput()}   - 创建存档后可预测\r\n"
@@ -35,7 +35,7 @@ namespace Oshima.FunGame.WebAPI.Services
                             Button.CreateCmdButton("💰 预测领奖", "预测领奖"),
                             Button.CreateCmdButton("❓ 预测帮助", "预测帮助"))
                 };
-                await SendAsync(e, "CS赛事预测", reply);
+                await SendAsync(e, "赛事预测", reply);
                 return true;
             }
 
@@ -75,11 +75,11 @@ namespace Oshima.FunGame.WebAPI.Services
                     {
                         reply.Markdown.Content += "\r\n" + reply2.Markdown.Content;
                     }
-                    await SendAsync(e, "CS赛事预测", reply);
+                    await SendAsync(e, "赛事预测", reply);
                 }
                 else
                 {
-                    await SendAsync(e, "CS赛事预测", "格式：比赛详情 <比赛ID>");
+                    await SendAsync(e, "赛事预测", "格式：比赛详情 <比赛ID>");
                 }
                 return true;
             }
@@ -102,7 +102,7 @@ namespace Oshima.FunGame.WebAPI.Services
                             Button.CreateCmdButton("📅 比赛列表", "比赛列表"),
                             Button.CreateCmdButton("📜 我的预测", "我的预测"),
                             Button.CreateCmdButton("💰 预测领奖", "预测领奖"));
-                    await SendAsync(e, "CS赛事预测", reply);
+                    await SendAsync(e, "赛事预测", reply);
                 }
                 else
                 {
@@ -119,7 +119,7 @@ namespace Oshima.FunGame.WebAPI.Services
                                 Button.CreateCmdButton("❓ 预测帮助", "预测帮助"),
                                 Button.CreateCmdButton("📜 我的预测", "我的预测"))
                     };
-                    await SendAsync(e, "CS赛事预测", reply);
+                    await SendAsync(e, "赛事预测", reply);
                 }
                 return true;
             }
@@ -132,7 +132,7 @@ namespace Oshima.FunGame.WebAPI.Services
                 System.Text.RegularExpressions.Match match = GetFirstNumber().Match(detail);
                 if (match.Success && int.TryParse(match.Value, out int p)) page = p;
                 BotReply reply = BettingController.GetEventsOverview(page);
-                await SendAsync(e, "CS赛事预测", reply);
+                await SendAsync(e, "赛事预测", reply);
                 return true;
             }
 
@@ -153,7 +153,7 @@ namespace Oshima.FunGame.WebAPI.Services
                 {
                     reply.Keyboard.AppendButtons(2, Button.CreateCmdButton("⚙️ 创建存档", "创建存档"));
                 }
-                await SendAsync(e, "CS赛事预测", reply);
+                await SendAsync(e, "赛事预测", reply);
                 return true;
             }
 
@@ -169,7 +169,7 @@ namespace Oshima.FunGame.WebAPI.Services
                 {
                     reply.Keyboard.AppendButtons(2, Button.CreateCmdButton("⚙️ 创建存档", "创建存档"));
                 }
-                await SendAsync(e, "CS赛事预测", reply);
+                await SendAsync(e, "赛事预测", reply);
                 return true;
             }
 
@@ -179,7 +179,7 @@ namespace Oshima.FunGame.WebAPI.Services
                 string[] parts = detail.Split(' ', StringSplitOptions.RemoveEmptyEntries);
                 if (parts.Length < 3 || !int.TryParse(parts[0], out int mid) || !long.TryParse(parts[^1], out long amt))
                 {
-                    await SendAsync(e, "CS赛事预测", $"格式：预测 <比赛ID> <选项> <{General.GameplayEquilibriumConstant.InGameCurrency}数>\r\n选项：team1 / team2 / score:2:0 / mvp:选手UID");
+                    await SendAsync(e, "赛事预测", $"格式：预测 <比赛ID> <选项> <{General.GameplayEquilibriumConstant.InGameCurrency}数>\r\n选项：team1 / team2 / score:2:0 / mvp:选手UID");
                     return true;
                 }
                 string option = string.Join(" ", parts[1..^1]).ToLower();
@@ -211,7 +211,7 @@ namespace Oshima.FunGame.WebAPI.Services
                 }
 
                 reply.Keyboard = kb;
-                await SendAsync(e, "CS赛事预测", reply);
+                await SendAsync(e, "赛事预测", reply);
                 return true;
             }
 
@@ -235,10 +235,10 @@ namespace Oshima.FunGame.WebAPI.Services
                             Button.CreateCmdButton("📅 比赛列表", "比赛列表"),
                             Button.CreateCmdButton("⚙️ 继续结算", "结算比赛 ", enter: false),
                             Button.CreateCmdButton("🔍 比赛详情", $"比赛详情 {mid}"));
-                    await SendAsync(e, "CS赛事预测", reply);
+                    await SendAsync(e, "赛事预测", reply);
                 }
                 else
-                    await SendAsync(e, "CS赛事预测", "格式：结算比赛 <比赛ID> winner=team1 result=2:0");
+                    await SendAsync(e, "赛事预测", "格式：结算比赛 <比赛ID> winner=team1 result=2:0");
                 return true;
             }
 

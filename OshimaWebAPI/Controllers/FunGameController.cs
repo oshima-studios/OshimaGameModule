@@ -8577,6 +8577,79 @@ namespace Oshima.FunGame.WebAPI.Controllers
             }
         }
 
+        [HttpPost("systemstoreaddgoods")]
+        public BotReply SystemStoreAddGoods([FromQuery] long? uid = null, [FromQuery] long region = 0, [FromQuery] string storeName = "", [FromQuery] string name = "", [FromQuery] double price = 0, [FromQuery] int stock = -1, [FromQuery] int quota = 0, [FromQuery] bool addToNextRefreshGoods = true)
+        {
+            long userid = uid ?? Convert.ToInt64("10" + Verification.CreateVerifyCode(VerifyCodeType.NumberVerifyCode, 11));
+
+            PluginConfig pc = FunGameService.GetUserConfig(userid, out _);
+
+            if (pc.Count > 0)
+            {
+                User user = FunGameService.GetUser(pc);
+
+                string msg = "";
+                if (user.IsAdmin)
+                {
+                    if (FunGameConstant.PlayerRegions.FirstOrDefault(r => r.Id == region) is OshimaRegion or)
+                    {
+                        if (FunGameConstant.Items.FirstOrDefault(i => i.Name == name) is Item item)
+                        {
+                            Item newItem = item.Copy();
+                            Goods g = new()
+                            {
+                                Name = newItem.Name,
+                                Description = newItem.Description,
+                                Stock = stock,
+                                Quota = quota,
+                            };
+                            g.Items.Add(newItem);
+                            if (price == 0)
+                            {
+                                (int min, int max) = (0, 0);
+                                if (FunGameConstant.PriceRanges.TryGetValue(item.QualityType, out (int Min, int Max) range))
+                                {
+                                    (min, max) = (range.Min, range.Max);
+                                }
+                                price = Random.Shared.Next(min, max);
+                            }
+                            newItem.Price = price;
+                            g.SetPrice(General.GameplayEquilibriumConstant.InGameCurrency, price);
+
+                            if (or.AddGoodsToStore(storeName, [g], addToNextRefreshGoods))
+                            {
+                                msg = $"添加成功，请查看商店！";
+                            }
+                            else
+                            {
+                                msg = $"添加失败，商店可能不存在。";
+                            }
+                        }
+                        else
+                        {
+                            msg = $"目标物品不存在，请重新输入。";
+                        }
+                    }
+                    else
+                    {
+                        msg = $"未知地区，请重新输入。{"世界地图".CreateCmdInput()}";
+                    }
+                }
+                else
+                {
+                    msg = $"你没有权限使用此指令！";
+                }
+
+                FunGameService.SetUserConfigAndReleaseSemaphoreSlim(userid, pc, user);
+                return msg;
+            }
+            else
+            {
+                FunGameService.ReleaseUserSemaphoreSlim(userid);
+                return noSaved;
+            }
+        }
+
         [HttpPost("forgeitemcreate")]
         public BotReply ForgeItem_Create([FromQuery] long uid = -1, [FromBody] Dictionary<string, int>? materials = null)
         {

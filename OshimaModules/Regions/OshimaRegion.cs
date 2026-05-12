@@ -43,6 +43,11 @@ namespace Oshima.FunGame.OshimaModules.Regions
 
         }
 
+        public virtual bool AddGoodsToStore(string storeName, List<Goods> goodsList, bool addToNextRefreshGoods = true)
+        {
+            return false;
+        }
+
         public override string ToString()
         {
             StringBuilder builder = new();

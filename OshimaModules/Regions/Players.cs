@@ -187,6 +187,46 @@ namespace Oshima.FunGame.OshimaModules.Regions
             storeTemplate.SaveConfig();
         }
 
+        public override bool AddGoodsToStore(string storeName, List<Goods> goodsList, bool addToNextRefreshGoods = true)
+        {
+            EntityModuleConfig<Store> storeTemplate = new("stores", "dokyo");
+            storeTemplate.LoadConfig();
+
+            Store? store = storeTemplate.Get(storeName);
+            store ??= storeName switch
+            {
+                "dokyo_forge" => CreateNewForgeStore(),
+                "dokyo_horseracing" => CreateNewHorseRacingStore(),
+                "dokyo_cooperative" => CreateNewCooperativeStore(),
+                _ => null
+            };
+
+            if (store is null)
+            {
+                return false;
+            }
+
+            long maxKey = store.Goods.Count > 0 ? store.Goods.Keys.Max() : 0;
+            long newKey = maxKey + 1;
+
+            foreach (Goods goods in goodsList)
+            {
+                goods.Id = newKey;
+                store.Goods[newKey] = goods;
+
+                if (addToNextRefreshGoods)
+                {
+                    store.NextRefreshGoods[newKey] = goods;
+                }
+
+                newKey++;
+            }
+
+            storeTemplate.Add(storeName, store);
+            storeTemplate.SaveConfig();
+            return true;
+        }
+
         private static Store CreateNewForgeStore()
         {
             Store store = new("锻造积分商店")

@@ -2144,6 +2144,63 @@ namespace Oshima.FunGame.WebAPI.Services
                     return result;
                 }
 
+                if (e.Detail.StartsWith("添加商品", StringComparison.CurrentCultureIgnoreCase))
+                {
+                    string detail = e.Detail["添加商品".Length..].Trim();
+
+                    // 匹配必需参数：地区ID（数字），商店名称（可带双引号），物品名称（可带双引号），以及剩余可选参数部分
+                    string pattern = @"^(?<region>\d+)\s+(?<storeName>(""[^""]*""|\S+))\s+(?<itemName>(""[^""]*""|\S+))\s*(?<options>.*)$";
+                    Match match = Regex.Match(detail, pattern);
+
+                    if (match.Success)
+                    {
+                        long region = long.Parse(match.Groups["region"].Value);
+                        string storeName = match.Groups["storeName"].Value.Trim('"');
+                        string itemName = match.Groups["itemName"].Value.Trim('"');
+                        string optionsStr = match.Groups["options"].Value.Trim();
+
+                        // 默认值
+                        double price = 0;
+                        int stock = -1;
+                        int quota = 0;
+                        bool addToNextRefreshGoods = true;
+
+                        // 解析可选键值对
+                        if (!string.IsNullOrEmpty(optionsStr))
+                        {
+                            string optionPattern = @"(?<key>\w+)=(?<value>[^\s]+)";
+                            foreach (Match opt in Regex.Matches(optionsStr, optionPattern))
+                            {
+                                string key = opt.Groups["key"].Value.ToLower();
+                                string val = opt.Groups["value"].Value;
+                                switch (key)
+                                {
+                                    case "price":
+                                        _ = double.TryParse(val, out price);
+                                        break;
+                                    case "stock":
+                                        _ = int.TryParse(val, out stock);
+                                        break;
+                                    case "quota":
+                                        _ = int.TryParse(val, out quota);
+                                        break;
+                                    case "refresh":
+                                        // 支持 是/否 或 true/false 或 1/0
+                                        addToNextRefreshGoods = val == "1" ||
+                                            bool.TryParse(val, out bool b) && b ||
+                                            val.Equals("是", StringComparison.OrdinalIgnoreCase) ||
+                                            val.Equals("yes", StringComparison.OrdinalIgnoreCase);
+                                        break;
+                                }
+                            }
+                        }
+
+                        BotReply reply = Controller.SystemStoreAddGoods(uid, region, storeName, itemName, price, stock, quota, addToNextRefreshGoods);
+                        await SendAsync(e, "添加商品", reply);
+                    }
+                    return result;
+                }
+
                 if (e.Detail.StartsWith("查地区", StringComparison.CurrentCultureIgnoreCase) || e.Detail.StartsWith("查询地区", StringComparison.CurrentCultureIgnoreCase))
                 {
                     string detail = e.Detail.Replace("查地区", "").Replace("查询地区", "").Trim();

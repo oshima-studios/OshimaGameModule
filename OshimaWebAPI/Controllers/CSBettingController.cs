@@ -162,7 +162,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
                 long total = CSBettingService.ClaimRewards(uid);
                 if (total > 0)
                 {
-                    user.Inventory.Credits += (int)total;
+                    user.Inventory.Credits += total;
                     FunGameService.SetUserConfigButNotRelease(uid, pc, user);
                     md.Content = $"领取成功！获得 {total} {General.GameplayEquilibriumConstant.InGameCurrency}。";
                 }
