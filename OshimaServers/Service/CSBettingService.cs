@@ -94,7 +94,7 @@ namespace Oshima.FunGame.WebAPI.Services
             int offset = (page - 1) * pageSize;
             sql.Parameters["@eid"] = eventId;
             sql.ExecuteDataSet($@"
-                SELECT id, team1_name, team2_name, status, bet_deadline, stage, start_time, result
+                SELECT id, team1_name, team2_name, status, bet_deadline, stage, start_time, result, betting_enabled
                 FROM csbetting_matches
                 WHERE event_id = @eid
                 ORDER BY 
@@ -112,13 +112,16 @@ namespace Oshima.FunGame.WebAPI.Services
                     string t1 = row["team1_name"].ToString() ?? "";
                     string t2 = row["team2_name"].ToString() ?? "";
                     int mstatus = Convert.ToInt32(row["status"]);
+                    DateTime startTime = Convert.ToDateTime(row["start_time"]);
                     DateTime deadline = Convert.ToDateTime(row["bet_deadline"]);
                     string stage = row["stage"].ToString() ?? "";
                     string result = row["result"] != DBNull.Value ? row["result"].ToString() ?? "" : "";
+                    bool bettingEnabled = Convert.ToBoolean(row["betting_enabled"]);
                     string mStatusStr = mstatus switch { 0 => "未开始", 1 => "进行中", 2 => "已结束", 3 => "已取消", _ => "未知" };
                     string matchLabel = $"{t1} vs {t2}";
                     string clickableMatch = matchLabel.CreateCmdInput($"比赛详情 {mid}");
-                    matches.AppendLine($"  [{mid}] {(stage != "" ? $"{stage} " : "")} {clickableMatch} (状态：{mStatusStr}{(result.Trim() != "" ? $", 结果：{result}" : "")}, 截止：{deadline:MM-dd HH:mm})");
+                    string ddl = deadline > DateTime.Now && mstatus == 0 && bettingEnabled ? $"截止：{deadline:MM-dd HH:mm}" : $"开赛：{startTime:MM-dd HH:mm}";
+                    matches.AppendLine($"  [{mid}] {(stage != "" ? $"{stage} " : "")} {clickableMatch} (状态：{mStatusStr}{(result.Trim() != "" ? $" | 结果：{result}" : "")} | {ddl})");
                 }
             }
             else
@@ -252,7 +255,7 @@ namespace Oshima.FunGame.WebAPI.Services
                 }
                 sb.AppendLine($"{t1} vs {t2}".CreateCmdInput($"比赛详情 {matchId}"));
                 sb.AppendLine($"开赛：{start:yyyy/MM/dd HH:mm}");
-                sb.AppendLine($"预测截止：{deadline:yyyy/MM/dd HH:mm}");
+                if (bettingEnabled) sb.AppendLine($"预测截止：{deadline:yyyy/MM/dd HH:mm}");
                 sb.AppendLine($"状态：{statusStr}");
 
                 if (!string.IsNullOrWhiteSpace(description))
@@ -275,41 +278,44 @@ namespace Oshima.FunGame.WebAPI.Services
                     return "";
                 };
 
-                string statText = "";
-                if (available.Contains("team1_win"))
+                if (bettingEnabled)
                 {
-                    statText = GetStatString(1);
-                    sb.AppendLine($"  - {t1} 胜 (x {team1Odds}){statText}");
-                    if (canBet) kb.AppendButtons(2, Button.CreateCmdButton($"⚔️ {t1} 胜", $"预测 {matchId} team1 1000", enter: false));
-                }
-                if (available.Contains("team2_win"))
-                {
-                    statText = GetStatString(2);
-                    sb.AppendLine($"  - {t2} 胜 (x {team2Odds}){statText}");
-                    if (canBet) kb.AppendButtons(2, Button.CreateCmdButton($"🛡️ {t2} 胜", $"预测 {matchId} team2 1000", enter: false));
-                }
-                if (available.Contains("score"))
-                {
-                    statText = GetStatString(3);
-                    sb.AppendLine($"  - 精确比分 (x 4){statText}");
-                    if (canBet) kb.AppendButtons(2, Button.CreateCmdButton("🎯 精确比分", $"预测 {matchId} score:", enter: false));
-                }
-                if (available.Contains("mvp"))
-                {
-                    statText = GetStatString(4);
-                    sb.AppendLine($"  - 赛事MVP (x 3.5){statText}");
-                    if (canBet) kb.AppendButtons(2, Button.CreateCmdButton("🏆 MVP", $"预测 {matchId} mvp:", enter: false));
-                }
-                if (status == 2)
-                {
-                    string winnerName = winner switch { 1 => t1, 2 => t2, 3 => result, _ => "待定" };
-                    sb.AppendLine($"胜者：{winnerName}");
-                    if (winner != 3) sb.AppendLine($"结果：{result}");
-                }
+                    string statText = "";
+                    if (available.Contains("team1_win"))
+                    {
+                        statText = GetStatString(1);
+                        sb.AppendLine($"  - {t1} 胜 (x {team1Odds}){statText}");
+                        if (canBet) kb.AppendButtons(2, Button.CreateCmdButton($"⚔️ {t1} 胜", $"预测 {matchId} team1 1000", enter: false));
+                    }
+                    if (available.Contains("team2_win"))
+                    {
+                        statText = GetStatString(2);
+                        sb.AppendLine($"  - {t2} 胜 (x {team2Odds}){statText}");
+                        if (canBet) kb.AppendButtons(2, Button.CreateCmdButton($"🛡️ {t2} 胜", $"预测 {matchId} team2 1000", enter: false));
+                    }
+                    if (available.Contains("score"))
+                    {
+                        statText = GetStatString(3);
+                        sb.AppendLine($"  - 精确比分 (x 4){statText}");
+                        if (canBet) kb.AppendButtons(2, Button.CreateCmdButton("🎯 精确比分", $"预测 {matchId} score:", enter: false));
+                    }
+                    if (available.Contains("mvp"))
+                    {
+                        statText = GetStatString(4);
+                        sb.AppendLine($"  - 赛事MVP (x 3.5){statText}");
+                        if (canBet) kb.AppendButtons(2, Button.CreateCmdButton("🏆 MVP", $"预测 {matchId} mvp:", enter: false));
+                    }
+                    if (status == 2)
+                    {
+                        string winnerName = winner switch { 1 => t1, 2 => t2, 3 => result, _ => "待定" };
+                        sb.AppendLine($"胜者：{winnerName}");
+                        if (winner != 3) sb.AppendLine($"结果：{result}");
+                    }
 
-                if (canBet)
-                {
-                    sb.AppendLine($"预测指令：{"预测".CreateCmdInput()} <比赛ID> <选项> <{General.GameplayEquilibriumConstant.InGameCurrency}数>\r\n👇🏻 点击下方按钮快速预测");
+                    if (canBet)
+                    {
+                        sb.AppendLine($"预测指令：{"预测".CreateCmdInput()} <比赛ID> <选项> <{General.GameplayEquilibriumConstant.InGameCurrency}数>\r\n👇🏻 点击下方按钮快速预测");
+                    }
                 }
 
                 return sb.ToString().Trim();
@@ -1006,7 +1012,7 @@ namespace Oshima.FunGame.WebAPI.Services
         }
 
         /// <summary>
-        /// 取消比赛（管理员操作），退还所有未结算投注的本金，标记比赛状态为已取消
+        /// 取消比赛（管理员操作），退还所有未结算助力的本金，标记比赛状态为已取消
         /// </summary>
         /// <param name="matchId">比赛ID</param>
         /// <param name="error">错误信息</param>
@@ -1049,7 +1055,7 @@ namespace Oshima.FunGame.WebAPI.Services
                     return false;
                 }
 
-                // 2. 获取该比赛所有未结算的投注记录
+                // 2. 获取该比赛所有未结算的助力记录
                 sql.Parameters["@mid"] = matchId;
                 sql.ExecuteDataSet("SELECT id, amount FROM csbetting_bet_records WHERE match_id = @mid AND is_settled = 0");
                 if (sql.Success && sql.DataSet.Tables[0].Rows.Count > 0)
@@ -1062,17 +1068,17 @@ namespace Oshima.FunGame.WebAPI.Services
                         // 退还本金（payout = amount），标记为已结算，注明取消，但不自动领取
                         sql.Parameters["@bid"] = betId;
                         sql.Parameters["@payout"] = amount;
-                        sql.Execute("UPDATE csbetting_bet_records SET is_settled = 1, payout = @payout, result_note = '比赛取消，退还本金' WHERE id = @bid");
+                        sql.Execute("UPDATE csbetting_bet_records SET is_settled = 1, payout = @payout, result_note = '比赛取消并退还' WHERE id = @bid");
                         if (!sql.Success)
                         {
                             sql.Rollback();
-                            error = "退还投注本金失败。";
+                            error = $"退还助力{General.GameplayEquilibriumConstant.InGameCurrency}失败。";
                             return false;
                         }
                     }
                 }
 
-                // 3. 更新比赛状态为 3（已取消），并禁止继续投注
+                // 3. 更新比赛状态为 3（已取消），并禁止继续助力
                 sql.Parameters["@mid"] = matchId;
                 sql.Execute("UPDATE csbetting_matches SET status = 3, betting_enabled = 0 WHERE id = @mid");
                 if (!sql.Success)
@@ -1083,7 +1089,7 @@ namespace Oshima.FunGame.WebAPI.Services
                 }
 
                 sql.Commit();
-                error = $"比赛 {matchId} 已取消，所有未结算投注的本金已退还，请用户通过【预测领奖】领取。";
+                error = $"比赛 {matchId} 已取消，所有未结算助力的{General.GameplayEquilibriumConstant.InGameCurrency}已退还，请用户通过【{"预测领奖".CreateCmdInput()}】领取。";
                 return true;
             }
             catch (Exception ex)

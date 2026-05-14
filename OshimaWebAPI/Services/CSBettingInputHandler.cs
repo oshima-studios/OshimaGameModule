@@ -185,11 +185,7 @@ namespace Oshima.FunGame.WebAPI.Services
 
                 BotReply reply = BettingController.PlaceBet(uid, mid, option, amt);
 
-                // 根据控制器返回的消息判断预测结果（简单判断是否包含"成功"）
-                bool success = reply.Markdown?.Content?.Contains("成功") ?? false;
-
                 KeyboardMessage kb = new();
-                // 成功与失败通用的按钮
                 kb.AppendButtons(2,
                     Button.CreateCmdButton("📜 我的预测", "我的预测"),
                     Button.CreateCmdButton("📋 赛事列表", "赛事列表"),
@@ -200,9 +196,7 @@ namespace Oshima.FunGame.WebAPI.Services
                 {
                     kb.AppendButtons(2, Button.CreateCmdButton("⚙️ 创建存档", "创建存档"));
                 }
-
-                // 成功时追加“继续查看该场比赛”按钮（填充指令）
-                if (success)
+                else
                 {
                     kb.AppendButtonsWithNewRow(2,
                         Button.CreateCmdButton("🔄 再次预测", e.Detail, enter: false),
