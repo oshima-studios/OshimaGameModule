@@ -239,7 +239,8 @@ namespace Oshima.FunGame.WebAPI.Controllers
                 Team2WinOdds = Convert.ToDecimal(row["team2_win_odds"]),
                 Description = row["description"]?.ToString(),
                 CreatedAt = Convert.ToDateTime(row["created_at"]),
-                UpdatedAt = Convert.ToDateTime(row["updated_at"])
+                UpdatedAt = Convert.ToDateTime(row["updated_at"]),
+                BettingEnabled = Convert.ToInt32(row["betting_enabled"]) == 1
             };
         }
 

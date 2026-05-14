@@ -84,6 +84,15 @@ namespace Oshima.FunGame.WebAPI.Model
 
         [JsonPropertyName("stage")]
         public string? Stage { get; set; }
+
+        [JsonPropertyName("team1")]
+        public string? Team1 { get; set; }
+
+        [JsonPropertyName("team2")]
+        public string? Team2 { get; set; }
+
+        [JsonPropertyName("betting_enabled")]
+        public bool? BettingEnabled { get; set; }
     }
 
     public class BettingEvent
@@ -165,6 +174,9 @@ namespace Oshima.FunGame.WebAPI.Model
 
         [JsonPropertyName("updated_at")]
         public DateTime UpdatedAt { get; set; }
+
+        [JsonPropertyName("betting_enabled")]
+        public bool BettingEnabled { get; set; } = true;
     }
 
     public class BettingBetRecord

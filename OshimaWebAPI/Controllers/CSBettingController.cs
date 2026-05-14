@@ -338,5 +338,32 @@ namespace Oshima.FunGame.WebAPI.Controllers
                 return reply;
             }
         }
+
+        [HttpPost("cancel-match")]
+        public BotReply CancelMatch([FromQuery] long uid, [FromQuery] int matchId)
+        {
+            MarkdownMessage md = new() { Content = "服务器繁忙，请稍后再试。" };
+            BotReply reply = new() { Markdown = md };
+            try
+            {
+                if (!FunGameConstant.UserIdAndUsername.TryGetValue(uid, out User? user) || (!user.IsAdmin && !user.IsOperator))
+                {
+                    md.Content = "你没有权限执行此操作。";
+                    return reply;
+                }
+
+                if (CSBettingService.CancelMatch(matchId, out string msg))
+                    md.Content = msg;
+                else
+                    md.Content = msg;
+
+                return reply;
+            }
+            catch (Exception e)
+            {
+                Logger.LogError(e, "CancelMatch 异常");
+                return reply;
+            }
+        }
     }
 }

@@ -79,3 +79,8 @@ ALTER TABLE `csbetting_matches`
 -- 为投注记录表增加投注时的赔率字段，确保结算公平
 ALTER TABLE `csbetting_bet_records`
     ADD COLUMN `odds_at_bet` DECIMAL(5,2) NOT NULL DEFAULT 0.00 COMMENT '投注时的赔率' AFTER `amount`;
+
+-- 增加比赛是否允许预测字段，以及状态值 3 表示已取消
+ALTER TABLE `csbetting_matches`
+    MODIFY COLUMN `status` tinyint NOT NULL DEFAULT 0 COMMENT '比赛状态：0=未开始，1=进行中，2=已结束，3=已取消',
+    ADD COLUMN `betting_enabled` tinyint(1) NOT NULL DEFAULT 1 COMMENT '是否允许预测：1=允许，0=禁止' AFTER `description`;

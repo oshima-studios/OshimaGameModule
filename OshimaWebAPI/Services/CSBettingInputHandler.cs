@@ -1,5 +1,4 @@
-﻿using System.Security.Cryptography;
-using Milimoe.FunGame.Core.Entity;
+﻿using Milimoe.FunGame.Core.Entity;
 using Milimoe.FunGame.Core.Library.Constant;
 using Oshima.FunGame.OshimaModules.Models;
 using Oshima.FunGame.OshimaServers.Model;
@@ -295,11 +294,7 @@ namespace Oshima.FunGame.WebAPI.Services
                 return true;
             }
 
-            // 指令：创建比赛 <赛事ID> <队伍1> <队伍2> <阶段> <开始时间> <预测截止时间> [选项列表(逗号分隔)]
-            // 示例（创建默认形式的比赛）：创建比赛 1 NAVI FaZe Quarter-final 2026-03-05 14:00 2026-03-05 13:55
-            // 示例（提供比赛助力选项）：创建比赛 1 G2 Vitality Semi-final 2026-04-02 18:00 2026-04-02 17:55 team1_win,team2_win
-            // 示例（提供自定义奖励率）：创建比赛 1 G2 Vitality Semi-final 2026-04-02 18:00 2026-04-02 17:55 team1_win=2.5 team2_win=2.5 team1_win,team2_win
-            // 示例（提供队伍1的胜率自动计算奖励率）：创建比赛 1 Vitality FaZe Final 2026-05-12 20:00 2026-05-12 19:55 prob=0.6
+            // 指令：创建比赛 <赛事ID> <队伍1> <队伍2> <阶段> <开始时间> [选项列表(key=value格式，空格分隔)]
             if (e.Detail.StartsWith("创建比赛"))
             {
                 e.UseNotice = false;
@@ -311,13 +306,15 @@ namespace Oshima.FunGame.WebAPI.Services
 
                 string detail = e.Detail.Replace("创建比赛", "").Trim();
                 string[] parts = detail.Split(' ', StringSplitOptions.RemoveEmptyEntries);
-                if (parts.Length < 7) // 最少需要 eventId, team1, team2, stage, start date, start time, deadline date, deadline time
+                if (parts.Length < 6) // 最少需要 eventId, team1, team2, stage, start date, start time
                 {
                     await SendAsync(e, "创建比赛",
-                        "格式：创建比赛 <赛事ID> <队伍1> <队伍2> <阶段> <开始时间> <预测截止时间> [选项列表(逗号分隔)]\r\n" +
-                        "时间格式：yyyy-MM-dd HH:mm（开始/截止各占两段）\r\n" +
-                        "示例：创建比赛 1 NAVI FaZe Quarter-final 2026-03-05 14:00 2026-03-05 13:55\r\n" +
-                        "选项默认 team1_win,team2_win ，比分和MVP选项只允许独立添加：score,mvp");
+                        "格式：创建比赛 <赛事ID> <队伍1> <队伍2> <阶段> <开始时间> [选项列表(key=value格式，空格分隔)]\r\n" +
+                        "开始时间格式：yyyy-MM-dd HH:mm（两段）\r\n" +
+                        "可选参数：ddl=截止时间（需要用双引号包围），opts=选项列表（逗号分隔，默认team1_win,team2_win），team1_win=奖励率，team2_win=奖励率，prob=胜率\r\n" +
+                        "示例：创建比赛 1 NAVI FaZe Quarter-final 2026-03-05 14:00\r\n" +
+                        "示例：创建比赛 1 NAVI FaZe Quarter-final 2026-03-05 14:00 ddl=\"2026-03-05 13:55\" opts=team1_win,team2_win\r\n" +
+                        "示例：创建比赛 1 G2 Vitality Semi-final 2026-04-02 18:00 ddl=\"2026-04-02 17:55\" opts=team1_win,team2_win team1_win=2.5 prob=0.6");
                     return true;
                 }
 
@@ -334,54 +331,90 @@ namespace Oshima.FunGame.WebAPI.Services
                 // 开始时间（parts[4] + parts[5]）
                 string startDate = parts[4];
                 string startTime = parts[5];
-                // 截止时间（parts[6] + parts[7] 如果存在）
-                if (parts.Length < 8)
+                if (!DateTime.TryParseExact(startDate + " " + startTime, "yyyy-MM-dd HH:mm", null, System.Globalization.DateTimeStyles.None, out DateTime startDt))
                 {
-                    await SendAsync(e, "创建比赛", "预测截止时间需要完整日期和时间，示例：2026-03-05 13:55");
-                    return true;
-                }
-                string deadlineDate = parts[6];
-                string deadlineTime = parts[7];
-
-                if (!DateTime.TryParseExact(startDate + " " + startTime, "yyyy-MM-dd HH:mm", null, System.Globalization.DateTimeStyles.None, out DateTime startDt) ||
-                    !DateTime.TryParseExact(deadlineDate + " " + deadlineTime, "yyyy-MM-dd HH:mm", null, System.Globalization.DateTimeStyles.None, out DateTime deadlineDt))
-                {
-                    await SendAsync(e, "创建比赛", "时间格式错误，请使用 yyyy-MM-dd HH:mm（开始时间和截止时间各两段）。");
+                    await SendAsync(e, "创建比赛", "开始时间格式错误，请使用 yyyy-MM-dd HH:mm（日期和时间分为两段）。");
                     return true;
                 }
 
-                // 解析剩余参数：选项和奖励率
-                List<string> optionParts = [];
+                // 解析剩余参数（从第6段开始，key=value格式，value支持双引号包围）
+                int spaceCount = 0, idx = 0;
+                for (; idx < detail.Length && spaceCount < 6; idx++)
+                {
+                    if (detail[idx] == ' ') spaceCount++;
+                }
+                string paramString = detail[idx..].Trim();
+                System.Text.RegularExpressions.MatchCollection matches = GetParamValue().Matches(paramString);
+
+                // 解析剩余可选参数：key=value 格式，支持双引号包围含空格的value
+                Dictionary<string, string> paramDict = new(StringComparer.OrdinalIgnoreCase);
+                foreach (System.Text.RegularExpressions.Match m in matches)
+                {
+                    string key = m.Groups[1].Value;
+                    string value = m.Groups[2].Success ? m.Groups[2].Value : m.Groups[3].Value;
+                    if (!paramDict.TryAdd(key, value))
+                    {
+                        await SendAsync(e, "创建比赛", $"参数 '{key}' 重复。");
+                        return true;
+                    }
+                }
+
+                // 解析截止时间 (ddl=)，默认与开始时间相同
+                DateTime deadlineDt = startDt;
+                if (paramDict.TryGetValue("ddl", out string? ddlStr))
+                {
+                    if (!DateTime.TryParseExact(ddlStr, "yyyy-MM-dd HH:mm", null, System.Globalization.DateTimeStyles.None, out deadlineDt))
+                    {
+                        await SendAsync(e, "创建比赛", "截止时间格式错误，请使用 yyyy-MM-dd HH:mm。");
+                        return true;
+                    }
+                }
+
+                // 解析选项列表 (opts=)
+                string options = "team1_win,team2_win";
+                if (paramDict.TryGetValue("opts", out string? optsStr))
+                {
+                    options = optsStr; // 预期逗号分隔的列表
+                }
+
+                // 解析奖励率与胜率
                 decimal? team1Odds = null, team2Odds = null, team1WinProbability = null;
-                for (int i = 8; i < parts.Length; i++)
+                if (paramDict.TryGetValue("team1_win", out string? t1OddsStr))
                 {
-                    string segment = parts[i];
-                    if (segment.StartsWith("team1_win="))
+                    if (decimal.TryParse(t1OddsStr, out decimal o1))
                     {
-                        if (decimal.TryParse(segment[11..], out decimal odds1))
-                            team1Odds = odds1;
-                    }
-                    else if (segment.StartsWith("team2_win="))
-                    {
-                        if (decimal.TryParse(segment[11..], out decimal odds2))
-                            team2Odds = odds2;
-                    }
-                    else if (segment.StartsWith("prob="))
-                    {
-                        if (decimal.TryParse(segment[5..], out decimal prob))
-                            team1WinProbability = prob;
-                        else
-                        {
-                            await SendAsync(e, "创建比赛", "胜率值无效，应为0~1之间的小数。");
-                            return true;
-                        }
+                        team1Odds = o1;
                     }
                     else
                     {
-                        optionParts.Add(segment);
+                        await SendAsync(e, "创建比赛", "team1_win 奖励率无效。");
+                        return true;
                     }
                 }
-                string options = optionParts.Count > 0 ? string.Join(",", optionParts) : "team1_win,team2_win";
+                if (paramDict.TryGetValue("team2_win", out string? t2OddsStr))
+                {
+                    if (decimal.TryParse(t2OddsStr, out decimal o2))
+                    {
+                        team2Odds = o2;
+                    }
+                    else
+                    {
+                        await SendAsync(e, "创建比赛", "team2_win 奖励率无效。");
+                        return true;
+                    }
+                }
+                if (paramDict.TryGetValue("prob", out string? probStr))
+                {
+                    if (decimal.TryParse(probStr, out decimal prob) && prob > 0 && prob < 1)
+                    {
+                        team1WinProbability = prob;
+                    }
+                    else
+                    {
+                        await SendAsync(e, "创建比赛", "胜率值无效，应为0~1之间的小数。");
+                        return true;
+                    }
+                }
 
                 BotReply reply = BettingController.CreateMatch(new CreateMatchRequest
                 {
@@ -497,6 +530,24 @@ namespace Oshima.FunGame.WebAPI.Services
                         case "result":
                             request.Result = val;
                             break;
+                        case "stage":
+                            request.Stage = val;
+                            break;
+                        case "t1":
+                            request.Team1 = val;
+                            break;
+                        case "t2":
+                            request.Team2 = val;
+                            break;
+                        case "be":
+                            if (val == "0" || val == "1")
+                                request.BettingEnabled = val == "1";
+                            else
+                            {
+                                await SendAsync(e, "修改比赛", "enabled 值必须为 0 或 1。");
+                                return true;
+                            }
+                            break;
                         default:
                             await SendAsync(e, "修改比赛", $"未知参数：{key}");
                             return true;
@@ -508,8 +559,31 @@ namespace Oshima.FunGame.WebAPI.Services
                 reply.Keyboard = new KeyboardMessage()
                     .AppendButtons(2,
                         Button.CreateCmdButton("📋 赛事列表", "赛事列表"),
+                        Button.CreateCmdButton("📅 比赛列表", "比赛列表"),
                         Button.CreateCmdButton("🔍 比赛详情", $"比赛详情 {matchId}"));
                 await SendAsync(e, "修改比赛", reply);
+                return true;
+            }
+
+            // 取消比赛指令
+            if (e.Detail.StartsWith("取消比赛"))
+            {
+                e.UseNotice = false;
+                string detail = e.Detail.Replace("取消比赛", "").Trim();
+                if (!int.TryParse(detail, out int matchId))
+                {
+                    await SendAsync(e, "取消比赛", "格式：取消比赛 <比赛ID>");
+                    return true;
+                }
+
+                BotReply reply = BettingController.CancelMatch(uid, matchId);
+                reply.Keyboard = new KeyboardMessage()
+                .AppendButtons(2,
+                    Button.CreateCmdButton("📋 赛事列表", "赛事列表"),
+                    Button.CreateCmdButton("📅 比赛列表", "比赛列表"),
+                    Button.CreateCmdButton("🔍 比赛详情", $"比赛详情 {matchId}"),
+                    Button.CreateCmdButton("💰 预测领奖", "预测领奖"));
+                await SendAsync(e, "取消比赛", reply);
                 return true;
             }
 

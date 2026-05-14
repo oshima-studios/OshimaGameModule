@@ -48,7 +48,7 @@ namespace Oshima.FunGame.WebAPI.Services
                 int id = Convert.ToInt32(row["id"]);
                 string name = row["name"].ToString() ?? "";
                 int status = Convert.ToInt32(row["status"]);
-                string statusStr = status switch { 0 => "未开始", 1 => "进行中", 2 => "已结束", _ => "未知" };
+                string statusStr = status switch { 0 => "未开始", 1 => "进行中", 2 => "已结束", 3 => "已取消", _ => "未知" };
                 DateTime startTime = Convert.ToDateTime(row["start_time"]);
                 DateTime endTime = Convert.ToDateTime(row["end_time"]);
                 sb.AppendLine($"🏆 [{id}] {name.CreateCmdInput($"赛事详情 {id}")} ({statusStr}：{startTime:yyyy/MM/dd} ~ {endTime:yyyy/MM/dd})");
@@ -73,7 +73,7 @@ namespace Oshima.FunGame.WebAPI.Services
             int status = Convert.ToInt32(evt["status"]);
             DateTime start = Convert.ToDateTime(evt["start_time"]);
             DateTime end = Convert.ToDateTime(evt["end_time"]);
-            string statusStr = status switch { 0 => "未开始", 1 => "进行中", 2 => "已结束", _ => "未知" };
+            string statusStr = status switch { 0 => "未开始", 1 => "进行中", 2 => "已结束", 3 => "已取消", _ => "未知" };
 
             StringBuilder header = new();
             header.AppendLine($"赛事：{name}");
@@ -115,7 +115,7 @@ namespace Oshima.FunGame.WebAPI.Services
                     DateTime deadline = Convert.ToDateTime(row["bet_deadline"]);
                     string stage = row["stage"].ToString() ?? "";
                     string result = row["result"] != DBNull.Value ? row["result"].ToString() ?? "" : "";
-                    string mStatusStr = mstatus switch { 0 => "未开始", 1 => "进行中", 2 => "已结束", _ => "未知" };
+                    string mStatusStr = mstatus switch { 0 => "未开始", 1 => "进行中", 2 => "已结束", 3 => "已取消", _ => "未知" };
                     string matchLabel = $"{t1} vs {t2}";
                     string clickableMatch = matchLabel.CreateCmdInput($"比赛详情 {mid}");
                     matches.AppendLine($"  [{mid}] {(stage != "" ? $"{stage} " : "")} {clickableMatch} (状态：{mStatusStr}{(result.Trim() != "" ? $", 结果：{result}" : "")}, 截止：{deadline:MM-dd HH:mm})");
@@ -179,7 +179,7 @@ namespace Oshima.FunGame.WebAPI.Services
                 long eventId = Convert.ToInt64(row["event_id"]);
                 string result = row["result"] != DBNull.Value ? row["result"].ToString() ?? "" : "";
 
-                string statusStr = status switch { 0 => "未开始", 1 => "进行中", 2 => $"已结束 | {result}", _ => "未知" };
+                string statusStr = status switch { 0 => "未开始", 1 => "进行中", 2 => $"已结束 | {result}", 3 => "已取消", _ => "未知" };
                 string matchLabel = $"{t1} vs {t2}".CreateCmdInput($"比赛详情 {id}");
 
                 sb.Append($"[{id}] {matchLabel}");
@@ -215,6 +215,7 @@ namespace Oshima.FunGame.WebAPI.Services
                 long winner = row["winner"] != DBNull.Value ? Convert.ToInt64(row["winner"]) : 0;
                 decimal team1Odds = Convert.ToDecimal(row["team1_win_odds"]);
                 decimal team2Odds = Convert.ToDecimal(row["team2_win_odds"]);
+                bool bettingEnabled = Convert.ToBoolean(row["betting_enabled"]);
 
                 string eventName = "";
                 sql.Parameters["@eid"] = eventId;
@@ -240,7 +241,7 @@ namespace Oshima.FunGame.WebAPI.Services
                     }
                 }
 
-                string statusStr = status switch { 0 => "未开始", 1 => "进行中", 2 => "已结束", _ => "未知" };
+                string statusStr = status switch { 0 => "未开始", 1 => "进行中", 2 => "已结束", 3 => "已取消", _ => "未知" };
                 StringBuilder sb = new();
                 sb.AppendLine($"比赛 #{matchId}");
                 if (eventName.Trim() != "")
@@ -260,9 +261,10 @@ namespace Oshima.FunGame.WebAPI.Services
                 }
 
                 DateTime now = DateTime.Now;
-                bool canBet = (status == 0 || status == 1) && now < deadline;
+                bool canBet = (status == 0 || status == 1) && now < deadline && bettingEnabled;
                 if (canBet) sb.AppendLine($"可用选项：");
-                else sb.AppendLine($"该比赛已截止预测。");
+                else if (!bettingEnabled) sb.AppendLine($"🔒 该比赛不开放预测。");
+                else sb.AppendLine($"🔒 预测已锁定。");
 
                 string GetStatString(int opt)
                 {
@@ -334,9 +336,15 @@ namespace Oshima.FunGame.WebAPI.Services
                 DateTime deadline = Convert.ToDateTime(row["bet_deadline"]);
                 decimal team1Odds = Convert.ToDecimal(row["team1_win_odds"]);
                 decimal team2Odds = Convert.ToDecimal(row["team2_win_odds"]);
+                bool bettingEnabled = Convert.ToBoolean(row["betting_enabled"]);
+                if (!bettingEnabled)
+                {
+                    error = "该比赛不开放预测。";
+                    return false;
+                }
                 if (status == 2 || DateTime.Now > deadline)
                 {
-                    error = "当前比赛已结束或非可预测阶段。";
+                    error = "该比赛处于不可预测阶段。";
                     return false;
                 }
 
@@ -429,7 +437,9 @@ namespace Oshima.FunGame.WebAPI.Services
                     bool isMvp = available.Contains("mvp", StringComparison.CurrentCultureIgnoreCase);
                     int status = Convert.ToInt32(row["status"]);
                     if (status == 2)
-                        return "比赛已结算。";
+                        return "比赛已结算，无法再次结算。";
+                    if (status == 3)
+                        return "比赛已取消，无法结算。";
 
                     int winTeam = 3;
                     if (!isMvp)
@@ -679,11 +689,11 @@ namespace Oshima.FunGame.WebAPI.Services
 
             // 根据时间，设置比赛状态为未开始
             sql.Parameters["@now"] = now;
-            sql.Execute("UPDATE csbetting_matches SET status = 0 WHERE start_time >= @now");
+            sql.Execute("UPDATE csbetting_matches SET status = 0 WHERE start_time >= @now AND status != 3");
 
             // 更新比赛状态：0→1 (进行中)，1→2 (已结束) - 注意不要覆盖已结算的比赛（winner 为 null 时视为未结束）
             sql.Parameters["@now"] = now;
-            sql.Execute("UPDATE csbetting_matches SET status = 1 WHERE status = 0 AND start_time <= @now AND bet_deadline < @now AND winner IS NULL");
+            sql.Execute("UPDATE csbetting_matches SET status = 1 WHERE status = 0 AND start_time <= @now AND bet_deadline < @now AND winner IS NULL AND status != 3");
             // 对于已经过了开始时间但还没有 winner 且状态为 1 的，可保留为进行中；实际上只要 winner 为 null，状态应为 1（进行中）
             // 如果有结果但 winner 不为 null，管理员应该已经手动结算，状态会设为 2，这里不做额外修改。
             // 安全起见，只更新未开始的，以及当比赛时间已过且无 winner 时自动变成进行中。
@@ -843,12 +853,12 @@ namespace Oshima.FunGame.WebAPI.Services
         }
 
         /// <summary>
-        /// 管理员提前结束预测（将未开始比赛标记为进行中）
+        /// 管理员提前结束预测
         /// </summary>
         public static bool CloseBetting(int matchId, out string message) => UpdateMatch(new()
         {
             MatchId = matchId,
-            StartTime = DateTime.Now
+            BetDeadline = DateTime.Now
         }, out message);
 
         public static bool UpdateMatch(UpdateMatchRequest request, out string error)
@@ -946,18 +956,33 @@ namespace Oshima.FunGame.WebAPI.Services
             }
             if (request.Description != null) 
             {
-                sql.Parameters["@desc"] = (object?)request.Description ?? "";
+                sql.Parameters["@desc"] = request.Description ?? "";
                 setClause.Append("description = @desc, ");
             }
             if (request.Result != null) 
             {
-                sql.Parameters["@result"] = (object?)request.Result ?? "";
+                sql.Parameters["@result"] = request.Result ?? "";
                 setClause.Append("result = @result, ");
             }
             if (request.Stage != null)
             {
-                sql.Parameters["@stage"] = (object?)request.Stage ?? "";
+                sql.Parameters["@stage"] = request.Stage ?? "";
                 setClause.Append("stage = @stage, ");
+            }
+            if (request.Team1 != null)
+            {
+                sql.Parameters["@t1"] = request.Team1 ?? "";
+                setClause.Append("team1_name = @t1, ");
+            }
+            if (request.Team2 != null)
+            {
+                sql.Parameters["@t2"] = request.Team2 ?? "";
+                setClause.Append("team2_name = @t2, ");
+            }
+            if (request.BettingEnabled.HasValue)
+            {
+                sql.Parameters["@betting_enabled"] = request.BettingEnabled.Value ? 1 : 0;
+                setClause.Append("betting_enabled = @betting_enabled, ");
             }
 
             if (setClause.Length == 0)
@@ -978,6 +1003,95 @@ namespace Oshima.FunGame.WebAPI.Services
             }
 
             return true;
+        }
+
+        /// <summary>
+        /// 取消比赛（管理员操作），退还所有未结算投注的本金，标记比赛状态为已取消
+        /// </summary>
+        /// <param name="matchId">比赛ID</param>
+        /// <param name="error">错误信息</param>
+        /// <returns>是否成功</returns>
+        public static bool CancelMatch(int matchId, out string error)
+        {
+            error = "";
+            using SQLHelper? sql = Factory.OpenFactory.GetSQLHelper();
+            if (sql == null)
+            {
+                error = "数据库连接失败。";
+                return false;
+            }
+
+            try
+            {
+                sql.NewTransaction();
+
+                // 1. 获取比赛信息
+                sql.Parameters["@mid"] = matchId;
+                sql.ExecuteDataSet("SELECT id, status FROM csbetting_matches WHERE id = @mid");
+                if (!sql.Success || sql.DataSet.Tables[0].Rows.Count == 0)
+                {
+                    error = "比赛不存在。";
+                    sql.Rollback();
+                    return false;
+                }
+                DataRow row = sql.DataSet.Tables[0].Rows[0];
+                int status = Convert.ToInt32(row["status"]);
+                if (status == 2)
+                {
+                    error = "比赛已结束，无法取消。";
+                    sql.Rollback();
+                    return false;
+                }
+                if (status == 3)
+                {
+                    error = "比赛已经是取消状态。";
+                    sql.Rollback();
+                    return false;
+                }
+
+                // 2. 获取该比赛所有未结算的投注记录
+                sql.Parameters["@mid"] = matchId;
+                sql.ExecuteDataSet("SELECT id, amount FROM csbetting_bet_records WHERE match_id = @mid AND is_settled = 0");
+                if (sql.Success && sql.DataSet.Tables[0].Rows.Count > 0)
+                {
+                    foreach (DataRow bet in sql.DataSet.Tables[0].Rows)
+                    {
+                        long betId = Convert.ToInt64(bet["id"]);
+                        long amount = Convert.ToInt64(bet["amount"]);
+
+                        // 退还本金（payout = amount），标记为已结算，注明取消，但不自动领取
+                        sql.Parameters["@bid"] = betId;
+                        sql.Parameters["@payout"] = amount;
+                        sql.Execute("UPDATE csbetting_bet_records SET is_settled = 1, payout = @payout, result_note = '比赛取消，退还本金' WHERE id = @bid");
+                        if (!sql.Success)
+                        {
+                            sql.Rollback();
+                            error = "退还投注本金失败。";
+                            return false;
+                        }
+                    }
+                }
+
+                // 3. 更新比赛状态为 3（已取消），并禁止继续投注
+                sql.Parameters["@mid"] = matchId;
+                sql.Execute("UPDATE csbetting_matches SET status = 3, betting_enabled = 0 WHERE id = @mid");
+                if (!sql.Success)
+                {
+                    sql.Rollback();
+                    error = "更新比赛状态失败。";
+                    return false;
+                }
+
+                sql.Commit();
+                error = $"比赛 {matchId} 已取消，所有未结算投注的本金已退还，请用户通过【预测领奖】领取。";
+                return true;
+            }
+            catch (Exception ex)
+            {
+                sql.Rollback();
+                error = $"取消比赛异常：{ex.Message}";
+                return false;
+            }
         }
 
         public static (decimal oddsA, decimal oddsB) CalculateOdds(decimal team1WinProbability, decimal margin = 0.08m)
