@@ -305,17 +305,18 @@ namespace Oshima.FunGame.WebAPI.Services
                         sb.AppendLine($"  - 赛事MVP (x 3.5){statText}");
                         if (canBet) kb.AppendButtons(2, Button.CreateCmdButton("🏆 MVP", $"预测 {matchId} mvp:", enter: false));
                     }
-                    if (status == 2)
-                    {
-                        string winnerName = winner switch { 1 => t1, 2 => t2, 3 => result, _ => "待定" };
-                        sb.AppendLine($"胜者：{winnerName}");
-                        if (winner != 3) sb.AppendLine($"结果：{result}");
-                    }
+                }
 
-                    if (canBet)
-                    {
-                        sb.AppendLine($"预测指令：{"预测".CreateCmdInput()} <比赛ID> <选项> <{General.GameplayEquilibriumConstant.InGameCurrency}数>\r\n👇🏻 点击下方按钮快速预测");
-                    }
+                if (status == 2)
+                {
+                    string winnerName = winner switch { 1 => t1, 2 => t2, 3 => result, _ => "待定" };
+                    sb.AppendLine($"胜者：{winnerName}");
+                    if (winner != 3) sb.AppendLine($"结果：{result}");
+                }
+
+                if (canBet)
+                {
+                    sb.AppendLine($"预测指令：{"预测".CreateCmdInput()} <比赛ID> <选项> <{General.GameplayEquilibriumConstant.InGameCurrency}数>\r\n👇🏻 点击下方按钮快速预测");
                 }
 
                 return sb.ToString().Trim();
