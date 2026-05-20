@@ -362,3 +362,7 @@ MigrationBackup/
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
 /OshimaWebAPI/wwwroot/images/zi
+
+# macOS
+.DS_Store
+._*
