@@ -26,30 +26,39 @@ dotnet run   --project OshimaWebAPI            # 开发服务器: https://localh
 | ------------------------------------------------------ | --------------------------------- |
 | `../FunGame.Core/FunGame.Core.csproj`                  | 所有项目                          |
 | `../FunGame.Extension/FunGame.SQLQueryExtension/...`   | `OshimaWebAPI`、`OshimaServers`   |
-| `../FunGame.Desktop/FunGame.Desktop/...`               | 仅出现在 `.sln` 中                |
 
-构建前请将这些仓库克隆为 `OshimaGameModule/` 的**同级目录**，否则 restore 阶段会失败。
+构建前请将这些仓库克隆为 `OshimaGameModule/` 的**同级目录**，否则 restore 阶段会失败。如果只想跑起整套环境，仓库根目录的 `setup.bat` / `start-web-api.bat` 会自动完成克隆、编译、插件 DLL 分发与启动——详见 [README.md](./README.md)。
 
 ### 输出目录布局
 
-各类库项目均设置 `<BaseOutputPath>..\bin\</BaseOutputPath>`，因此所有构建产物会汇集到解决方案根目录的 **`OshimaGameModule/bin/`**，而不是各项目自己的 `bin/` 文件夹。宿主 FunGame 运行时正是从此聚合目录中发现并加载插件。
+除 `OshimaCore` 外的 4 个项目（`OshimaMaps` / `OshimaModules` / `OshimaServers` / `OshimaWebAPI`）均设置 `<BaseOutputPath>..\bin\</BaseOutputPath>`，因此它们的构建产物会汇集到解决方案根目录的 **`OshimaGameModule/bin/`**，而不是各项目自己的 `bin/` 文件夹。`OshimaCore` 本身没设置此属性，但因被其它 4 个项目 `ProjectReference`，其 DLL 也会被复制进同一个聚合目录。宿主 FunGame 运行时正是从此聚合目录中发现并加载插件。
 
 ### 平台说明
 
-- `OshimaModes` 是 WPF 项目（`UseWPF=True`、`net10.0-windows7.0`），**只能在 Windows 上构建**。在 macOS / Linux 上请单独构建非 WPF 项目，整体 `.sln` 构建会因 `OshimaModes` 失败。
-- `OshimaWebAPI` 是 ASP.NET Core 项目（`FrameworkReference Microsoft.AspNetCore.App`），跨平台运行。
+- 当前 `.sln` 中所有项目都以 `net10.0`（非 `-windows`）为目标，整套构建**跨平台**可执行。
+- `OshimaWebAPI` 是 ASP.NET Core 项目（`FrameworkReference Microsoft.AspNetCore.App`），无额外平台依赖。
 
 仓库中**没有测试项目**。
 
 ## 架构：各插件如何协作
 
 ```
-OshimaCore  ──┐
-              ├── OshimaModules ──┐
-OshimaMaps ───┤                   ├── OshimaServers ──┐
-              │                   │                   ├── OshimaWebAPI
-              └────────── OshimaModes (WPF) ──────────┘ (同时依赖 Modules + Maps)
+依赖图（箭头读作"被依赖"）：
+
+OshimaCore ─┬─► OshimaMaps    ─┐
+            ├─► OshimaModules ─┼─► OshimaServers ─► OshimaWebAPI
+            └──────────────────┘   (WebAPI 同时直接 ProjectReference Core + Modules)
 ```
+
+实际 csproj `ProjectReference` 关系：
+
+| 项目 | 直接依赖的本仓库项目 |
+| --- | --- |
+| `OshimaCore`    | —                                       |
+| `OshimaMaps`    | `OshimaCore`                            |
+| `OshimaModules` | `OshimaCore`                            |
+| `OshimaServers` | `OshimaCore`、`OshimaMaps`、`OshimaModules` |
+| `OshimaWebAPI`  | `OshimaCore`、`OshimaModules`、`OshimaServers` |
 
 每个项目的 `RootNamespace` 都按 `Oshima.FunGame.$(MSBuildProjectName)` 的模板生成（`OshimaCore` 例外 → `Oshima.Core`）。
 
@@ -62,7 +71,6 @@ OshimaMaps ───┤                   ├── OshimaServers ──┐
 | `OshimaMaps`     | `GameMap` 实现                                                                                                                                | `FastAutoMap`、`AnonymousMap`                                                                      |
 | `OshimaServers`  | 游戏服务器插件 + 业务服务层（`Service/FunGameService.cs`、`FunGameSimulation.cs`、`OnlineService.cs`、`SQLService.cs`、`CSBettingService.cs`） | `OshimaServer`（`ServerPlugin`）、`FastAutoServer` 与 `AnonymousServer`（`GameModuleServer`）      |
 | `OshimaWebAPI`   | ASP.NET Core 控制器 + 定时任务 + QQ / RainBOT 集成                                                                                            | `OshimaWebAPI : WebAPIPlugin, IHotReloadAware, ILoginEvent`                                        |
-| `OshimaModes`    | 游戏模式的 Windows 桌面 UI（WPF）                                                                                                             | 仅承载模式，本身不是 FunGame 插件                                                                  |
 
 ### 插件标识符集中在常量表中
 
