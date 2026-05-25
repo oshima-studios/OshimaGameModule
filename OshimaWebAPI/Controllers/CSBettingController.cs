@@ -79,6 +79,19 @@ namespace Oshima.FunGame.WebAPI.Controllers
             return new BotReply { Markdown = new MarkdownMessage { Content = content } };
         }
 
+        [HttpGet("match/time/{mid:int}")]
+        public BotReply GetMatchTimes(int mid)
+        {
+            MarkdownMessage md = new() { Content = busy };
+            BotReply reply = new() { Markdown = md };
+            if (CSBettingService.GetMatchTimes(mid, out DateTime startTime, out DateTime betDeadline, out int status, out string error))
+            {
+                md.Content = $"比赛开始时间：{startTime:yyyy-MM-dd HH:mm:ss}\n预测截止时间：{betDeadline:yyyy-MM-dd HH:mm:ss}\n当前状态：{(status == 0 ? "未开始" : status == 1 ? "进行中" : "已结束")}";
+            }
+            else md.Content = error;
+            return reply;
+        }
+
         // ---------- 需要用户锁的操作 ----------
 
         /// <summary>
@@ -264,7 +277,7 @@ namespace Oshima.FunGame.WebAPI.Controllers
                 }
 
                 if (CSBettingService.CreateMatch(request.EventId, request.Team1Name, request.Team2Name, request.Stage,
-                    request.StartTime, request.BetDeadline, request.AvailableOptions, request.Team1WinOdds, request.Team2WinOdds, request.Team1WinProbability, out string error, out long? newId))
+                    request.StartTime, request.BetDeadline, request.AvailableOptions, request.Team1WinOdds, request.Team2WinOdds, request.Team1WinProbability, request.BettingEnabled, out string error, out long? newId))
                 {
                     md.Content = $"比赛创建成功！新比赛ID：{newId}";
                     reply.Keyboard = new KeyboardMessage().AppendButtons(1, Button.CreateCmdButton("🔍 比赛详情", $"比赛详情 {newId}"));

@@ -85,6 +85,7 @@ namespace Oshima.FunGame.OshimaServers.Model
         public long FunGameUID { get; set; }
         public bool UseNotice { get; set; }
         public string ImageUrl { get; set; }
+        public bool SendProactive { get; set; }
     }
 
     public class BotReply
@@ -267,6 +268,9 @@ namespace Oshima.FunGame.OshimaServers.Model
 
         [JsonIgnore]
         public string ImageUrl { get; set; } = "";
+
+        [JsonIgnore]
+        public bool SendProactive { get; set; }
     }
 
     public class C2CMessage : IBotMessage
@@ -303,6 +307,9 @@ namespace Oshima.FunGame.OshimaServers.Model
         public string OpenId => Author.UserOpenId;
         public bool IsGroup => false;
         public string AuthorOpenId => Author.UserOpenId;
+
+        [JsonIgnore]
+        public bool SendProactive { get; set; }
     }
 
     public class GroupAtMessage : IBotMessage
@@ -342,6 +349,9 @@ namespace Oshima.FunGame.OshimaServers.Model
         public string OpenId => GroupOpenId;
         public bool IsGroup => true;
         public string AuthorOpenId => Author.MemberOpenId;
+
+        [JsonIgnore]
+        public bool SendProactive { get; set; }
     }
 
     public class MediaResponse

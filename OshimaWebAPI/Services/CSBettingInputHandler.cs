@@ -409,6 +409,21 @@ namespace Oshima.FunGame.WebAPI.Services
                         return true;
                     }
                 }
+                bool enableBet = true;
+                if (paramDict.TryGetValue("be", out string? be))
+                {
+                    if (be == "0" || be == "1") enableBet = be == "1";
+                    else
+                    {
+                        await SendAsync(e, "创建比赛", "enabled 值必须为 0 或 1。");
+                        return true;
+                    }
+                }
+                // 如果队伍包含TBD，则默认不可预测
+                if (team1 == "TBD" || team2 == "TBD")
+                {
+                    enableBet = false;
+                }
 
                 BotReply reply = BettingController.CreateMatch(new CreateMatchRequest
                 {
@@ -422,39 +437,10 @@ namespace Oshima.FunGame.WebAPI.Services
                     AvailableOptions = options,
                     Team1WinOdds = team1Odds,
                     Team2WinOdds = team2Odds,
-                    Team1WinProbability = team1WinProbability
+                    Team1WinProbability = team1WinProbability,
+                    BettingEnabled = enableBet
                 });
                 await SendAsync(e, "创建比赛", reply);
-                return true;
-            }
-
-            // 指令：关闭预测 <比赛ID>
-            if (e.Detail.StartsWith("关闭预测") || e.Detail.StartsWith("结束预测"))
-            {
-                e.UseNotice = false;
-                if (!FunGameConstant.UserIdAndUsername.TryGetValue(uid, out User? user) || (!user.IsAdmin && !user.IsOperator))
-                {
-                    await SendAsync(e, "关闭预测", "你没有权限执行此操作。");
-                    return true;
-                }
-
-                string detail = e.Detail
-                    .Replace("关闭预测", "")
-                    .Replace("结束预测", "")
-                    .Trim();
-                if (int.TryParse(detail, out int matchId))
-                {
-                    BotReply reply = BettingController.CloseBetting(uid, matchId);
-                    reply.Keyboard = new KeyboardMessage()
-                        .AppendButtons(2,
-                            Button.CreateCmdButton("📋 赛事列表", "赛事列表"),
-                            Button.CreateCmdButton("🔍 比赛详情", $"比赛详情 {matchId}"));
-                    await SendAsync(e, "关闭预测", reply);
-                }
-                else
-                {
-                    await SendAsync(e, "关闭预测", "格式：关闭预测 <比赛ID>");
-                }
                 return true;
             }
 
@@ -578,6 +564,107 @@ namespace Oshima.FunGame.WebAPI.Services
                     Button.CreateCmdButton("🔍 比赛详情", $"比赛详情 {matchId}"),
                     Button.CreateCmdButton("💰 预测领奖", "预测领奖"));
                 await SendAsync(e, "取消比赛", reply);
+                return true;
+            }
+
+            if (e.Detail.StartsWith("推迟比赛"))
+            {
+                e.UseNotice = false;
+                if (!FunGameConstant.UserIdAndUsername.TryGetValue(uid, out User? user) || (!user.IsAdmin && !user.IsOperator))
+                {
+                    await SendAsync(e, "修改比赛", "你没有权限执行此操作。");
+                    return true;
+                }
+
+                string detail = e.Detail.Replace("推迟比赛", "").Trim();
+                string[] parts = detail.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+                if (parts.Length < 2 || !int.TryParse(parts[0], out int matchId) || !int.TryParse(parts[1], out int minutes) || minutes <= 0)
+                {
+                    await SendAsync(e, "修改比赛", "格式：推迟比赛 <比赛ID> <分钟数>\n示例：推迟比赛 123 30");
+                    return true;
+                }
+
+                // 获取当前比赛时间
+                if (!CSBettingService.GetMatchTimes(matchId, out DateTime oldStart, out DateTime oldDeadline, out int status, out string error))
+                {
+                    await SendAsync(e, "修改比赛", error);
+                    return true;
+                }
+
+                if (status == 2)
+                {
+                    await SendAsync(e, "修改比赛", "比赛已结束，无法推迟。");
+                    return true;
+                }
+
+                DateTime newStart = oldStart.AddMinutes(minutes);
+                DateTime newDeadline = oldDeadline.AddMinutes(minutes);
+
+                UpdateMatchRequest request = new()
+                {
+                    MatchId = matchId,
+                    StartTime = newStart,
+                    BetDeadline = newDeadline
+                };
+
+                BotReply reply = BettingController.UpdateMatch(request);
+                reply.Keyboard = new KeyboardMessage()
+                    .AppendButtons(2,
+                        Button.CreateCmdButton("📋 赛事列表", "赛事列表"),
+                        Button.CreateCmdButton("📅 比赛列表", "比赛列表"),
+                        Button.CreateCmdButton("🔍 比赛详情", $"比赛详情 {matchId}"));
+                await SendAsync(e, "修改比赛", reply);
+                return true;
+            }
+
+            // 提前比赛
+            if (e.Detail.StartsWith("提前比赛"))
+            {
+                e.UseNotice = false;
+                if (!FunGameConstant.UserIdAndUsername.TryGetValue(uid, out User? user) || (!user.IsAdmin && !user.IsOperator))
+                {
+                    await SendAsync(e, "修改比赛", "你没有权限执行此操作。");
+                    return true;
+                }
+
+                string detail = e.Detail.Replace("提前比赛", "").Trim();
+                string[] parts = detail.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+                if (parts.Length < 2 || !int.TryParse(parts[0], out int matchId) || !int.TryParse(parts[1], out int minutes) || minutes <= 0)
+                {
+                    await SendAsync(e, "修改比赛", "格式：提前比赛 <比赛ID> <分钟数>\n示例：提前比赛 123 30");
+                    return true;
+                }
+
+                // 获取当前比赛时间
+                if (!CSBettingService.GetMatchTimes(matchId, out DateTime oldStart, out DateTime oldDeadline, out int status, out string error))
+                {
+                    await SendAsync(e, "修改比赛", error);
+                    return true;
+                }
+
+                if (status == 2)
+                {
+                    await SendAsync(e, "修改比赛", "比赛已结束，无法推迟。");
+                    return true;
+                }
+
+                DateTime newStart = oldStart.AddMinutes(-minutes);
+                DateTime newDeadline = oldDeadline.AddMinutes(-minutes);
+
+                UpdateMatchRequest request = new()
+                {
+                    MatchId = matchId,
+                    StartTime = newStart,
+                    BetDeadline = newDeadline
+                };
+
+                BotReply reply = BettingController.UpdateMatch(request);
+                reply.Keyboard = new KeyboardMessage()
+                    .AppendButtons(2,
+                        Button.CreateCmdButton("📋 赛事列表", "赛事列表"),
+                        Button.CreateCmdButton("📅 比赛列表", "比赛列表"),
+                        Button.CreateCmdButton("🔍 比赛详情", $"比赛详情 {matchId}"));
+                await SendAsync(e, "修改比赛", reply);
                 return true;
             }
 

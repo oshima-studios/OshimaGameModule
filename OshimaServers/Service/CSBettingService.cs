@@ -324,6 +324,35 @@ namespace Oshima.FunGame.WebAPI.Services
             return "数据库连接失败。";
         }
 
+        public static bool GetMatchTimes(int matchId, out DateTime startTime, out DateTime betDeadline, out int status, out string error)
+        {
+            startTime = DateTime.MinValue;
+            betDeadline = DateTime.MinValue;
+            status = -1;
+            error = "";
+
+            using SQLHelper? sql = Factory.OpenFactory.GetSQLHelper();
+            if (sql == null)
+            {
+                error = "数据库连接失败。";
+                return false;
+            }
+
+            sql.Parameters["@mid"] = matchId;
+            sql.ExecuteDataSet("SELECT start_time, bet_deadline, status FROM csbetting_matches WHERE id = @mid");
+            if (!sql.Success || sql.DataSet.Tables[0].Rows.Count == 0)
+            {
+                error = "比赛不存在。";
+                return false;
+            }
+
+            DataRow row = sql.DataSet.Tables[0].Rows[0];
+            startTime = Convert.ToDateTime(row["start_time"]);
+            betDeadline = Convert.ToDateTime(row["bet_deadline"]);
+            status = Convert.ToInt32(row["status"]);
+            return true;
+        }
+
         public static bool PlaceBet(long uid, int matchId, string option, long amount, out string error)
         {
             error = "";
@@ -770,7 +799,7 @@ namespace Oshima.FunGame.WebAPI.Services
         }
 
         // 创建比赛
-        public static bool CreateMatch(int eventId, string team1Name, string team2Name, string stage, DateTime startTime, DateTime betDeadline, string availableOptions, decimal? team1WinOdds, decimal? team2WinOdds, decimal? team1WinProbability, out string error, out long? newMatchId)
+        public static bool CreateMatch(int eventId, string team1Name, string team2Name, string stage, DateTime startTime, DateTime betDeadline, string availableOptions, decimal? team1WinOdds, decimal? team2WinOdds, decimal? team1WinProbability, bool? enableBet, out string error, out long? newMatchId)
         {
             error = "";
             newMatchId = null;
@@ -822,9 +851,7 @@ namespace Oshima.FunGame.WebAPI.Services
                 }
                 else
                 {
-                    // 默认双方各 2.0
-                    t1Odds = 2.0m;
-                    t2Odds = 2.0m;
+                    (t1Odds, t2Odds) = CalculateOdds(0.5M);
                 }
 
                 // 校验奖励率大于0
@@ -843,9 +870,10 @@ namespace Oshima.FunGame.WebAPI.Services
                 sql.Parameters["@opts"] = optionsJson;
                 sql.Parameters["@t1_odds"] = t1Odds;
                 sql.Parameters["@t2_odds"] = t2Odds;
+                sql.Parameters["@betting_enabled"] = (enableBet ?? false) ? 1 : 0;
                 sql.Execute(@"INSERT INTO csbetting_matches 
           (event_id, team1_name, team2_name, stage, start_time, bet_deadline, available_options, team1_win_odds, team2_win_odds, status) 
-          VALUES (@eid, @t1, @t2, @stage, @start, @deadline, @opts, @t1_odds, @t2_odds, 0)");
+          VALUES (@eid, @t1, @t2, @stage, @start, @deadline, @opts, @t1_odds, @t2_odds, 0, @betting_enabled)");
 
                 if (sql.Success)
                 {

@@ -63,12 +63,12 @@ namespace Oshima.FunGame.WebAPI.Services
             else if (msg.IsGroup)
             {
                 content = "\r\n" + content.Trim();
-                await Service.SendGroupMessageAsync(msg.OpenId, content, msgType, media, msg.Id, msgSeq);
+                await Service.SendGroupMessageAsync(msg.OpenId, content, msgType, media, msg.SendProactive ? null : msg.Id, msgSeq);
             }
             else
             {
                 content = content.Trim();
-                await Service.SendC2CMessageAsync(msg.OpenId, content, msgType, media, msg.Id, msgSeq);
+                await Service.SendC2CMessageAsync(msg.OpenId, content, msgType, media, msg.SendProactive ? null : msg.Id, msgSeq);
             }
             await CheckOfflineNotice(msg);
         }
@@ -83,11 +83,11 @@ namespace Oshima.FunGame.WebAPI.Services
             }
             else if (msg.IsGroup)
             {
-                await Service.SendGroupMarkdownAsync(msg.OpenId, mdMsg, kbMsg, msg.Id, msgSeq);
+                await Service.SendGroupMarkdownAsync(msg.OpenId, mdMsg, kbMsg, msg.SendProactive ? null : msg.Id, msgSeq);
             }
             else
             {
-                await Service.SendC2CMarkdownAsync(msg.OpenId, mdMsg, kbMsg, msg.Id, msgSeq);
+                await Service.SendC2CMarkdownAsync(msg.OpenId, mdMsg, kbMsg, msg.SendProactive ? null : msg.Id, msgSeq);
             }
             await CheckOfflineNotice(msg);
         }
