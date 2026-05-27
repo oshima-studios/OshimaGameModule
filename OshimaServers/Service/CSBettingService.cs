@@ -872,7 +872,7 @@ namespace Oshima.FunGame.WebAPI.Services
                 sql.Parameters["@t2_odds"] = t2Odds;
                 sql.Parameters["@betting_enabled"] = (enableBet ?? false) ? 1 : 0;
                 sql.Execute(@"INSERT INTO csbetting_matches 
-          (event_id, team1_name, team2_name, stage, start_time, bet_deadline, available_options, team1_win_odds, team2_win_odds, status) 
+          (event_id, team1_name, team2_name, stage, start_time, bet_deadline, available_options, team1_win_odds, team2_win_odds, status, betting_enabled) 
           VALUES (@eid, @t1, @t2, @stage, @start, @deadline, @opts, @t1_odds, @t2_odds, 0, @betting_enabled)");
 
                 if (sql.Success)
