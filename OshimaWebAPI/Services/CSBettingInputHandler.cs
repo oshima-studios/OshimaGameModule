@@ -602,6 +602,7 @@ namespace Oshima.FunGame.WebAPI.Services
 
                 UpdateMatchRequest request = new()
                 {
+                    Uid = uid,
                     MatchId = matchId,
                     StartTime = newStart,
                     BetDeadline = newDeadline
@@ -653,6 +654,7 @@ namespace Oshima.FunGame.WebAPI.Services
 
                 UpdateMatchRequest request = new()
                 {
+                    Uid = uid,
                     MatchId = matchId,
                     StartTime = newStart,
                     BetDeadline = newDeadline
