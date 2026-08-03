@@ -18,8 +18,11 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\FunGame.Core\FunGame.Core.csproj" />
-    <ProjectReference Include="..\..\FunGame.Extension\FunGame.SQLQueryExtension\FunGame.SQLQueryExtension.csproj" />
+    <PackageReference Include="FunGame.Core" Version="2.0.0" />
+    <PackageReference Include="FunGame.SQLQueryExtension" Version="2.0.0" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\OshimaCore\OshimaCore.csproj" />
     <ProjectReference Include="..\OshimaMaps\OshimaMaps.csproj" />
     <ProjectReference Include="..\OshimaModules\OshimaModules.csproj" />

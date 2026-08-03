@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 18
-VisualStudioVersion = 18.5.11723.231 stable
+VisualStudioVersion = 18.5.11723.231
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OshimaModules", "OshimaModules\OshimaModules.csproj", "{497E99F9-7EA4-498C-90C5-B5751B47B2BE}"
 EndProject
@@ -12,8 +12,6 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OshimaWebAPI", "OshimaWebAPI\OshimaWebAPI.csproj", "{978B06DE-2AD8-4DC4-B53A-D744781FDEA1}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OshimaCore", "OshimaCore\OshimaCore.csproj", "{E0E709F9-755C-4BE7-915C-9B0A8CBBBF34}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FunGame.Core", "..\FunGame.Core\FunGame.Core.csproj", "{4F243854-428F-4252-AE9A-81FB2D8EEBD7}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -41,10 +39,6 @@ Global
 		{E0E709F9-755C-4BE7-915C-9B0A8CBBBF34}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{E0E709F9-755C-4BE7-915C-9B0A8CBBBF34}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{E0E709F9-755C-4BE7-915C-9B0A8CBBBF34}.Release|Any CPU.Build.0 = Release|Any CPU
-		{4F243854-428F-4252-AE9A-81FB2D8EEBD7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{4F243854-428F-4252-AE9A-81FB2D8EEBD7}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{4F243854-428F-4252-AE9A-81FB2D8EEBD7}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{4F243854-428F-4252-AE9A-81FB2D8EEBD7}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
